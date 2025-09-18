@@ -1,0 +1,23 @@
+version: "{VERSION}"
+date: "{DATE}"
+deprecated: false
+template_type: "compliance_dashboard"
+
+dashboard_components:
+  {DASHBOARD_COMPONENTS}
+
+legal_disclaimer:
+  text: "The SSID-open-core repository meets the Blueprint 4.x maximal standard according to local build and test systems. All compliance, badge, and audit reports apply solely to the local repository and build state. This does NOT constitute official certification under MiCA, eIDAS, DORA, ISO, SOC2, or any similar regulations. External authorities, auditors, and reviewers are EXPLICITLY invited to review all artifacts free of charge and independently. Official certifications require an external audit in accordance with the applicable regulatory requirements."
+  display_requirements:
+    - "Show on dashboard footer"
+    - "Include in all exported reports"
+    - "Display in API responses"
+    - "Show on mobile views"
+    - "Include in email notifications"
+  visibility: "always_visible"
+  language_support: "all_supported_languages"
+
+template_usage:
+  replace_placeholders: "Replace all {PLACEHOLDER} values with actual data"
+  maintain_disclaimer: "Legal disclaimer must always be included"
+  version_tracking: "Update version and date when using template"

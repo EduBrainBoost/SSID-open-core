@@ -1,0 +1,37 @@
+name: "23_compliance"
+purpose: "Central compliance framework with policies, evidence, and audit capabilities"
+owner_id: "compliance_team"
+version: "1.0"
+date: "2025-09-15"
+deprecated: false
+
+links:
+  documentation: "docs/"
+  source: "src/"
+  tests: "tests/"
+  policies: "policies/"
+  evidence: "evidence/"
+  anti_gaming: "anti_gaming/"
+  reviews: "reviews/"
+  governance: "governance/"
+
+dependencies:
+  - "02_audit_logging"
+  - "07_governance_legal"
+  - "24_meta_orchestration"
+
+structure:
+  policies: "Centralized compliance policies"
+  evidence: "Public audit evidence storage"
+  exceptions: "Structure and compliance exceptions"
+  tests: "Compliance validation tests"
+  anti_gaming: "Gaming prevention controls"
+  reviews: "External review documentation"
+  governance: "Maintainer and governance framework"
+  ai_ml_ready: "AI/ML compliance integration"
+  social_ecosystem: "Diversity and inclusion standards"
+  regional: "Regional compliance adaptations"
+  legal: "Legal framework and templates"
+  status: "Compliance status tracking"
+  metrics: "Public metrics definitions"
+  historical: "Historical compliance journey"

@@ -1,0 +1,5 @@
+SSID OpenCore Structure Guard v1.0
+Validating structure against blueprint...
+12_tooling/scripts/structure_guard.sh: line 53: bc: command not found
+Structure Compliance Score: %
+Structure validation PASSED

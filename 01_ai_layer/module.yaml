@@ -1,0 +1,26 @@
+name: "01_ai_layer"
+purpose: "AI/ML integration layer for compliance automation and policy validation"
+owner_id: "ai_layer_team"
+version: "1.0"
+date: "2025-09-15"
+deprecated: false
+
+links:
+  documentation: "docs/"
+  source: "src/"
+  tests: "tests/"
+  compliance_query_processor: "compliance_query_processor/"
+  content_moderation: "content_moderation/"
+
+dependencies:
+  - "23_compliance"
+  - "24_meta_orchestration"
+
+structure:
+  agents: "AI agent implementations"
+  prompts: "AI prompt templates and management"
+  evaluation: "AI model evaluation and testing"
+  safety: "AI safety controls and guardrails"
+  runtimes: "AI runtime environments and execution"
+  compliance_query_processor: "Natural language compliance queries"
+  content_moderation: "AI-powered content moderation"

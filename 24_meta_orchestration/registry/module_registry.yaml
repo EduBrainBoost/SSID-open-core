@@ -1,0 +1,181 @@
+version: "1.0"
+date: "2025-09-18"
+deprecated: false
+
+registry_purpose: "Canonical module management for SSID OpenCore 24-module architecture"
+
+modules:
+  "01_ai_layer":
+    status: "active"
+    owner: "AI Team"
+    purpose: "AI/ML integration, agents, safety, and prompt management"
+    last_updated: "2025-09-18"
+    dependencies: ["03_core", "20_foundation"]
+
+  "02_audit_logging":
+    status: "active"
+    owner: "Audit Team"
+    purpose: "Audit trails, evidence collection, and blockchain anchoring"
+    last_updated: "2025-09-18"
+    dependencies: ["20_foundation", "21_post_quantum_crypto"]
+
+  "03_core":
+    status: "active"
+    owner: "Core Team"
+    purpose: "Domain logic, services, APIs, and tokenomics"
+    last_updated: "2025-09-18"
+    dependencies: ["20_foundation"]
+
+  "04_deployment":
+    status: "active"
+    owner: "DevOps Team"
+    purpose: "CI/CD, containerization, and deployment strategies"
+    last_updated: "2025-09-18"
+    dependencies: ["15_infra", "12_tooling"]
+
+  "05_documentation":
+    status: "active"
+    owner: "Documentation Team"
+    purpose: "Architecture docs, runbooks, and references"
+    last_updated: "2025-09-18"
+    dependencies: []
+
+  "06_data_pipeline":
+    status: "active"
+    owner: "Data Team"
+    purpose: "Data engineering, ML pipelines, and training"
+    last_updated: "2025-09-18"
+    dependencies: ["18_data_layer", "22_datasets"]
+
+  "07_governance_legal":
+    status: "active"
+    owner: "Legal Team"
+    purpose: "Legal frameworks, risk management, and approvals"
+    last_updated: "2025-09-18"
+    dependencies: ["23_compliance"]
+
+  "08_identity_score":
+    status: "active"
+    owner: "Identity Team"
+    purpose: "Identity scoring, reputation, and trust models"
+    last_updated: "2025-09-18"
+    dependencies: ["09_meta_identity", "03_core"]
+
+  "09_meta_identity":
+    status: "active"
+    owner: "Identity Team"
+    purpose: "Identity schemas, resolvers, and profiles"
+    last_updated: "2025-09-18"
+    dependencies: ["10_interoperability"]
+
+  "10_interoperability":
+    status: "active"
+    owner: "Integration Team"
+    purpose: "Standards, mappings, and external connectors"
+    last_updated: "2025-09-18"
+    dependencies: ["20_foundation"]
+
+  "11_test_simulation":
+    status: "active"
+    owner: "QA Team"
+    purpose: "Testing frameworks, fixtures, and simulations"
+    last_updated: "2025-09-18"
+    dependencies: []
+
+  "12_tooling":
+    status: "active"
+    owner: "DevOps Team"
+    purpose: "Scripts, linters, generators, and development tools"
+    last_updated: "2025-09-18"
+    dependencies: ["20_foundation"]
+
+  "13_ui_layer":
+    status: "active"
+    owner: "Frontend Team"
+    purpose: "User interfaces, dashboards, and design systems"
+    last_updated: "2025-09-18"
+    dependencies: ["03_core", "17_observability"]
+
+  "14_zero_time_auth":
+    status: "active"
+    owner: "Security Team"
+    purpose: "Authentication, wallet integration, and SSO"
+    last_updated: "2025-09-18"
+    dependencies: ["09_meta_identity", "21_post_quantum_crypto"]
+
+  "15_infra":
+    status: "active"
+    owner: "Infrastructure Team"
+    purpose: "Kubernetes, Terraform, networking, and secrets"
+    last_updated: "2025-09-18"
+    dependencies: ["20_foundation"]
+
+  "16_codex":
+    status: "active"
+    owner: "Documentation Team"
+    purpose: "Playbooks, patterns, and implementation guides"
+    last_updated: "2025-09-18"
+    dependencies: ["05_documentation"]
+
+  "17_observability":
+    status: "active"
+    owner: "SRE Team"
+    purpose: "Monitoring, dashboards, alerts, and telemetry"
+    last_updated: "2025-09-18"
+    dependencies: ["15_infra"]
+
+  "18_data_layer":
+    status: "active"
+    owner: "Data Team"
+    purpose: "Database schemas, repositories, and migrations"
+    last_updated: "2025-09-18"
+    dependencies: ["20_foundation"]
+
+  "19_adapters":
+    status: "active"
+    owner: "Integration Team"
+    purpose: "Web3, payment, messaging, and identity adapters"
+    last_updated: "2025-09-18"
+    dependencies: ["10_interoperability", "20_foundation"]
+
+  "20_foundation":
+    status: "active"
+    owner: "Core Team"
+    purpose: "Utilities, security primitives, and core libraries"
+    last_updated: "2025-09-18"
+    dependencies: []
+
+  "21_post_quantum_crypto":
+    status: "active"
+    owner: "Cryptography Team"
+    purpose: "Quantum-resistant algorithms and key management"
+    last_updated: "2025-09-18"
+    dependencies: ["20_foundation"]
+
+  "22_datasets":
+    status: "active"
+    owner: "Data Team"
+    purpose: "Training data, reference datasets, and data management"
+    last_updated: "2025-09-18"
+    dependencies: []
+
+  "23_compliance":
+    status: "active"
+    owner: "Compliance Team"
+    purpose: "Policies, evidence, governance, and regulatory mapping"
+    last_updated: "2025-09-18"
+    dependencies: ["02_audit_logging", "07_governance_legal"]
+
+  "24_meta_orchestration":
+    status: "active"
+    owner: "Architecture Team"
+    purpose: "Registry, pipelines, triggers, and meta-orchestration"
+    last_updated: "2025-09-18"
+    dependencies: ["12_tooling", "04_deployment"]
+
+registry_metadata:
+  total_modules: 24
+  active_modules: 24
+  deprecated_modules: 0
+  last_validation: "2025-09-18"
+  validation_script: "12_tooling/scripts/structure_guard.sh"

@@ -1,0 +1,36 @@
+version: "1.0"
+date: "2025-09-15"
+deprecated: false
+
+maintainer_structure:
+  primary_maintainers:
+    - name: "Community Lead"
+      role: "Lead Compliance Officer"
+      email: "compliance@ssid.org"
+      backup: "Community Backup"
+      areas: ["compliance_matrices", "regulatory_updates"]
+
+    - name: "Technical Lead"
+      role: "Technical Lead"
+      email: "tech@ssid.org"
+      backup: "Technical Backup"
+      areas: ["badge_logic", "anti_gaming_controls"]
+
+  backup_escalation:
+    level_1: "Community Security Team"
+    level_2: "Community Leadership"
+    level_3: "DAO Council"
+    emergency_contact: "contact@ssid.org"
+
+  review_maintainers:
+    external_reviewer_pool:
+      - "Independent Compliance Expert Pool"
+      - "Community-Selected Auditors"
+    review_coordinator: "Community Lead"
+    backup_coordinator: "Community Backup"
+
+  vacation_coverage:
+    minimum_coverage: 2
+    notification_period: "2 weeks"
+    handover_required: true
+    documentation: "23_compliance/governance/handover_template.md"

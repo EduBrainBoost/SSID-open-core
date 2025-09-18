@@ -1,0 +1,48 @@
+version: "1.0"
+deprecated: false
+last_review: "2025-09-18"
+next_review: "2026-03-18"
+
+thresholds:
+  structure_compliance:
+    threshold: ">= 95%"
+    rationale: "High threshold ensures structural integrity. 5% tolerance allows for edge cases and transitional states during development."
+    business_impact: "Critical for framework readiness and trust building"
+    deprecated: false
+    benchmark_source: "Industry standard for compliance frameworks"
+
+  test_coverage:
+    threshold: ">= 90%"
+    rationale: "Industry standard for production systems. 10% tolerance accounts for integration points, legacy compatibility, and non-testable infrastructure code."
+    business_impact: "Essential for reliability and maintainability claims"
+    deprecated: false
+    tiered_requirements:
+      security_modules: ">= 95%"
+      compliance_modules: ">= 95%"
+
+  review_cycle:
+    requirement: "External review every 6 months"
+    rationale: "Balance between regulatory change responsiveness and review overhead. Sufficient to catch gaming attempts and regulatory updates."
+    cost_benefit: "Manageable cost with maximum trust benefit"
+    deprecated: false
+    backup_requirement: "Internal review every 3 months maximum"
+    escalation_trigger: "Review overdue by 30 days"
+
+justification_methodology:
+  industry_benchmarking: "Comparison with similar open source compliance frameworks"
+  regulatory_guidance: "Analysis of regulatory expectations for automated compliance"
+  risk_assessment: "Impact analysis of threshold violations"
+  stakeholder_feedback: "Community and expert input on practical thresholds"
+
+threshold_history:
+  structure_compliance:
+    - version: "1.0"
+      date: "2025-09-18"
+      threshold: "95%"
+      change_reason: "Initial framework establishment"
+
+  test_coverage:
+    - version: "1.0"
+      date: "2025-09-18"
+      threshold: "90%"
+      change_reason: "Industry standard adoption"

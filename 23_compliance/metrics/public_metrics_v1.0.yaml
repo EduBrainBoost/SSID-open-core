@@ -1,0 +1,70 @@
+version: "1.0"
+date: "2025-09-18"
+deprecated: false
+valid_for_matrix_versions: ["1.0", "1.1"]
+expires_with_matrix: "2.0"
+
+metrics:
+  structure_compliance:
+    formula: "Passed Checks / Total Structure Checks * 100"
+    source: "structure_guard.sh"
+    source_line: 127
+    script_version: "1.0"
+    script_deprecated: false
+    badge_threshold: ">= 95%"
+    anti_gaming_check: "circular_dependency_validator.py"
+    version_validity:
+      calculated_on: "2025-09-18"
+      valid_for_matrix: "v1.0"
+      recalculation_required_on_matrix: "v1.1+"
+
+  test_coverage:
+    formula: "Covered Lines / Total Lines * 100"
+    source: "pytest --cov"
+    config_source: "pytest.ini:line_23"
+    badge_threshold: ">= 90%"
+    script_deprecated: false
+    validation_method: "Coverage report analysis"
+    threshold_source: "23_compliance/metrics/threshold_rationale.yaml:line_15"
+
+  build_status:
+    source: "GitHub Actions CI"
+    workflow_file: ".github/workflows/ci.yml"
+    states: ["passing", "failing", "pending"]
+    integrity_check: "badge_integrity_checker.sh"
+    script_deprecated: false
+    dependency_validation: true
+
+coverage_thresholds:
+  global_minimum: 90
+  security_modules: 95
+  compliance_modules: 95
+  deprecated_modules: 70
+  warning_threshold: 85
+
+badge_definitions:
+  structure_compliance_badge:
+    name: "Structure Compliance"
+    colors:
+      excellent: "brightgreen"  # >= 98%
+      good: "green"            # >= 95%
+      warning: "yellow"        # >= 90%
+      failing: "red"           # < 90%
+
+  test_coverage_badge:
+    name: "Test Coverage"
+    colors:
+      excellent: "brightgreen"  # >= 95%
+      good: "green"            # >= 90%
+      warning: "yellow"        # >= 80%
+      failing: "red"           # < 80%
+
+legal_disclaimer:
+  text: "The SSID-open-core repository meets the Blueprint 4.x maximal standard according to local build and test systems. All compliance, badge, and audit reports apply solely to the local repository and build state. This does NOT constitute official certification under MiCA, eIDAS, DORA, ISO, SOC2, or any similar regulations. External authorities, auditors, and reviewers are EXPLICITLY invited to review all artifacts free of charge and independently. Official certifications require an external audit in accordance with the applicable regulatory requirements."
+  applies_to:
+    - "all_badge_displays"
+    - "metric_exports"
+    - "api_responses"
+    - "compliance_reports"
+    - "dashboard_displays"
+  required_visibility: "prominent"

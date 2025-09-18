@@ -1,0 +1,78 @@
+# SSID OpenCore Structure Policy - Central Reference
+# This file provides a central reference point while maintaining
+# the versioned policy structure in subdirectories as required by Blueprint 4.x
+
+version: "1.0"
+date: "2025-09-18"
+deprecated: false
+policy_type: "central_reference"
+
+# Pointer to the current active versioned policy
+active_policy_version: "1.0"
+active_policy_path: "23_compliance/policies/structure_policy_v1_0/structure_policy_v1_0.yaml"
+
+# Version management
+versioned_policies:
+  "1.0":
+    path: "23_compliance/policies/structure_policy_v1_0/"
+    status: "active"
+    effective_date: "2025-09-18"
+    expiry_date: null
+
+# Quick reference (detailed specification in versioned policy)
+requirements:
+  structure_requirements_summary:
+    root_modules:
+      count: 24
+      naming_convention: "NN_module_name"
+
+    common_must_files:
+      - "module.yaml"
+      - "README.md"
+
+    common_must_directories:
+      - "docs/"
+      - "src/"
+      - "tests/"
+
+    forbidden_local_directories:
+      - "registry/"
+      - "policies/"
+      - "risk/"
+      - "evidence/"
+      - "exceptions/"
+      - "triggers/"
+      - "ci/"
+      - "cd/"
+
+# Centralized locations reference
+centralized_locations:
+  registry: "24_meta_orchestration/registry/"
+  policies: "23_compliance/policies/"
+  evidence: "23_compliance/evidence/"
+  exceptions: "23_compliance/exceptions/"
+  risk: "07_governance_legal/risk/"
+  ci_cd: ".github/workflows/ + 24_meta_orchestration/triggers/ci/"
+
+compliance_threshold: 95
+
+# Blueprint 4.x compliance
+blueprint_version: "4.x"
+blueprint_compliance: "maximalstand"
+
+# Governance
+maintainer: "Community Lead"
+backup_maintainer: "Technical Lead"
+review_frequency: "quarterly"
+next_review: "2025-12-18"
+
+# References
+blueprint_reference: "24_meta_orchestration/locks/SSID_opencore_structure_level3.md"
+validation_script: "12_tooling/scripts/structure_guard.sh"
+test_suite: "23_compliance/tests/unit/test_structure_policy_vs_md.py"
+
+# Note: This central reference file coexists with the versioned policy structure
+# as required by Blueprint 4.x for maximum compatibility and governance transparency
+
+# Legal disclaimer for external sharing
+legal_disclaimer: "The SSID-open-core repository meets the Blueprint 4.x maximal standard according to local build and test systems. All compliance, badge, and audit reports apply solely to the local repository and build state. This does NOT constitute official certification under MiCA, eIDAS, DORA, ISO, SOC2, or any similar regulations. External authorities, auditors, and reviewers are EXPLICITLY invited to review all artifacts free of charge and independently. Official certifications require an external audit in accordance with the applicable regulatory requirements."

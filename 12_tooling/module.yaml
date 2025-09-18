@@ -1,0 +1,22 @@
+name: "12_tooling"
+purpose: "Development tools, scripts, linters, generators, and git hooks"
+owner_id: "tooling_team"
+version: "1.0"
+date: "2025-09-15"
+deprecated: false
+
+links:
+  documentation: "docs/"
+  source: "src/"
+  tests: "tests/"
+  scripts: "scripts/"
+  hooks: "hooks/"
+
+dependencies:
+  - "23_compliance"
+
+structure:
+  scripts: "Utility scripts including structure_guard.sh"
+  linters: "Code quality and compliance linters"
+  generators: "Code and documentation generators"
+  hooks: "Git hooks including pre-commit validation"

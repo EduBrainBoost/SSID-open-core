@@ -1,0 +1,64 @@
+version: "1.0"
+date: "2025-09-18"
+deprecated: false
+experimental: true
+
+blockchain_anchoring:
+  enabled: false  # Optional - can be enabled per deployment
+  supported_networks:
+    - name: "OpenTimestamps"
+      type: "bitcoin_anchoring"
+      cost: "minimal"
+      verification: "public"
+
+    - name: "IPFS"
+      type: "distributed_storage"
+      cost: "low"
+      verification: "hash_based"
+
+  anchor_frequency: "weekly"
+  critical_events_immediate: true
+
+decentralized_identity:
+  did_support: true
+  supported_methods:
+    - "did:web"
+    - "did:key"
+  verifiable_credentials: true
+  credential_schemas: "02_audit_logging/next_gen_audit/vc_schemas/"
+
+zero_knowledge_proofs:
+  enabled: false  # Future capability
+  use_cases:
+    - "Compliance without data disclosure"
+    - "Audit trail verification"
+    - "Privacy-preserving attestations"
+  supported_schemes:
+    - "zk-SNARKs"
+    - "zk-STARKs"
+
+quantum_resistant:
+  enabled: true
+  algorithms_supported:
+    - "CRYSTALS-Dilithium"
+    - "FALCON"
+    - "SPHINCS+"
+  migration_plan: "21_post_quantum_crypto/migration_roadmap.md"
+  timeline: "2025-2027"
+
+audit_chain_extensions:
+  post_2025_standards:
+    placeholder: true
+    description: "Reserved for future regulatory requirements"
+    extension_points:
+      - "regulatory_hooks/"
+      - "compliance_adapters/"
+      - "audit_protocols/"
+      - "verification_methods/"
+
+implementation_status:
+  cryptographic_hashing: "implemented"
+  timestamping: "implemented"
+  blockchain_anchoring: "optional_feature"
+  did_integration: "planned"
+  quantum_resistance: "roadmap_defined"

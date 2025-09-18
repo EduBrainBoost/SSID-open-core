@@ -1,0 +1,49 @@
+{
+  "report_metadata": {
+    "version": "{VERSION}",
+    "date": "{REPORT_DATE}",
+    "report_type": "{REPORT_TYPE}",
+    "blueprint_version": "{BLUEPRINT_VERSION}",
+    "assessment_status": "{STATUS}",
+    "compliance_level": "{COMPLIANCE_LEVEL}"
+  },
+  "badge_scores": {
+    "structure_compliance": {
+      "score": "{STRUCTURE_SCORE}",
+      "max_score": 100,
+      "percentage": "{STRUCTURE_PERCENTAGE}",
+      "status": "{STRUCTURE_STATUS}",
+      "description": "{STRUCTURE_DESCRIPTION}",
+      "evidence_source": "12_tooling/scripts/structure_guard.sh",
+      "formula": "Passed Checks / Total Structure Checks * 100",
+      "threshold": ">= 95%"
+    },
+    "test_coverage": {
+      "score": "{TEST_SCORE}",
+      "max_score": "{TEST_MAX_SCORE}",
+      "percentage": "{TEST_PERCENTAGE}",
+      "status": "{TEST_STATUS}",
+      "description": "{TEST_DESCRIPTION}",
+      "tests_passed": "{TESTS_PASSED}",
+      "tests_failed": "{TESTS_FAILED}",
+      "evidence_source": "23_compliance/tests/unit/test_structure_policy_vs_md.py",
+      "threshold": ">= 90%"
+    }
+  },
+  "overall_assessment": {
+    "total_score": "{TOTAL_SCORE}",
+    "max_possible_score": 100,
+    "compliance_percentage": "{COMPLIANCE_PERCENTAGE}",
+    "blueprint_level": "{BLUEPRINT_LEVEL}",
+    "certification_ready": "{CERTIFICATION_READY}",
+    "audit_ready": "{AUDIT_READY}",
+    "community_ready": "{COMMUNITY_READY}"
+  },
+  "evidence_trail": {
+    "validation_logs": "{VALIDATION_LOGS}",
+    "test_results": "{TEST_RESULTS}",
+    "compliance_report": "{COMPLIANCE_REPORT}",
+    "audit_timestamp": "{AUDIT_TIMESTAMP}"
+  },
+  "legal_disclaimer": "The SSID-open-core repository meets the Blueprint 4.x maximal standard according to local build and test systems. All compliance, badge, and audit reports apply solely to the local repository and build state. This does NOT constitute official certification under MiCA, eIDAS, DORA, ISO, SOC2, or any similar regulations. External authorities, auditors, and reviewers are EXPLICITLY invited to review all artifacts free of charge and independently. Official certifications require an external audit in accordance with the applicable regulatory requirements."
+}

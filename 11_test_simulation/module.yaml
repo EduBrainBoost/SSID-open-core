@@ -1,0 +1,18 @@
+name: "11_test_simulation/"
+purpose: "Module purpose as defined in SSID OpenCore blueprint"
+owner_id: "11_test_simulation/_team"
+version: "1.0"
+date: "2025-09-15"
+deprecated: false
+
+links:
+  documentation: "docs/"
+  source: "src/"
+  tests: "tests/"
+
+dependencies: []
+
+structure:
+  docs: "Module documentation"
+  src: "Source code and implementations"
+  tests: "Module tests and validation"

@@ -1,0 +1,17 @@
+{
+  "review_system_version": "1.0",
+  "last_updated": "2025-09-18T11:35:00.098894",
+  "review_history": [],
+  "review_schedule": {
+    "next_internal": "2025-12-17",
+    "next_external": "2026-03-17",
+    "overdue_reviews": [],
+    "scheduled_reviews": []
+  },
+  "ci_integration": {
+    "pr_checks_enabled": true,
+    "review_status_check": "required",
+    "overdue_review_blocking": true,
+    "last_automated_check": "2025-09-18T11:35:00.098894"
+  }
+}

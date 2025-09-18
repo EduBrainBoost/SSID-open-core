@@ -1,0 +1,30 @@
+version: "1.0"
+date: "2025-09-15"
+deprecated: false
+
+allowed_exceptions:
+  git_infrastructure:
+    - ".git"
+    - ".github"
+    - ".venv"
+    - ".continue"
+    - ".githooks"
+    - ".gitattributes"
+    - ".gitignore"
+    - ".gitmodules"
+
+  root_level_files:
+    - "LICENSE"
+    - "README.md"
+    - ".pytest"
+    - "pytest.ini"
+
+  temporary_development:
+    - "node_modules"
+    - "__pycache__"
+    - ".DS_Store"
+    - "Thumbs.db"
+
+review_required: false
+auto_approved: true
+justification: "Standard development infrastructure and git-related files"

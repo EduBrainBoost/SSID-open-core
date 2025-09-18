@@ -1,0 +1,71 @@
+version: "1.0"
+date: "2025-09-18"
+deprecated: false
+
+export_formats:
+  openapi:
+    version: "3.0.3"
+    endpoint: "/api/v1/compliance/export/openapi"
+    schema_path: "10_interoperability/schemas/compliance_openapi.yaml"
+
+  json_schema:
+    version: "draft-07"
+    endpoint: "/api/v1/compliance/export/json-schema"
+    schema_path: "10_interoperability/schemas/compliance_jsonschema.json"
+
+  graphql:
+    enabled: true
+    endpoint: "/api/v1/compliance/graphql"
+    schema_path: "10_interoperability/schemas/compliance.graphql"
+    introspection_enabled: true
+
+  rdf_turtle:
+    enabled: true
+    namespace: "https://ssid.org/compliance/vocab#"
+    endpoint: "/api/v1/compliance/export/rdf"
+    ontology_path: "10_interoperability/ontologies/ssid_compliance.ttl"
+
+import_capabilities:
+  frameworks_supported:
+    - "ISO 27001 (XML/JSON)"
+    - "NIST (XML/RDF)"
+    - "GDPR Compliance (JSON-LD)"
+    - "Custom (via JSON-Schema)"
+
+  mapping_engine:
+    path: "10_interoperability/mapping_engine/"
+    ai_assisted: true
+    confidence_scoring: true
+    human_validation_required: true
+
+  bulk_import:
+    enabled: true
+    max_file_size: "50MB"
+    supported_formats: ["JSON", "YAML", "XML", "CSV", "RDF"]
+    validation_required: true
+
+portability_guarantees:
+  no_vendor_lockin: true
+  full_data_export: true
+  schema_versioning: true
+  migration_assistance: true
+  api_stability_promise: "2_years_minimum"
+
+implementation_status:
+  export_formats: "framework_ready"
+  import_capabilities: "basic_framework"
+  mapping_engine: "planned"
+  api_endpoints: "specification_ready"
+
+legal_disclaimer:
+  text: "The SSID-open-core repository meets the Blueprint 4.x maximal standard according to local build and test systems. All compliance, badge, and audit reports apply solely to the local repository and build state. This does NOT constitute official certification under MiCA, eIDAS, DORA, ISO, SOC2, or any similar regulations. External authorities, auditors, and reviewers are EXPLICITLY invited to review all artifacts free of charge and independently. Official certifications require an external audit in accordance with the applicable regulatory requirements."
+  applies_to:
+    - "all_api_responses"
+    - "export_data"
+    - "import_validation_reports"
+    - "partner_documentation"
+    - "schema_specifications"
+  display_requirements:
+    - "api_documentation_footer"
+    - "export_file_headers"
+    - "partner_onboarding_materials"

@@ -1,0 +1,83 @@
+version: "2.0"
+date: "2025-09-18"
+deprecated: false
+legal_disclaimer: "This analysis represents current understanding and does not constitute legal advice"
+
+regulatory_analysis_by_jurisdiction:
+  european_union:
+    mica_regulation_compliance:
+      utility_token_classification: "likely_compliant"
+      asset_referenced_token: "not_applicable"
+      e_money_token: "not_applicable"
+      significant_token_threshold: "monitor_required"
+
+    requirements_if_applicable:
+      authorization_required: "if_significant_threshold_reached"
+      white_paper_required: "if_public_offering"
+      marketing_restrictions: "misleading_communications_prohibited"
+
+  united_states:
+    sec_howey_test_analysis:
+      investment_of_money: "yes_token_acquisition"
+      common_enterprise: "shared_ecosystem_development"
+      expectation_of_profits: "explicitly_disclaimed"
+      efforts_of_others: "utility_focused_not_passive_investment"
+      conclusion: "likely_utility_not_security"
+
+  united_kingdom:
+    fca_guidance_compliance:
+      regulated_token: "assessment_required_if_public_offering"
+      utility_token_guidance: "follow_fca_ps19_22"
+      marketing_restrictions: "financial_promotion_rules_may_apply"
+
+  singapore:
+    mas_payment_services_act:
+      digital_payment_token: "utility_focus_suggests_exemption"
+      major_payment_institution: "not_applicable_utility_token"
+
+  germany:
+    bafin_guidance:
+      utility_token_status: "likely_not_financial_instrument"
+      prospectus_requirement: "not_applicable_if_utility"
+      banking_license: "not_required_utility_token"
+
+risk_mitigation_measures:
+  explicit_disclaimers: "comprehensive_legal_disclaimer_provided"
+  utility_focus: "clear_utility_purpose_documentation"
+  no_investment_marketing: "strictly_prohibited"
+  geographic_restrictions: "compliance_with_local_laws_required"
+  know_your_customer: "as_required_by_jurisdiction"
+  anti_money_laundering: "risk_based_approach"
+
+compliance_monitoring:
+  regulatory_updates: "continuous_monitoring"
+  legal_review_cycle: "quarterly"
+  compliance_assessment: "annual"
+  emergency_response: "24_hour_activation"
+
+documentation_requirements:
+  white_paper: "if_required_by_jurisdiction"
+  terms_of_service: "comprehensive"
+  privacy_policy: "gdpr_compliant"
+  legal_disclaimers: "prominent_display"
+  risk_warnings: "clear_and_prominent"
+
+implementation_safeguards:
+  phased_rollout: "jurisdiction_by_jurisdiction"
+  legal_counsel: "engaged_per_jurisdiction"
+  compliance_officer: "designated"
+  regulatory_liaison: "established"
+  emergency_procedures: "defined"
+
+ongoing_obligations:
+  regulatory_reporting: "as_required"
+  compliance_monitoring: "continuous"
+  legal_updates: "quarterly_review"
+  community_communication: "transparent"
+  authority_cooperation: "full_cooperation"
+
+contingency_planning:
+  regulatory_changes: "adaptation_procedures_defined"
+  enforcement_actions: "response_protocols_established"
+  jurisdiction_restrictions: "exit_procedures_planned"
+  community_protection: "user_protection_prioritized"

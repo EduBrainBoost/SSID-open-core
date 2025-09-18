@@ -1,0 +1,125 @@
+version: "2.0"
+date: "2025-09-18"
+deprecated: false
+legal_review_date: "2025-09-18"
+next_legal_review: "2026-03-18"
+
+token_classification:
+  primary_type: "utility_token"
+  secondary_functions: ["governance_token", "access_token", "reward_token"]
+
+  explicit_exclusions:
+    not_a_security: true
+    not_e_money: true
+    not_stablecoin: true
+    not_payment_instrument: true
+    not_investment_product: true
+    not_derivative: true
+    not_commodity: true
+
+technical_properties:
+  blockchain: "ethereum_compatible"
+  token_standard: "ERC-20_with_extensions"
+  total_supply: "1_000_000_000"
+  decimals: 18
+  symbol: "SSID"
+  name: "SSID Utility Token"
+
+  additional_features:
+    governance_voting: true
+    reputation_weighting: true
+    access_control: true
+    reward_distribution: true
+    burning_mechanism: true
+    minting_restrictions: "governance_controlled"
+
+utility_functions:
+  ecosystem_access:
+    - "Premium compliance features"
+    - "Advanced analytics dashboard"
+    - "Priority community support"
+    - "Early access to new features"
+    - "Enhanced API rate limits"
+
+  governance_participation:
+    - "Proposal submission rights"
+    - "Voting on non-critical changes"
+    - "Community initiative funding"
+    - "Feature prioritization voting"
+    - "Advisory council participation"
+
+  economic_incentives:
+    - "Contributor reward distribution"
+    - "Bug bounty payments"
+    - "Community moderation rewards"
+    - "Educational content creation rewards"
+    - "Compliance validation rewards"
+
+  network_operations:
+    - "Transaction fee payments (where applicable)"
+    - "Quality assurance bonding"
+    - "Dispute resolution mechanisms"
+    - "Network security participation"
+
+token_economics:
+  distribution_model:
+    community_treasury: "40%"
+    ecosystem_development: "25%"
+    core_contributors: "20%"
+    early_supporters: "10%"
+    reserve_fund: "5%
+
+  vesting_schedules:
+    core_contributors: "4_year_cliff_1_year"
+    early_supporters: "2_year_cliff_6_months"
+    ecosystem_development: "linear_5_years"
+    community_treasury: "immediate_governance_controlled"
+
+  supply_mechanisms:
+    initial_supply: "1_000_000_000"
+    inflation_rate: "0%_fixed_supply"
+    burning_rate: "variable_based_on_usage"
+    governance_minting: "emergency_only_supermajority"
+
+governance_framework:
+  voting_power: "token_based_with_reputation_multiplier"
+  proposal_threshold: "0.1%_of_circulating_supply"
+  voting_period: "7_days"
+  execution_delay: "48_hours"
+
+  governance_scope:
+    protocol_parameters: "full_governance"
+    treasury_management: "full_governance"
+    upgrade_decisions: "technical_committee_plus_governance"
+    emergency_actions: "multisig_plus_ratification"
+
+technical_integration:
+  compliance_framework: "native_integration"
+  identity_system: "seamless_connection"
+  reputation_system: "weighted_influence"
+  audit_system: "transparent_tracking"
+
+legal_framework:
+  jurisdiction: "germany_eu_primary"
+  license: "apache_2_0"
+  regulatory_status: "utility_token_compliant"
+  legal_disclaimers: "comprehensive_provided"
+
+implementation_status:
+  smart_contract: "specification_ready"
+  governance_system: "framework_defined"
+  compliance_integration: "designed"
+  legal_review: "completed"
+  community_governance: "ready_for_deployment"
+
+risk_management:
+  technical_risks: "smart_contract_audits_required"
+  regulatory_risks: "ongoing_monitoring_required"
+  market_risks: "utility_focus_mitigates"
+  operational_risks: "governance_procedures_defined"
+
+compliance_measures:
+  anti_money_laundering: "risk_based_approach"
+  know_your_customer: "proportionate_requirements"
+  sanctions_compliance: "automated_screening"
+  regulatory_reporting: "as_required_by_jurisdiction"

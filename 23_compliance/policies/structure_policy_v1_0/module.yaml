@@ -1,0 +1,38 @@
+name: "SSID Structure Policy v1.0"
+version: "1.0"
+date: "2025-09-18"
+deprecated: false
+
+purpose: "Core structure validation policy defining the 24-module Blueprint 4.x requirements"
+
+owner_id: "compliance_team"
+maintainer: "Community Lead"
+backup_maintainer: "Technical Lead"
+
+dependencies:
+  - "24_meta_orchestration/locks/SSID_opencore_structure_level3.md"
+  - "12_tooling/scripts/structure_guard.sh"
+  - "23_compliance/tests/unit/test_structure_policy_vs_md.py"
+
+links:
+  documentation: "README.md"
+  policy_file: "structure_policy_v1_0.yaml"
+  validation_script: "../../../12_tooling/scripts/structure_guard.sh"
+  test_suite: "../../tests/unit/test_structure_policy_vs_md.py"
+
+compliance:
+  blueprint_version: "4.x"
+  validation_level: "Level 3"
+  enforcement: "pre_commit_and_ci"
+
+lifecycle:
+  created: "2025-09-15"
+  last_updated: "2025-09-18"
+  review_frequency: "quarterly"
+  next_review: "2025-12-18"
+
+versioning:
+  current_version: "1.0"
+  previous_versions: []
+  migration_from: "non_versioned_structure_policy.yaml"
+  breaking_changes: false

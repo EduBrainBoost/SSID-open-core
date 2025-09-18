@@ -1,0 +1,25 @@
+name: "24_meta_orchestration"
+purpose: "Meta-orchestration for CI/CD triggers, registry management, and pipeline coordination"
+owner_id: "orchestration_team"
+version: "1.0"
+date: "2025-09-15"
+deprecated: false
+
+links:
+  documentation: "docs/"
+  source: "src/"
+  tests: "tests/"
+  triggers: "triggers/"
+  registry: "registry/"
+  pipelines: "pipelines/"
+
+dependencies:
+  - "23_compliance"
+  - "12_tooling"
+
+structure:
+  triggers: "CI/CD trigger logic and gates"
+  registry: "Canonical module management and logs"
+  pipelines: "Pipeline orchestration and coordination"
+  locks: "Structure and compliance locks"
+  monitoring: "System monitoring and energy tracking"

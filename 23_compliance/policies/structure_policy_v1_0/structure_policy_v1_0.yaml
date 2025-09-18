@@ -1,0 +1,79 @@
+version: "1.0"
+date: "2025-09-15"
+deprecated: false
+
+structure_requirements:
+  root_modules:
+    count: 24
+    naming_convention: "NN_module_name"
+    required_modules:
+      - "01_ai_layer"
+      - "02_audit_logging"
+      - "03_core"
+      - "04_deployment"
+      - "05_documentation"
+      - "06_data_pipeline"
+      - "07_governance_legal"
+      - "08_identity_score"
+      - "09_meta_identity"
+      - "10_interoperability"
+      - "11_test_simulation"
+      - "12_tooling"
+      - "13_ui_layer"
+      - "14_zero_time_auth"
+      - "15_infra"
+      - "16_codex"
+      - "17_observability"
+      - "18_data_layer"
+      - "19_adapters"
+      - "20_foundation"
+      - "21_post_quantum_crypto"
+      - "22_datasets"
+      - "23_compliance"
+      - "24_meta_orchestration"
+
+  common_must_files:
+    - "module.yaml"
+    - "README.md"
+
+  common_must_directories:
+    - "docs/"
+    - "src/"
+    - "tests/"
+
+  forbidden_local_directories:
+    - "registry/"
+    - "policies/"
+    - "risk/"
+    - "evidence/"
+    - "exceptions/"
+    - "triggers/"
+    - "ci/"
+    - "cd/"
+
+  centralized_locations:
+    registry: "24_meta_orchestration/registry/"
+    policies: "23_compliance/policies/"
+    evidence: "23_compliance/evidence/"
+    exceptions: "23_compliance/exceptions/"
+    risk: "07_governance_legal/risk/"
+    ci_cd: ".github/workflows/ + 24_meta_orchestration/triggers/ci/"
+
+exceptions:
+  git_directories:
+    - ".git"
+    - ".github"
+    - ".venv"
+    - ".continue"
+    - ".githooks"
+
+  git_files:
+    - ".gitattributes"
+    - ".gitignore"
+    - ".gitmodules"
+    - "LICENSE"
+    - "README.md"
+    - ".pytest"
+    - "pytest.ini"
+
+compliance_threshold: 95

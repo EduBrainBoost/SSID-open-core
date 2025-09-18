@@ -1,0 +1,33 @@
+{
+  "api_metadata": {
+    "version": "{API_VERSION}",
+    "timestamp": "{TIMESTAMP}",
+    "endpoint": "{ENDPOINT}",
+    "request_id": "{REQUEST_ID}"
+  },
+  "compliance_data": {
+    "{COMPLIANCE_DATA_PLACEHOLDER}"
+  },
+  "status": {
+    "code": "{STATUS_CODE}",
+    "message": "{STATUS_MESSAGE}",
+    "compliance_level": "{COMPLIANCE_LEVEL}"
+  },
+  "pagination": {
+    "page": "{PAGE}",
+    "per_page": "{PER_PAGE}",
+    "total": "{TOTAL}",
+    "has_more": "{HAS_MORE}"
+  },
+  "links": {
+    "self": "{SELF_LINK}",
+    "documentation": "{DOCUMENTATION_LINK}",
+    "support": "{SUPPORT_LINK}"
+  },
+  "legal_disclaimer": "The SSID-open-core repository meets the Blueprint 4.x maximal standard according to local build and test systems. All compliance, badge, and audit reports apply solely to the local repository and build state. This does NOT constitute official certification under MiCA, eIDAS, DORA, ISO, SOC2, or any similar regulations. External authorities, auditors, and reviewers are EXPLICITLY invited to review all artifacts free of charge and independently. Official certifications require an external audit in accordance with the applicable regulatory requirements.",
+  "disclaimer_metadata": {
+    "applies_to": "all_compliance_data",
+    "visibility": "required",
+    "removal_prohibited": true
+  }
+}
