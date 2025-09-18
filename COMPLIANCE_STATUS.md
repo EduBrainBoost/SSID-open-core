@@ -5,6 +5,14 @@
 ![Tests](https://img.shields.io/badge/Tests-9%2F9_Passing-brightgreen)
 ![Blueprint](https://img.shields.io/badge/Blueprint-4.x_Maximalstand-brightgreen)
 
+## ⚠️ Legal & Audit Disclaimer
+
+> **The SSID-open-core repository meets the Blueprint 4.x maximal standard according to local build and test systems.**
+> **All compliance, badge, and audit reports apply solely to the local repository and build state.**
+> **This does NOT constitute official certification under MiCA, eIDAS, DORA, ISO, SOC2, or any similar regulations.**
+> **External authorities, auditors, and reviewers are EXPLICITLY invited to review all artifacts free of charge and independently.**
+> **Official certifications require an external audit in accordance with the applicable regulatory requirements.**
+
 **Status**: ✅ **COMPLETE - 100% Blueprint 4.x Compliance Achieved**
 **Date**: 2025-09-18
 **Score**: 100/100
@@ -119,14 +127,6 @@ unit/test_structure_policy_vs_md.py::TestStructurePolicyVsMD::test_policy_has_re
 - **Partnership Ready** ✅
 - **KI-Integration Ready** ✅
 
----
-
-**Legal & Audit Disclaimer:**
-The SSID-open-core repository meets the Blueprint 4.x maximal standard according to local build and test systems.
-All compliance, badge, and audit reports apply solely to the local repository and build state.
-**This does NOT constitute official certification under MiCA, eIDAS, DORA, ISO, SOC2, or any similar regulations.**
-External authorities, auditors, and reviewers are EXPLICITLY invited to review all artifacts free of charge and independently.
-Official certifications require an external audit in accordance with the applicable regulatory requirements.
 
 ---
 

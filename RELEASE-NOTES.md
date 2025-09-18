@@ -1,5 +1,13 @@
 # SSID OpenCore Release Notes
 
+## ⚠️ Legal & Audit Disclaimer
+
+> **The SSID-open-core repository meets the Blueprint 4.x maximal standard according to local build and test systems.**
+> **All compliance, badge, and audit reports apply solely to the local repository and build state.**
+> **This does NOT constitute official certification under MiCA, eIDAS, DORA, ISO, SOC2, or any similar regulations.**
+> **External authorities, auditors, and reviewers are EXPLICITLY invited to review all artifacts free of charge and independently.**
+> **Official certifications require an external audit in accordance with the applicable regulatory requirements.**
+
 ## Release 1.0.0 - Blueprint 4.x Maximalstand Achievement
 
 **Release Date:** 2025-09-18

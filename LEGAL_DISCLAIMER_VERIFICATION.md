@@ -1,5 +1,13 @@
 # Legal Disclaimer Implementation Verification Report
 
+## ⚠️ Legal & Audit Disclaimer
+
+> **The SSID-open-core repository meets the Blueprint 4.x maximal standard according to local build and test systems.**
+> **All compliance, badge, and audit reports apply solely to the local repository and build state.**
+> **This does NOT constitute official certification under MiCA, eIDAS, DORA, ISO, SOC2, or any similar regulations.**
+> **External authorities, auditors, and reviewers are EXPLICITLY invited to review all artifacts free of charge and independently.**
+> **Official certifications require an external audit in accordance with the applicable regulatory requirements.**
+
 **Date**: 2025-09-18
 **Status**: ✅ COMPLETE - All Required Areas Covered
 **Scope**: Repository-wide legal disclaimer implementation
