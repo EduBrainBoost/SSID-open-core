@@ -1,0 +1,6 @@
+version: "0.0.0"
+root: "01_ai_layer"
+shard: "16_behoerden_verwaltung"
+impl_id: "_stub"
+status: "SKELETON"
+files: []

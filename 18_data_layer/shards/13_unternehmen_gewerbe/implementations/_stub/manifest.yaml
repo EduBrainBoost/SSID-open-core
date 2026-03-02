@@ -1,0 +1,6 @@
+version: "0.0.0"
+root: "18_data_layer"
+shard: "13_unternehmen_gewerbe"
+impl_id: "_stub"
+status: "SKELETON"
+files: []

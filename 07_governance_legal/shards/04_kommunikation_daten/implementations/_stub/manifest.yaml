@@ -1,0 +1,6 @@
+version: "0.0.0"
+root: "07_governance_legal"
+shard: "04_kommunikation_daten"
+impl_id: "_stub"
+status: "SKELETON"
+files: []
