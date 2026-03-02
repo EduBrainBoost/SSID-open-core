@@ -1,0 +1,6 @@
+version: "0.0.0"
+root: "21_post_quantum_crypto"
+shard: "15_handel_transaktionen"
+impl_id: "_stub"
+status: "SKELETON"
+files: []

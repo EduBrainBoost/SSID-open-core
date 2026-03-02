@@ -1,0 +1,6 @@
+version: "0.0.0"
+root: "07_governance_legal"
+shard: "11_versicherungen_risiken"
+impl_id: "_stub"
+status: "SKELETON"
+files: []

@@ -1,0 +1,6 @@
+version: "0.0.0"
+root: "20_foundation"
+shard: "02_dokumente_nachweise"
+impl_id: "_stub"
+status: "SKELETON"
+files: []

@@ -1,0 +1,6 @@
+version: "0.0.0"
+root: "24_meta_orchestration"
+shard: "06_bildung_qualifikationen"
+impl_id: "_stub"
+status: "SKELETON"
+files: []

@@ -1,0 +1,6 @@
+version: "0.0.0"
+root: "22_datasets"
+shard: "14_vertraege_vereinbarungen"
+impl_id: "_stub"
+status: "SKELETON"
+files: []

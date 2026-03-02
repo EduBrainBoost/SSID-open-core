@@ -1,0 +1,6 @@
+version: "0.0.0"
+root: "21_post_quantum_crypto"
+shard: "06_bildung_qualifikationen"
+impl_id: "_stub"
+status: "SKELETON"
+files: []
