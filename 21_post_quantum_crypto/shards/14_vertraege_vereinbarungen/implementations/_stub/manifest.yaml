@@ -1,6 +1,0 @@
-version: "0.0.0"
-root: "21_post_quantum_crypto"
-shard: "14_vertraege_vereinbarungen"
-impl_id: "_stub"
-status: "SKELETON"
-files: []

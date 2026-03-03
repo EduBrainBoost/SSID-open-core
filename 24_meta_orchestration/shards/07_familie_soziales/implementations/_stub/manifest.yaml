@@ -1,6 +1,0 @@
-version: "0.0.0"
-root: "24_meta_orchestration"
-shard: "07_familie_soziales"
-impl_id: "_stub"
-status: "SKELETON"
-files: []

@@ -1,6 +1,0 @@
-version: "0.0.0"
-root: "01_ai_layer"
-shard: "08_mobilitaet_fahrzeuge"
-impl_id: "_stub"
-status: "SKELETON"
-files: []

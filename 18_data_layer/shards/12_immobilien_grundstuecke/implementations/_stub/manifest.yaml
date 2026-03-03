@@ -1,6 +1,0 @@
-version: "0.0.0"
-root: "18_data_layer"
-shard: "12_immobilien_grundstuecke"
-impl_id: "_stub"
-status: "SKELETON"
-files: []
