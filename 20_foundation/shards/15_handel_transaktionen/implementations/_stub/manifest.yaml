@@ -1,6 +1,0 @@
-version: "0.0.0"
-root: "20_foundation"
-shard: "15_handel_transaktionen"
-impl_id: "_stub"
-status: "SKELETON"
-files: []

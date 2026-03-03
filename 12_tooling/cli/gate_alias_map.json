@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "canonical_gates": [
+    "NC-1_ALLOWLIST_EXTENSIONS",
+    "NC-2_WORM_ENFORCEMENT",
+    "NC-3_STRUCTURE_LOCK",
+    "NC-4_ROOT_EXCEPTIONS",
+    "NC-5_EVIDENCE_CHAIN",
+    "NC-6_SOT_REGISTRY",
+    "NC-7_GATE_INTEGRITY"
+  ],
+  "mapping": {
+    "NC-1_ALLOWLIST_EXTENSIONS": ["NC-1_ALLOWLIST_EXTENSIONS", "extension_allowlist_strict", "test_extension_allowlist_strict"],
+    "NC-2_WORM_ENFORCEMENT": ["worm_enforce", "evidence_worm_guard", "nc2_worm_remediation"],
+    "NC-3_STRUCTURE_LOCK": ["structure_guard", "root_24_lock_guard", "sot_gate"],
+    "NC-4_ROOT_EXCEPTIONS": ["root_allowlist_guard", "repo_separation_guard", "duplicate_guard"],
+    "NC-5_EVIDENCE_CHAIN": ["evidence_standardizer", "hash_manifest_validator"],
+    "NC-6_SOT_REGISTRY": ["sot_registry_guard", "sot_validator"],
+    "NC-7_GATE_INTEGRITY": ["run_all_gates", "ci_gate_mirror", "gate_integrity_guard", "qa_master_suite"]
+  }
+}

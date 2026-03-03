@@ -1,6 +1,0 @@
-version: "0.0.0"
-root: "24_meta_orchestration"
-shard: "05_gesundheit_medizin"
-impl_id: "_stub"
-status: "SKELETON"
-files: []
