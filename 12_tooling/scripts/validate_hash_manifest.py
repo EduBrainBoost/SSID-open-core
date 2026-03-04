@@ -1,9 +1,24 @@
 #!/usr/bin/env python3
+"""Validate SHA-256 hashes in a release audit manifest against actual files."""
+import argparse
 import json
 import hashlib
+import sys
 from pathlib import Path
 
-BUNDLE = Path("C:/Users/bibel/Documents/Github/SSID/02_audit_logging/evidence/tasks/manual_backfill_20260213T090000Z")
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Validate hash manifest against bundle files.")
+    parser.add_argument(
+        "bundle_path",
+        type=Path,
+        help="Path to the evidence bundle directory containing the manifest.",
+    )
+    return parser.parse_args()
+
+
+args = _parse_args()
+BUNDLE = args.bundle_path.resolve()
 
 def sha256_file(p: Path) -> str:
     h = hashlib.sha256()
