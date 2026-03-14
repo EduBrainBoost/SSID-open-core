@@ -1,0 +1,43 @@
+name: "Cron: Daily Sanctions Check"
+# ADR-0050 — SoT Cron Job T021
+# Schedule: 03:15 UTC daily
+
+on:
+  schedule:
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanctions-check:
+    name: Daily Sanctions Freshness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Run sanctions freshness check
+        run: python 12_tooling/cli/run_all_gates.py --gate sanctions_freshness
+        env:
+          PYTHONPATH: "."
+
+      - name: Generate SHA256 manifest
+        run: python 12_tooling/cli/cron_sha256_manifest.py --job daily_sanctions --output 02_audit_logging/logs/cron_runs.jsonl
+        env:
+          PYTHONPATH: "."
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanctions-check-${{ github.run_id }}
+          path: 02_audit_logging/logs/cron_runs.jsonl
+          retention-days: 90
