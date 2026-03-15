@@ -1,0 +1,8 @@
+schema_version: 1.0.0
+kind: reference_runtime
+module: wave03_reference
+factory: Root03ReferenceWave
+service_method: run
+shard_id: 01_identitaet_personen
+valid_input: ../conformance/fixtures/fixture_valid.json
+expected_output_schema: ../contracts/outputs.schema.json

@@ -1,0 +1,34 @@
+module_id: 19_adapters
+name: Adapters
+version: 4.1.0
+status: ROOT-24-LOCK
+classification: Adapters
+purpose: adapter_layer
+structure:
+  must_dirs:
+  - docs
+  - src
+  - tests
+  - config
+  - shards
+  must_files:
+  - module.yaml
+  - README.md
+  forbidden_paths:
+  - compliance_policies
+  - audit_storage
+  - governance_rules
+interfaces:
+  outputs:
+  - ref: 17_observability/logs/adapters
+    type: log_sink
+  evidence:
+  - ref: 23_compliance/evidence/adapters
+    type: evidence_target
+shard_count: 16
+evidence_strategy: hash_manifest_only
+governance_rules:
+- SOT_AGENT_021
+- SOT_AGENT_022
+- SOT_AGENT_023
+final_authority: 03_core

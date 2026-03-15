@@ -1,0 +1,5 @@
+interface_id: 07_governance_legal.07_shard_07.primary
+root_id: 07_governance_legal
+shard_id: 07_shard_07
+kind: bootstrap_contract
+status: active

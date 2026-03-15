@@ -1,0 +1,39 @@
+name: 02_dokumente_nachweise
+layer: 01_ai_layer
+version: 0.1.0
+title: Document Evidence AI
+capabilities:
+  MUST:
+  - document_classification
+  - ocr_extraction
+  - evidence_validation
+  SHOULD:
+  - document_similarity
+  - multi_format_support
+  COULD:
+  - layout_analysis
+  - table_extraction
+  WOULD:
+  - generative_doc_synthesis
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

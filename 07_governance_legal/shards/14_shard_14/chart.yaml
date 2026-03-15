@@ -1,0 +1,40 @@
+name: 14_shard_14
+layer: 07_governance_legal
+version: 0.1.0
+title: Risk Assessment
+capabilities:
+  MUST:
+  - risk_identification
+  - risk_scoring
+  - risk_mitigation
+  SHOULD:
+  - risk_registry
+  - risk_owner_assignment
+  COULD:
+  - risk_simulation
+  - scenario_analysis
+  WOULD:
+  - ai_risk_prediction
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - legal_counsel_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

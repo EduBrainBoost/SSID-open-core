@@ -1,0 +1,5 @@
+interface_id: 19_adapters.01_identitaet_personen.primary
+root_id: 19_adapters
+shard_id: 01_identitaet_personen
+kind: bootstrap_contract
+status: active

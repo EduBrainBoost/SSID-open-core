@@ -1,0 +1,123 @@
+# FATF Travel Rule — Global Compliance Policy
+# SSID-open-core | 23_compliance/global/fatf/travel_rule/
+# Classification: Compliance | Level-3 Specification
+# Generated: 2026-03-15
+
+policy:
+  id: "GLOBAL-FATF-TR-001"
+  name: "FATF Travel Rule"
+  version: "1.0.0"
+  status: "active"
+  standard: "FATF Recommendation 16 (Revised October 2021)"
+  issuing_body: "Financial Action Task Force (FATF)"
+  reference_url: "https://www.fatf-gafi.org/en/recommendations/fatfrecommendations.html"
+  scope: "Cross-border virtual asset transfers between Virtual Asset Service Providers (VASPs)"
+  effective_date: "2023-01-01"
+  last_reviewed: "2026-03-15"
+
+applicability:
+  entities:
+    - "Virtual Asset Service Providers (VASPs)"
+    - "Financial Institutions handling virtual assets"
+    - "Exchanges, custodians, wallet providers"
+  transaction_types:
+    - "Cross-border VA transfers"
+    - "VASP-to-VASP transfers"
+  exclusions:
+    - "Peer-to-peer transfers (non-custodial, no VASP involvement)"
+    - "Transfers below threshold (see thresholds)"
+
+thresholds:
+  primary_usd: 1000
+  primary_eur: 1000
+  primary_currency_note: "USD or EUR equivalent at time of transfer"
+  aggregation_rule: "Linked transactions aggregated over rolling 24h window"
+  below_threshold: "Basic beneficiary info still required; originator required above threshold"
+
+requirements:
+  originator_info:
+    required_above_threshold:
+      - field: "name_or_identifier"
+        format: "sha256_hash"
+        note: "Natural or legal person name — stored as hash only, never plaintext"
+      - field: "account_number_hash"
+        format: "sha256_hash"
+        note: "Originating account number or wallet address hash"
+      - field: "institution_identifier"
+        format: "BIC_or_LEI"
+        note: "VASP BIC, LEI, or equivalent institutional identifier"
+      - field: "national_identity_number_hash"
+        format: "sha256_hash"
+        conditional: "required where available in jurisdiction"
+      - field: "address_hash"
+        format: "sha256_hash"
+        conditional: "required where available"
+    required_below_threshold:
+      - field: "account_number_hash"
+        format: "sha256_hash"
+
+  beneficiary_info:
+    required_above_threshold:
+      - field: "name_or_identifier"
+        format: "sha256_hash"
+        note: "Beneficiary name — stored as hash only"
+      - field: "account_number_hash"
+        format: "sha256_hash"
+    required_below_threshold:
+      - field: "account_number_hash"
+        format: "sha256_hash"
+
+  transmission:
+    method: "Secure inter-VASP messaging (TRISA, OpenVASP, or equivalent)"
+    timing: "Before or simultaneous with transfer execution"
+    retention: "5 years minimum (jurisdiction-specific maximums apply)"
+    format: "Encrypted, authenticated channel"
+
+ssid_compliance:
+  approach: "hash_only_non_custodial"
+  data_handling: "hash_only"
+  storage: "non_custodial"
+  pii: "never_stored"
+  evidence_chain: "sha256_chain"
+  shard_strategy: "shard_per_transaction_hash"
+  zero_knowledge: "ZK-proof compatible — reveal compliance status without revealing data"
+
+  capability_mapping:
+    originator_name: "sha256(name_normalized) — SSID identity layer"
+    account_number: "sha256(account_ref) — SSID credential shard"
+    institution_id: "BIC/LEI passed plaintext — not PII"
+    beneficiary_name: "sha256(name_normalized) — SSID identity layer"
+    evidence_log: "23_compliance/evidence/compliance/ — hash manifest only"
+
+  non_compliance_controls:
+    - "Transaction blocked if Travel Rule data absent above threshold"
+    - "Compliance check logged to 17_observability/logs/compliance/"
+    - "Exception requires explicit exception entry in 23_compliance/exceptions/"
+
+evidence_requirements:
+  format: "SHA-256 hash manifest"
+  storage_path: "23_compliance/evidence/compliance/"
+  retention_years: 5
+  chain_of_custody: "Immutable append-only log"
+  audit_trail: "Complete hash chain from origination to settlement"
+
+interoperability:
+  protocols:
+    - name: "TRISA"
+      ref: "Travel Rule Information Sharing Architecture"
+    - name: "OpenVASP"
+      ref: "Open standard by Bitcoin Suisse"
+    - name: "TRUST"
+      ref: "Travel Rule Universal Solution Technology (US-centric)"
+  ssid_adapter: "23_compliance/src/ — VASP protocol adapters"
+
+governance:
+  owner: "23_compliance"
+  review_cycle: "annual"
+  exceptions_path: "23_compliance/exceptions/"
+  related_policies:
+    - "jurisdictions/eu/micar_policy.yaml"
+    - "jurisdictions/eu/gdpr_policy.yaml"
+    - "jurisdictions/us/fincen_policy.yaml"
+    - "jurisdictions/apac/mas_policy.yaml"
+    - "jurisdictions/apac/jfsa_policy.yaml"

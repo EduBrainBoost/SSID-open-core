@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "proof_hash",
+    "issuer_code"
+  ],
+  "properties": {
+    "proof_hash": {
+      "type": "string",
+      "minLength": 32
+    },
+    "issuer_code": {
+      "type": "string",
+      "minLength": 2
+    }
+  },
+  "additionalProperties": false
+}

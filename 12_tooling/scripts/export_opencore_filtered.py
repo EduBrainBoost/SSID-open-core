@@ -10,14 +10,15 @@ import re
 import subprocess
 import sys
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 import yaml
 
 EXIT_HARD_FAIL = 24
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
-TOOL_VERSION = "1.1.0"
+TOOL_VERSION = "2.0.0"
+MANIFEST_SCHEMA_VERSION = "2.0.0"
 
 
 def utc_now() -> str:
@@ -121,6 +122,24 @@ def is_denied(path_posix: str, deny_globs: list[str]) -> bool:
     return any(fnmatch.fnmatch(path_posix, pattern) for pattern in deny_globs)
 
 
+def is_allowed_prefix(path_posix: str, allow_prefixes: list[str]) -> bool:
+    """Check if path starts with one of the allowed prefixes."""
+    if not allow_prefixes:
+        return True  # no allowlist = allow all (backward compat)
+    return any(path_posix.startswith(prefix) or path_posix == prefix.rstrip("/") for prefix in allow_prefixes)
+
+
+def is_allowed_extension(path_posix: str, allow_extensions: list[str]) -> bool:
+    """Check if file extension is in the allowed list."""
+    if not allow_extensions:
+        return True  # no extension allowlist = allow all (backward compat)
+    suffix = PurePosixPath(path_posix).suffix.lower()
+    # files without extension (e.g. Makefile, LICENSE) are allowed
+    if not suffix:
+        return True
+    return suffix in allow_extensions
+
+
 def compile_secret_patterns(raw_patterns: list[str]) -> list[re.Pattern[str]]:
     return [re.compile(pattern) for pattern in raw_patterns]
 
@@ -141,37 +160,74 @@ def export_filtered_archive(
     output_dir: Path,
     commit_ref: str,
     policy_path: Path,
+    *,
+    target_ref: str = "",
 ) -> dict[str, Any]:
     policy = load_policy(policy_path)
     deny_globs = policy.get("deny_globs", []) or []
+    allow_prefixes = policy.get("allow_prefixes", []) or []
+    allow_extensions = policy.get("allow_extensions", []) or []
+    max_file_size = policy.get("max_file_size_bytes", 0) or 0
     secret_patterns = compile_secret_patterns(policy.get("secret_scan_regex", []) or [])
+    policy_version = policy.get("schema_version", "unknown")
 
     source_commit = str(git(repo_root, ["rev-parse", commit_ref]).strip())
     short_commit = source_commit[:7]
     zip_name = f"SSID_OPENCORERELEASE_{short_commit}.zip"
     zip_path = output_dir / zip_name
     sha_path = output_dir / f"{zip_name}.SHA256.txt"
-    evidence_path = output_dir / f"{zip_name}.evidence.json"
+    manifest_path = output_dir / f"{zip_name}.manifest.json"
 
     tracked_files_raw = str(git(repo_root, ["ls-tree", "-r", "--name-only", source_commit]))
     tracked_files = [p.strip() for p in tracked_files_raw.splitlines() if p.strip()]
 
     included: list[str] = []
-    excluded: list[str] = []
+    excluded_entries: list[dict[str, str]] = []
     secret_hits: list[dict[str, str]] = []
     file_bytes: dict[str, bytes] = {}
+    file_hashes: dict[str, str] = {}
+    file_sizes: dict[str, int] = {}
+    file_provenance: dict[str, dict[str, Any]] = {}
 
     policy_rel_posix = policy_path.resolve().relative_to(repo_root).as_posix()
 
     for rel_path in tracked_files:
         rel_posix = rel_path.replace("\\", "/")
-        if is_denied(rel_posix, deny_globs):
-            excluded.append(rel_posix)
+
+        # --- Gate 1: allow_prefixes ---
+        if not is_allowed_prefix(rel_posix, allow_prefixes):
+            excluded_entries.append({"path": rel_posix, "reason": "not_in_allow_prefixes"})
             continue
+
+        # --- Gate 2: deny_globs ---
+        if is_denied(rel_posix, deny_globs):
+            excluded_entries.append({"path": rel_posix, "reason": "deny_glob_match"})
+            continue
+
+        # --- Gate 3: allow_extensions ---
+        if not is_allowed_extension(rel_posix, allow_extensions):
+            excluded_entries.append({"path": rel_posix, "reason": "extension_not_allowed"})
+            continue
+
         blob = git(repo_root, ["show", f"{source_commit}:{rel_posix}"], text=False)
         blob_bytes = blob if isinstance(blob, bytes) else blob.encode("utf-8")
+
+        # --- Gate 4: max file size ---
+        if max_file_size > 0 and len(blob_bytes) > max_file_size:
+            excluded_entries.append({"path": rel_posix, "reason": "oversized"})
+            continue
+
         file_bytes[rel_posix] = blob_bytes
+        file_hashes[rel_posix] = sha256_bytes(blob_bytes)
+        file_sizes[rel_posix] = len(blob_bytes)
+        file_provenance[rel_posix] = {
+            "status": "unchanged",
+            "public_safe": True,
+            "sanitization_rule": None,
+            "policy_ref": policy_path.name,
+        }
         included.append(rel_posix)
+
         if rel_posix != policy_rel_posix:
             secret_hits.extend(secret_hits_for_content(rel_posix, blob_bytes, secret_patterns))
 
@@ -189,6 +245,7 @@ def export_filtered_archive(
             status="SECRET_SCAN_FAIL",
         )
         payload = {
+            "schema_version": MANIFEST_SCHEMA_VERSION,
             "generated_utc": fail_ts,
             "status": "SECRET_SCAN_FAIL",
             "source_commit": source_commit,
@@ -198,7 +255,7 @@ def export_filtered_archive(
             "hits": secret_hits,
         }
         output_dir.mkdir(parents=True, exist_ok=True)
-        evidence_path.write_text(
+        manifest_path.write_text(
             json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
@@ -227,40 +284,55 @@ def export_filtered_archive(
         status="PASS",
     )
 
-    evidence_payload = {
+    # --- Build standardized export manifest ---
+    manifest_payload: dict[str, Any] = {
+        "schema_version": MANIFEST_SCHEMA_VERSION,
         "generated_utc": pass_ts,
         "status": "PASS",
-        "source_repo": policy.get("source_repo"),
-        "target_repo": policy.get("target_repo"),
-        "mode": policy.get("mode"),
-        "source_commit": source_commit,
-        "source_commit_short": short_commit,
-        "policy_file": policy_path.as_posix(),
+        "source_repo": policy.get("source_repo", ""),
+        "source_ref": source_commit,
+        "target_repo": policy.get("target_repo", ""),
+        "target_ref": target_ref or "",
+        "policy_file": policy_rel_posix,
+        "policy_version": policy_version,
         "policy_sha256": policy_sha,
+        "tool_version": TOOL_VERSION,
         "deny_globs": deny_globs,
+        "allow_prefixes": allow_prefixes,
+        "allow_extensions": allow_extensions,
+        "max_file_size_bytes": max_file_size,
         "secret_scan_exempt_paths": [policy_rel_posix],
         "secret_scan_regex": [p.pattern for p in secret_patterns],
-        "tool_version": TOOL_VERSION,
         "worm_evidence_path": worm_evidence.relative_to(repo_root).as_posix(),
         "counts": {
             "tracked_files": len(tracked_files),
             "included_files": len(included),
-            "excluded_files": len(excluded),
+            "excluded_files": len(excluded_entries),
         },
-        "excluded_files": sorted(excluded),
+        "files": [
+            {
+                "path": rel_posix,
+                "sha256": file_hashes[rel_posix],
+                "size_bytes": file_sizes[rel_posix],
+                "sanitized": file_provenance[rel_posix]["status"] == "redacted",
+                "provenance": file_provenance[rel_posix],
+            }
+            for rel_posix in sorted(included)
+        ],
+        "excluded_files": sorted(excluded_entries, key=lambda e: e["path"]),
+        "bundle_sha256": zip_sha256,
         "zip_artifact": zip_name,
-        "zip_sha256": zip_sha256,
         "sha256_file": sha_path.name,
     }
-    evidence_path.write_text(
-        json.dumps(evidence_payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+    manifest_path.write_text(
+        json.dumps(manifest_payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
 
     return {
         "zip_path": zip_path,
         "sha_path": sha_path,
-        "evidence_path": evidence_path,
+        "manifest_path": manifest_path,
         "worm_evidence_path": worm_evidence,
         "zip_sha256": zip_sha256,
         "policy_sha256": policy_sha,
@@ -282,12 +354,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         default=".",
-        help="output directory for ZIP, SHA256, and evidence JSON",
+        help="output directory for ZIP, SHA256, and manifest JSON",
     )
     parser.add_argument(
         "--outdir",
         default=None,
         help="alias for --output-dir (runbook compatibility)",
+    )
+    parser.add_argument(
+        "--target-ref",
+        default="",
+        help="target repo ref/branch (metadata only)",
     )
     parser.add_argument(
         "--repo-root",
@@ -315,6 +392,7 @@ def main() -> int:
             output_dir=output_dir,
             commit_ref=args.commit,
             policy_path=policy_path,
+            target_ref=args.target_ref,
         )
     except (RuntimeError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
@@ -329,7 +407,7 @@ def main() -> int:
     print(f"SHA256={result['zip_sha256']}")
     print(f"POLICY_SHA256={result['policy_sha256']}")
     print(f"SHA_FILE={Path(result['sha_path']).as_posix()}")
-    print(f"EVIDENCE={Path(result['evidence_path']).as_posix()}")
+    print(f"MANIFEST={Path(result['manifest_path']).as_posix()}")
     print(f"WORM_EVIDENCE={Path(result['worm_evidence_path']).as_posix()}")
     return 0
 

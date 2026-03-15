@@ -1,0 +1,5 @@
+policy_id: 17_observability.14_shard_14.baseline_policy
+root_id: 17_observability
+shard_id: 14_shard_14
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

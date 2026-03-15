@@ -1,0 +1,16 @@
+name: 02_dokumente_nachweise
+layer: 09_meta_identity
+implementation:
+  language: python
+  entrypoint: implementations/main.py
+  dependencies:
+  - pydantic
+  - cryptography
+tests:
+  - tests/unit
+  - tests/integration
+contracts:
+  - contracts/openapi.yaml
+conformance:
+  chart_ref: chart.yaml
+  semver: "0.1.0"

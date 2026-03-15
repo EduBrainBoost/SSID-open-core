@@ -1,0 +1,39 @@
+name: 04_shard_04
+layer: 03_core
+version: 0.1.0
+title: Key Management Service
+capabilities:
+  MUST:
+  - key_generation
+  - key_rotation
+  - key_revocation
+  SHOULD:
+  - hd_key_derivation
+  - multi_sig_support
+  COULD:
+  - hardware_security_module
+  - threshold_signatures
+  WOULD:
+  - post_quantum_keys
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

@@ -1,0 +1,34 @@
+module_id: 06_data_pipeline
+name: Data Pipeline
+version: 4.1.0
+status: ROOT-24-LOCK
+classification: Data Pipeline
+purpose: data_pipeline
+structure:
+  must_dirs:
+  - docs
+  - src
+  - tests
+  - config
+  - shards
+  must_files:
+  - module.yaml
+  - README.md
+  forbidden_paths:
+  - compliance_policies
+  - audit_storage
+  - governance_rules
+interfaces:
+  outputs:
+  - ref: 17_observability/logs/data_pipeline
+    type: log_sink
+  evidence:
+  - ref: 23_compliance/evidence/data_pipeline
+    type: evidence_target
+shard_count: 16
+evidence_strategy: hash_manifest_only
+governance_rules:
+- SOT_AGENT_021
+- SOT_AGENT_022
+- SOT_AGENT_023
+final_authority: 03_core

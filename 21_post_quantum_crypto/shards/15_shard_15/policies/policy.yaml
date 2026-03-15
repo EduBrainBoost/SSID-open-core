@@ -1,0 +1,5 @@
+policy_id: 21_post_quantum_crypto.15_shard_15.baseline_policy
+root_id: 21_post_quantum_crypto
+shard_id: 15_shard_15
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

@@ -1,0 +1,39 @@
+name: 01_identitaet_personen
+layer: 10_interoperability
+version: 0.1.0
+title: Person Data Interop
+capabilities:
+  MUST:
+  - person_data_mapping
+  - protocol_translation
+  - format_conversion
+  SHOULD:
+  - cross_system_sync
+  - conflict_detection
+  COULD:
+  - bi_directional_sync
+  - real_time_interop
+  WOULD:
+  - ai_interop_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

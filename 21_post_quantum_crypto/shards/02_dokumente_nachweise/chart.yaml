@@ -1,0 +1,40 @@
+name: 02_dokumente_nachweise
+layer: 21_post_quantum_crypto
+version: 0.1.0
+title: PQ Document Cryptography
+capabilities:
+  MUST:
+  - pq_document_signing
+  - pq_verification
+  - pq_seal
+  SHOULD:
+  - hybrid_document_signatures
+  - migration_support
+  COULD:
+  - pq_timestamping
+  - pq_notarization
+  WOULD:
+  - pq_zero_knowledge_docs
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - cryptography_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

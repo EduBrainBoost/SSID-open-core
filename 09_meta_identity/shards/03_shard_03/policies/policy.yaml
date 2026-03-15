@@ -1,0 +1,5 @@
+policy_id: 09_meta_identity.03_shard_03.baseline_policy
+root_id: 09_meta_identity
+shard_id: 03_shard_03
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

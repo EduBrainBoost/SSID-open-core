@@ -1,0 +1,39 @@
+name: 06_shard_06
+layer: 10_interoperability
+version: 0.1.0
+title: API Gateway Adapter
+capabilities:
+  MUST:
+  - rest_to_graphql
+  - grpc_bridge
+  - websocket_bridge
+  SHOULD:
+  - rate_limiting
+  - auth_propagation
+  COULD:
+  - api_versioning
+  - schema_stitching
+  WOULD:
+  - ai_api_routing
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

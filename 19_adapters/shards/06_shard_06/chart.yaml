@@ -1,0 +1,39 @@
+name: 06_shard_06
+layer: 19_adapters
+version: 0.1.0
+title: Payment Adapter
+capabilities:
+  MUST:
+  - stripe_adapter
+  - paypal_adapter
+  - crypto_payment_adapter
+  SHOULD:
+  - invoice_generation
+  - refund_handling
+  COULD:
+  - subscription_adapter
+  - micropayment_adapter
+  WOULD:
+  - ai_payment_routing
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

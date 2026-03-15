@@ -1,0 +1,39 @@
+name: 05_shard_05
+layer: 01_ai_layer
+version: 0.1.0
+title: Inference Gateway
+capabilities:
+  MUST:
+  - request_routing
+  - load_balancing
+  - rate_limiting
+  SHOULD:
+  - response_caching
+  - timeout_handling
+  COULD:
+  - streaming_inference
+  - batch_processing
+  WOULD:
+  - dynamic_scaling
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

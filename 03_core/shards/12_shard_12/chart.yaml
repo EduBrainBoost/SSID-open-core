@@ -1,0 +1,39 @@
+name: 12_shard_12
+layer: 03_core
+version: 0.1.0
+title: State Manager
+capabilities:
+  MUST:
+  - state_storage
+  - state_transitions
+  - consistency_enforcement
+  SHOULD:
+  - optimistic_locking
+  - conflict_resolution
+  COULD:
+  - distributed_state
+  - snapshot_restore
+  WOULD:
+  - state_machine_dsl
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

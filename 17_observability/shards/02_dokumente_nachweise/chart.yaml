@@ -1,0 +1,39 @@
+name: 02_dokumente_nachweise
+layer: 17_observability
+version: 0.1.0
+title: Document Service Observability
+capabilities:
+  MUST:
+  - document_operation_metrics
+  - issuance_latency
+  - revocation_metrics
+  SHOULD:
+  - evidence_chain_monitoring
+  - audit_health
+  COULD:
+  - document_flow_tracing
+  - integrity_monitoring
+  WOULD:
+  - ai_document_health
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

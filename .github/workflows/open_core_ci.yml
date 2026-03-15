@@ -1,0 +1,180 @@
+name: Open Core CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: "Lint: ruff"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Ruff check
+        run: ruff check .
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+  validate:
+    runs-on: ubuntu-latest
+    name: "Validate: module.yaml"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Validate module.yaml files
+        run: |
+          python -c "
+          import yaml, sys, glob
+
+          REQUIRED_KEYS = ['module_id', 'name', 'version', 'status']
+          errors = []
+
+          files = glob.glob('*/module.yaml')
+          if not files:
+              print('WARN: No module.yaml files found')
+              sys.exit(0)
+
+          for path in sorted(files):
+              try:
+                  with open(path) as f:
+                      data = yaml.safe_load(f)
+                  if not isinstance(data, dict):
+                      errors.append(f'{path}: not a valid YAML mapping')
+                      continue
+                  for key in REQUIRED_KEYS:
+                      if key not in data:
+                          errors.append(f'{path}: missing required key \"{key}\"')
+                  print(f'PASS: {path} (module_id={data.get(\"module_id\", \"?\")})')
+              except yaml.YAMLError as e:
+                  errors.append(f'{path}: YAML parse error: {e}')
+
+          if errors:
+              print()
+              for e in errors:
+                  print(f'FAIL: {e}', file=sys.stderr)
+              sys.exit(1)
+
+          print(f'\nAll {len(files)} module.yaml files valid.')
+          "
+
+  export-verify:
+    runs-on: ubuntu-latest
+    name: "Export: policy verification"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Verify export policy is valid YAML
+        run: |
+          python -c "
+          import yaml, sys
+          with open('16_codex/opencore_export_policy.yaml') as f:
+              policy = yaml.safe_load(f)
+          required = ['schema_version', 'source_repo', 'target_repo', 'mode',
+                      'allow_prefixes', 'allow_extensions', 'deny_globs',
+                      'max_file_size_bytes', 'secret_scan_regex',
+                      'export_manifest_schema']
+          missing = [k for k in required if k not in policy]
+          if missing:
+              print(f'FAIL: policy missing keys: {missing}', file=sys.stderr)
+              sys.exit(1)
+          print(f'PASS: export policy valid (version {policy[\"schema_version\"]})')
+          "
+
+      - name: Run export verifier self-test
+        run: |
+          cd 11_test_simulation/tests_export
+          python -m pytest test_verify_export.py -v --tb=short
+
+      - name: Verify no deny-glob files on disk
+        run: |
+          python -c "
+          import yaml, fnmatch, sys
+          from pathlib import Path
+
+          with open('16_codex/opencore_export_policy.yaml') as f:
+              policy = yaml.safe_load(f)
+
+          deny_globs = policy.get('deny_globs', [])
+          violations = []
+
+          for p in Path('.').rglob('*'):
+              if not p.is_file() or '.git/' in str(p):
+                  continue
+              posix = p.as_posix()
+              for pattern in deny_globs:
+                  if fnmatch.fnmatch(posix, pattern):
+                      violations.append(f'{posix} matches {pattern}')
+                      break
+
+          if violations:
+              print('FAIL: deny-glob violations found in repo:')
+              for v in violations:
+                  print(f'  {v}', file=sys.stderr)
+              sys.exit(2)
+          print('PASS: no deny-glob violations in repo')
+          "
+
+  structure:
+    runs-on: ubuntu-latest
+    name: "Structure: module completeness"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check module directories have module.yaml and README.md
+        run: |
+          errors=0
+          # Find directories matching NN_name pattern (module roots)
+          for dir in [0-9][0-9]_*/; do
+            [ -d "$dir" ] || continue
+            module="${dir%/}"
+
+            if [ ! -f "$dir/module.yaml" ]; then
+              echo "FAIL: $module missing module.yaml"
+              errors=$((errors + 1))
+            else
+              echo "PASS: $module has module.yaml"
+            fi
+
+            if [ ! -f "$dir/README.md" ]; then
+              echo "FAIL: $module missing README.md"
+              errors=$((errors + 1))
+            else
+              echo "PASS: $module has README.md"
+            fi
+          done
+
+          if [ "$errors" -gt 0 ]; then
+            echo ""
+            echo "FAIL: $errors missing files detected"
+            exit 1
+          fi
+          echo ""
+          echo "All module directories complete."

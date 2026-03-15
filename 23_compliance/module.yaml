@@ -1,0 +1,40 @@
+# 23_compliance - Module Descriptor
+# SoT v4.1.0 | ROOT-24-LOCK | Classification: Compliance
+# Generated: 2026-03-09
+
+module_id: "23_compliance"
+name: "Compliance & Governance"
+version: "4.1.0"
+status: "ROOT-24-LOCK"
+classification: "Compliance"
+purpose: "regulatory_compliance"
+final_authority: "03_core"
+
+structure:
+  must_dirs:
+    - "docs"
+    - "src"
+    - "tests"
+    - "config"
+  must_files:
+    - "module.yaml"
+    - "README.md"
+  forbidden_paths:
+    - "compliance_policies"
+    - "audit_storage"
+    - "governance_rules"
+
+interfaces:
+  outputs:
+    - ref: "17_observability/logs/compliance"
+      type: "log_sink"
+  evidence:
+    - ref: "23_compliance/evidence/compliance"
+      type: "evidence_target"
+
+shard_count: 16
+evidence_strategy: "hash_manifest_only"
+governance_rules:
+  - "SOT_AGENT_021"
+  - "SOT_AGENT_022"
+  - "SOT_AGENT_023"

@@ -1,0 +1,5 @@
+policy_id: 14_zero_time_auth.10_shard_10.baseline_policy
+root_id: 14_zero_time_auth
+shard_id: 10_shard_10
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

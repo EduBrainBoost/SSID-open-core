@@ -1,0 +1,40 @@
+# 24_meta_orchestration - Module Descriptor
+# SoT v4.1.0 | ROOT-24-LOCK | Classification: Orchestration
+# Generated: 2026-03-09
+
+module_id: "24_meta_orchestration"
+name: "Meta Orchestration"
+version: "4.1.0"
+status: "ROOT-24-LOCK"
+classification: "Orchestration"
+purpose: "workflow_orchestration"
+final_authority: "03_core"
+
+structure:
+  must_dirs:
+    - "docs"
+    - "src"
+    - "tests"
+    - "config"
+  must_files:
+    - "module.yaml"
+    - "README.md"
+  forbidden_paths:
+    - "compliance_policies"
+    - "audit_storage"
+    - "governance_rules"
+
+interfaces:
+  outputs:
+    - ref: "17_observability/logs/meta_orchestration"
+      type: "log_sink"
+  evidence:
+    - ref: "23_compliance/evidence/meta_orchestration"
+      type: "evidence_target"
+
+shard_count: 16
+evidence_strategy: "hash_manifest_only"
+governance_rules:
+  - "SOT_AGENT_021"
+  - "SOT_AGENT_022"
+  - "SOT_AGENT_023"

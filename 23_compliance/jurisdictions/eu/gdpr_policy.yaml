@@ -1,0 +1,138 @@
+# GDPR — EU Jurisdiction Compliance Policy
+# SSID-open-core | 23_compliance/jurisdictions/eu/
+# Classification: Compliance | Level-3 Specification
+# Generated: 2026-03-15
+
+policy:
+  id: "EU-GDPR-001"
+  name: "General Data Protection Regulation (GDPR)"
+  version: "1.0.0"
+  status: "active"
+  regulatory_reference: "Regulation (EU) 2016/679 of 27 April 2016"
+  issuing_body: "European Parliament and Council of the EU"
+  reference_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32016R0679"
+  jurisdiction: "European Union + EEA"
+  scope: "Processing of personal data of EU/EEA data subjects by any entity worldwide"
+  effective_date: "2018-05-25"
+  last_reviewed: "2026-03-15"
+
+applicability:
+  entities:
+    - "Any entity processing personal data of EU/EEA residents"
+    - "Data controllers and data processors"
+    - "SSID as identity infrastructure provider"
+  data_types:
+    - "Personal data (Art. 4)"
+    - "Special categories of data (Art. 9) — biometrics, health, national ID"
+  territorial_scope:
+    - "Established in EU/EEA"
+    - "Offering goods/services to EU/EEA residents"
+    - "Monitoring behavior of EU/EEA residents"
+
+core_principles:
+  lawfulness_fairness_transparency: "Art. 5(1)(a) — legal basis required for all processing"
+  purpose_limitation: "Art. 5(1)(b) — data collected for specified, explicit, legitimate purposes"
+  data_minimization: "Art. 5(1)(c) — adequate, relevant, limited to what is necessary"
+  accuracy: "Art. 5(1)(d) — data must be accurate and kept up to date"
+  storage_limitation: "Art. 5(1)(e) — kept no longer than necessary"
+  integrity_confidentiality: "Art. 5(1)(f) — appropriate security measures"
+  accountability: "Art. 5(2) — controller must demonstrate compliance"
+
+legal_bases:
+  applicable:
+    - basis: "consent"
+      article: "Art. 6(1)(a)"
+      note: "Freely given, specific, informed, unambiguous"
+    - basis: "contract_performance"
+      article: "Art. 6(1)(b)"
+    - basis: "legal_obligation"
+      article: "Art. 6(1)(c)"
+      note: "AML/KYC obligations"
+    - basis: "legitimate_interests"
+      article: "Art. 6(1)(f)"
+      note: "Subject to balancing test"
+
+requirements:
+  data_subject_rights:
+    right_of_access: "Art. 15 — provide copy of personal data within 30 days"
+    right_to_rectification: "Art. 16 — correct inaccurate data"
+    right_to_erasure: "Art. 17 — right to be forgotten (subject to legal retention obligations)"
+    right_to_restriction: "Art. 18 — restrict processing"
+    data_portability: "Art. 20 — machine-readable export"
+    right_to_object: "Art. 21 — object to processing on legitimate interests basis"
+    automated_decisions: "Art. 22 — right not to be subject to solely automated decisions"
+
+  controller_obligations:
+    privacy_by_design: "Art. 25 — data protection by design and default"
+    records_of_processing: "Art. 30 — ROPA (Records of Processing Activities)"
+    dpia: "Art. 35 — DPIA required for high-risk processing (biometrics, systematic monitoring)"
+    dpo: "Art. 37-39 — DPO required for certain processing activities"
+    breach_notification:
+      supervisory_authority: "Art. 33 — within 72 hours"
+      data_subjects: "Art. 34 — without undue delay if high risk"
+
+  international_transfers:
+    mechanisms:
+      - "Adequacy decision (Art. 45)"
+      - "Standard Contractual Clauses — SCCs (Art. 46)"
+      - "Binding Corporate Rules — BCRs (Art. 47)"
+    ssid_approach: "Hash-only architecture eliminates personal data transfer risk"
+
+ssid_compliance:
+  approach: "privacy_by_design_hash_only"
+  data_handling: "hash_only"
+  storage: "non_custodial"
+  pii: "never_stored"
+  evidence_chain: "sha256_chain"
+
+  gdpr_alignment:
+    personal_data_stored: false
+    note: >
+      SSID stores only SHA-256 hashes of identity attributes. Hashes are
+      one-way transforms and do not constitute personal data under GDPR
+      recital 26 (reasonable means test) when combined with proper key
+      separation and salt management.
+    salt_policy: "Per-user cryptographic salt — stored separately from hashes"
+    re_identification_risk: "Mitigated by salt separation and key hierarchy"
+
+  data_subject_rights_implementation:
+    right_to_erasure:
+      method: "Salt deletion renders all hashes irrecoverable"
+      result: "Effectively equivalent to erasure without modifying hash records"
+    right_of_access:
+      method: "User controls own SSID shard — full self-service access"
+    data_portability:
+      method: "Export SSID credential shard in standard VC format (W3C)"
+
+  dpia_status:
+    required: true
+    reason: "Processing biometric-adjacent identity data at scale"
+    status: "DPIA completed — documented in 23_compliance/docs/"
+
+  legal_basis_applied:
+    primary: "contract_performance"
+    secondary: "legal_obligation"
+    legitimate_interests_applied: false
+
+  ropa_entry:
+    processing_activity: "Digital identity hash storage and credential verification"
+    purpose: "Identity verification for regulated service access"
+    retention: "Duration of service relationship + 5 years post-termination"
+    security_measures: "SHA-256 salted hashing, shard isolation, access controls"
+
+evidence_requirements:
+  format: "SHA-256 hash manifest"
+  storage_path: "23_compliance/evidence/compliance/"
+  retention_years: 5
+  regulatory_minimum_years: 5
+  breach_log_path: "23_compliance/evidence/compliance/breach_log/"
+  audit_trail: "Processing activity log — hash manifest only, no PII"
+
+governance:
+  owner: "23_compliance"
+  review_cycle: "annual"
+  supervisory_authority: "Lead supervisory authority per establishment"
+  related_policies:
+    - "jurisdictions/eu/eidas_policy.yaml"
+    - "jurisdictions/eu/micar_policy.yaml"
+    - "global/fatf/travel_rule/fatf_travel_rule.yaml"
