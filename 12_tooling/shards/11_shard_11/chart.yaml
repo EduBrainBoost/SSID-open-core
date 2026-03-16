@@ -1,0 +1,39 @@
+name: 11_shard_11
+layer: 12_tooling
+version: 0.1.0
+title: Test Runner CLI
+capabilities:
+  MUST:
+  - test_execution_command
+  - filter_options
+  - output_formats
+  SHOULD:
+  - watch_mode
+  - parallel_execution
+  COULD:
+  - test_discovery
+  - coverage_reports
+  WOULD:
+  - ai_test_selection
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

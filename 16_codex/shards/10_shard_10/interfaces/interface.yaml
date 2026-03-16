@@ -1,0 +1,5 @@
+interface_id: 16_codex.10_shard_10.primary
+root_id: 16_codex
+shard_id: 10_shard_10
+kind: bootstrap_contract
+status: active

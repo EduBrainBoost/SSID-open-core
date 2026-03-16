@@ -1,0 +1,6 @@
+schema_version: 1.0.0
+entries:
+- kind: fixture
+  path: fixtures/valid_identity.json
+- kind: fixture
+  path: fixtures/invalid_identity.json

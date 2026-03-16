@@ -1,0 +1,148 @@
+# MAS — Singapore Jurisdiction Compliance Policy
+# SSID-open-core | 23_compliance/jurisdictions/apac/
+# Classification: Compliance | Level-3 Specification
+# Generated: 2026-03-15
+
+policy:
+  id: "APAC-MAS-001"
+  name: "MAS Digital Payment Token & Digital Asset Framework (Singapore)"
+  version: "1.0.0"
+  status: "active"
+  regulatory_references:
+    - ref: "Payment Services Act 2019 (PSA) — No. 2 of 2019"
+      note: "Primary licensing framework for digital payment token services"
+    - ref: "Payment Services (Amendment) Act 2021"
+      note: "Extended PSA scope to DPT custody, transfer, cross-border services"
+    - ref: "MAS Notice PSN02 — AML/CFT for Digital Payment Token Services"
+      note: "AML/CFT obligations for DPT service providers"
+    - ref: "MAS Notice PSN01 — Prevention of Money Laundering"
+      note: "CDD and transaction monitoring requirements"
+    - ref: "MAS Technology Risk Management Guidelines (2021)"
+      note: "Cybersecurity and IT risk management"
+    - ref: "Personal Data Protection Act 2012 (PDPA)"
+      note: "Singapore data protection law"
+    - ref: "MAS Circular CMI 03/2022 — Digital Asset Risk Management"
+      note: "Risk management guidance for digital asset service providers"
+  issuing_body: "Monetary Authority of Singapore (MAS)"
+  reference_url: "https://www.mas.gov.sg/regulation/digital-assets"
+  jurisdiction: "Singapore"
+  scope: "Digital Payment Token (DPT) services, digital asset exchanges, custodians"
+  last_reviewed: "2026-03-15"
+
+applicability:
+  entities:
+    - "Digital Payment Token (DPT) service providers"
+    - "Major Payment Institutions (MPI) with DPT license"
+    - "Standard Payment Institutions (SPI) with DPT license"
+    - "Digital token exchanges and custodians"
+  license_types:
+    major_payment_institution:
+      threshold_monthly_sgd: 3000000
+      threshold_daily_sgd: 1000000
+    standard_payment_institution:
+      note: "Below MPI thresholds"
+    money_changing_licence:
+      note: "Foreign currency exchange only"
+
+requirements:
+  licensing:
+    dpt_activity_types:
+      - "Buying or selling DPTs"
+      - "Facilitating exchange of DPTs"
+      - "Transmitting DPTs"
+      - "Providing custodial services for DPTs"
+    application: "Apply to MAS with fit-and-proper assessment"
+
+  customer_due_diligence:
+    cdd_trigger: "All DPT transactions above SGD 1,500 (individual) or upon establishing relationship"
+    fields_required:
+      - field: "customer_name_hash"
+        format: "sha256_hash"
+        note: "Full name — hashed before SSID storage"
+      - field: "nric_fin_passport_hash"
+        format: "sha256_hash"
+        note: "Singapore NRIC, FIN, or passport number"
+      - field: "dob_hash"
+        format: "sha256_hash"
+      - field: "address_hash"
+        format: "sha256_hash"
+      - field: "nationality_code"
+        format: "ISO_3166_1_alpha2"
+        note: "Not PII — country code only"
+    enhanced_cdd:
+      trigger: "High-risk customers, PEPs, high-risk jurisdictions"
+      additional_fields:
+        - "Source of wealth attestation — boolean + evidence hash"
+        - "Business purpose hash"
+
+  travel_rule:
+    threshold_sgd: 1500
+    alignment: "FATF Recommendation 16 — see global/fatf/travel_rule/fatf_travel_rule.yaml"
+    fields:
+      originator:
+        - "name_hash: sha256_hash"
+        - "account_hash: sha256_hash"
+        - "institution_id: BIC or LEI"
+      beneficiary:
+        - "name_hash: sha256_hash"
+        - "account_hash: sha256_hash"
+
+  transaction_monitoring:
+    method: "Risk-based monitoring"
+    reporting:
+      str: "Suspicious Transaction Report to STRO (Suspicious Transaction Reporting Office)"
+      threshold: "No threshold — all suspicion-based"
+    ssid_approach: "Hash-pattern anomaly scoring — STR trigger without PII exposure"
+
+  technology_risk:
+    framework: "MAS TRM Guidelines 2021"
+    requirements:
+      - "Cyber hygiene practices"
+      - "Penetration testing annually"
+      - "Incident reporting to MAS within 1 hour for severe incidents"
+    ssid_controls:
+      - "Shard isolation limits incident blast radius"
+      - "Hash-only architecture: breach does not expose PII"
+
+  pdpa_alignment:
+    principle: "Purpose limitation + data minimization (PDPA Part III)"
+    ssid_approach: "Hash-only storage — no personal data retained in SSID"
+
+ssid_compliance:
+  approach: "hash_only_non_custodial"
+  data_handling: "hash_only"
+  storage: "non_custodial"
+  pii: "never_stored"
+  evidence_chain: "sha256_chain"
+
+  capability_mapping:
+    customer_name: "sha256(name_normalized) — SSID identity layer"
+    nric_fin_passport: "sha256(id_number) — SSID credential shard"
+    dob: "sha256(dob_iso8601)"
+    address: "sha256(address_normalized)"
+    str_trigger: "Hash-pattern anomaly — STRO report generation without PII"
+    travel_rule: "Aligned to FATF TR policy — hash-only transmission data"
+
+  pdpa_compliance:
+    personal_data_stored: false
+    basis: >
+      SHA-256 hashes with per-user salts are not personal data under PDPA
+      Section 2 when reasonably assessed as non-re-identifiable. Salt
+      lifecycle managed separately from hash storage.
+
+evidence_requirements:
+  format: "SHA-256 hash manifest"
+  storage_path: "23_compliance/evidence/compliance/"
+  retention_years: 5
+  regulatory_minimum_years: 5
+  str_evidence_path: "23_compliance/evidence/compliance/str_triggers/"
+  audit_trail: "MAS-compliant immutable transaction log"
+
+governance:
+  owner: "23_compliance"
+  review_cycle: "annual"
+  related_policies:
+    - "jurisdictions/apac/jfsa_policy.yaml"
+    - "global/fatf/travel_rule/fatf_travel_rule.yaml"
+  regulatory_body: "Monetary Authority of Singapore (MAS)"
+  str_filing_body: "Suspicious Transaction Reporting Office (STRO)"

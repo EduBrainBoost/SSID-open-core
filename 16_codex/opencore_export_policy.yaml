@@ -1,0 +1,189 @@
+# OpenCore Export Policy — Public Export Contract
+# Version: 2.0.0
+# Last-updated: 2026-03-10
+# Purpose: defines allow/deny rules for SSID → SSID-open-core exports
+
+schema_version: "2.0.0"
+
+source_repo: "SSID"
+target_repo: "SSID-open-core"
+mode: "filtered"
+
+# ---------------------------------------------------------------------------
+# ALLOW: only files matching these prefixes are eligible for export.
+# Everything else is implicitly denied even before deny_globs apply.
+# ---------------------------------------------------------------------------
+allow_prefixes:
+  - "03_core/"
+  - "12_tooling/"
+  - "16_codex/"
+  - "23_compliance/"
+  - "24_meta_orchestration/"
+  - "docs/"
+  - "CONTRIBUTING.md"
+  - "LICENSE"
+  - "README.md"
+  - "pytest.ini"
+
+# ---------------------------------------------------------------------------
+# ALLOW: only these file extensions are permitted in export bundles.
+# Binary or unknown extensions are rejected.
+# ---------------------------------------------------------------------------
+allow_extensions:
+  - ".py"
+  - ".sh"
+  - ".ps1"
+  - ".yaml"
+  - ".yml"
+  - ".json"
+  - ".md"
+  - ".txt"
+  - ".toml"
+  - ".cfg"
+  - ".ini"
+  - ".rego"
+  - ".lock"
+
+# ---------------------------------------------------------------------------
+# MAX FILE SIZE: single file size cap in bytes (1 MiB)
+# Files exceeding this are excluded with reason "oversized".
+# ---------------------------------------------------------------------------
+max_file_size_bytes: 1048576
+
+# ---------------------------------------------------------------------------
+# DENY GLOBS: patterns that are always excluded, even if inside allow_prefixes
+# ---------------------------------------------------------------------------
+deny_globs:
+  # --- secrets / credentials ---
+  - "**/.env"
+  - "**/.env.*"
+  - "**/*.pem"
+  - "**/*.key"
+  - "**/*.p12"
+  - "**/*.jks"
+  - "**/*.pfx"
+  - "**/*.secrets"
+  - "**/*.secret"
+  - "**/*.token"
+  - "**/credentials.json"
+  - "**/service_account*.json"
+  - "**/*secret*key*"
+  - "**/.netrc"
+  - "**/.npmrc"
+  - "**/.pypirc"
+
+  # --- private evidence / audit internals ---
+  - "02_audit_logging/**"
+  - "23_compliance/evidence/**"
+  - "23_compliance/evidence/exports/**"
+  - "**/worm/**"
+  - "**/WORM/**"
+  - "**/quarantine/**"
+
+  # --- internal state / registry ---
+  - "registry/**"
+  - "**/registry/logs/**"
+  - "**/registry/locks/**"
+  - "**/registry/manifests/**"
+  - "**/registry/intake/**"
+  - "**/.ssid_sandbox/**"
+
+  # --- unsanitized docs / internal drafts ---
+  - "**/INTERNAL_*.md"
+  - "**/DRAFT_*.md"
+  - "**/PRIVATE_*.md"
+  - "**/*_internal.*"
+  - "**/*_private.*"
+
+  # --- agent runs / LLM outputs ---
+  - "**/agent_runs/**"
+  - "**/llm_outputs/**"
+  - "**/chat_ingest/**"
+
+  # --- binary / large media ---
+  - "**/*.exe"
+  - "**/*.dll"
+  - "**/*.so"
+  - "**/*.dylib"
+  - "**/*.bin"
+  - "**/*.dat"
+  - "**/*.db"
+  - "**/*.sqlite"
+  - "**/*.sqlite3"
+  - "**/*.zip"
+  - "**/*.tar"
+  - "**/*.tar.gz"
+  - "**/*.tgz"
+  - "**/*.rar"
+  - "**/*.7z"
+  - "**/*.jar"
+  - "**/*.war"
+  - "**/*.class"
+  - "**/*.pyc"
+  - "**/*.pyo"
+  - "**/__pycache__/**"
+
+  # --- IDE / OS artifacts ---
+  - "**/.idea/**"
+  - "**/.vscode/**"
+  - "**/.DS_Store"
+  - "**/Thumbs.db"
+  - "**/*.swp"
+  - "**/*.swo"
+
+  # --- git internals ---
+  - ".git/**"
+  - "**/.gitmodules"
+
+# ---------------------------------------------------------------------------
+# SECRET SCAN: regex patterns applied to file content before export
+# ---------------------------------------------------------------------------
+secret_scan_regex:
+  - "(?i)(api[_-]?key|apikey|secret[_-]?key|access[_-]?token)\\s*[:=]\\s*['\"][^'\"]{8,}['\"]"
+  - "(?i)(password|passwd|pwd)\\s*[:=]\\s*['\"][^'\"]{4,}['\"]"
+  - "-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----"
+  - "(?i)bearer\\s+[a-zA-Z0-9_\\-\\.]{20,}"
+  - "ghp_[a-zA-Z0-9]{36}"
+  - "sk-[a-zA-Z0-9]{32,}"
+  - "AKIA[0-9A-Z]{16}"
+
+# ---------------------------------------------------------------------------
+# EXPORT MANIFEST SCHEMA: required fields for every export manifest
+# ---------------------------------------------------------------------------
+export_manifest_schema:
+  required_fields:
+    - "schema_version"
+    - "generated_utc"
+    - "status"
+    - "source_repo"
+    - "source_ref"
+    - "target_repo"
+    - "target_ref"
+    - "policy_file"
+    - "policy_version"
+    - "policy_sha256"
+    - "tool_version"
+    - "files"
+    - "excluded_files"
+    - "bundle_sha256"
+  file_entry_fields:
+    - "path"
+    - "sha256"
+    - "size_bytes"
+  excluded_entry_fields:
+    - "path"
+    - "reason"
+  provenance_fields:
+    - "status"           # unchanged | redacted | generated | excluded
+    - "public_safe"      # true | false
+    - "sanitization_rule"  # rule ID or null if unchanged
+    - "policy_ref"       # policy file reference
+
+# ---------------------------------------------------------------------------
+# EXIT CODES: verification tool contract
+# ---------------------------------------------------------------------------
+verification_exit_codes:
+  0: "PASS — all checks passed"
+  1: "WARN — advisory warnings only"
+  2: "FAIL — policy breach detected"
+  3: "CORRUPT — invalid manifest, hash mismatch, or corrupted bundle"

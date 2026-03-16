@@ -1,0 +1,41 @@
+# 03_core - Module Descriptor
+# SoT v4.1.0 | ROOT-24-LOCK | Classification: Internal Authority
+# Generated: 2026-03-09
+
+module_id: "03_core"
+name: "Core Validators & Authority"
+version: "4.1.0"
+status: "ROOT-24-LOCK"
+classification: "Internal Authority"
+purpose: "final_authority"
+delegates_from: "01_ai_layer"
+
+structure:
+  must_dirs:
+    - "docs"
+    - "src"
+    - "tests"
+    - "config"
+    - "validators"
+  must_files:
+    - "module.yaml"
+    - "README.md"
+  forbidden_paths:
+    - "compliance_policies"
+    - "audit_storage"
+    - "governance_rules"
+
+interfaces:
+  outputs:
+    - ref: "17_observability/logs/core"
+      type: "log_sink"
+  evidence:
+    - ref: "23_compliance/evidence/core"
+      type: "evidence_target"
+
+shard_count: 16
+evidence_strategy: "hash_manifest_only"
+governance_rules:
+  - "SOT_AGENT_012"
+  - "SOT_AGENT_013"
+  - "SOT_AGENT_014"

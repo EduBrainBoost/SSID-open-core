@@ -1,0 +1,39 @@
+name: 02_dokumente_nachweise
+layer: 02_audit_logging
+version: 0.1.0
+title: Document Audit Events
+capabilities:
+  MUST:
+  - document_access_log
+  - change_tracking
+  - version_evidence
+  SHOULD:
+  - diff_recording
+  - approval_chain
+  COULD:
+  - multi_party_witness
+  - evidence_export
+  WOULD:
+  - legal_hold_automation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

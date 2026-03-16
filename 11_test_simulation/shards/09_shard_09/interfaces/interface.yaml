@@ -1,0 +1,5 @@
+interface_id: 11_test_simulation.09_shard_09.primary
+root_id: 11_test_simulation
+shard_id: 09_shard_09
+kind: bootstrap_contract
+status: active

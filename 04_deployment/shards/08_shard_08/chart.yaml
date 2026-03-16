@@ -1,0 +1,39 @@
+name: 08_shard_08
+layer: 04_deployment
+version: 0.1.0
+title: Infrastructure as Code
+capabilities:
+  MUST:
+  - terraform_modules
+  - state_management
+  - plan_apply
+  SHOULD:
+  - drift_detection
+  - cost_estimation
+  COULD:
+  - policy_as_code
+  - compliance_checks
+  WOULD:
+  - ai_infra_generation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

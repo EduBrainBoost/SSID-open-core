@@ -1,0 +1,39 @@
+name: 15_shard_15
+layer: 10_interoperability
+version: 0.1.0
+title: Registry Interop
+capabilities:
+  MUST:
+  - multi_registry_query
+  - registry_sync
+  - federated_lookup
+  SHOULD:
+  - registry_conflict_resolution
+  - consensus_protocol
+  COULD:
+  - decentralized_registry_federation
+  - registry_sharding
+  WOULD:
+  - ai_registry_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

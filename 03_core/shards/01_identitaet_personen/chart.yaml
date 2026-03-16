@@ -1,0 +1,39 @@
+name: 01_identitaet_personen
+layer: 03_core
+version: 0.1.0
+title: Person Identity Core
+capabilities:
+  MUST:
+  - did_creation
+  - key_management
+  - identity_registration
+  SHOULD:
+  - identity_recovery
+  - multi_device_binding
+  COULD:
+  - biometric_binding
+  - hardware_key_support
+  WOULD:
+  - quantum_resistant_identity
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

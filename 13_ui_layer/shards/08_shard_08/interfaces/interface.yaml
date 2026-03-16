@@ -1,0 +1,5 @@
+interface_id: 13_ui_layer.08_shard_08.primary
+root_id: 13_ui_layer
+shard_id: 08_shard_08
+kind: bootstrap_contract
+status: active

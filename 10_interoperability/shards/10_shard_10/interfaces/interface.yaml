@@ -1,0 +1,5 @@
+interface_id: 10_interoperability.10_shard_10.primary
+root_id: 10_interoperability
+shard_id: 10_shard_10
+kind: bootstrap_contract
+status: active

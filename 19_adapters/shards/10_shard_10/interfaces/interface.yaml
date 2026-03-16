@@ -1,0 +1,5 @@
+interface_id: 19_adapters.10_shard_10.primary
+root_id: 19_adapters
+shard_id: 10_shard_10
+kind: bootstrap_contract
+status: active

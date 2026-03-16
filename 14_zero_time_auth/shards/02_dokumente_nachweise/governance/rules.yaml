@@ -1,0 +1,8 @@
+root_id: 14_zero_time_auth
+shard_id: 02_dokumente_nachweise
+rule_refs:
+- ROOT-24-LOCK
+- SAFE-FIX
+- SOT_AGENT_021
+- SOT_AGENT_022
+- SOT_AGENT_023

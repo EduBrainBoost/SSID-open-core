@@ -1,0 +1,39 @@
+name: 13_shard_13
+layer: 13_ui_layer
+version: 0.1.0
+title: Accessibility Engine
+capabilities:
+  MUST:
+  - aria_management
+  - focus_management
+  - screen_reader_support
+  SHOULD:
+  - keyboard_shortcuts
+  - high_contrast_mode
+  COULD:
+  - voice_control
+  - motor_accessibility
+  WOULD:
+  - ai_accessibility_audit
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

@@ -1,0 +1,39 @@
+name: 12_shard_12
+layer: 05_documentation
+version: 0.1.0
+title: Integration Docs
+capabilities:
+  MUST:
+  - integration_guides
+  - webhook_documentation
+  - event_catalog
+  SHOULD:
+  - partner_docs
+  - certification_docs
+  COULD:
+  - sandboxed_integration_test
+  - postman_environment
+  WOULD:
+  - ai_integration_generator
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

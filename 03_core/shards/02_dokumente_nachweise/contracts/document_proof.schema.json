@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "document_hash",
+    "document_type"
+  ],
+  "properties": {
+    "document_hash": {
+      "type": "string",
+      "minLength": 32
+    },
+    "document_type": {
+      "type": "string",
+      "enum": [
+        "credential",
+        "attestation"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

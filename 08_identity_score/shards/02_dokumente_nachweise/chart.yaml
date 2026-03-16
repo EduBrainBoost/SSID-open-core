@@ -1,0 +1,39 @@
+name: 02_dokumente_nachweise
+layer: 08_identity_score
+version: 0.1.0
+title: Document Trust Score
+capabilities:
+  MUST:
+  - document_authenticity_score
+  - issuer_trust
+  - freshness_scoring
+  SHOULD:
+  - multi_factor_scoring
+  - cross_reference_validation
+  COULD:
+  - document_risk_score
+  - fraud_indicators
+  WOULD:
+  - ai_document_risk_model
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

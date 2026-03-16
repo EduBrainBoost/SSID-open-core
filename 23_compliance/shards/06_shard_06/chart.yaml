@@ -1,0 +1,40 @@
+name: 06_shard_06
+layer: 23_compliance
+version: 0.1.0
+title: Regulatory Reporting
+capabilities:
+  MUST:
+  - report_generation
+  - regulatory_filing
+  - submission_tracking
+  SHOULD:
+  - multi_jurisdiction_reports
+  - automated_submissions
+  COULD:
+  - report_versioning
+  - audit_trail
+  WOULD:
+  - ai_regulatory_reporting
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - legal_counsel_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

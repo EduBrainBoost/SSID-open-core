@@ -1,0 +1,5 @@
+interface_id: 11_test_simulation.01_identitaet_personen.primary
+root_id: 11_test_simulation
+shard_id: 01_identitaet_personen
+kind: bootstrap_contract
+status: active

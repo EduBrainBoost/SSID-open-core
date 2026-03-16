@@ -1,0 +1,39 @@
+name: 02_dokumente_nachweise
+layer: 10_interoperability
+version: 0.1.0
+title: Document Interop
+capabilities:
+  MUST:
+  - document_format_bridge
+  - standard_mapping
+  - cross_system_evidence
+  SHOULD:
+  - vc_w3c_bridge
+  - mdl_support
+  COULD:
+  - cross_chain_document
+  - multi_registry_bridge
+  WOULD:
+  - ai_document_bridge
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

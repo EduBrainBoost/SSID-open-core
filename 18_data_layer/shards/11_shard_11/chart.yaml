@@ -1,0 +1,40 @@
+name: 11_shard_11
+layer: 18_data_layer
+version: 0.1.0
+title: Access Control Layer
+capabilities:
+  MUST:
+  - row_level_security
+  - column_masking
+  - table_permissions
+  SHOULD:
+  - dynamic_access_control
+  - attribute_based_access
+  COULD:
+  - audit_logging
+  - access_analytics
+  WOULD:
+  - ai_access_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - data_architect_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

@@ -1,0 +1,39 @@
+name: 01_identitaet_personen
+layer: 11_test_simulation
+version: 0.1.0
+title: Person Identity Test Suite
+capabilities:
+  MUST:
+  - identity_creation_tests
+  - verification_tests
+  - lifecycle_tests
+  SHOULD:
+  - edge_case_coverage
+  - negative_tests
+  COULD:
+  - load_testing
+  - stress_testing
+  WOULD:
+  - ai_test_generation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

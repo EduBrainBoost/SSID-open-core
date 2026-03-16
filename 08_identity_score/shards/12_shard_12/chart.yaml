@@ -1,0 +1,39 @@
+name: 12_shard_12
+layer: 08_identity_score
+version: 0.1.0
+title: Score Benchmark
+capabilities:
+  MUST:
+  - peer_comparison
+  - percentile_ranking
+  - cohort_analysis
+  SHOULD:
+  - industry_benchmarks
+  - trend_analysis
+  COULD:
+  - custom_benchmark_groups
+  - score_distribution
+  WOULD:
+  - ai_benchmark_intelligence
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

@@ -1,0 +1,39 @@
+name: 02_dokumente_nachweise
+layer: 12_tooling
+version: 0.1.0
+title: Document CLI
+capabilities:
+  MUST:
+  - document_sign_command
+  - document_verify_command
+  - document_export_command
+  SHOULD:
+  - batch_processing
+  - template_support
+  COULD:
+  - interactive_wizard
+  - schema_validation
+  WOULD:
+  - ai_document_automation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding
