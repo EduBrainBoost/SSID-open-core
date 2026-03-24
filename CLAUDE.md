@@ -1,34 +1,38 @@
-# SSID-open-core — Repo-Regeln
+# SSID-open-core — Repository Rules
 
-## REPO-IDENTITAET
-- Repo-Name: SSID-open-core
-- Repo-Pfad: C:\Users\bibel\SSID-Workspace\Github\SSID-open-core
-- Primaerer Branch: main
-- Arbeits-Branches: develop, feature/*, fix/*
+## REPOSITORY IDENTITY
+- Repository name: SSID-open-core
+- Repository path: <repo-root>
+- Primary branch: main
+- Working branches: develop, feature/*, fix/*
 
-## WRITE-SCOPE
-Nur innerhalb dieses Repos schreiben.
-Dieses Repo enthaelt oeffentliche Bibliotheken, SDKs und APIs — kein interner SSID-Kerncode.
+## WRITE SCOPE
+Write only inside this repository.
+This repository contains public libraries, SDKs, shared types, and reusable APIs.
+Do not place private, internal, or operational project code here.
 
-## VERBOTENE PFADE
-- Andere Repos (SSID, SSID-EMS, SSID-orchestrator, SSID-docs)
-- .git/ direkt beschreiben
-- Globale .ssid-system/ Dateien ohne L0-Freigabe
-- Interne Implementierungsdetails des SSID-Hauptrepos hier ablegen
+## FORBIDDEN PATHS
+- Other repositories
+- Direct writes to .git/
+- Global machine-specific files
+- Private implementation details from non-public systems
+- Local workspace or user-specific files
 
-## INHALT UND ZWECK
-- Oeffentliche APIs und Typdefinitionen fuer alle SSID-Repos
-- Wiederverwendbare Bibliotheken und SDKs
-- Gemeinsame Utilities und Helper-Module
-- Kein interner/proprietaerer SSID-Kerncode
+## CONTENT AND PURPOSE
+- Public APIs and type definitions
+- Reusable libraries and SDKs
+- Shared utilities and helper modules
+- Public-safe documentation and validation logic
+- No private or proprietary core implementation
 
-## VERSIONIERUNG
-SemVer wird strikt eingehalten. Breaking Changes (Major) erfordern L0-Freigabe und
-koordiniertes Update in allen Konsumenten-Repos (SSID-EMS, SSID-orchestrator).
+## VERSIONING
+Semantic Versioning applies.
+Breaking changes require explicit approval and coordinated updates for downstream consumers.
 
 ## PORTS
-Dieses Repo hat keine direkten Ports. Bibliotheken und SDKs betreiben keine eigenen Server.
+This repository does not own or expose runtime service ports.
+Libraries and SDKs must not start servers by default.
 
-## SAFE-FIX
-SAFE-FIX ist permanent aktiv (NON-INTERACTIVE, SHA256-geloggt).
-Alle Schreibvorgaenge werden im Evidence-Verzeichnis protokolliert.
+## SAFE CHANGE RULE
+Safe, minimal, deterministic changes only.
+Do not introduce secrets, local paths, machine-specific settings, or private references.
