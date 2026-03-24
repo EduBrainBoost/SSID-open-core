@@ -36,3 +36,38 @@ __pycache__/
 .auto-claude-security.json
 .claude_settings.json
 
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Python
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+coverage/
+htmlcov/
+
+# Build
+dist/
+build/
+site/
+node_modules/
+
+# Package / local config
+.npmrc
+.pypirc
+.netrc
+
+# Databases
+*.sqlite
+*.sqlite3
+*.db
+
