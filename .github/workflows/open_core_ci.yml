@@ -20,8 +20,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install ruff
-        run: pip install ruff
+      - name: Install dependencies
+        run: pip install ".[dev]"
 
       - name: Ruff check
         run: ruff check .
@@ -40,7 +40,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install pyyaml
+        run: pip install .
 
       - name: Validate module.yaml files
         run: |
@@ -89,7 +89,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install pyyaml
+        run: pip install ".[test]"
 
       - name: Verify export policy is valid YAML
         run: |

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ssid-open-core"
+version = "0.1.0"
+description = "SSID Open-Core: public libraries, SDKs, and shared types"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+dependencies = [
+    "jsonschema>=4.23.0",
+    "pyyaml>=6.0.2",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.3.0",
+]
+dev = [
+    "ruff>=0.9.0",
+]
