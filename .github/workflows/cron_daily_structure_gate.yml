@@ -4,7 +4,7 @@ name: "Cron: Daily Structure Gate"
 
 on:
   schedule:
-    - cron: "0 2 * * *"
+    - cron: "0 2 * * 1"   # weekly Monday 02:00 UTC (was: daily, throttled D2 containment)
   workflow_dispatch:
 
 permissions:
