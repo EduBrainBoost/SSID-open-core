@@ -8,7 +8,7 @@
 
 ## Reporting a Vulnerability
 
-Please report suspected security issues privately to the maintainers through GitHub Security Advisories or a private maintainer contact channel if one is provided by the repository.
+Please report suspected security issues privately to the maintainers through GitHub Security Advisories or by emailing security@ssid.dev (placeholder — may change).
 
 Do not open public issues for unpatched vulnerabilities.
 

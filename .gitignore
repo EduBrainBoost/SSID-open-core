@@ -61,6 +61,7 @@ dist/
 build/
 site/
 node_modules/
+*.egg-info/
 
 # Package / local config
 .npmrc
