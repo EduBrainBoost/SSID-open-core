@@ -8,6 +8,7 @@ __pycache__/
 .ssid_sandbox/
 .env
 .env.*
+!.env.example
 *.pem
 *.key
 *.p12
