@@ -1,38 +1,43 @@
-# SSID-open-core — Repository Rules
+# CLAUDE.md — SSID-open-core Governance Rules
 
-## REPOSITORY IDENTITY
-- Repository name: SSID-open-core
-- Repository path: <repo-root>
+## Identity
+
+- **Repo**: SSID-open-core
+- **Purpose**: Public libraries, SDKs, shared types, and reusable APIs for the SSID ecosystem
+- **Scope**: Open-source components consumed by SSID-EMS, SSID-orchestrator, and external integrators
 - Primary branch: main
 - Working branches: develop, feature/*, fix/*
 
-## WRITE SCOPE
-Write only inside this repository.
-This repository contains public libraries, SDKs, shared types, and reusable APIs.
-Do not place private, internal, or operational project code here.
+## Write Scope
 
-## FORBIDDEN PATHS
-- Other repositories
-- Direct writes to .git/
-- Global machine-specific files
-- Private implementation details from non-public systems
-- Local workspace or user-specific files
-
-## CONTENT AND PURPOSE
+- Write only inside this repository
 - Public APIs and type definitions
 - Reusable libraries and SDKs
 - Shared utilities and helper modules
 - Public-safe documentation and validation logic
 - No private or proprietary core implementation
 
-## VERSIONING
-Semantic Versioning applies.
-Breaking changes require explicit approval and coordinated updates for downstream consumers.
+## Forbidden
 
-## PORTS
-This repository does not own or expose runtime service ports.
-Libraries and SDKs must not start servers by default.
+- Writing to other repositories
+- Direct writes to .git/
+- Global machine-specific files
+- Private implementation details from non-public systems
+- Local workspace or user-specific files
+- Storing secrets, local paths, or machine-specific settings
 
-## SAFE CHANGE RULE
-Safe, minimal, deterministic changes only.
-Do not introduce secrets, local paths, machine-specific settings, or private references.
+## Stack
+
+- TypeScript, Python
+- Semantic Versioning enforced
+- Breaking changes require explicit approval and coordinated updates for downstream consumers
+
+## Ports
+
+This repository does not own or expose runtime service ports. Libraries and SDKs must not start servers by default.
+
+## Rules
+
+- **SAFE-FIX**: Safe, minimal, deterministic changes only. SHA256-logged write enforcement
+- **NON-CUSTODIAL**: No PII, hash-only references
+- **LOCAL-FIRST**: build, test, verify, commit, push
