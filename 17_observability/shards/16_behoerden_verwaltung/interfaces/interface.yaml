@@ -1,0 +1,5 @@
+interface_id: 17_observability.16_behoerden_verwaltung.primary
+root_id: 17_observability
+shard_id: 16_behoerden_verwaltung
+kind: bootstrap_contract
+status: active

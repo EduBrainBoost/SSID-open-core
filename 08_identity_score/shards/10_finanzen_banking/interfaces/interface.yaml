@@ -1,0 +1,5 @@
+interface_id: 08_identity_score.10_finanzen_banking.primary
+root_id: 08_identity_score
+shard_id: 10_finanzen_banking
+kind: bootstrap_contract
+status: active

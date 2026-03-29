@@ -1,0 +1,39 @@
+name: 07_familie_soziales
+layer: 17_observability
+version: 0.1.0
+title: Dashboard Platform
+capabilities:
+  MUST:
+  - dashboard_creation
+  - widget_library
+  - sharing
+  SHOULD:
+  - real_time_dashboards
+  - historical_dashboards
+  COULD:
+  - custom_visualization
+  - embedded_dashboards
+  WOULD:
+  - ai_dashboard_generation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

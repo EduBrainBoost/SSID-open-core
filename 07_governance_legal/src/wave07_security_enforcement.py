@@ -14,15 +14,15 @@ from reference_security import (
 PRIORITY_SHARDS = [
     "01_identitaet_personen",
     "02_dokumente_nachweise",
-    "03_shard_03",
-    "04_shard_04",
-    "05_shard_05",
+    "03_zugang_berechtigungen",
+    "04_kommunikation_daten",
+    "05_gesundheit_medizin",
 ]
 
 SHARD_ALIASES = {
-    "03_verifiable_credentials": "03_shard_03",
-    "04_did_resolution": "04_shard_04",
-    "05_claims_binding": "05_shard_05",
+    "03_verifiable_credentials": "03_zugang_berechtigungen",
+    "04_did_resolution": "04_kommunikation_daten",
+    "05_claims_binding": "05_gesundheit_medizin",
 }
 
 

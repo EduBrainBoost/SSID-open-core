@@ -1,5 +1,0 @@
-policy_id: 12_tooling.13_shard_13.baseline_policy
-root_id: 12_tooling
-shard_id: 13_shard_13
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

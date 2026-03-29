@@ -1,0 +1,39 @@
+name: 13_unternehmen_gewerbe
+layer: 24_meta_orchestration
+version: 0.1.0
+title: Meta Registry
+capabilities:
+  MUST:
+  - service_registry
+  - capability_registry
+  - version_registry
+  SHOULD:
+  - registry_federation
+  - registry_sync
+  COULD:
+  - dynamic_registry
+  - registry_api
+  WOULD:
+  - ai_registry_intelligence
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

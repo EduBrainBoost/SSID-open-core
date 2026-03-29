@@ -1,0 +1,5 @@
+policy_id: 02_audit_logging.10_finanzen_banking.baseline_policy
+root_id: 02_audit_logging
+shard_id: 10_finanzen_banking
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

@@ -1,0 +1,39 @@
+name: 15_handel_transaktionen
+layer: 09_meta_identity
+version: 0.1.0
+title: Identity Policy Engine
+capabilities:
+  MUST:
+  - identity_policy_evaluation
+  - access_decision
+  - policy_caching
+  SHOULD:
+  - policy_simulation
+  - what_if_analysis
+  COULD:
+  - dynamic_policies
+  - context_aware_decisions
+  WOULD:
+  - ai_policy_engine
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

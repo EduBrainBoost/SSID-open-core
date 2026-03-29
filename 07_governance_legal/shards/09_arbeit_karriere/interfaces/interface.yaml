@@ -1,0 +1,5 @@
+interface_id: 07_governance_legal.09_arbeit_karriere.primary
+root_id: 07_governance_legal
+shard_id: 09_arbeit_karriere
+kind: bootstrap_contract
+status: active

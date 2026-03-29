@@ -1,0 +1,39 @@
+name: 12_immobilien_grundstuecke
+layer: 02_audit_logging
+version: 0.1.0
+title: Log Integrity Verifier
+capabilities:
+  MUST:
+  - hash_verification
+  - chain_validation
+  - tamper_detection
+  SHOULD:
+  - scheduled_integrity_checks
+  - alert_on_breach
+  COULD:
+  - third_party_verification
+  - notarization
+  WOULD:
+  - continuous_integrity_monitoring
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

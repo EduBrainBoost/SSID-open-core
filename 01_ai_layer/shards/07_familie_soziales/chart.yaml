@@ -1,0 +1,39 @@
+name: 07_familie_soziales
+layer: 01_ai_layer
+version: 0.1.0
+title: Classification Engine
+capabilities:
+  MUST:
+  - multi_class_classification
+  - label_management
+  - threshold_tuning
+  SHOULD:
+  - uncertainty_estimation
+  - class_imbalance_handling
+  COULD:
+  - hierarchical_classification
+  - active_learning
+  WOULD:
+  - online_classification
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

@@ -1,0 +1,5 @@
+interface_id: 06_data_pipeline.12_immobilien_grundstuecke.primary
+root_id: 06_data_pipeline
+shard_id: 12_immobilien_grundstuecke
+kind: bootstrap_contract
+status: active

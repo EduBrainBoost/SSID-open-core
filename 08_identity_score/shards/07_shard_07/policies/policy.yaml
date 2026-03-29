@@ -1,5 +1,0 @@
-policy_id: 08_identity_score.07_shard_07.baseline_policy
-root_id: 08_identity_score
-shard_id: 07_shard_07
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

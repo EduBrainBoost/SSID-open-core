@@ -1,0 +1,5 @@
+interface_id: 08_identity_score.07_familie_soziales.primary
+root_id: 08_identity_score
+shard_id: 07_familie_soziales
+kind: bootstrap_contract
+status: active

@@ -1,0 +1,40 @@
+name: 14_vertraege_vereinbarungen
+layer: 23_compliance
+version: 0.1.0
+title: Third Party Risk
+capabilities:
+  MUST:
+  - vendor_assessment
+  - supply_chain_compliance
+  - fourth_party_risk
+  SHOULD:
+  - continuous_monitoring
+  - contract_compliance
+  COULD:
+  - vendor_scorecards
+  - risk_remediation
+  WOULD:
+  - ai_vendor_risk_intelligence
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - legal_counsel_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

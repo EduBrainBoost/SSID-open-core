@@ -1,0 +1,5 @@
+interface_id: 18_data_layer.03_zugang_berechtigungen.primary
+root_id: 18_data_layer
+shard_id: 03_zugang_berechtigungen
+kind: bootstrap_contract
+status: active

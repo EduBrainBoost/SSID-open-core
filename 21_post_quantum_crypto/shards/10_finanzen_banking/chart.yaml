@@ -1,0 +1,40 @@
+name: 10_finanzen_banking
+layer: 21_post_quantum_crypto
+version: 0.1.0
+title: PQ Random Number Generation
+capabilities:
+  MUST:
+  - csprng
+  - quantum_random_source
+  - entropy_management
+  SHOULD:
+  - seed_management
+  - randomness_testing
+  COULD:
+  - hardware_rng_integration
+  - randomness_beacon
+  WOULD:
+  - quantum_entropy_source
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - cryptography_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

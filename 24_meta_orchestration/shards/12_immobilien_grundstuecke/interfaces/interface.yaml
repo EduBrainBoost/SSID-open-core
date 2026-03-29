@@ -1,0 +1,5 @@
+interface_id: 24_meta_orchestration.12_immobilien_grundstuecke.primary
+root_id: 24_meta_orchestration
+shard_id: 12_immobilien_grundstuecke
+kind: bootstrap_contract
+status: active

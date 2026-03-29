@@ -1,0 +1,39 @@
+name: 07_familie_soziales
+layer: 12_tooling
+version: 0.1.0
+title: Debugging Tools
+capabilities:
+  MUST:
+  - log_inspector
+  - trace_viewer
+  - state_inspector
+  SHOULD:
+  - breakpoint_simulation
+  - replay_debugger
+  COULD:
+  - distributed_debug
+  - time_travel_debug
+  WOULD:
+  - ai_root_cause_analysis
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

@@ -1,0 +1,39 @@
+name: 09_arbeit_karriere
+layer: 19_adapters
+version: 0.1.0
+title: CRM Adapter
+capabilities:
+  MUST:
+  - salesforce_adapter
+  - hubspot_adapter
+  - dynamics_adapter
+  SHOULD:
+  - contact_sync
+  - opportunity_sync
+  COULD:
+  - real_time_crm_adapter
+  - bidirectional_sync
+  WOULD:
+  - ai_crm_intelligence
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

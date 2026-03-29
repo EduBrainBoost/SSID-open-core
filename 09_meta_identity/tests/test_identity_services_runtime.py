@@ -53,7 +53,7 @@ def test_root09_identity_services_supports_cross_root_orchestration_alias(tmp_pa
     )
 
     assert result["status"] == "accepted"
-    assert evidence.dependency_refs == ["03_core/03_shard_03"]
+    assert evidence.dependency_refs == ["03_core/03_zugang_berechtigungen"]
 
 
 def test_root09_identity_services_fails_closed_on_invalid_input(tmp_path: Path) -> None:
@@ -103,4 +103,4 @@ def test_root09_identity_services_supports_end_to_end_orchestration_flow(tmp_pat
     assert vc_result["status"] == "accepted"
     assert identity_evidence.dependency_refs == ["03_core/01_identitaet_personen"]
     assert document_evidence.dependency_refs == ["03_core/02_dokumente_nachweise"]
-    assert vc_evidence.dependency_refs == ["03_core/03_shard_03"]
+    assert vc_evidence.dependency_refs == ["03_core/03_zugang_berechtigungen"]

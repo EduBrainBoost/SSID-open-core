@@ -1,0 +1,16 @@
+name: 16_behoerden_verwaltung
+layer: 20_foundation
+implementation:
+  language: python
+  entrypoint: implementations/main.py
+  dependencies:
+  - fastapi
+  - pydantic
+tests:
+  - tests/unit
+  - tests/integration
+contracts:
+  - contracts/openapi.yaml
+conformance:
+  chart_ref: chart.yaml
+  semver: "0.1.0"

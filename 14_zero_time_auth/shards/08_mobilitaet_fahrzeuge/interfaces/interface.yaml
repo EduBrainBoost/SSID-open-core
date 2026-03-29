@@ -1,0 +1,5 @@
+interface_id: 14_zero_time_auth.08_mobilitaet_fahrzeuge.primary
+root_id: 14_zero_time_auth
+shard_id: 08_mobilitaet_fahrzeuge
+kind: bootstrap_contract
+status: active

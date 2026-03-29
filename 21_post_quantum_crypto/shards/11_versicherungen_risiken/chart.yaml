@@ -1,0 +1,40 @@
+name: 11_versicherungen_risiken
+layer: 21_post_quantum_crypto
+version: 0.1.0
+title: PQ Algorithm Library
+capabilities:
+  MUST:
+  - nist_pq_algorithms
+  - algorithm_parameters
+  - reference_implementations
+  SHOULD:
+  - performance_benchmarks
+  - security_proofs
+  COULD:
+  - algorithm_agility
+  - parameter_selection
+  WOULD:
+  - ai_algorithm_selection
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - cryptography_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

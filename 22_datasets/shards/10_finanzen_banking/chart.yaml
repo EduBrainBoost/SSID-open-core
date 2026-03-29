@@ -1,0 +1,39 @@
+name: 10_finanzen_banking
+layer: 22_datasets
+version: 0.1.0
+title: Dataset Version Control
+capabilities:
+  MUST:
+  - dataset_versioning
+  - lineage_tracking
+  - changelog_management
+  SHOULD:
+  - rollback_support
+  - branch_management
+  COULD:
+  - collaborative_versioning
+  - version_comparison
+  WOULD:
+  - ai_version_management
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

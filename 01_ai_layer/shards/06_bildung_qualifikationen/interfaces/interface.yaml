@@ -1,0 +1,5 @@
+interface_id: 01_ai_layer.06_bildung_qualifikationen.primary
+root_id: 01_ai_layer
+shard_id: 06_bildung_qualifikationen
+kind: bootstrap_contract
+status: active

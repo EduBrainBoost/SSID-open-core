@@ -1,0 +1,5 @@
+interface_id: 11_test_simulation.07_familie_soziales.primary
+root_id: 11_test_simulation
+shard_id: 07_familie_soziales
+kind: bootstrap_contract
+status: active

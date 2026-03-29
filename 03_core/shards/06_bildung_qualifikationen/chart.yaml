@@ -1,0 +1,39 @@
+name: 06_bildung_qualifikationen
+layer: 03_core
+version: 0.1.0
+title: Registry Core
+capabilities:
+  MUST:
+  - entity_registration
+  - lookup
+  - deregistration
+  SHOULD:
+  - conflict_resolution
+  - namespace_management
+  COULD:
+  - federated_registry
+  - registry_sync
+  WOULD:
+  - decentralized_registry
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

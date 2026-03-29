@@ -1,0 +1,5 @@
+policy_id: 15_infra.08_mobilitaet_fahrzeuge.baseline_policy
+root_id: 15_infra
+shard_id: 08_mobilitaet_fahrzeuge
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

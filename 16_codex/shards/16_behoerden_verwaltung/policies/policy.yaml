@@ -1,0 +1,5 @@
+policy_id: 16_codex.16_behoerden_verwaltung.baseline_policy
+root_id: 16_codex
+shard_id: 16_behoerden_verwaltung
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

@@ -1,0 +1,39 @@
+name: 10_finanzen_banking
+layer: 20_foundation
+version: 0.1.0
+title: Logging Foundation
+capabilities:
+  MUST:
+  - structured_log_format
+  - log_levels
+  - correlation_ids
+  SHOULD:
+  - context_propagation
+  - log_enrichment
+  COULD:
+  - distributed_logging
+  - log_sampling
+  WOULD:
+  - ai_log_intelligence
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

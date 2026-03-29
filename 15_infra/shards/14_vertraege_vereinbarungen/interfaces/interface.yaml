@@ -1,0 +1,5 @@
+interface_id: 15_infra.14_vertraege_vereinbarungen.primary
+root_id: 15_infra
+shard_id: 14_vertraege_vereinbarungen
+kind: bootstrap_contract
+status: active

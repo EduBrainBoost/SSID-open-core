@@ -1,0 +1,5 @@
+interface_id: 23_compliance.05_gesundheit_medizin.primary
+root_id: 23_compliance
+shard_id: 05_gesundheit_medizin
+kind: bootstrap_contract
+status: active

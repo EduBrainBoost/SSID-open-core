@@ -1,0 +1,5 @@
+interface_id: 17_observability.03_zugang_berechtigungen.primary
+root_id: 17_observability
+shard_id: 03_zugang_berechtigungen
+kind: bootstrap_contract
+status: active

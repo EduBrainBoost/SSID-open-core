@@ -1,0 +1,39 @@
+name: 08_mobilitaet_fahrzeuge
+layer: 12_tooling
+version: 0.1.0
+title: Automation Scripts
+capabilities:
+  MUST:
+  - deployment_scripts
+  - maintenance_scripts
+  - data_scripts
+  SHOULD:
+  - parameterized_scripts
+  - dry_run_mode
+  COULD:
+  - scheduled_automation
+  - event_driven_scripts
+  WOULD:
+  - ai_script_generation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

@@ -1,0 +1,40 @@
+name: 14_vertraege_vereinbarungen
+layer: 18_data_layer
+version: 0.1.0
+title: Graph Store
+capabilities:
+  MUST:
+  - graph_node_management
+  - edge_management
+  - graph_traversal
+  SHOULD:
+  - graph_algorithms
+  - shortest_path
+  COULD:
+  - distributed_graph
+  - graph_analytics
+  WOULD:
+  - ai_graph_intelligence
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - data_architect_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

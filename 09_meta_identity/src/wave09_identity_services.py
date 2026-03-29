@@ -12,23 +12,23 @@ from wave03_reference import Root03ReferenceWave
 PRIORITY_SHARDS = [
     "01_identitaet_personen",
     "02_dokumente_nachweise",
-    "03_shard_03",
-    "04_shard_04",
-    "05_shard_05",
+    "03_zugang_berechtigungen",
+    "04_kommunikation_daten",
+    "05_gesundheit_medizin",
 ]
 
 SHARD_ALIASES = {
-    "03_verifiable_credentials": "03_shard_03",
-    "04_did_resolution": "04_shard_04",
-    "05_claims_binding": "05_shard_05",
+    "03_verifiable_credentials": "03_zugang_berechtigungen",
+    "04_did_resolution": "04_kommunikation_daten",
+    "05_claims_binding": "05_gesundheit_medizin",
 }
 
 CORE_DEPENDENCIES = {
     "01_identitaet_personen": "03_core/01_identitaet_personen",
     "02_dokumente_nachweise": "03_core/02_dokumente_nachweise",
-    "03_shard_03": "03_core/03_shard_03",
-    "04_shard_04": "03_core/04_shard_04",
-    "05_shard_05": "03_core/05_shard_05",
+    "03_zugang_berechtigungen": "03_core/03_zugang_berechtigungen",
+    "04_kommunikation_daten": "03_core/04_kommunikation_daten",
+    "05_gesundheit_medizin": "03_core/05_gesundheit_medizin",
 }
 
 

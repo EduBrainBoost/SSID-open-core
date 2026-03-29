@@ -1,0 +1,39 @@
+name: 08_mobilitaet_fahrzeuge
+layer: 24_meta_orchestration
+version: 0.1.0
+title: Resource Manager
+capabilities:
+  MUST:
+  - resource_allocation
+  - capacity_management
+  - resource_scheduling
+  SHOULD:
+  - resource_monitoring
+  - quota_enforcement
+  COULD:
+  - resource_optimization
+  - resource_federation
+  WOULD:
+  - ai_resource_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

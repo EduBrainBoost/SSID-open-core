@@ -1,0 +1,40 @@
+name: 03_zugang_berechtigungen
+layer: 21_post_quantum_crypto
+version: 0.1.0
+title: Lattice Cryptography
+capabilities:
+  MUST:
+  - lwe_operations
+  - rlwe_operations
+  - ntru_support
+  SHOULD:
+  - lattice_key_generation
+  - lattice_encryption
+  COULD:
+  - lattice_signatures
+  - lattice_zkp
+  WOULD:
+  - lattice_based_zksnark
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - cryptography_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

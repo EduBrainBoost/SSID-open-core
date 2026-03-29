@@ -1,0 +1,39 @@
+name: 06_bildung_qualifikationen
+layer: 09_meta_identity
+version: 0.1.0
+title: Identity Lifecycle
+capabilities:
+  MUST:
+  - meta_identity_creation
+  - lifecycle_events
+  - archival
+  SHOULD:
+  - status_management
+  - delegation
+  COULD:
+  - custodian_transfer
+  - inheritance
+  WOULD:
+  - ai_lifecycle_prediction
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

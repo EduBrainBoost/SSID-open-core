@@ -1,0 +1,5 @@
+interface_id: 04_deployment.07_familie_soziales.primary
+root_id: 04_deployment
+shard_id: 07_familie_soziales
+kind: bootstrap_contract
+status: active

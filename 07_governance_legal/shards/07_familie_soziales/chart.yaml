@@ -1,0 +1,40 @@
+name: 07_familie_soziales
+layer: 07_governance_legal
+version: 0.1.0
+title: Jurisdiction Router
+capabilities:
+  MUST:
+  - jurisdiction_detection
+  - rule_mapping
+  - geo_routing
+  SHOULD:
+  - multi_jurisdiction_support
+  - conflict_resolution
+  COULD:
+  - real_time_regulatory_updates
+  - jurisdiction_graph
+  WOULD:
+  - ai_jurisdiction_advisor
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - legal_counsel_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

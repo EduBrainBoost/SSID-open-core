@@ -1,0 +1,5 @@
+interface_id: 23_compliance.04_kommunikation_daten.primary
+root_id: 23_compliance
+shard_id: 04_kommunikation_daten
+kind: bootstrap_contract
+status: active

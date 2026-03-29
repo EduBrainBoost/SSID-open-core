@@ -12,7 +12,7 @@ from shard_conformance_gate import _check_shard
 
 def test_conformance_gate_passes_for_bootstrapped_shard(tmp_path: Path) -> None:
     run_bootstrap(tmp_path)
-    result = _check_shard("01_ai_layer", tmp_path / "01_ai_layer" / "shards" / "03_shard_03")
+    result = _check_shard("01_ai_layer", tmp_path / "01_ai_layer" / "shards" / "03_zugang_berechtigungen")
     assert result["verdict"] == "PASS"
     assert result["checks"]["manifest_contract_consistent"] is True
     assert result["checks"]["documentation_present"] is True
@@ -20,19 +20,19 @@ def test_conformance_gate_passes_for_bootstrapped_shard(tmp_path: Path) -> None:
 
 def test_conformance_gate_fails_closed_on_missing_contract(tmp_path: Path) -> None:
     run_bootstrap(tmp_path)
-    target = tmp_path / "01_ai_layer" / "shards" / "03_shard_03" / "contracts" / "events.schema.json"
+    target = tmp_path / "01_ai_layer" / "shards" / "03_zugang_berechtigungen" / "contracts" / "events.schema.json"
     target.unlink()
-    result = _check_shard("01_ai_layer", tmp_path / "01_ai_layer" / "shards" / "03_shard_03")
+    result = _check_shard("01_ai_layer", tmp_path / "01_ai_layer" / "shards" / "03_zugang_berechtigungen")
     assert result["verdict"] == "ERROR"
     assert any("Missing required schemas" in violation for violation in result["violations"])
 
 
 def test_conformance_gate_fails_on_manifest_contract_mismatch(tmp_path: Path) -> None:
     run_bootstrap(tmp_path)
-    manifest = tmp_path / "01_ai_layer" / "shards" / "03_shard_03" / "manifest.yaml"
+    manifest = tmp_path / "01_ai_layer" / "shards" / "03_zugang_berechtigungen" / "manifest.yaml"
     content = manifest.read_text(encoding="utf-8").replace("events.schema.json", "wrong.schema.json")
     manifest.write_text(content, encoding="utf-8")
-    result = _check_shard("01_ai_layer", tmp_path / "01_ai_layer" / "shards" / "03_shard_03")
+    result = _check_shard("01_ai_layer", tmp_path / "01_ai_layer" / "shards" / "03_zugang_berechtigungen")
     assert result["verdict"] == "FAIL"
     assert any("manifest/contracts mismatch" in violation for violation in result["violations"])
 

@@ -1,0 +1,39 @@
+name: 04_kommunikation_daten
+layer: 10_interoperability
+version: 0.1.0
+title: Standards Library
+capabilities:
+  MUST:
+  - w3c_vc_support
+  - openid4vp
+  - iso_18013_support
+  SHOULD:
+  - eidas_bridge
+  - fido2_support
+  COULD:
+  - oidc4ssi
+  - presentation_exchange
+  WOULD:
+  - emerging_standards_support
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

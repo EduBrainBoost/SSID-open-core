@@ -1,0 +1,5 @@
+interface_id: 12_tooling.16_behoerden_verwaltung.primary
+root_id: 12_tooling
+shard_id: 16_behoerden_verwaltung
+kind: bootstrap_contract
+status: active

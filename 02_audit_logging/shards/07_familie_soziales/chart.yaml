@@ -1,0 +1,39 @@
+name: 07_familie_soziales
+layer: 02_audit_logging
+version: 0.1.0
+title: Compliance Reporter
+capabilities:
+  MUST:
+  - report_generation
+  - jurisdiction_mapping
+  - evidence_bundling
+  SHOULD:
+  - pdf_export
+  - signed_reports
+  COULD:
+  - multi_jurisdiction
+  - template_library
+  WOULD:
+  - automated_compliance_submission
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

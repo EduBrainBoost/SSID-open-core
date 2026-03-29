@@ -1,0 +1,5 @@
+interface_id: 09_meta_identity.12_immobilien_grundstuecke.primary
+root_id: 09_meta_identity
+shard_id: 12_immobilien_grundstuecke
+kind: bootstrap_contract
+status: active

@@ -1,0 +1,39 @@
+name: 14_vertraege_vereinbarungen
+layer: 13_ui_layer
+version: 0.1.0
+title: Internationalization
+capabilities:
+  MUST:
+  - locale_management
+  - rtl_support
+  - number_formatting
+  SHOULD:
+  - date_formatting
+  - currency_display
+  COULD:
+  - dynamic_locale_switching
+  - locale_detection
+  WOULD:
+  - ai_localization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

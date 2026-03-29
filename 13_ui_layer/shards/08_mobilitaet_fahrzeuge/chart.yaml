@@ -1,0 +1,39 @@
+name: 08_mobilitaet_fahrzeuge
+layer: 13_ui_layer
+version: 0.1.0
+title: Modal and Dialog System
+capabilities:
+  MUST:
+  - modal_manager
+  - confirmation_dialogs
+  - drawer_panels
+  SHOULD:
+  - focus_trapping
+  - scroll_lock
+  COULD:
+  - animated_transitions
+  - stacked_modals
+  WOULD:
+  - ai_dialog_flow
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

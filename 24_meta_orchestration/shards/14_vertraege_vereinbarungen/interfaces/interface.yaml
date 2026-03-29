@@ -1,0 +1,5 @@
+interface_id: 24_meta_orchestration.14_vertraege_vereinbarungen.primary
+root_id: 24_meta_orchestration
+shard_id: 14_vertraege_vereinbarungen
+kind: bootstrap_contract
+status: active

@@ -1,5 +1,0 @@
-policy_id: 02_audit_logging.05_shard_05.baseline_policy
-root_id: 02_audit_logging
-shard_id: 05_shard_05
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

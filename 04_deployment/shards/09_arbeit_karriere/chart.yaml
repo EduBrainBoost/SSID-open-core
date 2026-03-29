@@ -1,0 +1,39 @@
+name: 09_arbeit_karriere
+layer: 04_deployment
+version: 0.1.0
+title: Secret Management
+capabilities:
+  MUST:
+  - secret_storage
+  - secret_rotation
+  - access_policies
+  SHOULD:
+  - dynamic_secrets
+  - lease_management
+  COULD:
+  - secret_injection
+  - audit_trail
+  WOULD:
+  - zero_knowledge_secret_sharing
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

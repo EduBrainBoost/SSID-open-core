@@ -1,0 +1,5 @@
+interface_id: 19_adapters.15_handel_transaktionen.primary
+root_id: 19_adapters
+shard_id: 15_handel_transaktionen
+kind: bootstrap_contract
+status: active

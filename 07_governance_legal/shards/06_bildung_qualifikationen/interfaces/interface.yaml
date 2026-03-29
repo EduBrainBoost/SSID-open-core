@@ -1,0 +1,5 @@
+interface_id: 07_governance_legal.06_bildung_qualifikationen.primary
+root_id: 07_governance_legal
+shard_id: 06_bildung_qualifikationen
+kind: bootstrap_contract
+status: active

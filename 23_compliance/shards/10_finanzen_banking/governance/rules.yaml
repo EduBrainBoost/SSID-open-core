@@ -1,0 +1,8 @@
+root_id: 23_compliance
+shard_id: 10_finanzen_banking
+rule_refs:
+- ROOT-24-LOCK
+- SAFE-FIX
+- SOT_AGENT_021
+- SOT_AGENT_022
+- SOT_AGENT_023

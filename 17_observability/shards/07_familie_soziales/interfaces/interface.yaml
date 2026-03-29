@@ -1,0 +1,5 @@
+interface_id: 17_observability.07_familie_soziales.primary
+root_id: 17_observability
+shard_id: 07_familie_soziales
+kind: bootstrap_contract
+status: active

@@ -1,0 +1,8 @@
+root_id: 22_datasets
+shard_id: 11_versicherungen_risiken
+rule_refs:
+- ROOT-24-LOCK
+- SAFE-FIX
+- SOT_AGENT_021
+- SOT_AGENT_022
+- SOT_AGENT_023

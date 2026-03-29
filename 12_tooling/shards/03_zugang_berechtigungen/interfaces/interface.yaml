@@ -1,0 +1,5 @@
+interface_id: 12_tooling.03_zugang_berechtigungen.primary
+root_id: 12_tooling
+shard_id: 03_zugang_berechtigungen
+kind: bootstrap_contract
+status: active

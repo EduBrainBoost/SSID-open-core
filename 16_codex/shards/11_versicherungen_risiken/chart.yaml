@@ -1,0 +1,39 @@
+name: 11_versicherungen_risiken
+layer: 16_codex
+version: 0.1.0
+title: Template Library
+capabilities:
+  MUST:
+  - document_templates
+  - code_templates
+  - policy_templates
+  SHOULD:
+  - template_versioning
+  - template_testing
+  COULD:
+  - parameterized_templates
+  - conditional_templates
+  WOULD:
+  - ai_template_generation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

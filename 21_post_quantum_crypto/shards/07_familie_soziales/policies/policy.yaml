@@ -1,0 +1,5 @@
+policy_id: 21_post_quantum_crypto.07_familie_soziales.baseline_policy
+root_id: 21_post_quantum_crypto
+shard_id: 07_familie_soziales
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

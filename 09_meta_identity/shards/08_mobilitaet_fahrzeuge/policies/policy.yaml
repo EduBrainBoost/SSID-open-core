@@ -1,0 +1,5 @@
+policy_id: 09_meta_identity.08_mobilitaet_fahrzeuge.baseline_policy
+root_id: 09_meta_identity
+shard_id: 08_mobilitaet_fahrzeuge
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

@@ -1,0 +1,39 @@
+name: 07_familie_soziales
+layer: 04_deployment
+version: 0.1.0
+title: Helm Chart Management
+capabilities:
+  MUST:
+  - chart_packaging
+  - chart_publishing
+  - chart_install
+  SHOULD:
+  - chart_upgrade
+  - rollback
+  COULD:
+  - chart_testing
+  - linting
+  WOULD:
+  - chart_versioning_automation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

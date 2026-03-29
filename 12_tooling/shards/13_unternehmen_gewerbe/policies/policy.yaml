@@ -1,0 +1,5 @@
+policy_id: 12_tooling.13_unternehmen_gewerbe.baseline_policy
+root_id: 12_tooling
+shard_id: 13_unternehmen_gewerbe
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

@@ -1,0 +1,5 @@
+interface_id: 16_codex.08_mobilitaet_fahrzeuge.primary
+root_id: 16_codex
+shard_id: 08_mobilitaet_fahrzeuge
+kind: bootstrap_contract
+status: active

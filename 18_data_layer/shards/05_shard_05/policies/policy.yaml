@@ -1,5 +1,0 @@
-policy_id: 18_data_layer.05_shard_05.baseline_policy
-root_id: 18_data_layer
-shard_id: 05_shard_05
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

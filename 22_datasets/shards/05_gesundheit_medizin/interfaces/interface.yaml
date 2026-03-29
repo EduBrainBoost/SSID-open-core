@@ -1,0 +1,5 @@
+interface_id: 22_datasets.05_gesundheit_medizin.primary
+root_id: 22_datasets
+shard_id: 05_gesundheit_medizin
+kind: bootstrap_contract
+status: active

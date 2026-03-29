@@ -1,0 +1,5 @@
+interface_id: 10_interoperability.03_zugang_berechtigungen.primary
+root_id: 10_interoperability
+shard_id: 03_zugang_berechtigungen
+kind: bootstrap_contract
+status: active

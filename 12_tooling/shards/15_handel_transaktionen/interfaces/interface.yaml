@@ -1,0 +1,5 @@
+interface_id: 12_tooling.15_handel_transaktionen.primary
+root_id: 12_tooling
+shard_id: 15_handel_transaktionen
+kind: bootstrap_contract
+status: active

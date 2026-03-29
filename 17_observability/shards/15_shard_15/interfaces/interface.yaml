@@ -1,5 +1,0 @@
-interface_id: 17_observability.15_shard_15.primary
-root_id: 17_observability
-shard_id: 15_shard_15
-kind: bootstrap_contract
-status: active

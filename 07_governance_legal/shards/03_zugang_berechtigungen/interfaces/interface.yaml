@@ -1,0 +1,5 @@
+interface_id: 07_governance_legal.03_zugang_berechtigungen.primary
+root_id: 07_governance_legal
+shard_id: 03_zugang_berechtigungen
+kind: bootstrap_contract
+status: active

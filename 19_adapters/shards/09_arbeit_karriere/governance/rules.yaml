@@ -1,0 +1,8 @@
+root_id: 19_adapters
+shard_id: 09_arbeit_karriere
+rule_refs:
+- ROOT-24-LOCK
+- SAFE-FIX
+- SOT_AGENT_021
+- SOT_AGENT_022
+- SOT_AGENT_023

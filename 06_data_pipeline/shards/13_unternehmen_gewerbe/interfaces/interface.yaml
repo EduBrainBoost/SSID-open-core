@@ -1,0 +1,5 @@
+interface_id: 06_data_pipeline.13_unternehmen_gewerbe.primary
+root_id: 06_data_pipeline
+shard_id: 13_unternehmen_gewerbe
+kind: bootstrap_contract
+status: active

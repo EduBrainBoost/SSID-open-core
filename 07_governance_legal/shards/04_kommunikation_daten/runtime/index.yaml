@@ -1,0 +1,11 @@
+schema_version: 1.0.0
+kind: reference_security_runtime
+module: wave07_security_enforcement
+factory: Root07SecurityEnforcementWave
+service_method: run
+shard_id: 04_did_resolution
+valid_input: ../conformance/fixtures/fixture_valid.json
+expected_output_schema: ../contracts/outputs.schema.json
+dependency_refs:
+- 03_core/04_kommunikation_daten
+- 09_meta_identity/04_kommunikation_daten

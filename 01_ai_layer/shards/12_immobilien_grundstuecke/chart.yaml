@@ -1,0 +1,39 @@
+name: 12_immobilien_grundstuecke
+layer: 01_ai_layer
+version: 0.1.0
+title: AI Audit Trail
+capabilities:
+  MUST:
+  - inference_logging
+  - decision_recording
+  - hash_binding
+  SHOULD:
+  - audit_query
+  - tamper_detection
+  COULD:
+  - explanation_capture
+  - drift_logging
+  WOULD:
+  - regulatory_report_generation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

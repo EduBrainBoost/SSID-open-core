@@ -1,0 +1,5 @@
+interface_id: 23_compliance.07_familie_soziales.primary
+root_id: 23_compliance
+shard_id: 07_familie_soziales
+kind: bootstrap_contract
+status: active

@@ -1,0 +1,5 @@
+policy_id: 21_post_quantum_crypto.09_arbeit_karriere.baseline_policy
+root_id: 21_post_quantum_crypto
+shard_id: 09_arbeit_karriere
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

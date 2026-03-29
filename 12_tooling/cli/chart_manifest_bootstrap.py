@@ -49,25 +49,25 @@ ROOT_METADATA: dict[str, dict[str, str]] = {
 ROOT03_RUNTIME_SHARDS: dict[str, str] = {
     "01_identitaet_personen": "01_identitaet_personen",
     "02_dokumente_nachweise": "02_dokumente_nachweise",
-    "03_shard_03": "03_verifiable_credentials",
-    "04_shard_04": "04_did_resolution",
-    "05_shard_05": "05_claims_binding",
+    "03_zugang_berechtigungen": "03_verifiable_credentials",
+    "04_kommunikation_daten": "04_did_resolution",
+    "05_gesundheit_medizin": "05_claims_binding",
 }
 
 ROOT09_RUNTIME_SHARDS: dict[str, str] = {
     "01_identitaet_personen": "01_identitaet_personen",
     "02_dokumente_nachweise": "02_dokumente_nachweise",
-    "03_shard_03": "03_verifiable_credentials",
-    "04_shard_04": "04_did_resolution",
-    "05_shard_05": "05_claims_binding",
+    "03_zugang_berechtigungen": "03_verifiable_credentials",
+    "04_kommunikation_daten": "04_did_resolution",
+    "05_gesundheit_medizin": "05_claims_binding",
 }
 
 ROOT07_RUNTIME_SHARDS: dict[str, str] = {
     "01_identitaet_personen": "01_identitaet_personen",
     "02_dokumente_nachweise": "02_dokumente_nachweise",
-    "03_shard_03": "03_verifiable_credentials",
-    "04_shard_04": "04_did_resolution",
-    "05_shard_05": "05_claims_binding",
+    "03_zugang_berechtigungen": "03_verifiable_credentials",
+    "04_kommunikation_daten": "04_did_resolution",
+    "05_gesundheit_medizin": "05_claims_binding",
 }
 
 

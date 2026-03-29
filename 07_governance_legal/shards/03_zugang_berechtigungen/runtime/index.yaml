@@ -1,0 +1,11 @@
+schema_version: 1.0.0
+kind: reference_security_runtime
+module: wave07_security_enforcement
+factory: Root07SecurityEnforcementWave
+service_method: run
+shard_id: 03_verifiable_credentials
+valid_input: ../conformance/fixtures/fixture_valid.json
+expected_output_schema: ../contracts/outputs.schema.json
+dependency_refs:
+- 03_core/03_zugang_berechtigungen
+- 09_meta_identity/03_zugang_berechtigungen

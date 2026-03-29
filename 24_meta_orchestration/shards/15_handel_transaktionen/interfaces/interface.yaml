@@ -1,0 +1,5 @@
+interface_id: 24_meta_orchestration.15_handel_transaktionen.primary
+root_id: 24_meta_orchestration
+shard_id: 15_handel_transaktionen
+kind: bootstrap_contract
+status: active

@@ -1,0 +1,39 @@
+name: 03_zugang_berechtigungen
+layer: 13_ui_layer
+version: 0.1.0
+title: Design System
+capabilities:
+  MUST:
+  - token_system
+  - typography
+  - color_system
+  SHOULD:
+  - spacing_system
+  - grid_layout
+  COULD:
+  - dark_mode
+  - theme_customization
+  WOULD:
+  - ai_design_generation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

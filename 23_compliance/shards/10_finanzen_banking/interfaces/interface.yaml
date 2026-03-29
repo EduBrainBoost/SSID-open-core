@@ -1,0 +1,5 @@
+interface_id: 23_compliance.10_finanzen_banking.primary
+root_id: 23_compliance
+shard_id: 10_finanzen_banking
+kind: bootstrap_contract
+status: active

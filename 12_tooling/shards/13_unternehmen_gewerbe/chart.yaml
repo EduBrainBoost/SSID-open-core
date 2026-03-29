@@ -1,0 +1,39 @@
+name: 13_unternehmen_gewerbe
+layer: 12_tooling
+version: 0.1.0
+title: Performance Profiler
+capabilities:
+  MUST:
+  - cpu_profiling
+  - memory_profiling
+  - io_profiling
+  SHOULD:
+  - flame_graph_generation
+  - hotspot_detection
+  COULD:
+  - continuous_profiling
+  - production_profiling
+  WOULD:
+  - ai_performance_advisor
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

@@ -1,0 +1,5 @@
+interface_id: 15_infra.09_arbeit_karriere.primary
+root_id: 15_infra
+shard_id: 09_arbeit_karriere
+kind: bootstrap_contract
+status: active

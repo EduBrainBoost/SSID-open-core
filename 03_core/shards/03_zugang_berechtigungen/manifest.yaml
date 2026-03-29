@@ -1,0 +1,17 @@
+name: 03_zugang_berechtigungen
+layer: 03_core
+implementation:
+  language: python
+  entrypoint: implementations/main.py
+  dependencies:
+  - pydantic
+  - cryptography
+  - hashlib
+tests:
+  - tests/unit
+  - tests/integration
+contracts:
+  - contracts/openapi.yaml
+conformance:
+  chart_ref: chart.yaml
+  semver: "0.1.0"

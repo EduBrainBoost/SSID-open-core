@@ -1,0 +1,39 @@
+name: 15_handel_transaktionen
+layer: 17_observability
+version: 0.1.0
+title: Data Observability
+capabilities:
+  MUST:
+  - data_quality_metrics
+  - pipeline_health
+  - schema_drift_detection
+  SHOULD:
+  - data_freshness_monitoring
+  - completeness_tracking
+  COULD:
+  - data_lineage_monitoring
+  - data_sla_tracking
+  WOULD:
+  - ai_data_health
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

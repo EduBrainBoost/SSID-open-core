@@ -1,0 +1,5 @@
+policy_id: 24_meta_orchestration.11_versicherungen_risiken.baseline_policy
+root_id: 24_meta_orchestration
+shard_id: 11_versicherungen_risiken
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

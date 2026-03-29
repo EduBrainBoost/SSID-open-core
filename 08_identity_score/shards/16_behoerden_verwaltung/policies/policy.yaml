@@ -1,0 +1,5 @@
+policy_id: 08_identity_score.16_behoerden_verwaltung.baseline_policy
+root_id: 08_identity_score
+shard_id: 16_behoerden_verwaltung
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

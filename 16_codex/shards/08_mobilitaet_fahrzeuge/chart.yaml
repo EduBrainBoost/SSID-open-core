@@ -1,0 +1,39 @@
+name: 08_mobilitaet_fahrzeuge
+layer: 16_codex
+version: 0.1.0
+title: Export Policy Engine
+capabilities:
+  MUST:
+  - export_policy_evaluation
+  - policy_enforcement
+  - export_logging
+  SHOULD:
+  - policy_versioning
+  - approval_workflow
+  COULD:
+  - export_audit_trail
+  - policy_federation
+  WOULD:
+  - ai_export_policy
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

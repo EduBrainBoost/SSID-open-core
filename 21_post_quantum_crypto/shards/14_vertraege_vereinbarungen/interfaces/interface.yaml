@@ -1,0 +1,5 @@
+interface_id: 21_post_quantum_crypto.14_vertraege_vereinbarungen.primary
+root_id: 21_post_quantum_crypto
+shard_id: 14_vertraege_vereinbarungen
+kind: bootstrap_contract
+status: active

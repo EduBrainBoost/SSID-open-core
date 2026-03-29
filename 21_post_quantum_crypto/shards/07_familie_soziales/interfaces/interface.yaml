@@ -1,0 +1,5 @@
+interface_id: 21_post_quantum_crypto.07_familie_soziales.primary
+root_id: 21_post_quantum_crypto
+shard_id: 07_familie_soziales
+kind: bootstrap_contract
+status: active

@@ -1,0 +1,40 @@
+name: 11_versicherungen_risiken
+layer: 23_compliance
+version: 0.1.0
+title: Compliance Training
+capabilities:
+  MUST:
+  - training_content
+  - certification_tracking
+  - assessment_engine
+  SHOULD:
+  - training_scheduling
+  - completion_reporting
+  COULD:
+  - role_based_training
+  - just_in_time_training
+  WOULD:
+  - ai_training_personalization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - legal_counsel_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

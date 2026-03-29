@@ -1,0 +1,5 @@
+interface_id: 20_foundation.16_behoerden_verwaltung.primary
+root_id: 20_foundation
+shard_id: 16_behoerden_verwaltung
+kind: bootstrap_contract
+status: active

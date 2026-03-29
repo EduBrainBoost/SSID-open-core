@@ -1,0 +1,39 @@
+name: 07_familie_soziales
+layer: 20_foundation
+version: 0.1.0
+title: Event Foundation
+capabilities:
+  MUST:
+  - event_base_types
+  - event_routing
+  - event_serialization
+  SHOULD:
+  - event_replay
+  - event_sourcing
+  COULD:
+  - event_versioning
+  - schema_evolution
+  WOULD:
+  - ai_event_intelligence
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

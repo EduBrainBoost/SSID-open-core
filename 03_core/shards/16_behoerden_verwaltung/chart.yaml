@@ -1,0 +1,39 @@
+name: 16_behoerden_verwaltung
+layer: 03_core
+version: 0.1.0
+title: Core Security
+capabilities:
+  MUST:
+  - input_sanitization
+  - rate_limiting
+  - csrf_protection
+  SHOULD:
+  - injection_prevention
+  - header_security
+  COULD:
+  - threat_modeling_integration
+  - penetration_hooks
+  WOULD:
+  - ai_threat_detection
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

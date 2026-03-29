@@ -1,5 +1,0 @@
-policy_id: 07_governance_legal.05_shard_05.baseline_policy
-root_id: 07_governance_legal
-shard_id: 05_shard_05
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

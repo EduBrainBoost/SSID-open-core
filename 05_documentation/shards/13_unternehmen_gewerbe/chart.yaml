@@ -1,0 +1,39 @@
+name: 13_unternehmen_gewerbe
+layer: 05_documentation
+version: 0.1.0
+title: Diagram Service
+capabilities:
+  MUST:
+  - mermaid_rendering
+  - plantuml_support
+  - sequence_diagram_gen
+  SHOULD:
+  - architecture_diagram_export
+  - svg_png_export
+  COULD:
+  - live_diagram_editor
+  - diagram_versioning
+  WOULD:
+  - ai_diagram_generation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

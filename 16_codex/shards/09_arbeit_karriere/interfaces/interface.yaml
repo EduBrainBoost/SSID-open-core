@@ -1,0 +1,5 @@
+interface_id: 16_codex.09_arbeit_karriere.primary
+root_id: 16_codex
+shard_id: 09_arbeit_karriere
+kind: bootstrap_contract
+status: active

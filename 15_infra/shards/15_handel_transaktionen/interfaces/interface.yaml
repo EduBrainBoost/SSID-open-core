@@ -1,0 +1,5 @@
+interface_id: 15_infra.15_handel_transaktionen.primary
+root_id: 15_infra
+shard_id: 15_handel_transaktionen
+kind: bootstrap_contract
+status: active

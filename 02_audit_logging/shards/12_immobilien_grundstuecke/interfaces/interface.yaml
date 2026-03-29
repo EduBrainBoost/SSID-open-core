@@ -1,0 +1,5 @@
+interface_id: 02_audit_logging.12_immobilien_grundstuecke.primary
+root_id: 02_audit_logging
+shard_id: 12_immobilien_grundstuecke
+kind: bootstrap_contract
+status: active

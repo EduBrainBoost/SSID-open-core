@@ -1,0 +1,5 @@
+interface_id: 15_infra.06_bildung_qualifikationen.primary
+root_id: 15_infra
+shard_id: 06_bildung_qualifikationen
+kind: bootstrap_contract
+status: active

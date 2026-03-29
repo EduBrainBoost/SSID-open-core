@@ -39,9 +39,9 @@ def test_registry_marks_root03_priority_shards_runtime_ready(tmp_path: Path) -> 
     assert set(runtime_ready) == {
         ("03_core", "01_identitaet_personen"),
         ("03_core", "02_dokumente_nachweise"),
-        ("03_core", "03_shard_03"),
-        ("03_core", "04_shard_04"),
-        ("03_core", "05_shard_05"),
+        ("03_core", "03_zugang_berechtigungen"),
+        ("03_core", "04_kommunikation_daten"),
+        ("03_core", "05_gesundheit_medizin"),
     }
     assert all(entry["status"] == "runtime_ready" for entry in runtime_ready.values())
 
@@ -57,9 +57,9 @@ def test_registry_marks_root09_priority_shards_cross_root_runtime_ready(tmp_path
     assert set(runtime_ready) == {
         ("09_meta_identity", "01_identitaet_personen"),
         ("09_meta_identity", "02_dokumente_nachweise"),
-        ("09_meta_identity", "03_shard_03"),
-        ("09_meta_identity", "04_shard_04"),
-        ("09_meta_identity", "05_shard_05"),
+        ("09_meta_identity", "03_zugang_berechtigungen"),
+        ("09_meta_identity", "04_kommunikation_daten"),
+        ("09_meta_identity", "05_gesundheit_medizin"),
     }
     assert all(entry["status"] == "cross_root_runtime_ready" for entry in runtime_ready.values())
     assert all(entry["service_runtime_status"] == "ready" for entry in runtime_ready.values())
@@ -77,8 +77,8 @@ def test_registry_marks_root07_priority_shards_security_enforced(tmp_path: Path)
     assert set(enforced) == {
         ("07_governance_legal", "01_identitaet_personen"),
         ("07_governance_legal", "02_dokumente_nachweise"),
-        ("07_governance_legal", "03_shard_03"),
-        ("07_governance_legal", "04_shard_04"),
-        ("07_governance_legal", "05_shard_05"),
+        ("07_governance_legal", "03_zugang_berechtigungen"),
+        ("07_governance_legal", "04_kommunikation_daten"),
+        ("07_governance_legal", "05_gesundheit_medizin"),
     }
     assert all(entry["security_status"] == "ready" for entry in enforced.values())

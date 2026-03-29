@@ -1,0 +1,39 @@
+name: 12_immobilien_grundstuecke
+layer: 16_codex
+version: 0.1.0
+title: Codex API
+capabilities:
+  MUST:
+  - codex_query_api
+  - definition_retrieval
+  - version_api
+  SHOULD:
+  - subscription_api
+  - webhook_support
+  COULD:
+  - graphql_codex
+  - streaming_updates
+  WOULD:
+  - ai_codex_api
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

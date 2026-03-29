@@ -1,0 +1,5 @@
+interface_id: 14_zero_time_auth.09_arbeit_karriere.primary
+root_id: 14_zero_time_auth
+shard_id: 09_arbeit_karriere
+kind: bootstrap_contract
+status: active

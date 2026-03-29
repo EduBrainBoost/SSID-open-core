@@ -1,0 +1,5 @@
+interface_id: 02_audit_logging.14_vertraege_vereinbarungen.primary
+root_id: 02_audit_logging
+shard_id: 14_vertraege_vereinbarungen
+kind: bootstrap_contract
+status: active

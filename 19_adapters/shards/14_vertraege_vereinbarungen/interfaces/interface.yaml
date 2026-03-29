@@ -1,0 +1,5 @@
+interface_id: 19_adapters.14_vertraege_vereinbarungen.primary
+root_id: 19_adapters
+shard_id: 14_vertraege_vereinbarungen
+kind: bootstrap_contract
+status: active

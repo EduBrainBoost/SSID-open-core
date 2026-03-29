@@ -31,25 +31,25 @@ PILOT_SHARDS: set[str] = {
 ROOT03_RUNTIME_SHARDS: set[str] = {
     "03_core/01_identitaet_personen",
     "03_core/02_dokumente_nachweise",
-    "03_core/03_shard_03",
-    "03_core/04_shard_04",
-    "03_core/05_shard_05",
+    "03_core/03_zugang_berechtigungen",
+    "03_core/04_kommunikation_daten",
+    "03_core/05_gesundheit_medizin",
 }
 
 ROOT09_RUNTIME_SHARDS: set[str] = {
     "09_meta_identity/01_identitaet_personen",
     "09_meta_identity/02_dokumente_nachweise",
-    "09_meta_identity/03_shard_03",
-    "09_meta_identity/04_shard_04",
-    "09_meta_identity/05_shard_05",
+    "09_meta_identity/03_zugang_berechtigungen",
+    "09_meta_identity/04_kommunikation_daten",
+    "09_meta_identity/05_gesundheit_medizin",
 }
 
 ROOT07_RUNTIME_SHARDS: set[str] = {
     "07_governance_legal/01_identitaet_personen",
     "07_governance_legal/02_dokumente_nachweise",
-    "07_governance_legal/03_shard_03",
-    "07_governance_legal/04_shard_04",
-    "07_governance_legal/05_shard_05",
+    "07_governance_legal/03_zugang_berechtigungen",
+    "07_governance_legal/04_kommunikation_daten",
+    "07_governance_legal/05_gesundheit_medizin",
 }
 
 

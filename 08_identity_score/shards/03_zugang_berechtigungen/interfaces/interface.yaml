@@ -1,0 +1,5 @@
+interface_id: 08_identity_score.03_zugang_berechtigungen.primary
+root_id: 08_identity_score
+shard_id: 03_zugang_berechtigungen
+kind: bootstrap_contract
+status: active

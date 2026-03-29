@@ -1,0 +1,5 @@
+interface_id: 19_adapters.03_zugang_berechtigungen.primary
+root_id: 19_adapters
+shard_id: 03_zugang_berechtigungen
+kind: bootstrap_contract
+status: active

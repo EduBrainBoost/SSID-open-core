@@ -1,0 +1,5 @@
+interface_id: 20_foundation.05_gesundheit_medizin.primary
+root_id: 20_foundation
+shard_id: 05_gesundheit_medizin
+kind: bootstrap_contract
+status: active

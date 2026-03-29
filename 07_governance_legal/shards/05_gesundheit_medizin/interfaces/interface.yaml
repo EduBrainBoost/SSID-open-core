@@ -1,0 +1,5 @@
+interface_id: 07_governance_legal.05_gesundheit_medizin.primary
+root_id: 07_governance_legal
+shard_id: 05_gesundheit_medizin
+kind: bootstrap_contract
+status: active

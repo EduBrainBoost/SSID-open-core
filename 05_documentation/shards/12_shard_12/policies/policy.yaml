@@ -1,5 +1,0 @@
-policy_id: 05_documentation.12_shard_12.baseline_policy
-root_id: 05_documentation
-shard_id: 12_shard_12
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

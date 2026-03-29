@@ -1,0 +1,16 @@
+name: 07_familie_soziales
+layer: 17_observability
+implementation:
+  language: python
+  entrypoint: implementations/main.py
+  dependencies:
+  - prometheus-client
+  - opentelemetry
+tests:
+  - tests/unit
+  - tests/integration
+contracts:
+  - contracts/openapi.yaml
+conformance:
+  chart_ref: chart.yaml
+  semver: "0.1.0"

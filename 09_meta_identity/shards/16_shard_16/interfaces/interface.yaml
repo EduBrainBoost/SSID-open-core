@@ -1,5 +1,0 @@
-interface_id: 09_meta_identity.16_shard_16.primary
-root_id: 09_meta_identity
-shard_id: 16_shard_16
-kind: bootstrap_contract
-status: active

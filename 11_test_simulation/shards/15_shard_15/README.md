@@ -1,3 +1,0 @@
-# 11_test_simulation/15_shard_15
-
-Capability definition for deterministic shard contract baseline.

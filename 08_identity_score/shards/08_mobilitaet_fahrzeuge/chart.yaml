@@ -1,0 +1,39 @@
+name: 08_mobilitaet_fahrzeuge
+layer: 08_identity_score
+version: 0.1.0
+title: Score Validator
+capabilities:
+  MUST:
+  - score_integrity_check
+  - tamper_detection
+  - recalculation_trigger
+  SHOULD:
+  - validation_rules
+  - threshold_enforcement
+  COULD:
+  - cross_system_validation
+  - third_party_audit
+  WOULD:
+  - real_time_score_validation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

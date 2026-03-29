@@ -1,0 +1,39 @@
+name: 08_mobilitaet_fahrzeuge
+layer: 19_adapters
+version: 0.1.0
+title: Analytics Adapter
+capabilities:
+  MUST:
+  - ga4_adapter
+  - mixpanel_adapter
+  - amplitude_adapter
+  SHOULD:
+  - event_mapping
+  - user_property_sync
+  COULD:
+  - real_time_streaming_adapter
+  - batch_export_adapter
+  WOULD:
+  - ai_analytics_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

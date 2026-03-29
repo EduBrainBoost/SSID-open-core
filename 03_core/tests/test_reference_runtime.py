@@ -33,9 +33,9 @@ def test_root03_reference_wave_exposes_priority_shards(tmp_path: Path) -> None:
     assert wave.available_shards()[:5] == [
         "01_identitaet_personen",
         "02_dokumente_nachweise",
-        "03_shard_03",
-        "04_shard_04",
-        "05_shard_05",
+        "03_zugang_berechtigungen",
+        "04_kommunikation_daten",
+        "05_gesundheit_medizin",
     ]
 
 
@@ -47,7 +47,7 @@ def test_root03_reference_wave_supports_alias_shards(tmp_path: Path) -> None:
         {"request_id": "req-0002", "payload_hash": "b" * 64},
     )
     assert result["status"] == "accepted"
-    assert evidence.shard_id == "03_shard_03"
+    assert evidence.shard_id == "03_zugang_berechtigungen"
 
 
 def test_root03_reference_wave_runs_document_and_did_paths(tmp_path: Path) -> None:
@@ -75,4 +75,4 @@ def test_root03_reference_service_serializes_result(tmp_path: Path) -> None:
     )
 
     assert payload == '{"result_id":"req-0005","status":"accepted"}'
-    assert evidence.shard_id == "05_shard_05"
+    assert evidence.shard_id == "05_gesundheit_medizin"

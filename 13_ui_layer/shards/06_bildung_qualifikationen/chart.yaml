@@ -1,0 +1,39 @@
+name: 06_bildung_qualifikationen
+layer: 13_ui_layer
+version: 0.1.0
+title: Chart Library
+capabilities:
+  MUST:
+  - bar_charts
+  - line_charts
+  - pie_charts
+  SHOULD:
+  - interactive_charts
+  - drill_down
+  COULD:
+  - real_time_charts
+  - custom_themes
+  WOULD:
+  - ai_chart_recommendation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

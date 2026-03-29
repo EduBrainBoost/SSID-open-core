@@ -1,0 +1,5 @@
+interface_id: 07_governance_legal.11_versicherungen_risiken.primary
+root_id: 07_governance_legal
+shard_id: 11_versicherungen_risiken
+kind: bootstrap_contract
+status: active

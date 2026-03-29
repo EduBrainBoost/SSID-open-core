@@ -1,0 +1,5 @@
+interface_id: 10_interoperability.08_mobilitaet_fahrzeuge.primary
+root_id: 10_interoperability
+shard_id: 08_mobilitaet_fahrzeuge
+kind: bootstrap_contract
+status: active

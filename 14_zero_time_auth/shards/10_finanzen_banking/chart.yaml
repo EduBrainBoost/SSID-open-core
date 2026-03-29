@@ -1,0 +1,39 @@
+name: 10_finanzen_banking
+layer: 14_zero_time_auth
+version: 0.1.0
+title: Auth Policy Engine
+capabilities:
+  MUST:
+  - policy_based_auth
+  - step_up_auth
+  - risk_based_auth
+  SHOULD:
+  - policy_evaluation
+  - decision_logging
+  COULD:
+  - adaptive_policies
+  - context_aware_auth
+  WOULD:
+  - ai_auth_policy
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

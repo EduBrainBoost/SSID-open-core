@@ -1,0 +1,39 @@
+name: 15_handel_transaktionen
+layer: 05_documentation
+version: 0.1.0
+title: Localization Engine
+capabilities:
+  MUST:
+  - string_extraction
+  - translation_workflow
+  - locale_management
+  SHOULD:
+  - translation_memory
+  - glossary_enforcement
+  COULD:
+  - machine_translation
+  - human_review
+  WOULD:
+  - ai_translation_quality
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

@@ -1,0 +1,5 @@
+interface_id: 24_meta_orchestration.09_arbeit_karriere.primary
+root_id: 24_meta_orchestration
+shard_id: 09_arbeit_karriere
+kind: bootstrap_contract
+status: active

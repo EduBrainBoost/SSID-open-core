@@ -1,0 +1,5 @@
+policy_id: 01_ai_layer.09_arbeit_karriere.baseline_policy
+root_id: 01_ai_layer
+shard_id: 09_arbeit_karriere
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

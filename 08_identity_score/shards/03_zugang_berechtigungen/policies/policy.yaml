@@ -1,0 +1,5 @@
+policy_id: 08_identity_score.03_zugang_berechtigungen.baseline_policy
+root_id: 08_identity_score
+shard_id: 03_zugang_berechtigungen
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

@@ -1,0 +1,39 @@
+name: 16_behoerden_verwaltung
+layer: 16_codex
+version: 0.1.0
+title: Codex Analytics
+capabilities:
+  MUST:
+  - usage_analytics
+  - reference_popularity
+  - version_adoption
+  SHOULD:
+  - search_analytics
+  - gap_analysis
+  COULD:
+  - trend_detection
+  - codex_health_reports
+  WOULD:
+  - ai_codex_insights
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

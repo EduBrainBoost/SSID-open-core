@@ -1,0 +1,5 @@
+policy_id: 18_data_layer.16_behoerden_verwaltung.baseline_policy
+root_id: 18_data_layer
+shard_id: 16_behoerden_verwaltung
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

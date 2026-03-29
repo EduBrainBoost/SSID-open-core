@@ -1,0 +1,10 @@
+schema_version: 1.0.0
+kind: reference_service_runtime
+module: wave09_identity_services
+factory: Root09IdentityServicesWave
+service_method: run
+shard_id: 04_did_resolution
+valid_input: ../conformance/fixtures/fixture_valid.json
+expected_output_schema: ../contracts/outputs.schema.json
+dependency_refs:
+- 03_core/04_kommunikation_daten

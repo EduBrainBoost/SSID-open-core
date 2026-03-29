@@ -1,0 +1,5 @@
+policy_id: 22_datasets.04_kommunikation_daten.baseline_policy
+root_id: 22_datasets
+shard_id: 04_kommunikation_daten
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

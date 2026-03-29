@@ -1,0 +1,5 @@
+policy_id: 21_post_quantum_crypto.12_immobilien_grundstuecke.baseline_policy
+root_id: 21_post_quantum_crypto
+shard_id: 12_immobilien_grundstuecke
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

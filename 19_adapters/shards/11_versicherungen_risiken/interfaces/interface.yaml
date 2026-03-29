@@ -1,0 +1,5 @@
+interface_id: 19_adapters.11_versicherungen_risiken.primary
+root_id: 19_adapters
+shard_id: 11_versicherungen_risiken
+kind: bootstrap_contract
+status: active

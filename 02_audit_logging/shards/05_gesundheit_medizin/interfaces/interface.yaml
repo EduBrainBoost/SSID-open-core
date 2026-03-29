@@ -1,0 +1,5 @@
+interface_id: 02_audit_logging.05_gesundheit_medizin.primary
+root_id: 02_audit_logging
+shard_id: 05_gesundheit_medizin
+kind: bootstrap_contract
+status: active

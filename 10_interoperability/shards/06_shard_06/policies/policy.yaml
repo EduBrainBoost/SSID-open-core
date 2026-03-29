@@ -1,5 +1,0 @@
-policy_id: 10_interoperability.06_shard_06.baseline_policy
-root_id: 10_interoperability
-shard_id: 06_shard_06
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

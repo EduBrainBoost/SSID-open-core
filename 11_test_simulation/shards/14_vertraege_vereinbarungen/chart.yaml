@@ -1,0 +1,39 @@
+name: 14_vertraege_vereinbarungen
+layer: 11_test_simulation
+version: 0.1.0
+title: Test Orchestrator
+capabilities:
+  MUST:
+  - test_scheduling
+  - environment_provisioning
+  - result_aggregation
+  SHOULD:
+  - parallel_orchestration
+  - dependency_graph
+  COULD:
+  - cross_suite_orchestration
+  - reporting_pipeline
+  WOULD:
+  - ai_test_orchestration
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

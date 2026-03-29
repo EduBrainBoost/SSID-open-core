@@ -1,0 +1,39 @@
+name: 04_kommunikation_daten
+layer: 04_deployment
+version: 0.1.0
+title: CD Pipeline
+capabilities:
+  MUST:
+  - environment_promotion
+  - deployment_gating
+  - rollback_support
+  SHOULD:
+  - approval_gates
+  - change_freeze
+  COULD:
+  - multi_cloud_deploy
+  - region_routing
+  WOULD:
+  - progressive_delivery
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

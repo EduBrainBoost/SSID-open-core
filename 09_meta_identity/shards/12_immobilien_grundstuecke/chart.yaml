@@ -1,0 +1,39 @@
+name: 12_immobilien_grundstuecke
+layer: 09_meta_identity
+version: 0.1.0
+title: Identity Context Manager
+capabilities:
+  MUST:
+  - context_definition
+  - context_scoped_attributes
+  - context_switching
+  SHOULD:
+  - context_federation
+  - context_inheritance
+  COULD:
+  - temporal_context
+  - geo_context
+  WOULD:
+  - ai_context_intelligence
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

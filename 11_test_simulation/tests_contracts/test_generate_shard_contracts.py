@@ -14,7 +14,7 @@ def test_generate_shard_contracts_creates_expected_files(tmp_path: Path) -> None
     result = subprocess.run(["python", str(generator), "--repo-root", str(tmp_path)], check=True, cwd=str(repo_root), capture_output=True, text=True)
     payload = json.loads(result.stdout)
 
-    target_dir = tmp_path / "20_foundation" / "shards" / "10_shard_10" / "contracts"
+    target_dir = tmp_path / "20_foundation" / "shards" / "10_finanzen_banking" / "contracts"
     assert (target_dir / "inputs.schema.json").exists()
     assert (target_dir / "outputs.schema.json").exists()
     assert (target_dir / "events.schema.json").exists()

@@ -1,0 +1,5 @@
+interface_id: 04_deployment.09_arbeit_karriere.primary
+root_id: 04_deployment
+shard_id: 09_arbeit_karriere
+kind: bootstrap_contract
+status: active

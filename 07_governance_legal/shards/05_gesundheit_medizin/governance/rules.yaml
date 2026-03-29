@@ -1,0 +1,8 @@
+root_id: 07_governance_legal
+shard_id: 05_gesundheit_medizin
+rule_refs:
+- ROOT-24-LOCK
+- SAFE-FIX
+- SOT_AGENT_021
+- SOT_AGENT_022
+- SOT_AGENT_023

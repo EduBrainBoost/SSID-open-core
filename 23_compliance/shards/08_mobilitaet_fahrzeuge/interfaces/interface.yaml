@@ -1,0 +1,5 @@
+interface_id: 23_compliance.08_mobilitaet_fahrzeuge.primary
+root_id: 23_compliance
+shard_id: 08_mobilitaet_fahrzeuge
+kind: bootstrap_contract
+status: active

@@ -1,0 +1,39 @@
+name: 13_unternehmen_gewerbe
+layer: 22_datasets
+version: 0.1.0
+title: Data Annotation Platform
+capabilities:
+  MUST:
+  - labeling_interface
+  - annotation_workflow
+  - quality_control
+  SHOULD:
+  - inter_annotator_agreement
+  - annotation_versioning
+  COULD:
+  - active_learning_annotation
+  - automated_annotation
+  WOULD:
+  - ai_annotation_assistance
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

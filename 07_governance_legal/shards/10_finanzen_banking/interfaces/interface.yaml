@@ -1,0 +1,5 @@
+interface_id: 07_governance_legal.10_finanzen_banking.primary
+root_id: 07_governance_legal
+shard_id: 10_finanzen_banking
+kind: bootstrap_contract
+status: active

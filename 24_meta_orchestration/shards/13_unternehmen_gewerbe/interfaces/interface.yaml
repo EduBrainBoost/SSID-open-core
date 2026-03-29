@@ -1,0 +1,5 @@
+interface_id: 24_meta_orchestration.13_unternehmen_gewerbe.primary
+root_id: 24_meta_orchestration
+shard_id: 13_unternehmen_gewerbe
+kind: bootstrap_contract
+status: active

@@ -1,0 +1,16 @@
+name: 08_mobilitaet_fahrzeuge
+layer: 24_meta_orchestration
+implementation:
+  language: python
+  entrypoint: implementations/main.py
+  dependencies:
+  - celery
+  - temporalio
+tests:
+  - tests/unit
+  - tests/integration
+contracts:
+  - contracts/openapi.yaml
+conformance:
+  chart_ref: chart.yaml
+  semver: "0.1.0"

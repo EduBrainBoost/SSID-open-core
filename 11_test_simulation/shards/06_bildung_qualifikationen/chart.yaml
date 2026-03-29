@@ -1,0 +1,39 @@
+name: 06_bildung_qualifikationen
+layer: 11_test_simulation
+version: 0.1.0
+title: Contract Testing
+capabilities:
+  MUST:
+  - consumer_contract_tests
+  - provider_verification
+  - contract_publishing
+  SHOULD:
+  - schema_compatibility
+  - breaking_change_detection
+  COULD:
+  - async_contract_testing
+  - event_contract_testing
+  WOULD:
+  - ai_contract_generation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

@@ -1,0 +1,5 @@
+interface_id: 22_datasets.12_immobilien_grundstuecke.primary
+root_id: 22_datasets
+shard_id: 12_immobilien_grundstuecke
+kind: bootstrap_contract
+status: active

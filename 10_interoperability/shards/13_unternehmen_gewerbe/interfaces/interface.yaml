@@ -1,0 +1,5 @@
+interface_id: 10_interoperability.13_unternehmen_gewerbe.primary
+root_id: 10_interoperability
+shard_id: 13_unternehmen_gewerbe
+kind: bootstrap_contract
+status: active

@@ -1,0 +1,5 @@
+interface_id: 04_deployment.11_versicherungen_risiken.primary
+root_id: 04_deployment
+shard_id: 11_versicherungen_risiken
+kind: bootstrap_contract
+status: active

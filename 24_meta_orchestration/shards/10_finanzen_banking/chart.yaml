@@ -1,0 +1,39 @@
+name: 10_finanzen_banking
+layer: 24_meta_orchestration
+version: 0.1.0
+title: Pipeline Orchestrator
+capabilities:
+  MUST:
+  - pipeline_definition
+  - stage_management
+  - dependency_resolution
+  SHOULD:
+  - pipeline_monitoring
+  - failure_handling
+  COULD:
+  - parallel_pipelines
+  - pipeline_composition
+  WOULD:
+  - ai_pipeline_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

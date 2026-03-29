@@ -1,0 +1,40 @@
+name: 05_gesundheit_medizin
+layer: 07_governance_legal
+version: 0.1.0
+title: Legal Contract Manager
+capabilities:
+  MUST:
+  - contract_storage
+  - contract_versioning
+  - lifecycle_management
+  SHOULD:
+  - expiry_alerts
+  - renewal_workflow
+  COULD:
+  - e_signature_integration
+  - clause_extraction
+  WOULD:
+  - ai_contract_review
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - legal_counsel_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding
