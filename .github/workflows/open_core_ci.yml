@@ -142,6 +142,21 @@ jobs:
           print('PASS: no deny-glob violations in repo')
           "
 
+  secret-scan:
+    runs-on: ubuntu-latest
+    name: "Security: secret scan"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for leaked secrets
+        run: |
+          echo "Scanning for potential secrets..."
+          if grep -rn "sk-[a-zA-Z0-9]\{20,\}" --include="*.py" --include="*.ts" --include="*.yaml" --include="*.yml" --include="*.json" . 2>/dev/null; then
+            echo "FAIL: potential secrets detected"
+            exit 1
+          fi
+          echo "PASS: no secret patterns found"
+
   structure:
     runs-on: ubuntu-latest
     name: "Structure: module completeness"
