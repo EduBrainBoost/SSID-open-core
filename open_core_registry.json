@@ -1,0 +1,120 @@
+{
+  "schema": "open_core_registry/v1",
+  "version": "1.0.0",
+  "updated": "2026-03-30T00:00:00Z",
+  "description": "Registry of all public artifacts in the SSID open-core repository.",
+  "artifacts": {
+    "policies": [
+      {
+        "path": "opencore_policy.yaml",
+        "type": "policy",
+        "description": "Core open-core policy with allowed roots, blocked extensions, sanitization rules"
+      },
+      {
+        "path": "public_export_rules.yaml",
+        "type": "export-rules",
+        "description": "Allow/deny rules for export from private to public repo"
+      },
+      {
+        "path": "public_export_policy.rego",
+        "type": "opa-policy",
+        "description": "OPA Rego policy for automated export validation"
+      }
+    ],
+    "manifests": [
+      {
+        "path": "public_export_manifest.json",
+        "type": "manifest",
+        "description": "Manifest of all exported artifacts and roots"
+      },
+      {
+        "path": "open_core_registry.json",
+        "type": "registry",
+        "description": "This file - registry of public artifacts"
+      }
+    ],
+    "governance": [
+      {
+        "path": "CODEOWNERS",
+        "type": "codeowners",
+        "description": "GitHub CODEOWNERS for review enforcement"
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "type": "contributing",
+        "description": "Contribution guidelines"
+      },
+      {
+        "path": "SECURITY.md",
+        "type": "security",
+        "description": "Security policy and vulnerability reporting"
+      },
+      {
+        "path": "LICENSE",
+        "type": "license",
+        "description": "Apache-2.0 license"
+      },
+      {
+        "path": "AGENTS.md",
+        "type": "agents",
+        "description": "Agent behavior documentation"
+      }
+    ],
+    "ci_workflows": [
+      {
+        "path": ".github/workflows/open_core_ci.yml",
+        "type": "ci",
+        "description": "Main CI pipeline"
+      },
+      {
+        "path": ".github/workflows/codeql.yml",
+        "type": "security-scan",
+        "description": "CodeQL static analysis"
+      },
+      {
+        "path": ".github/workflows/scorecard.yml",
+        "type": "security-scan",
+        "description": "OpenSSF Scorecard assessment"
+      },
+      {
+        "path": ".github/workflows/secret-scan.yml",
+        "type": "security-scan",
+        "description": "Secret detection scanning"
+      },
+      {
+        "path": ".github/workflows/public_export_integrity.yml",
+        "type": "integrity",
+        "description": "Export integrity verification"
+      },
+      {
+        "path": ".github/workflows/cron_daily_sanctions.yml",
+        "type": "cron",
+        "description": "Daily sanctions check"
+      },
+      {
+        "path": ".github/workflows/cron_daily_structure_gate.yml",
+        "type": "cron",
+        "description": "Daily structure gate verification"
+      },
+      {
+        "path": ".github/workflows/cron_quarterly_audit.yml",
+        "type": "cron",
+        "description": "Quarterly compliance audit"
+      }
+    ],
+    "audit": [
+      {
+        "path": "OPEN_CORE_DERIVATION_AUDIT.md",
+        "type": "audit-report",
+        "description": "Derivation audit report documenting compliance"
+      }
+    ],
+    "tests": [
+      {
+        "path": "tests/test_opencore_policy.py",
+        "type": "test",
+        "description": "Policy validation tests"
+      }
+    ]
+  }
+}

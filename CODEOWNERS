@@ -1,0 +1,29 @@
+# CODEOWNERS — SSID Open Core
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+* @EduBrainBoost
+
+# Core validators
+/03_core/ @EduBrainBoost
+
+# Tooling and gates
+/12_tooling/ @EduBrainBoost
+
+# Codex (ADRs, SoT contracts)
+/16_codex/ @EduBrainBoost
+
+# Compliance policies
+/23_compliance/ @EduBrainBoost
+
+# Meta orchestration and dispatcher
+/24_meta_orchestration/ @EduBrainBoost
+
+# CI/CD workflows
+/.github/ @EduBrainBoost
+
+# Security-sensitive files
+/SECURITY.md @EduBrainBoost
+/opencore_policy.yaml @EduBrainBoost
+/public_export_rules.yaml @EduBrainBoost
+/public_export_policy.rego @EduBrainBoost

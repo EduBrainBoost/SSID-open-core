@@ -1,0 +1,60 @@
+{
+  "schema": "public_export_manifest/v1",
+  "version": "1.0.0",
+  "generated": "2026-03-30T00:00:00Z",
+  "source_repo": "SSID",
+  "target_repo": "SSID-open-core",
+  "export_policy": "public_export_rules.yaml",
+  "integrity_policy": "opencore_policy.yaml",
+  "exported_roots": [
+    {
+      "root": "03_core",
+      "description": "SoT validator core, identity primitives",
+      "status": "exported"
+    },
+    {
+      "root": "12_tooling",
+      "description": "CLI tools, guard scripts, gates",
+      "status": "exported"
+    },
+    {
+      "root": "16_codex",
+      "description": "Architecture Decision Records, SoT contracts",
+      "status": "exported"
+    },
+    {
+      "root": "23_compliance",
+      "description": "OPA policies, root-level exception allowlist",
+      "status": "exported"
+    },
+    {
+      "root": "24_meta_orchestration",
+      "description": "Canonical dispatcher, SoT artifact registry",
+      "status": "exported"
+    }
+  ],
+  "excluded_roots": [
+    "01_ai_layer", "02_audit_logging", "04_deployment", "05_documentation",
+    "06_data_pipeline", "07_governance_legal", "08_identity_score",
+    "09_meta_identity", "10_interoperability", "11_test_simulation",
+    "13_ui_layer", "14_zero_time_auth", "15_infra", "17_observability",
+    "18_data_layer", "19_adapters", "20_foundation",
+    "21_post_quantum_crypto", "22_datasets"
+  ],
+  "root_level_artifacts": [
+    "README.md",
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "CODEOWNERS",
+    "pyproject.toml",
+    "pytest.ini",
+    "opencore_policy.yaml",
+    "public_export_rules.yaml",
+    "public_export_manifest.json",
+    "open_core_registry.json",
+    "public_export_policy.rego",
+    "OPEN_CORE_DERIVATION_AUDIT.md"
+  ]
+}

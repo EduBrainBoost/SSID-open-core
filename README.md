@@ -1,5 +1,11 @@
 # SSID Open Core
 
+[![CI](https://github.com/EduBrainBoost/SSID-open-core/actions/workflows/open_core_ci.yml/badge.svg)](https://github.com/EduBrainBoost/SSID-open-core/actions/workflows/open_core_ci.yml)
+[![CodeQL](https://github.com/EduBrainBoost/SSID-open-core/actions/workflows/codeql.yml/badge.svg)](https://github.com/EduBrainBoost/SSID-open-core/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/EduBrainBoost/SSID-open-core/badge)](https://scorecard.dev/viewer/?uri=github.com/EduBrainBoost/SSID-open-core)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Secret Scan](https://github.com/EduBrainBoost/SSID-open-core/actions/workflows/secret-scan.yml/badge.svg)](https://github.com/EduBrainBoost/SSID-open-core/actions/workflows/secret-scan.yml)
+
 Public derivative of the SSID Self-Sovereign Identity Platform.
 Contains the open-source subset: core validators, tooling, codex, compliance policies, and meta-orchestration.
 
