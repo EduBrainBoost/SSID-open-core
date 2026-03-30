@@ -1,5 +1,0 @@
-interface_id: 02_audit_logging.06_bildung_qualifikationen.primary
-root_id: 02_audit_logging
-shard_id: 06_bildung_qualifikationen
-kind: bootstrap_contract
-status: active

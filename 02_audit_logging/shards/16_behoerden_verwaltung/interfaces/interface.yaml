@@ -1,5 +1,0 @@
-interface_id: 02_audit_logging.16_behoerden_verwaltung.primary
-root_id: 02_audit_logging
-shard_id: 16_behoerden_verwaltung
-kind: bootstrap_contract
-status: active
