@@ -108,10 +108,8 @@ jobs:
           print(f'PASS: export policy valid (version {policy[\"schema_version\"]})')
           "
 
-      - name: Run export verifier self-test
-        run: |
-          cd 11_test_simulation/tests_export
-          python -m pytest test_verify_export.py -v --tb=short
+      # NOTE: Phase 4 — export verifier self-test step removed
+      # (referenced 11_test_simulation which is not part of open-core 5-root structure)
 
       - name: Verify no deny-glob files on disk
         run: |

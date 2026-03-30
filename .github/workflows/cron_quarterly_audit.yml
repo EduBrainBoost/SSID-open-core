@@ -31,17 +31,5 @@ jobs:
         env:
           PYTHONPATH: "."
 
-      - name: Generate SHA256 manifest
-        run: python 12_tooling/cli/cron_sha256_manifest.py --job quarterly_audit --output 02_audit_logging/logs/cron_runs.jsonl
-        env:
-          PYTHONPATH: "."
-
-      - name: Upload evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: quarterly-audit-${{ github.run_id }}
-          path: |
-            02_audit_logging/logs/cron_runs.jsonl
-            02_audit_logging/reports/
-          retention-days: 365
+      # NOTE: Phase 4 — SHA256 manifest and upload steps removed
+      # (referenced 02_audit_logging which is not part of open-core 5-root structure)
