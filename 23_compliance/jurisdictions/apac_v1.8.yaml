@@ -1,0 +1,133 @@
+apac_jurisdictions:
+  version: "1.8.0"
+  description: >
+    Compliance requirements for SSID operations in the Asia-Pacific region.
+    Covers Singapore, Hong Kong, Japan, and Australia.
+
+jurisdictions:
+  - country_code: SG
+    name: Singapore
+    regulations:
+      - regulation_id: sg_psa
+        name: Payment Services Act 2019
+        authority: MAS
+        requirements:
+          - major_payment_institution_license
+          - aml_cft_compliance
+          - technology_risk_management
+          - cybersecurity_requirements
+        status: active
+
+      - regulation_id: sg_psn02_2024
+        name: PSN02 AML/CFT Notice (2024 revision)
+        authority: MAS
+        requirements:
+          - customer_due_diligence
+          - enhanced_due_diligence_high_risk
+          - travel_rule_1500_sgd
+          - suspicious_transaction_reporting
+        status: active
+
+      - regulation_id: sg_stablecoin_framework
+        name: MAS Stablecoin Framework 2023
+        authority: MAS
+        requirements:
+          - value_stability
+          - reserve_management
+          - disclosure_requirements
+        status: active
+
+      - regulation_id: sg_pdpa
+        name: Personal Data Protection Act
+        authority: PDPC
+        requirements:
+          - consent_obligation
+          - data_protection_officer
+          - data_breach_notification
+          - cross_border_transfer_safeguards
+        status: active
+
+  - country_code: HK
+    name: Hong Kong SAR
+    regulations:
+      - regulation_id: hk_vatp
+        name: Virtual Asset Trading Platform Licensing
+        authority: SFC
+        requirements:
+          - type_1_and_7_license
+          - aml_cft_compliance
+          - custody_requirements
+          - investor_protection
+        status: active
+
+      - regulation_id: hk_amlo
+        name: Anti-Money Laundering and Counter-Terrorist Financing Ordinance
+        authority: SFC / HKMA
+        requirements:
+          - customer_due_diligence
+          - ongoing_monitoring
+          - suspicious_transaction_reporting
+          - travel_rule_compliance
+        status: active
+
+  - country_code: JP
+    name: Japan
+    regulations:
+      - regulation_id: jp_psa_crypto
+        name: Payment Services Act (Crypto-assets)
+        authority: FSA / JFSA
+        requirements:
+          - crypto_asset_exchange_registration
+          - segregation_of_customer_assets
+          - aml_cft_compliance
+          - travel_rule_compliance
+        status: active
+
+      - regulation_id: jp_psa_stablecoins
+        name: PSA Stablecoin Provisions (2023)
+        authority: FSA
+        requirements:
+          - electronic_payment_instrument_issuer_registration
+          - reserve_requirements
+          - redemption_at_par
+        status: active
+
+      - regulation_id: jp_appi
+        name: Act on Protection of Personal Information
+        authority: PPC
+        requirements:
+          - purpose_of_use_specification
+          - third_party_transfer_restrictions
+          - cross_border_transfer_consent
+          - data_breach_notification
+        status: active
+
+  - country_code: AU
+    name: Australia
+    regulations:
+      - regulation_id: au_austrac_dce
+        name: Digital Currency Exchange Registration
+        authority: AUSTRAC
+        requirements:
+          - dce_registration
+          - aml_cft_program
+          - customer_identification
+          - suspicious_matter_reporting
+          - threshold_transaction_reporting_10000_aud
+        status: active
+
+      - regulation_id: au_privacy_act
+        name: Privacy Act 1988
+        authority: OAIC
+        requirements:
+          - australian_privacy_principles
+          - data_breach_notification
+          - cross_border_disclosure_requirements
+        status: active
+
+compliance_mapping:
+  ssid_controls:
+    non_custodial_design: covers_custody_concerns
+    hash_only_no_pii: covers_all_privacy_requirements
+    real_time_screening: covers_aml_obligations
+    travel_rule_support: native_ivms101

@@ -37,8 +37,42 @@ def _run_cmd(cmd: list[str], label: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def _is_sparse_checkout() -> bool:
+    """Detect whether the current working tree uses sparse checkout."""
+    sparse_file = PROJECT_ROOT / ".git" / "info" / "sparse-checkout"
+    if sparse_file.is_file() and sparse_file.read_text(encoding="utf-8").strip():
+        return True
+    # .git may be a worktree pointer file; resolve the actual gitdir
+    dot_git = PROJECT_ROOT / ".git"
+    if dot_git.is_file():
+        content = dot_git.read_text(encoding="utf-8").strip()
+        if content.startswith("gitdir:"):
+            gitdir = Path(content.split(":", 1)[1].strip())
+            if not gitdir.is_absolute():
+                gitdir = (PROJECT_ROOT / gitdir).resolve()
+            sparse_in_gitdir = gitdir / "info" / "sparse-checkout"
+            if sparse_in_gitdir.is_file() and sparse_in_gitdir.read_text(encoding="utf-8").strip():
+                return True
+    # Fallback: ask git directly (short timeout to avoid hangs)
+    try:
+        proc = subprocess.run(
+            ["git", "sparse-checkout", "list"],
+            cwd=str(PROJECT_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if proc.returncode == 0 and proc.stdout.strip():
+            return True
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass
+    return False
+
+
 def gate_root24_lock() -> tuple[bool, str]:
     """Gate 1: Verify exactly 24 numbered root modules."""
+    if _is_sparse_checkout():
+        return True, "ROOT-24-LOCK: SKIP (sparse checkout active — root count not meaningful)"
     roots = sorted(
         p.name
         for p in PROJECT_ROOT.iterdir()

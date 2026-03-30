@@ -1,0 +1,31 @@
+plan_id: PHASE1
+title: "Phase 1: Guards + Report Bus + PlanSpec Infrastructure"
+description: >
+  Phase 1 builds the foundational infrastructure for automated gate reporting,
+  plan specification, and conformance validation. Execution order:
+  P1-3 (Guards) -> P1-1 (Report Bus) -> P1-2 (PlanSpec).
+
+tasks:
+  - task_id: P1_GUARDS_TS013_TS014
+    title: "Manifest & Conformance Gate (TS013+TS014)"
+    depends_on: []
+    notes: "Already implemented and merged (PR #2). Shard manifest builder + conformance gate."
+
+  - task_id: P1_REPORT_BUS_001
+    title: "Report Bus: Structured gate report aggregation"
+    depends_on:
+      - P1_GUARDS_TS013_TS014
+    notes: "report_bus.py + run_all_gates.py --report-bus integration. ADR-0062."
+
+  - task_id: P1_PLANSPEC_002
+    title: "PlanSpec: Multi-task plan specification format and validator"
+    depends_on:
+      - P1_REPORT_BUS_001
+    notes: "planspec_validator.py + PLANSPEC_SCHEMA.yaml. ADR-0063."
+
+acceptance_criteria:
+  - "All shard conformance tests PASS (TS013+TS014)"
+  - "Gate chain produces structured JSON reports via --report-bus"
+  - "PlanSpec validator passes on this file (self-referential validation)"
+  - "309+ total pytest tests PASS with 0 failures"
+  - "SoT validator PASS"

@@ -1,0 +1,55 @@
+version: "1.0.0"
+root: "12_tooling"
+generated_utc: "2026-03-15T00:00:00Z"
+sot_version: "4.1.0"
+status: "ROOT-24-LOCK"
+
+description: >
+  Policy definitions for the Tooling module. Governs CLI tools, developer
+  utilities, and internal toolchain components.
+
+policies:
+  - id: "AC-TOOL-001"
+    category: "access_control"
+    title: "CLI Privileged Command Authorization"
+    requirement: >
+      CLI commands that modify platform configuration or trigger deployments
+      must require explicit operator authorization. Automation of privileged
+      CLI commands without human-in-the-loop is prohibited in production.
+    enforcement: "strict"
+    evidence_required: false
+
+  - id: "DH-TOOL-001"
+    category: "data_handling"
+    title: "Tool Secret Handling"
+    requirement: >
+      CLI and tooling components must never persist secrets to disk in plaintext.
+      Tool configurations referencing secrets must use references to secrets
+      management systems only.
+    enforcement: "strict"
+    evidence_required: false
+
+  - id: "OP-TOOL-001"
+    category: "operational"
+    title: "Tool Version Pinning"
+    requirement: >
+      External tools and dependencies used by 12_tooling must be version-pinned.
+      Unpinned dependency ranges are prohibited in production toolchain
+      configurations.
+    enforcement: "advisory"
+    evidence_required: false
+
+  - id: "CO-TOOL-001"
+    category: "compliance"
+    title: "Tool Audit Logging"
+    requirement: >
+      Privileged tool operations must emit audit events to 02_audit_logging.
+      Tools that perform compliance-relevant actions must include audit
+      capability as a core feature.
+    enforcement: "advisory"
+    evidence_required: false
+
+enforcement_defaults:
+  mode: "advisory"
+  override_requires: "architecture_reviewer"
+  evidence_base: "23_compliance/evidence/tooling/"

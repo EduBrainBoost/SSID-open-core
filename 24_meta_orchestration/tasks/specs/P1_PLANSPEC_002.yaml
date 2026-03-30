@@ -1,0 +1,28 @@
+task_id: P1_PLANSPEC_002
+title: "P1-2 PlanSpec: Multi-task plan specification format and validator"
+task_type: feature
+scope_allowlist:
+  - "12_tooling/cli/planspec_validator.py"
+  - "11_test_simulation/tests_compliance/test_planspec_validator.py"
+  - "16_codex/decisions/ADR_0063_p1_2_planspec_format.md"
+  - "24_meta_orchestration/plans/PLANSPEC_SCHEMA.yaml"
+  - "24_meta_orchestration/plans/PLANSPEC_PHASE1.yaml"
+  - "24_meta_orchestration/tasks/specs/P1_PLANSPEC_002.yaml"
+forbidden_paths:
+  - "./"
+  - "/mnt/data"
+  - "**/.git/**"
+  - "**/secrets/**"
+required_checks:
+  - "python 12_tooling/cli/sot_validator.py --verify-all"
+  - "python -m pytest -q"
+acceptance_criteria:
+  - "PLANSPEC_SCHEMA.yaml defines the PlanSpec format"
+  - "planspec_validator.py validates PlanSpec YAML files"
+  - "Validator checks: required fields, task_id references, no cycles"
+  - "Example PlanSpec for Phase 1 (PLANSPEC_PHASE1.yaml)"
+  - "pytest tests cover validation, cycle detection, missing refs"
+evidence_outputs:
+  - "02_audit_logging/agent_runs/P1_PLANSPEC_002/evidence.json"
+agent_cmd: "manual"
+notes: "Phase 1-2 infrastructure. Additive-only, non-breaking."

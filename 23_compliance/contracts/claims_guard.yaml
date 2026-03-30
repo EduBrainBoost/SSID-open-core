@@ -1,0 +1,23 @@
+# Contract: claims_guard
+# Source: 23_compliance/policies/claims_guard.rego
+# Generated: Phase 2 — A02_A03_COMPLETION
+# SoT Reference: 16_codex/contracts/sot/
+contract_id: "claims_guard-contract"
+rule_id: "claims_guard"
+package: "claims_guard"
+type: compliance_contract
+version: "1.0.0"
+derived_from: "23_compliance/policies/claims_guard.rego"
+enforcement: rego_policy
+status: active
+description: >
+  Denies unverified interfederation/certification/execution claims.
+  Only PASS/FAIL + findings. No scores, no badges.
+default_decision: allow
+deny_conditions:
+  - id: "CLAIMS_GUARD_FAIL"
+    trigger: "forbidden claim found in scanned content without evidence flag"
+    requires_evidence: true
+input_schema:
+  scanned_files: "list of {path, content}"
+  evidence_flags: "list of {claim, verified}"

@@ -35,25 +35,6 @@ ROOTS_24: list[str] = [
     "24_meta_orchestration",
 ]
 
-SHARDS_16: list[str] = [
-    "01_identitaet_personen",
-    "02_dokumente_nachweise",
-    "03_zugang_berechtigungen",
-    "04_kommunikation_daten",
-    "05_gesundheit_medizin",
-    "06_bildung_qualifikationen",
-    "07_familie_soziales",
-    "08_mobilitaet_fahrzeuge",
-    "09_arbeit_karriere",
-    "10_finanzen_banking",
-    "11_versicherungen_risiken",
-    "12_immobilien_grundstuecke",
-    "13_unternehmen_gewerbe",
-    "14_vertraege_vereinbarungen",
-    "15_handel_transaktionen",
-    "16_behoerden_verwaltung",
-]
-
 MANIFEST_REQUIRED_FIELDS: list[str] = [
     "shard_id",
     "root_id",

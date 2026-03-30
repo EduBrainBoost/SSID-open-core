@@ -1,0 +1,73 @@
+# Proof-Only Verification Policy
+# SoT v4.1.0 | ROOT-24-LOCK | Module: 23_compliance
+#
+# Defines the compliance rules for SSID's proof-only architecture.
+# SSID must never intermediate payments, store PII, or operate KYC directly.
+#
+# Cross-references:
+#   - 19_adapters/providers/provider_registry.yaml
+#   - 23_compliance/policies/jurisdiction_blacklist.yaml
+#   - 03_core/validators/verification/proof_verifier.py
+
+policy_id: "SSID-POV-001"
+name: "Proof-Only Verification Policy"
+version: "1.0.0"
+last_updated: "2026-03-28"
+status: "active"
+
+rules:
+  - id: "POV-001"
+    rule: "SSID must never intermediate payments for KYC/AML services"
+    description: >
+      User pays verification provider directly. SSID has no role in the
+      payment flow between user and provider.
+    enforcement: reject
+    severity: critical
+
+  - id: "POV-002"
+    rule: "SSID must never store PII on-chain or off-chain"
+    description: >
+      Only SHA3-256 hashes of subject identifiers are stored.
+      Raw PII is never transmitted to or stored by SSID.
+    enforcement: reject
+    severity: critical
+
+  - id: "POV-003"
+    rule: "SSID must only accept proof/pass/credential/status from providers"
+    description: >
+      SSID acts as proof_receiver_only. No raw identity documents,
+      biometric data, or personal information is accepted.
+    enforcement: enforce
+    severity: critical
+
+  - id: "POV-004"
+    rule: "Providers without proof-only mode are blocked"
+    description: >
+      Any provider that does not support proof_only_mode=true is
+      rejected at the verification gate. Fail-closed.
+    enforcement: reject
+    severity: high
+
+  - id: "POV-005"
+    rule: "Providers without direct-pay capability are deprioritized"
+    description: >
+      Providers requiring B2B contracts or intermediated payments
+      are deprioritized and flagged as not_primary_direct_pay.
+    enforcement: warn
+    severity: medium
+
+  - id: "POV-006"
+    rule: "Providers in banned jurisdictions are blocked"
+    description: >
+      Proofs originating from blacklisted or sanctioned jurisdictions
+      are rejected. See jurisdiction_blacklist.yaml.
+    enforcement: reject
+    severity: critical
+
+  - id: "POV-007"
+    rule: "Providers without revocation strategy are blocked"
+    description: >
+      Providers that do not support revocation checks cannot provide
+      reliable proof status and are blocked from the verification flow.
+    enforcement: reject
+    severity: high

@@ -1,16 +1,25 @@
-name: 02_dokumente_nachweise
-layer: 16_codex
+shard_id: 02_dokumente_nachweise
+root_id: 16_codex
+version: 1.0.0
+status: draft
+generated_utc: '2026-03-02T19:39:35Z'
+implementation_stack: python
+contracts:
+- ref: contracts/schema.json
+  type: json_schema
+  description: Document and proof data contract
+conformance:
+- chart_reference: chart.yaml
+  validation: structural
 implementation:
   language: python
-  entrypoint: implementations/main.py
-  dependencies:
-  - pydantic
-  - jinja2
-tests:
-  - tests/unit
-  - tests/integration
-contracts:
-  - contracts/openapi.yaml
-conformance:
-  chart_ref: chart.yaml
-  semver: "0.1.0"
+  entrypoint: implementations/python/main.py
+dependencies:
+- shard: 01_identitaet_personen
+  root: 16_codex
+  relation: document_owner
+test_targets:
+- tests/test_shard_smoke.py
+policies:
+- ref: hash_only
+- ref: non_custodial

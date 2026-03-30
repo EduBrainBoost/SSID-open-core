@@ -1,0 +1,374 @@
+# SOC 2 Controls — SSID Platform
+# SoT v4.1.0 | Classification: Compliance
+# Framework: SOC 2 Trust Service Criteria (AICPA TSC 2017)
+# Generated: 2026-03-15
+
+framework_id: "soc2"
+version: "1.0.0"
+final_authority: "03_core"
+
+# ---------------------------------------------------------------------
+# IMPLEMENTATION CONTROLS PER SOC 2 TRUST SERVICE CRITERIA
+# ---------------------------------------------------------------------
+
+controls:
+
+  # ---- CC1 CONTROL ENVIRONMENT ----
+
+  - control_id: "SOC2-C-001"
+    criteria: "CC1.1 / CC1.2 / CC1.3"
+    title: "Governance and control environment"
+    description: >
+      Documented governance structure with board oversight, management
+      accountability, and formal information security policy.
+      Code of conduct signed by all staff. Ethics reporting channel
+      available. Policy review cycle enforced annually.
+    implementation_root: "07_governance_legal"
+    supporting_roots: ["23_compliance", "24_meta_orchestration"]
+    shards: []
+    type: "preventive"
+    status: "required"
+    review_frequency: "annual"
+    evidence_path: "23_compliance/evidence/soc2/cc1/governance/"
+
+  - control_id: "SOC2-C-002"
+    criteria: "CC1.4 / CC1.5"
+    title: "Accountability and competency management"
+    description: >
+      Role-specific competency requirements defined for all InfoSec-relevant roles.
+      Non-repudiation enforced via cryptographic identity binding in 03_core.
+      WORM audit trail creates immutable accountability record.
+      Performance management includes InfoSec objectives.
+    implementation_root: "03_core"
+    supporting_roots: ["07_governance_legal", "02_audit_logging"]
+    shards:
+      - "23_compliance/shards/06_bildung_qualifikationen"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/soc2/cc1/accountability/"
+
+  # ---- CC2 COMMUNICATION AND INFORMATION ----
+
+  - control_id: "SOC2-C-003"
+    criteria: "CC2.1 / CC2.2 / CC2.3"
+    title: "Information quality and communication"
+    description: >
+      Data quality validated at ingestion via 18_data_layer schema enforcement.
+      Internal security communications via 17_observability alerting.
+      External disclosures via 13_ui_layer privacy notices and
+      10_interoperability partner communications.
+    implementation_root: "18_data_layer"
+    supporting_roots: ["17_observability", "13_ui_layer", "10_interoperability"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+    type: "detective"
+    status: "required"
+    evidence_path: "23_compliance/evidence/soc2/cc2/"
+
+  # ---- CC3 RISK ASSESSMENT ----
+
+  - control_id: "SOC2-C-004"
+    criteria: "CC3.1 / CC3.2 / CC3.4"
+    title: "Risk assessment and management"
+    description: >
+      Annual risk assessment with threat modelling for all SSID processing activities.
+      Risk register maintained in 23_compliance with treatment status.
+      Significant changes trigger reassessment. Risk-based processing controls
+      in 08_identity_score inform automated risk response.
+    implementation_root: "23_compliance"
+    supporting_roots: ["08_identity_score", "17_observability"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/05_gesundheit_medizin"
+      - "23_compliance/shards/10_finanzen_banking"
+    type: "detective"
+    status: "required"
+    review_frequency: "annual"
+    evidence_path: "23_compliance/evidence/soc2/cc3/risk_register/"
+
+  - control_id: "SOC2-C-005"
+    criteria: "CC3.3"
+    title: "Fraud risk identification and response"
+    description: >
+      Automated fraud detection via identity scoring and behavioural anomaly engine.
+      Fraud indicators: identity velocity, document reuse, biometric mismatch,
+      device fingerprint anomalies. Positive fraud score triggers manual review
+      and blocking gate before credential issuance.
+    implementation_root: "08_identity_score"
+    supporting_roots: ["03_core", "02_audit_logging"]
+    shards:
+      - "23_compliance/shards/10_finanzen_banking"
+      - "23_compliance/shards/15_handel_transaktionen"
+      - "23_compliance/shards/01_identitaet_personen"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/soc2/cc3/fraud/"
+
+  # ---- CC4 MONITORING ACTIVITIES ----
+
+  - control_id: "SOC2-C-006"
+    criteria: "CC4.1 / CC4.2"
+    title: "Continuous control monitoring and deficiency reporting"
+    description: >
+      Real-time control effectiveness monitoring via 17_observability.
+      Automated simulation tests in 11_test_simulation validate control operation.
+      Deficiency register in 23_compliance; remediation tracked to closure.
+      Deficiencies reported to management within 5 business days of identification.
+    implementation_root: "17_observability"
+    supporting_roots: ["23_compliance", "11_test_simulation"]
+    shards: []
+    type: "detective"
+    status: "required"
+    deficiency_reporting_sla_days: 5
+    evidence_path: "23_compliance/evidence/soc2/cc4/"
+
+  # ---- CC5 CONTROL ACTIVITIES ----
+
+  - control_id: "SOC2-C-007"
+    criteria: "CC5.1 / CC5.2 / CC5.3"
+    title: "Control activities — policies, procedures, and technology"
+    description: >
+      Comprehensive policy and procedure library in 23_compliance and 07_governance_legal.
+      General IT controls automated in CI/CD pipeline (04_deployment, 12_tooling).
+      Policy deployment via enforcement gates in 03_core rather than manual procedure.
+    implementation_root: "03_core"
+    supporting_roots: ["23_compliance", "07_governance_legal", "04_deployment", "12_tooling"]
+    shards: []
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/soc2/cc5/"
+
+  # ---- CC6 LOGICAL AND PHYSICAL ACCESS ----
+
+  - control_id: "SOC2-C-008"
+    criteria: "CC6.1 / CC6.2 / CC6.3"
+    title: "Logical access control and identity management"
+    description: >
+      Zero-time authentication for all access. RBAC enforced platform-wide.
+      Least-privilege by default; access scoped to minimum necessary role.
+      Identity verification required before credential issuance.
+      Post-quantum cryptographic protection of all access credentials.
+    implementation_root: "14_zero_time_auth"
+    supporting_roots: ["03_core", "21_post_quantum_crypto", "08_identity_score"]
+    shards:
+      - "23_compliance/shards/03_zugang_berechtigungen"
+      - "23_compliance/shards/01_identitaet_personen"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/soc2/cc6/access/"
+
+  - control_id: "SOC2-C-009"
+    criteria: "CC6.5 / CC6.6"
+    title: "Access termination and external threat protection"
+    description: >
+      Automated access revocation on role change, departure, or anomaly detection.
+      External threat protection via DDoS mitigation, WAF, zero-trust network.
+      IDS/IPS monitoring in 17_observability. Access deprovisioning WORM-logged.
+    implementation_root: "14_zero_time_auth"
+    supporting_roots: ["17_observability", "15_infra", "02_audit_logging"]
+    shards:
+      - "23_compliance/shards/03_zugang_berechtigungen"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/soc2/cc6/termination/"
+
+  - control_id: "SOC2-C-010"
+    criteria: "CC6.7 / CC6.8"
+    title: "Encrypted transmission and unauthorised software prevention"
+    description: >
+      Post-quantum TLS for all data in transit; no unencrypted channels.
+      Immutable container images prevent unauthorised software introduction.
+      Dependency scanning in CI pipeline; SCA for all third-party components.
+      Runtime enforcement: no new process execution in production containers.
+    implementation_root: "21_post_quantum_crypto"
+    supporting_roots: ["04_deployment", "12_tooling", "17_observability"]
+    shards:
+      - "23_compliance/shards/04_kommunikation_daten"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/soc2/cc6/transmission/"
+
+  # ---- CC7 SYSTEM OPERATIONS ----
+
+  - control_id: "SOC2-C-011"
+    criteria: "CC7.1 / CC7.2"
+    title: "Vulnerability and anomaly detection"
+    description: >
+      Automated vulnerability scanning with CVE feed integration.
+      Real-time anomaly detection across all system components.
+      Behavioural anomaly scoring for identity-layer operations.
+      Alert thresholds calibrated to risk appetite. P1 alert: 15 min response.
+    implementation_root: "17_observability"
+    supporting_roots: ["12_tooling", "08_identity_score", "02_audit_logging"]
+    shards: []
+    type: "detective"
+    status: "required"
+    p1_response_minutes: 15
+    evidence_path: "23_compliance/evidence/soc2/cc7/monitoring/"
+
+  - control_id: "SOC2-C-012"
+    criteria: "CC7.3 / CC7.4 / CC7.5"
+    title: "Incident response and recovery"
+    description: >
+      Documented incident response procedure with severity P1-P4 classification.
+      Automated containment triggers for P1/P2 incidents.
+      Recovery procedures with defined RTO: 4h, RPO: 1h.
+      Post-incident review mandatory for P1/P2. Lessons-learned feed into control updates.
+    implementation_root: "17_observability"
+    supporting_roots: ["02_audit_logging", "15_infra", "23_compliance", "11_test_simulation"]
+    shards: []
+    type: "corrective"
+    status: "required"
+    rto_hours: 4
+    rpo_hours: 1
+    evidence_path: "23_compliance/evidence/soc2/cc7/incident_response/"
+
+  # ---- CC8 CHANGE MANAGEMENT ----
+
+  - control_id: "SOC2-C-013"
+    criteria: "CC8.1"
+    title: "Gated change management pipeline"
+    description: >
+      All changes authorised through gated CI/CD pipeline.
+      Security sign-off required before production deployment.
+      Automated rollback on deployment failure. Emergency change procedure
+      with post-hoc approval. All changes WORM-logged.
+    implementation_root: "04_deployment"
+    supporting_roots: ["02_audit_logging", "07_governance_legal", "11_test_simulation"]
+    shards: []
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/soc2/cc8/changes/"
+
+  # ---- CC9 RISK MITIGATION ----
+
+  - control_id: "SOC2-C-014"
+    criteria: "CC9.1 / CC9.2"
+    title: "Risk mitigation and vendor risk management"
+    description: >
+      Risk treatment plans maintained for all identified risks.
+      Vendor risk assessment required before onboarding.
+      Annual vendor security review. Critical vendor right-to-audit.
+      Risk residual acceptance requires CISO sign-off.
+    implementation_root: "23_compliance"
+    supporting_roots: ["10_interoperability", "07_governance_legal", "03_core"]
+    shards: []
+    type: "preventive"
+    status: "required"
+    review_frequency: "annual"
+    evidence_path: "23_compliance/evidence/soc2/cc9/risk_mitigation/"
+
+  # ---- AVAILABILITY ----
+
+  - control_id: "SOC2-C-015"
+    criteria: "A1.1 / A1.2 / A1.3"
+    title: "Availability monitoring, capacity, and disaster recovery"
+    description: >
+      99.9% uptime SLA enforced via multi-region deployment and auto-scaling.
+      Capacity forecasting based on 17_observability metrics.
+      DR tested annually via 11_test_simulation. RTO: 4h, RPO: 1h targets.
+      Environmental redundancy via multi-AZ cloud deployment.
+    implementation_root: "15_infra"
+    supporting_roots: ["17_observability", "04_deployment", "11_test_simulation"]
+    shards: []
+    type: "preventive"
+    status: "required"
+    uptime_sla_pct: 99.9
+    rto_hours: 4
+    rpo_hours: 1
+    test_frequency: "annual"
+    evidence_path: "23_compliance/evidence/soc2/availability/"
+
+  # ---- PROCESSING INTEGRITY ----
+
+  - control_id: "SOC2-C-016"
+    criteria: "PI1.1 / PI1.2 / PI1.3"
+    title: "Processing integrity — completeness, accuracy, and authorisation"
+    description: >
+      All identity attestation processing validated for completeness and accuracy
+      via 03_core gate validators. Processing authorisation required before
+      credential issuance. Output delivery WORM-logged with recipient confirmation.
+      Error rates monitored; >0.1% error rate triggers automated alert.
+    implementation_root: "03_core"
+    supporting_roots: ["02_audit_logging", "18_data_layer", "17_observability"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/02_dokumente_nachweise"
+    type: "preventive"
+    status: "required"
+    error_rate_alert_threshold_pct: 0.1
+    evidence_path: "23_compliance/evidence/soc2/processing_integrity/"
+
+  # ---- CONFIDENTIALITY ----
+
+  - control_id: "SOC2-C-017"
+    criteria: "C1.1 / C1.2"
+    title: "Confidential information identification, protection, and disposal"
+    description: >
+      Data classification enforced via module.yaml data_statement fields.
+      Confidential data encrypted at rest and in transit via 21_post_quantum_crypto.
+      Secure deletion via cryptographic erasure; key destruction makes data unrecoverable.
+      Disposal events WORM-logged with cryptographic proof.
+    implementation_root: "23_compliance"
+    supporting_roots: ["21_post_quantum_crypto", "18_data_layer", "03_core", "02_audit_logging"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/05_gesundheit_medizin"
+      - "23_compliance/shards/10_finanzen_banking"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/soc2/confidentiality/"
+
+  # ---- PRIVACY ----
+
+  - control_id: "SOC2-C-018"
+    criteria: "P1.1 / P2.1"
+    title: "Privacy notice and consent management"
+    description: >
+      Layered privacy notices delivered via 13_ui_layer.
+      Granular consent choices enforced by 03_core processing gate.
+      Consent records stored per identity shard; withdrawal available at any time.
+      Privacy notice updated within 30 days of material processing change.
+    implementation_root: "13_ui_layer"
+    supporting_roots: ["03_core", "23_compliance"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+    type: "preventive"
+    status: "required"
+    notice_update_sla_days: 30
+    evidence_path: "23_compliance/evidence/soc2/privacy/consent/"
+
+  - control_id: "SOC2-C-019"
+    criteria: "P3.1 / P4.1"
+    title: "Data collection purpose limitation and use controls"
+    description: >
+      Data minimisation enforced via hash-only evidence strategy.
+      Purpose limitation gate in 03_core blocks processing beyond declared purpose.
+      Collection scope per shard documented in 23_compliance.
+      Zero-knowledge proofs enable selective disclosure without over-collection.
+    implementation_root: "03_core"
+    supporting_roots: ["23_compliance", "21_post_quantum_crypto"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/soc2/privacy/purpose_limitation/"
+
+  - control_id: "SOC2-C-020"
+    criteria: "P5.1 / P6.1 / P7.1 / P8.1"
+    title: "Data subject rights — access, disclosure, accuracy, correction, and deletion"
+    description: >
+      Non-custodial SSID architecture enables self-sovereign data access by design.
+      Subject access, correction, deletion, and portability API in 03_core.
+      30-day SLA for all subject rights requests. Third-party disclosures
+      require explicit consent gate. Accuracy maintained via credential
+      freshness tracking in 09_meta_identity. All rights fulfilment WORM-logged.
+    implementation_root: "03_core"
+    supporting_roots: ["13_ui_layer", "09_meta_identity", "10_interoperability", "02_audit_logging"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/02_dokumente_nachweise"
+    type: "corrective"
+    status: "required"
+    response_sla_days: 30
+    evidence_path: "23_compliance/evidence/soc2/privacy/subject_rights/"

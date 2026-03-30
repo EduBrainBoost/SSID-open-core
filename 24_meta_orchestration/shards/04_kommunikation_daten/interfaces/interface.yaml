@@ -1,5 +1,0 @@
-interface_id: 24_meta_orchestration.04_kommunikation_daten.primary
-root_id: 24_meta_orchestration
-shard_id: 04_kommunikation_daten
-kind: bootstrap_contract
-status: active

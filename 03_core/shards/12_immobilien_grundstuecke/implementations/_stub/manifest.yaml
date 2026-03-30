@@ -1,0 +1,6 @@
+version: "0.0.0"
+root: "03_core"
+shard: "12_immobilien_grundstuecke"
+impl_id: "_stub"
+status: "SKELETON"
+files: []

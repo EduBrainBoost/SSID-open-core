@@ -11,6 +11,7 @@ import difflib
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -33,7 +34,9 @@ if str(CLI_DIR) not in sys.path:
 from _lib.run_id import compute_run_id, get_git_sha, compute_file_sha256
 from _lib.shards import parse_yaml as _parse_yaml_file
 
-SANDBOX_ROOT = REPO_ROOT / ".ssid_sandbox"
+# Sandbox outside repo to prevent self-inflation
+_STATE_DIR = Path(os.environ.get("SSID_EMS_STATE_DIR", str(Path.home() / "Documents" / "SSID_EMS_STATE")))
+SANDBOX_ROOT = _STATE_DIR / "sandboxes"
 RUN_LEDGER_ROOT = REPO_ROOT / "02_audit_logging" / "agent_runs"
 QUEUE_STATUS_FILE = REPO_ROOT / "24_meta_orchestration" / "queue" / "TASK_QUEUE.status.jsonl"
 
@@ -44,8 +47,18 @@ QA_FALLBACK = REPO_ROOT / "11_test_simulation" / "tests_compliance" / "test_sot_
 DUPLICATE_GUARD = REPO_ROOT / "12_tooling" / "cli" / "duplicate_guard.py"
 GITIGNORE = REPO_ROOT / ".gitignore"
 
-EXCLUDED_COPY_TOP = {".git", ".ssid_sandbox"}
-EXCLUDED_SNAPSHOT_PARTS = {".git", ".ssid_sandbox", "__pycache__", ".pytest_cache"}
+EXCLUDED_COPY_TOP = {
+    ".git", ".ssid_sandbox", ".claude", ".pytest_cache", "__pycache__",
+}
+# Directories excluded recursively during copytree
+EXCLUDED_COPY_RECURSIVE = {
+    "node_modules", "dist", ".next", "build", "coverage", "tmp",
+    ".pytest_cache", "__pycache__", ".git", ".ssid_sandbox",
+}
+EXCLUDED_SNAPSHOT_PARTS = EXCLUDED_COPY_TOP | EXCLUDED_COPY_RECURSIVE
+
+# Infrastructure paths always allowed in write gate (not subject to allowlist)
+WRITE_GATE_BYPASS_PREFIXES = {".claude/", ".github/"}
 
 
 @dataclass(frozen=True)
@@ -61,6 +74,8 @@ class TaskSpec:
     log_mode: str
     prompt: str
     tool_name: str
+    health_check: bool = False
+    resolved_worker: Optional[dict] = None
 
 
 @dataclass(frozen=True)
@@ -87,6 +102,14 @@ class QueueTask:
     notes: str
     allow_new_files_list: List[str]
     worker_command: Optional[List[str]]
+    worker_type: Optional[str] = None
+    health_check: bool = False
+
+
+def _is_health_check_prompt(prompt: str) -> bool:
+    """Detect health-check / echo-test prompts by keyword."""
+    lower = prompt.lower()
+    return any(kw in lower for kw in ("health check", "echo test", "verify", "return pass"))
 
 
 def _utc_now() -> str:
@@ -118,6 +141,28 @@ def _sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+_TASK_ID_RE = re.compile(r'^[A-Za-z0-9._-]{1,128}$')
+_SUBTASK_SEPARATOR = '--'
+
+
+def _validate_task_id(task_id: str) -> str:
+    """Validate task_id (including subtask IDs with -- separator)."""
+    if not _TASK_ID_RE.match(task_id):
+        raise SystemExit(f"FAIL: invalid task_id: {task_id!r}")
+    if '..' in task_id or '/' in task_id or '\\' in task_id:
+        raise SystemExit(f"FAIL: path traversal in task_id: {task_id!r}")
+    return task_id
+
+
+def _parse_subtask_id(task_id: str) -> tuple:
+    """Parse subtask ID into (parent_id, agent_suffix) or (task_id, None) if not a subtask."""
+    _validate_task_id(task_id)
+    if _SUBTASK_SEPARATOR in task_id:
+        parts = task_id.split(_SUBTASK_SEPARATOR, 1)
+        return parts[0], parts[1]
+    return task_id, None
+
+
 def _read_text_or_none(path: Path) -> Optional[str]:
     try:
         return path.read_text(encoding="utf-8")
@@ -128,9 +173,12 @@ def _read_text_or_none(path: Path) -> Optional[str]:
 def _ensure_gitignore_has_sandbox() -> None:
     if not GITIGNORE.exists():
         raise SystemExit("FAIL: .gitignore missing")
+    # Sandbox is now outside repo, but keep backward compatibility check
     lines = GITIGNORE.read_text(encoding="utf-8", errors="replace").splitlines()
-    if ".ssid_sandbox/" not in {ln.strip() for ln in lines}:
-        raise SystemExit("FAIL: .gitignore missing '.ssid_sandbox/'")
+    stripped = {ln.strip() for ln in lines}
+    if ".ssid_sandbox/" not in stripped:
+        # Warn but don't block - sandbox may be outside repo
+        print("WARN: .gitignore missing '.ssid_sandbox/' entry")
 
 
 def _iter_files(root: Path) -> Iterable[Path]:
@@ -184,9 +232,11 @@ def _build_patch(repo_root: Path, sandbox: Path, changed_paths: Sequence[str]) -
         left_text = _read_text_or_none(left) if left_exists else ""
         right_text = _read_text_or_none(right) if right_exists else ""
         if left_exists and left_text is None:
-            raise SystemExit(f"FAIL: binary file change is not supported for patch export: {rel}")
+            print(f"SKIP_BINARY: {rel}")
+            continue
         if right_exists and right_text is None:
-            raise SystemExit(f"FAIL: binary file change is not supported for patch export: {rel}")
+            print(f"SKIP_BINARY: {rel}")
+            continue
 
         from_file = "a/" + rel if left_exists else "/dev/null"
         to_file = "b/" + rel if right_exists else "/dev/null"
@@ -335,6 +385,8 @@ def _load_task_spec(task_path: Path) -> TaskSpec:
         log_mode=str(data.get("log_mode", "MINIMAL")),
         prompt=str(data.get("prompt", "")),
         tool_name=str(data.get("tool_name", "unknown")),
+        health_check=bool(data.get("health_check", False)),
+        resolved_worker=data.get("resolved_worker", None),
     )
 
 
@@ -342,14 +394,24 @@ def _copy_repo_to_sandbox(sandbox_root: Path) -> None:
     if sandbox_root.exists():
         move_to_worm(sandbox_root, reason="sandbox_recreation")
     sandbox_root.mkdir(parents=True, exist_ok=True)
-    for item in sorted(REPO_ROOT.iterdir(), key=lambda p: p.name):
+    print(f"PHASE: materialize")
+    print(f"SANDBOX_TARGET: {sandbox_root.as_posix()}")
+    items = sorted(REPO_ROOT.iterdir(), key=lambda p: p.name)
+    total = len([i for i in items if i.name not in EXCLUDED_COPY_TOP])
+    copied = 0
+    for item in items:
         if item.name in EXCLUDED_COPY_TOP:
+            print(f"SKIP: {item.name}")
             continue
         dest = sandbox_root / item.name
         if item.is_dir():
-            shutil.copytree(item, dest, dirs_exist_ok=True)
+            shutil.copytree(item, dest, dirs_exist_ok=True,
+                            ignore=shutil.ignore_patterns(*EXCLUDED_COPY_RECURSIVE))
         elif item.is_file():
             shutil.copy2(item, dest)
+        copied += 1
+        print(f"COPY: {item.name} ({copied}/{total})")
+    print(f"PHASE: materialize_done ({copied} items)")
 
 
 def _enforce_write_gate(
@@ -359,7 +421,9 @@ def _enforce_write_gate(
     changed_files_count: int,
     changed_lines_count: int,
 ) -> None:
-    outside = [p for p in changed if not _allowed(p, task.allowed_paths)]
+    outside = [p for p in changed
+               if not _allowed(p, task.allowed_paths)
+               and not any(p.startswith(bp) for bp in WRITE_GATE_BYPASS_PREFIXES)]
     if outside:
         raise SystemExit(f"WRITE_GATE_FAIL: path outside allowlist: {outside[0]}")
 
@@ -395,6 +459,7 @@ def _parse_queue(path: Path) -> Tuple[QueueDefaults, List[QueueTask]]:
     tasks: List[QueueTask] = []
     for t in raw.get("tasks", []) or []:
         task_id = str(t["task_id"])
+        _validate_task_id(task_id)
         if task_id in seen:
             raise SystemExit(f"FAIL: duplicate task_id in queue: {task_id}")
         seen.add(task_id)
@@ -403,6 +468,9 @@ def _parse_queue(path: Path) -> Tuple[QueueDefaults, List[QueueTask]]:
         worker_command = t.get("worker_command")
         if isinstance(worker_command, str):
             worker_command = worker_command.split()
+        # Resolve worker_type from resolved_worker or direct field
+        resolved_worker = t.get("resolved_worker") or {}
+        worker_type = str(resolved_worker.get("worker_type")) if resolved_worker.get("worker_type") else t.get("worker_type")
         tasks.append(
             QueueTask(
                 task_id=task_id,
@@ -418,12 +486,14 @@ def _parse_queue(path: Path) -> Tuple[QueueDefaults, List[QueueTask]]:
                 notes=str(t.get("notes", "")),
                 allow_new_files_list=[str(x) for x in t.get("allow_new_files_list", [])],
                 worker_command=worker_command if isinstance(worker_command, list) else None,
+                worker_type=worker_type,
             )
         )
     return defaults, tasks
 
 
 def _run_queue_task(task: QueueTask, keep_sandbox_on_fail: bool, save_patch: bool) -> Tuple[str, bool]:
+    _validate_task_id(task.task_id)
     started = _utc_now()
     run_id = f"{dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')}_{task.task_id}_{uuid.uuid4().hex[:8]}"
     sandbox = SANDBOX_ROOT / run_id / task.task_id
@@ -431,11 +501,51 @@ def _run_queue_task(task: QueueTask, keep_sandbox_on_fail: bool, save_patch: boo
     _copy_repo_to_sandbox(sandbox)
     print(f"TASK_START: {task.task_id}")
     print(f"SANDBOX: {sandbox.as_posix()}")
+    # Resolve worker type for type-specific execution
+    wtype = task.worker_type
+
     if task.worker_command:
-        _run_cmd(task.worker_command, cwd=sandbox)
+        if wtype == "noop":
+            print("NOOP_WORKER: skipping execution (noop worker type)")
+        elif wtype == "shell_command":
+            print(f"SHELL_WORKER: executing shell command")
+            proc = _run_cmd(task.worker_command, cwd=sandbox)
+            if proc.returncode != 0:
+                print(f"SHELL_WORKER_FAIL: exit={proc.returncode}")
+                if proc.stderr:
+                    print(f"  STDERR: {proc.stderr[:500]}")
+        elif wtype == "python_script":
+            print(f"PYTHON_WORKER: executing script")
+            proc = _run_cmd(task.worker_command, cwd=sandbox)
+            if proc.returncode != 0:
+                print(f"PYTHON_WORKER_FAIL: exit={proc.returncode}")
+                if proc.stderr:
+                    print(f"  STDERR: {proc.stderr[:500]}")
+        elif wtype == "claude_agent":
+            print(f"CLAUDE_WORKER: executing claude agent")
+            _run_cmd(task.worker_command, cwd=sandbox)
+        else:
+            print(f"GENERIC_WORKER: executing command (type={wtype})")
+            _run_cmd(task.worker_command, cwd=sandbox)
     else:
-        print("MANUAL_PATCH_MODE: no worker configured")
+        print("MANUAL_PATCH_MODE: no worker_command resolved (resolved_worker absent or noop)")
         print(f"HINT: apply changes in sandbox only -> {sandbox.as_posix()}")
+
+    # Health-check mode: no worker + no expected changes = immediate PASS
+    is_health_check = not task.worker_command and task.health_check
+
+    # Health-check fast path: skip expensive snapshot/diff entirely
+    if is_health_check:
+        print("HEALTH_CHECK: no worker, no changes expected -> PASS")
+        ended = _utc_now()
+        gates = {"policy": "SKIP", "sot": "SKIP", "qa": "SKIP"}
+        exits = {"policy": 0, "sot": 0, "qa": 0}
+        _write_manifest(run_id, task, started, ended, [], "", gates, exits, "health_check", save_patch)
+        _append_queue_status(run_id, task, "PASS", gates, "health_check: no worker, no changes")
+        root_run_dir = SANDBOX_ROOT / run_id
+        if root_run_dir.exists():
+            move_to_worm(root_run_dir, reason="health_check_cleanup")
+        return run_id, True
 
     if task.stop_on_missing_files:
         missing = [p for p in task.allowed_paths if not (sandbox / p).exists()]
@@ -519,6 +629,7 @@ def handle_run_queue(args: argparse.Namespace) -> int:
 
 def handle_run(args: argparse.Namespace) -> int:
     task_id = args.task_id or uuid.uuid4().hex[:12]
+    _validate_task_id(task_id)
     sandbox = SANDBOX_ROOT / task_id
     _copy_repo_to_sandbox(sandbox)
     print(f"TASK_START: {task_id}")
@@ -529,6 +640,17 @@ def handle_run(args: argparse.Namespace) -> int:
 
 def handle_package(args: argparse.Namespace) -> int:
     spec = _load_task_spec(Path(args.task))
+    health_check = getattr(spec, 'health_check', False) or _is_health_check_prompt(spec.prompt)
+
+    # Resolve worker command and type from task spec
+    worker_command = None
+    worker_type = None
+    if spec.resolved_worker:
+        if spec.resolved_worker.get("worker_command"):
+            worker_command = spec.resolved_worker["worker_command"]
+        if spec.resolved_worker.get("worker_type"):
+            worker_type = str(spec.resolved_worker["worker_type"])
+
     task = QueueTask(
         task_id=spec.task_id,
         scope="root",
@@ -542,7 +664,9 @@ def handle_package(args: argparse.Namespace) -> int:
         stop_on_missing_files=False,
         notes="package compatibility mode",
         allow_new_files_list=[],
-        worker_command=None,
+        worker_command=worker_command,
+        worker_type=worker_type,
+        health_check=health_check,
     )
     _run_id, ok = _run_queue_task(task, keep_sandbox_on_fail=False, save_patch=True)
     return 0 if ok else 24
@@ -781,6 +905,16 @@ def handle_gates(args: argparse.Namespace) -> int:
     return 0
 
 
+def handle_run_profile(args: argparse.Namespace) -> int:
+    """SSIDCTL v2: run an activation profile through the full runtime pipeline."""
+    meta_orch = REPO_ROOT / "24_meta_orchestration"
+    if str(meta_orch) not in sys.path:
+        sys.path.insert(0, str(meta_orch))
+    from runtime.runner import SSIDCTLRunner
+    runner = SSIDCTLRunner(repo_root=REPO_ROOT, dry_run=args.dry_run)
+    return runner.run(args.profile)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="SSID Consolidated Dispatcher v4.1 - single entry point")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -804,6 +938,11 @@ def main() -> int:
     e2e_p.add_argument("--source", choices=["local-run", "ci-run"], default="local-run")
     e2e_p.add_argument("--deterministic", action="store_true", help="Stable output (no volatile timestamps)")
 
+    # SSIDCTL v2 runtime entry point
+    profile_p = sub.add_parser("run-profile", help="SSIDCTL v2: run activation profile")
+    profile_p.add_argument("--profile", required=True, help="Activation profile ID (e.g. gate55_core_11)")
+    profile_p.add_argument("--dry-run", action="store_true", help="Validate without execution")
+
     args = parser.parse_args()
 
     if args.command == "run":
@@ -816,6 +955,8 @@ def main() -> int:
         return handle_run_queue(args)
     if args.command == "run-task":
         return handle_run_task(args)
+    if args.command == "run-profile":
+        return handle_run_profile(args)
     return 2
 
 

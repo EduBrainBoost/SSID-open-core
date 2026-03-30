@@ -1,0 +1,20 @@
+{
+  "event_id": "426a546158e9c4411aae24b962ae97e1216bbc038b8cc4b5e085ff2ecd7d5156",
+  "event_type": "merge_recorded",
+  "merge_sha": "cbe173e13b8d4ed214ca39e903af540cd4014d6c",
+  "observed_utc": "2026-02-28T14:21:02Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 32,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-cbe173e/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "cbe173e13b8d4ed214ca39e903af540cd4014d6c",
+  "summary": "P0: enforce scope allowlist guard in integrator merge checks (#32)",
+  "task_id": null
+}

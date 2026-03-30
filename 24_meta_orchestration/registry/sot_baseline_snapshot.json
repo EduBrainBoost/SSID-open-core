@@ -1,0 +1,83 @@
+{
+  "snapshot_id": "BL-2026-03-11T22:00:20Z",
+  "created_at_utc": "2026-03-11T22:00:20Z",
+  "baseline_version": "1.1.1",
+  "scope": "canonical_sot",
+  "artifact_count": 9,
+  "artifacts": [
+    {
+      "artifact_id": "contract",
+      "path": "16_codex/contracts/sot/sot_contract.yaml",
+      "sha256": "da53c4aed917af5a95c84427fcd6503f11fb14e6f2b2bfd9264bd6a2860631e0",
+      "version": "4.1.0",
+      "rule_count": 36
+    },
+    {
+      "artifact_id": "rego",
+      "path": "23_compliance/policies/sot/sot_policy.rego",
+      "sha256": "611dca5130f7f4b836fad00e85067e313f61971c0a08d4c7ea5746154f452884",
+      "version": "4.1.0",
+      "rule_count": 36
+    },
+    {
+      "artifact_id": "validator_core",
+      "path": "03_core/validators/sot/sot_validator_core.py",
+      "sha256": "378057402ddbb195b52906414af78127c5dc28dc6d132a5c72fef4b0377c106e",
+      "version": null,
+      "rule_count": 36
+    },
+    {
+      "artifact_id": "validator_cli",
+      "path": "12_tooling/cli/sot_validator.py",
+      "sha256": "e4588287b2bf4517ba33c873bb5cfd6c49f4d10e9a63dfbb90512b924e16c3ad",
+      "version": null,
+      "rule_count": null
+    },
+    {
+      "artifact_id": "tests",
+      "path": "11_test_simulation/tests_compliance/test_sot_validator.py",
+      "sha256": "480c153c55fede5447002989f8768043e0af48b34895393c6baf06a48fd1d841",
+      "version": null,
+      "rule_count": 37
+    },
+    {
+      "artifact_id": "moscow_report",
+      "path": "02_audit_logging/reports/SOT_MOSCOW_ENFORCEMENT_V3.2.0.md",
+      "sha256": "3280070fa98d47cb7f04a635502d1999c93d14160f9bcc35a175e1bba701d498",
+      "version": null,
+      "rule_count": 36
+    },
+    {
+      "artifact_id": "sot_registry",
+      "path": "24_meta_orchestration/registry/sot_registry.json",
+      "sha256": "05cc0a00c8d64d4a3b677f63ce4b8bdd9e763f2884c33f4f84a64afd68c4c724",
+      "version": null,
+      "rule_count": null
+    },
+    {
+      "artifact_id": "workflow",
+      "path": ".github/workflows/sot_autopilot.yml",
+      "sha256": "c9658eca44bbc7eae71140680baaeefe35fb57e70a17d9d4064bfa7e0cf6299c",
+      "version": null,
+      "rule_count": null
+    },
+    {
+      "artifact_id": "diff_alert",
+      "path": "02_audit_logging/reports/SOT_DIFF_ALERT.json",
+      "sha256": "efb5257ba4d8f8fdfaadcc849ece03617384a8acc72b9cbc220a94f279db5bea",
+      "version": null,
+      "rule_count": null
+    }
+  ],
+  "evidence_hash": "8d88f4370af2e89f6151800512ee8bcf82a91d3cbfa75f60e0d16f6bc853c106",
+  "generator": "sot_baseline_promotion_gate.py",
+  "promotion": {
+    "approval_id": "APR-CAND-20260311T165106Z-FE4F40",
+    "source_convergence_report": "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github\\SSID\\02_audit_logging\\reports\\reference_gates_convergence_report.json",
+    "source_convergence_evidence_hash": "b804baa4bc359469e7b1b792e5032b20ac1b4cd04f11af3432b9f14c4e40f7a0",
+    "decision": "approve",
+    "approval_scope": "canonical_sot",
+    "evidence_ref": "RBP-A0471A66E294"
+  },
+  "baseline_sha256": "054103e77b7b12f5f2c1f25147274760b105c9d9ae7e088f52c86e3e7c5e4f9d"
+}

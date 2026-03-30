@@ -1,0 +1,24 @@
+{
+  "task_id": "SSID-PHASE0-MASTER",
+  "title": "Execute canonical freeze and SoT lock",
+  "phase": 0,
+  "mode": "ems_first",
+  "scope": "single worktree only",
+  "write_policy": "documentation_registry_evidence_only",
+  "forbidden": [
+    "public push",
+    "mainnet actions",
+    "contract logic changes",
+    "manifest generation without implementation",
+    "cross-worktree writes"
+  ],
+  "definition_of_done": [
+    "canonical source matrix created",
+    "repo role matrix created",
+    "standards baseline created",
+    "regulatory baseline created",
+    "registry lock created",
+    "evidence package created",
+    "phase0 status emitted"
+  ]
+}

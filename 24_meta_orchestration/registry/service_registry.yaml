@@ -1,0 +1,419 @@
+schema_version: "1.0.0"
+generated_at_utc: "2026-03-15T00:00:00Z"
+description: >
+  All services (engines, validators, monitors) across the SSID repo.
+  Each entry captures name, root, module_path, operational status, and
+  upstream/downstream dependencies derived from module.yaml and source inspection.
+
+services:
+
+  # ── 01_ai_layer ────────────────────────────────────────────────────────────
+  - name: ai_validator
+    root: 01_ai_layer
+    module_path: 01_ai_layer/src/ai_validator.py
+    type: validator
+    status: implemented
+    class: AIValidator
+    dependencies:
+      - 03_core  # final_authority; advisory output only
+
+  # ── 02_audit_logging ───────────────────────────────────────────────────────
+  - name: evidence_chain_engine
+    root: 02_audit_logging
+    module_path: 02_audit_logging/src/evidence_chain_engine.py
+    type: engine
+    status: implemented
+    class: EvidenceChainEngine
+    dependencies:
+      - 23_compliance  # evidence target
+      - 17_observability  # log sink
+
+  - name: audit_reporter
+    root: 02_audit_logging
+    module_path: 02_audit_logging/src/audit_reporter.py
+    type: engine
+    status: implemented
+    class: AuditReporter
+    dependencies:
+      - 02_audit_logging/src/evidence_chain_engine.py
+      - 23_compliance
+
+  - name: evidence_verifier
+    root: 02_audit_logging
+    module_path: 02_audit_logging/src/evidence_verifier.py
+    type: validator
+    status: implemented
+    class: null  # module-level functions
+    dependencies:
+      - 02_audit_logging/src/evidence_chain_engine.py
+
+  - name: evidence_writer
+    root: 02_audit_logging
+    module_path: 02_audit_logging/src/evidence_writer.py
+    type: utility
+    status: implemented
+    class: null
+    dependencies:
+      - 02_audit_logging/src/evidence_chain_engine.py
+
+  - name: redaction_filter
+    root: 02_audit_logging
+    module_path: 02_audit_logging/redaction/redaction_filter.py
+    type: utility
+    status: implemented
+    class: null
+    dependencies:
+      - 03_core/security/data_minimization.py
+
+  - name: quarantine_processor
+    root: 02_audit_logging
+    module_path: 02_audit_logging/quarantine/processing/quarantine_processor.py
+    type: utility
+    status: implemented
+    class: null
+    dependencies: []
+
+  # ── 03_core ────────────────────────────────────────────────────────────────
+  - name: fairness_engine
+    root: 03_core
+    module_path: 03_core/fairness_engine.py
+    type: engine
+    status: implemented
+    class: FairnessEngine
+    dependencies:
+      - 03_core/fee_distribution_engine.py
+
+  - name: fee_distribution_engine
+    root: 03_core
+    module_path: 03_core/fee_distribution_engine.py
+    type: engine
+    status: implemented
+    class: FeeDistributionEngine
+    dependencies:
+      - 03_core/contracts/FeeDistribution.sol  # on-chain counterpart
+
+  - name: governance_reward_engine
+    root: 03_core
+    module_path: 03_core/governance_reward_engine.py
+    type: engine
+    status: implemented
+    class: GovernanceRewardEngine
+    dependencies:
+      - 03_core/contracts/CodexRewardReporter.sol
+
+  - name: identity_fee_router
+    root: 03_core
+    module_path: 03_core/identity_fee_router.py
+    type: engine
+    status: implemented
+    class: IdentityFeeRouter
+    dependencies:
+      - 03_core/contracts/IdentityFeeRouter.sol
+
+  - name: license_fee_splitter
+    root: 03_core
+    module_path: 03_core/license_fee_splitter.py
+    type: engine
+    status: implemented
+    class: LicenseFeeSplitter
+    dependencies:
+      - 03_core/fee_distribution_engine.py
+
+  - name: subscription_revenue_distributor
+    root: 03_core
+    module_path: 03_core/subscription_revenue_distributor.py
+    type: engine
+    status: implemented
+    class: SubscriptionRevenueDistributor
+    dependencies:
+      - 03_core/fee_distribution_engine.py
+
+  - name: reward_handler
+    root: 03_core
+    module_path: 03_core/src/reward_handler.py
+    type: engine
+    status: implemented
+    class: RewardHandler
+    dependencies:
+      - 03_core/contracts/CodexRewardReporter.sol
+
+  - name: sot_validator_core
+    root: 03_core
+    module_path: 03_core/validators/sot/sot_validator_core.py
+    type: validator
+    status: implemented
+    class: SoTValidatorCore
+    dependencies:
+      - 24_meta_orchestration/registry/sot_registry.json
+
+  - name: data_minimization
+    root: 03_core
+    module_path: 03_core/security/data_minimization.py
+    type: utility
+    status: implemented
+    class: SSIDDataMinimizer
+    dependencies:
+      - 03_core/security/ssid_security/secret_patterns.py
+
+  - name: forensic_manager
+    root: 03_core
+    module_path: 03_core/security/forensic_manager.py
+    type: utility
+    status: implemented
+    class: SSIDForensicManager
+    dependencies:
+      - 02_audit_logging
+
+  # ── 06_data_pipeline ───────────────────────────────────────────────────────
+  - name: data_pipeline
+    root: 06_data_pipeline
+    module_path: 06_data_pipeline/src/data_pipeline.py
+    type: utility
+    status: stub  # only pipeline_noop() present
+    class: null
+    dependencies:
+      - 03_core
+
+  # ── 07_governance_legal ────────────────────────────────────────────────────
+  - name: policy_execution_engine
+    root: 07_governance_legal
+    module_path: 07_governance_legal/src/policy_execution_engine.py
+    type: engine
+    status: implemented
+    class: PolicyExecutionEngine
+    dependencies:
+      - 03_core
+
+  - name: governance_legal
+    root: 07_governance_legal
+    module_path: 07_governance_legal/src/governance_legal.py
+    type: utility
+    status: implemented
+    class: null
+    dependencies:
+      - 07_governance_legal/src/policy_execution_engine.py
+
+  # ── 08_identity_score ──────────────────────────────────────────────────────
+  - name: identity_score_engine
+    root: 08_identity_score
+    module_path: 08_identity_score/src/identity_score_engine.py
+    type: engine
+    status: implemented
+    class: IdentityScoreEngine
+    dependencies:
+      - 03_core
+      - 01_ai_layer  # advisory signals
+
+  # ── 17_observability ───────────────────────────────────────────────────────
+  - name: audit_event_monitor
+    root: 17_observability
+    module_path: 17_observability/src/audit_event_monitor.py
+    type: monitor
+    status: implemented
+    class: AuditEventMonitor
+    dependencies:
+      - 02_audit_logging
+      - 03_core
+
+  - name: health_probe
+    root: 17_observability
+    module_path: 17_observability/src/health_probe.py
+    type: monitor
+    status: implemented
+    class: HealthProbe
+    dependencies:
+      - 17_observability/src/runtime_health_engine.py
+
+  - name: metrics_collector
+    root: 17_observability
+    module_path: 17_observability/src/metrics_collector.py
+    type: monitor
+    status: implemented
+    class: MetricsCollector
+    dependencies:
+      - 17_observability/src/system_metrics_collector.py
+
+  - name: policy_drift_detector
+    root: 17_observability
+    module_path: 17_observability/src/policy_drift_detector.py
+    type: monitor
+    status: implemented
+    class: PolicyDriftDetector
+    dependencies:
+      - 23_compliance
+      - 03_core
+
+  - name: registry_health_checker
+    root: 17_observability
+    module_path: 17_observability/src/registry_health_checker.py
+    type: monitor
+    status: implemented
+    class: RegistryHealthChecker
+    dependencies:
+      - 24_meta_orchestration/registry/shards_registry.json
+
+  - name: runtime_health_engine
+    root: 17_observability
+    module_path: 17_observability/src/runtime_health_engine.py
+    type: engine
+    status: implemented
+    class: RuntimeHealthEngine
+    dependencies:
+      - 24_meta_orchestration/registry/shards_registry.json
+      - 03_core
+
+  - name: system_pulse
+    root: 17_observability
+    module_path: 17_observability/src/system_pulse.py
+    type: monitor
+    status: implemented
+    class: SystemPulseEngine
+    dependencies:
+      - 17_observability/src/runtime_health_engine.py
+      - 12_tooling/cli/run_all_gates.py
+
+  - name: system_metrics_collector
+    root: 17_observability
+    module_path: 17_observability/src/system_metrics_collector.py
+    type: monitor
+    status: implemented
+    class: null
+    dependencies:
+      - 17_observability/src/metrics_collector.py
+
+  # ── 21_post_quantum_crypto ─────────────────────────────────────────────────
+  - name: pqc_core
+    root: 21_post_quantum_crypto
+    module_path: 21_post_quantum_crypto/src/pqc_core.py
+    type: engine
+    status: implemented
+    class: null  # module-level functions (generate_keypair, sign, verify)
+    dependencies: []
+
+  - name: pqc_integration
+    root: 21_post_quantum_crypto
+    module_path: 21_post_quantum_crypto/src/pqc_integration.py
+    type: engine
+    status: implemented
+    class: null  # module-level functions (kem_keygen, sig_keygen, etc.)
+    dependencies:
+      - 21_post_quantum_crypto/src/pqc_core.py
+
+  - name: key_manager
+    root: 21_post_quantum_crypto
+    module_path: 21_post_quantum_crypto/src/key_manager.py
+    type: utility
+    status: implemented
+    class: KeyManager
+    dependencies:
+      - 21_post_quantum_crypto/src/pqc_integration.py
+
+  # ── 12_tooling ─────────────────────────────────────────────────────────────
+  - name: secret_scanner
+    root: 12_tooling
+    module_path: 12_tooling/security/secret_scanner.py
+    type: validator
+    status: implemented
+    class: SecretScanner
+    dependencies: []
+
+  - name: sbom_generator
+    root: 12_tooling
+    module_path: 12_tooling/security/sbom_generator.py
+    type: utility
+    status: implemented
+    class: null
+    dependencies:
+      - 12_tooling/security/secret_scanner.py
+
+  - name: supply_chain_validator
+    root: 12_tooling
+    module_path: 12_tooling/security/supply_chain_validator.py
+    type: validator
+    status: implemented
+    class: null
+    dependencies:
+      - 12_tooling/security/sbom_generator.py
+
+  - name: shard_conformance_gate
+    root: 12_tooling
+    module_path: 12_tooling/cli/shard_conformance_gate.py
+    type: validator
+    status: implemented
+    class: null
+    dependencies:
+      - 24_meta_orchestration/registry/shards_registry.json
+
+  - name: sot_validator_cli
+    root: 12_tooling
+    module_path: 12_tooling/cli/sot_validator.py
+    type: validator
+    status: implemented
+    class: null
+    dependencies:
+      - 03_core/validators/sot/sot_validator_core.py
+
+  - name: runtime_smoke_lib
+    root: 12_tooling
+    module_path: 12_tooling/ops/runtime_smoke/runtime_smoke_lib.py
+    type: utility
+    status: implemented
+    class: null
+    dependencies: []
+
+  - name: automation_loop
+    root: 12_tooling
+    module_path: 12_tooling/cli/automation_loop.py
+    type: utility
+    status: implemented
+    class: null
+    dependencies:
+      - 12_tooling/cli/run_all_gates.py
+      - 12_tooling/cli/ssid_dispatcher.py
+
+  # ── 23_compliance ──────────────────────────────────────────────────────────
+  - name: circular_dependency_validator
+    root: 23_compliance
+    module_path: 23_compliance/anti_gaming/circular_dependency_validator.py
+    type: validator
+    status: implemented
+    class: null
+    dependencies:
+      - 23_compliance/anti_gaming/dependency_graph_generator.py
+
+  - name: overfitting_detector
+    root: 23_compliance
+    module_path: 23_compliance/anti_gaming/overfitting_detector.py
+    type: monitor
+    status: implemented
+    class: null
+    dependencies: []
+
+  - name: business_compliance_checker
+    root: 23_compliance
+    module_path: 23_compliance/reviews/business_compliance_checker.py
+    type: validator
+    status: implemented
+    class: null
+    dependencies:
+      - 07_governance_legal
+
+  # ── 24_meta_orchestration ──────────────────────────────────────────────────
+  - name: orchestrator
+    root: 24_meta_orchestration
+    module_path: 24_meta_orchestration/src/orchestrator.py
+    type: engine
+    status: implemented
+    class: null
+    dependencies:
+      - 12_tooling/cli/ssid_dispatcher.py
+      - 24_meta_orchestration/registry/shards_registry.json
+
+  - name: e2e_dispatcher
+    root: 24_meta_orchestration
+    module_path: 24_meta_orchestration/dispatcher/e2e_dispatcher.py
+    type: utility
+    status: implemented
+    class: null
+    dependencies:
+      - 12_tooling/cli/ssid_dispatcher.py

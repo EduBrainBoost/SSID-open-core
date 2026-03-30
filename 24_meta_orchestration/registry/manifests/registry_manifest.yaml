@@ -1,0 +1,487 @@
+# SSID Module Registry Manifest
+# Tracks root module bindings: identity, version, lock-status, artifact-refs
+# SoT: v4.1.0 | ROOT-24-LOCK
+# Generated: 2026-02-28
+
+schema_version: "1.0.0"
+
+modules:
+  - module_id: "01_ai_layer"
+    name: "AI Layer"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Public Specification"
+    purpose: "advisory_only"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "01_ai_layer/module.yaml"
+      readme: "01_ai_layer/README.md"
+      model_registry: "01_ai_layer/registry/model_registry.yaml"
+    interface_refs:
+      - "03_core/interfaces/ai_validator_bus.jsonl"
+      - "17_observability/logs/ai/"
+      - "23_compliance/evidence/ai_layer/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_006"
+      - "SOT_AGENT_007"
+      - "SOT_AGENT_008"
+
+  - module_id: "02_audit_logging"
+    name: "Audit Logging & Evidence"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Internal Governance"
+    purpose: "evidence_infrastructure"
+    final_authority: "23_compliance"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "02_audit_logging/module.yaml"
+      readme: "02_audit_logging/README.md"
+      data_minimization: "02_audit_logging/DATA_MINIMIZATION.md"
+    interface_refs:
+      - "03_core/interfaces/audit_ingestion_bus.jsonl"
+      - "17_observability/logs/audit/"
+      - "23_compliance/evidence/audit/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_009"
+      - "SOT_AGENT_010"
+      - "SOT_AGENT_011"
+
+  - module_id: "03_core"
+    name: "Core Validators & Authority"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Internal Authority"
+    purpose: "final_authority"
+    delegates_from: "01_ai_layer"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "03_core/module.yaml"
+      readme: "03_core/README.md"
+      ai_validator_bus: "03_core/interfaces/ai_validator_bus.jsonl"
+    interface_refs:
+      - "17_observability/logs/core/"
+      - "23_compliance/evidence/core/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_012"
+      - "SOT_AGENT_013"
+      - "SOT_AGENT_014"
+
+  - module_id: "04_deployment"
+    name: "Deployment & Release Operations"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Internal Operations"
+    purpose: "release_infrastructure"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "04_deployment/module.yaml"
+      readme: "04_deployment/README.md"
+    interface_refs:
+      - "17_observability/logs/deployment/"
+      - "23_compliance/evidence/deployment/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_015"
+      - "SOT_AGENT_016"
+      - "SOT_AGENT_017"
+
+  - module_id: "05_documentation"
+    name: "Documentation & Architecture Decisions"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Public Reference"
+    purpose: "architecture_documentation"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "05_documentation/module.yaml"
+      readme: "05_documentation/README.md"
+    interface_refs:
+      - "17_observability/logs/documentation/"
+      - "23_compliance/evidence/documentation/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_018"
+      - "SOT_AGENT_019"
+      - "SOT_AGENT_020"
+
+  - module_id: "06_data_pipeline"
+    name: "Data Pipeline & ETL Operations"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Internal Operations"
+    purpose: "data_processing_infrastructure"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "06_data_pipeline/module.yaml"
+      readme: "06_data_pipeline/README.md"
+    interface_refs:
+      - "17_observability/logs/data_pipeline/"
+      - "23_compliance/evidence/data_pipeline/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "07_governance_legal"
+    name: "Governance & Legal Framework"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Governance"
+    purpose: "legal_compliance_governance"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "07_governance_legal/module.yaml"
+      readme: "07_governance_legal/README.md"
+    interface_refs:
+      - "23_compliance/evidence/governance_legal/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_024"
+      - "SOT_AGENT_025"
+
+  - module_id: "08_identity_score"
+    name: "Identity Score & Reputation"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Identity & Reputation"
+    purpose: "reputation_scoring_infrastructure"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "08_identity_score/module.yaml"
+      readme: "08_identity_score/README.md"
+    interface_refs:
+      - "17_observability/logs/identity_score/"
+      - "23_compliance/evidence/identity_score/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules: []
+
+  - module_id: "09_meta_identity"
+    name: "Meta Identity Layer"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Identity Management"
+    purpose: "meta_identity_management"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "09_meta_identity/module.yaml"
+      readme: "09_meta_identity/README.md"
+    interface_refs:
+      - "17_observability/logs/meta_identity/"
+      - "23_compliance/evidence/meta_identity/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "10_interoperability"
+    name: "Interoperability Framework"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Integration Layer"
+    purpose: "cross_system_integration"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "10_interoperability/module.yaml"
+      readme: "10_interoperability/README.md"
+    interface_refs:
+      - "17_observability/logs/interoperability/"
+      - "23_compliance/evidence/interoperability/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "11_test_simulation"
+    name: "Test & Simulation Suite"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Quality Assurance"
+    purpose: "testing_and_simulation"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "11_test_simulation/module.yaml"
+      readme: "11_test_simulation/README.md"
+    interface_refs:
+      - "17_observability/logs/test_simulation/"
+      - "23_compliance/evidence/test_simulation/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "12_tooling"
+    name: "Tooling & CLI Infrastructure"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Developer Tools"
+    purpose: "developer_tooling"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "12_tooling/module.yaml"
+      readme: "12_tooling/README.md"
+    interface_refs:
+      - "17_observability/logs/tooling/"
+      - "23_compliance/evidence/tooling/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "13_ui_layer"
+    name: "UI Layer"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Frontend"
+    purpose: "user_interface"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "13_ui_layer/module.yaml"
+      readme: "13_ui_layer/README.md"
+    interface_refs:
+      - "17_observability/logs/ui_layer/"
+      - "23_compliance/evidence/ui_layer/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "14_zero_time_auth"
+    name: "Zero-Time Authentication"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Security"
+    purpose: "instant_authentication"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "14_zero_time_auth/module.yaml"
+      readme: "14_zero_time_auth/README.md"
+    interface_refs:
+      - "17_observability/logs/zero_time_auth/"
+      - "23_compliance/evidence/zero_time_auth/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "15_infra"
+    name: "Infrastructure"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Infrastructure"
+    purpose: "platform_infrastructure"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "15_infra/module.yaml"
+      readme: "15_infra/README.md"
+    interface_refs:
+      - "17_observability/logs/infra/"
+      - "23_compliance/evidence/infra/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "16_codex"
+    name: "Codex & Contracts"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Governance"
+    purpose: "governance_codex"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "16_codex/module.yaml"
+      readme: "16_codex/README.md"
+    interface_refs:
+      - "17_observability/logs/codex/"
+      - "23_compliance/evidence/codex/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "17_observability"
+    name: "Observability & Monitoring"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Operations"
+    purpose: "system_observability"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "17_observability/module.yaml"
+      readme: "17_observability/README.md"
+    interface_refs:
+      - "17_observability/logs/observability/"
+      - "23_compliance/evidence/observability/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "18_data_layer"
+    name: "Data Layer"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Data Management"
+    purpose: "data_persistence"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "18_data_layer/module.yaml"
+      readme: "18_data_layer/README.md"
+    interface_refs:
+      - "17_observability/logs/data_layer/"
+      - "23_compliance/evidence/data_layer/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "19_adapters"
+    name: "Adapters & Connectors"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Integration Layer"
+    purpose: "external_adapters"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "19_adapters/module.yaml"
+      readme: "19_adapters/README.md"
+    interface_refs:
+      - "17_observability/logs/adapters/"
+      - "23_compliance/evidence/adapters/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "20_foundation"
+    name: "Foundation & Tokenomics"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Core Platform"
+    purpose: "platform_foundation"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "20_foundation/module.yaml"
+      readme: "20_foundation/README.md"
+    interface_refs:
+      - "17_observability/logs/foundation/"
+      - "23_compliance/evidence/foundation/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "21_post_quantum_crypto"
+    name: "Post-Quantum Cryptography"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Security"
+    purpose: "quantum_safe_crypto"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "21_post_quantum_crypto/module.yaml"
+      readme: "21_post_quantum_crypto/README.md"
+    interface_refs:
+      - "17_observability/logs/post_quantum_crypto/"
+      - "23_compliance/evidence/post_quantum_crypto/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "22_datasets"
+    name: "Datasets & Data Management"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Data Management"
+    purpose: "dataset_management"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "22_datasets/module.yaml"
+      readme: "22_datasets/README.md"
+    interface_refs:
+      - "17_observability/logs/datasets/"
+      - "23_compliance/evidence/datasets/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "23_compliance"
+    name: "Compliance & Governance"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Compliance"
+    purpose: "regulatory_compliance"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "23_compliance/module.yaml"
+      readme: "23_compliance/README.md"
+    interface_refs:
+      - "17_observability/logs/compliance/"
+      - "23_compliance/evidence/compliance/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"
+
+  - module_id: "24_meta_orchestration"
+    name: "Meta Orchestration"
+    version: "4.1.0"
+    status: "ROOT-24-LOCK"
+    classification: "Orchestration"
+    purpose: "workflow_orchestration"
+    final_authority: "03_core"
+    shard_count: 16
+    artifact_refs:
+      module_yaml: "24_meta_orchestration/module.yaml"
+      readme: "24_meta_orchestration/README.md"
+    interface_refs:
+      - "17_observability/logs/meta_orchestration/"
+      - "23_compliance/evidence/meta_orchestration/"
+    evidence_strategy: "hash_manifest_only"
+    governance_rules:
+      - "SOT_AGENT_021"
+      - "SOT_AGENT_022"
+      - "SOT_AGENT_023"

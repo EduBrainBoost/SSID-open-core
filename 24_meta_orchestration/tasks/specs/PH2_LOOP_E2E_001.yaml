@@ -1,0 +1,25 @@
+task_id: PH2_LOOP_E2E_001
+title: "Smoke E2E: start-edit-finalize produces deterministic patch+evidence+zip"
+task_type: tooling
+scope_allowlist:
+  - "12_tooling/cli/automation_loop.py"
+  - "02_audit_logging/agent_runs/"
+forbidden_paths:
+  - "./"
+  - "/mnt/data"
+  - "**/.git/**"
+  - "**/secrets/**"
+required_checks:
+  - "python 12_tooling/cli/stability_gate.py --run"
+  - "python 12_tooling/cli/sot_validator.py --verify-all"
+  - "python -m pytest -q"
+acceptance_criteria:
+  - "Smoke E2E: start, dummy edit, finalize produces patch.diff + evidence.json + zip deterministically"
+  - "CI checks existence and format of outputs only, no timestamp matching required"
+  - "Evidence zip contains all expected artifacts"
+  - "All existing tests pass"
+evidence_outputs:
+  - "02_audit_logging/agent_runs/PH2_LOOP_E2E_001/evidence.json"
+  - "02_audit_logging/agent_runs/PH2_LOOP_E2E_001/patch.diff"
+agent_cmd: "manual"
+notes: "E2E smoke test for the full automation_loop lifecycle. Deterministic output is key - no flaky timestamp checks."

@@ -1,0 +1,153 @@
+# Semantic Resonance Engine Specification
+# Status: SPEC_ONLY — Execution BLOCKED
+# No second certified SSID-compatible system exists.
+# All thresholds are TARGET_DEFINITION, not achieved reality.
+
+metadata:
+  name: semantic_resonance_engine
+  version: "v11"
+  status: spec_only
+  execution: blocked
+  block_reason: "No second certified SSID-compatible system exists"
+  created: "2026-03-29"
+  adr_reference: "ADR_0058_interfederation_claims_guard"
+  spec_reference: "16_codex/structure/interfederation_spec_v11.md"
+
+mode: spec_only
+execution: blocked
+
+input_schema:
+  type: object
+  required:
+    - source_system_id
+    - source_schema_fingerprint
+    - source_identity_fields
+    - target_system_id
+    - target_schema_fingerprint
+    - target_identity_fields
+  properties:
+    source_system_id:
+      type: string
+      description: "Unique identifier of the initiating SSID-compatible system"
+    source_schema_fingerprint:
+      type: string
+      format: "sha3-256"
+      description: "SHA3-256 hash of the source system identity schema"
+    source_identity_fields:
+      type: array
+      items:
+        type: object
+        properties:
+          field_name:
+            type: string
+          field_type:
+            type: string
+          semantic_tag:
+            type: string
+          required:
+            type: boolean
+      description: "List of identity fields from source system schema"
+    target_system_id:
+      type: string
+      description: "Unique identifier of the partner SSID-compatible system"
+    target_schema_fingerprint:
+      type: string
+      format: "sha3-256"
+      description: "SHA3-256 hash of the target system identity schema"
+    target_identity_fields:
+      type: array
+      items:
+        type: object
+        properties:
+          field_name:
+            type: string
+          field_type:
+            type: string
+          semantic_tag:
+            type: string
+          required:
+            type: boolean
+      description: "List of identity fields from target system schema"
+    verification_timestamp:
+      type: string
+      format: "date-time"
+      description: "ISO8601 timestamp of the verification request"
+
+output_schema:
+  type: object
+  properties:
+    resonance_score:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+      description: "Normalized semantic resonance score"
+    alignment_coverage_percent:
+      type: number
+      minimum: 0.0
+      maximum: 100.0
+      description: "Percentage of core identity fields aligned"
+    aligned_fields:
+      type: array
+      items:
+        type: object
+        properties:
+          source_field:
+            type: string
+          target_field:
+            type: string
+          match_type:
+            type: string
+            enum: ["exact", "semantic", "partial", "none"]
+          confidence:
+            type: number
+            minimum: 0.0
+            maximum: 1.0
+    unaligned_source_fields:
+      type: array
+      items:
+        type: string
+    unaligned_target_fields:
+      type: array
+      items:
+        type: string
+    verdict:
+      type: string
+      enum: ["pass", "fail", "inconclusive"]
+      description: "Whether the resonance threshold is met"
+    verification_timestamp:
+      type: string
+      format: "date-time"
+    proof_hash:
+      type: string
+      format: "sha3-256"
+      description: "Hash of the full resonance verification result"
+
+verification_steps:
+  - step: 1
+    name: "Schema Exchange"
+    description: "Both systems exchange identity schema fingerprints and field lists"
+    validation: "Fingerprints must be valid SHA3-256 hashes"
+  - step: 2
+    name: "Field Alignment Analysis"
+    description: "Compute semantic diff between source and target identity fields"
+    validation: "Each field must be classified as exact, semantic, partial, or none match"
+  - step: 3
+    name: "Resonance Score Computation"
+    description: "Calculate normalized resonance score from field alignment results"
+    validation: "Score must be between 0.0 and 1.0"
+  - step: 4
+    name: "Threshold Evaluation"
+    description: "Compare resonance score against target threshold"
+    validation: "Verdict is pass if score >= 0.85 and coverage >= 90%"
+  - step: 5
+    name: "Result Signing"
+    description: "Sign the verification result and produce proof hash"
+    validation: "Proof hash must be valid SHA3-256"
+
+trust_thresholds:
+  note: "All thresholds are TARGET_DEFINITION — not achieved reality"
+  minimum_resonance_score: 0.85
+  minimum_alignment_coverage_percent: 90.0
+  maximum_verification_latency_ms: 5000
+  proof_hash_algorithm: "sha3-256"
+  mutual_attestation_validity_seconds: 86400

@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-03-16T12:00:00+00:00",
+  "module_health": [
+    {"module_name": "fee_distribution_engine", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T12:00:00+00:00"},
+    {"module_name": "subscription_revenue_distributor", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T12:00:00+00:00"},
+    {"module_name": "governance_reward_engine", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T12:00:00+00:00"},
+    {"module_name": "license_fee_splitter", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T12:00:00+00:00"},
+    {"module_name": "identity_fee_router", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T12:00:00+00:00"},
+    {"module_name": "reward_handler", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T12:00:00+00:00"},
+    {"module_name": "fee_proof_engine", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T12:00:00+00:00"},
+    {"module_name": "policy_enforcer", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T12:00:00+00:00"}
+  ],
+  "flow_statuses": [
+    {
+      "flow_id": "sub-flow-001",
+      "flow_name": "subscription_revenue_flow",
+      "status": "success",
+      "allow_or_deny": "allow",
+      "input_hash": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+      "output_hash": "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
+      "proof_hash": "c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+      "determinism_hash": "d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+      "policy_decisions": [
+        {"action": "allow", "rule_type": "max_fee", "reason": "Amount 100.0 within max_fee 1000.0", "context": {"amount": "100.0", "max_fee": "1000.0"}, "decided_at": "2026-03-16T12:00:00+00:00"}
+      ],
+      "timestamp_utc": "2026-03-16T12:00:00+00:00",
+      "schema_version": "1.0.0"
+    }
+  ]
+}

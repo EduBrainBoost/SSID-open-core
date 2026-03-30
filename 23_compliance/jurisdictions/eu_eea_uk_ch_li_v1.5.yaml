@@ -1,0 +1,145 @@
+eu_eea_uk_ch_li:
+  version: "1.5.0"
+  description: >
+    Compliance requirements for SSID operations in the EU/EEA,
+    United Kingdom, Switzerland, and Liechtenstein.
+
+jurisdictions:
+  - region: EU_EEA
+    applicable_regulations:
+      - regulation_id: mica
+        name: Markets in Crypto-Assets Regulation
+        authority: ESMA / National NCAs
+        effective_date: "2024-12-30"
+        requirements:
+          - casp_authorization
+          - whitepaper_publication
+          - conduct_of_business_rules
+          - market_abuse_prevention
+          - reserve_requirements_art_stablecoins
+        status: active
+
+      - regulation_id: gdpr
+        name: General Data Protection Regulation
+        authority: National DPAs
+        requirements:
+          - lawful_basis_for_processing
+          - data_protection_impact_assessment
+          - data_protection_officer
+          - data_subject_rights
+          - cross_border_transfer_safeguards
+          - data_breach_notification_72h
+        status: active
+
+      - regulation_id: aml6_amlr
+        name: AML6 Directive / AML Regulation
+        authority: National FIUs / AMLA
+        requirements:
+          - customer_due_diligence
+          - enhanced_due_diligence_high_risk
+          - beneficial_ownership_verification
+          - suspicious_transaction_reporting
+          - travel_rule_ivms101
+        status: active
+
+      - regulation_id: eidas2_eudi
+        name: eIDAS 2.0 / EU Digital Identity Wallet
+        authority: European Commission
+        requirements:
+          - qualified_trust_service_provider
+          - eudi_wallet_interoperability
+          - electronic_attestation_of_attributes
+          - loa_high_authentication
+        status: implementation_phase
+
+      - regulation_id: eu_ai_act
+        name: EU AI Act
+        authority: AI Office / National Authorities
+        requirements:
+          - risk_classification
+          - transparency_obligations
+          - conformity_assessment
+          - registration_eu_database
+          - bias_audit_quarterly
+        status: phased_implementation
+
+      - regulation_id: dora
+        name: Digital Operational Resilience Act
+        authority: ESAs
+        requirements:
+          - ict_risk_management
+          - incident_reporting
+          - digital_resilience_testing
+          - third_party_risk_management
+        status: active
+
+      - regulation_id: nis2
+        name: NIS2 Directive
+        authority: National CSIRTs
+        requirements:
+          - cybersecurity_risk_management
+          - incident_reporting_24h
+          - supply_chain_security
+          - management_accountability
+        status: active
+
+  - region: UK
+    applicable_regulations:
+      - regulation_id: uk_crypto_regime
+        name: UK Cryptoasset Regime
+        authority: FCA / HM Treasury
+        requirements:
+          - fca_registration
+          - aml_compliance
+          - financial_promotions_compliance_ps23_6
+          - consumer_protection
+        status: active
+
+      - regulation_id: uk_gdpr
+        name: UK GDPR
+        authority: ICO
+        requirements:
+          - uk_specific_data_protection
+          - international_transfer_mechanisms
+          - data_breach_notification
+        status: active
+
+  - region: CH
+    applicable_regulations:
+      - regulation_id: ch_dlt_act
+        name: Swiss DLT Act
+        authority: FINMA
+        requirements:
+          - finma_licence
+          - dlt_trading_facility_authorization
+          - aml_compliance_amla
+          - client_asset_segregation
+        status: active
+
+      - regulation_id: ch_fadp
+        name: Federal Act on Data Protection (nDSG)
+        authority: FDPIC
+        requirements:
+          - data_protection_impact_assessment
+          - cross_border_transfer_adequacy
+          - data_breach_notification
+        status: active
+
+  - region: LI
+    applicable_regulations:
+      - regulation_id: li_tvtg
+        name: Token and VT Service Provider Act (TVTG)
+        authority: FMA
+        requirements:
+          - fma_registration
+          - token_classification
+          - aml_cft_compliance
+          - client_asset_protection
+        status: active
+
+compliance_mapping:
+  ssid_controls:
+    non_custodial: mitigates_casp_custody_requirements
+    hash_only_no_pii: exceeds_gdpr_data_minimisation
+    blockchain_anchoring: supports_dora_resilience
+    post_quantum_crypto: future_proofs_eidas2_requirements

@@ -1,5 +1,0 @@
-policy_id: 23_compliance.05_gesundheit_medizin.baseline_policy
-root_id: 23_compliance
-shard_id: 05_gesundheit_medizin
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

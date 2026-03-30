@@ -1,5 +1,0 @@
-interface_id: 24_meta_orchestration.02_dokumente_nachweise.primary
-root_id: 24_meta_orchestration
-shard_id: 02_dokumente_nachweise
-kind: bootstrap_contract
-status: active

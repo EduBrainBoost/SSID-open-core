@@ -1,0 +1,161 @@
+# MiCA Compliance Mapping — SSID Platform
+# SoT v4.1.0 | Classification: Compliance
+# Framework: Markets in Crypto-Assets Regulation (EU) 2023/1114
+# Generated: 2026-03-15
+
+framework_id: "mica"
+framework_name: "Markets in Crypto-Assets Regulation"
+regulation: "(EU) 2023/1114"
+effective_date: "2024-12-30"
+jurisdiction: ["EU", "EEA"]
+version: "1.0.0"
+final_authority: "03_core"
+applicability: >
+  SSID is a self-sovereign identity platform. MiCA applicability arises
+  where SSID capabilities support crypto-asset service providers (CASPs),
+  e-money token issuers, or asset-referenced token issuers as identity
+  infrastructure for KYC/AML, travel rule compliance, or wallet identity.
+
+# ---------------------------------------------------------------------
+# CASP REQUIREMENTS MAPPED TO SSID CAPABILITIES
+# ---------------------------------------------------------------------
+
+articles:
+
+  - article: "Art. 59-76"
+    title: "Authorisation of Crypto-Asset Service Providers (CASPs)"
+    ssid_role: "identity_infrastructure_for_casp"
+    ssid_roots:
+      - root: "08_identity_score"
+        rationale: "Identity assurance scoring for CASP staff and clients"
+      - root: "03_core"
+        rationale: "Identity validation pipeline for CASP authorisation files"
+      - root: "23_compliance"
+        rationale: "CASP compliance profile registry and status tracking"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Management body identity verification for CASP authorisation"
+      - shard: "23_compliance/shards/13_unternehmen_gewerbe"
+        note: "Legal entity identity for CASP registration"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 67"
+    title: "Safeguarding of clients' crypto-assets and funds"
+    ssid_role: "wallet_identity_binding"
+    ssid_roots:
+      - root: "14_zero_time_auth"
+        rationale: "Wallet access authentication; prevents unauthorised fund access"
+      - root: "21_post_quantum_crypto"
+        rationale: "Cryptographic binding of wallet to verified identity"
+      - root: "09_meta_identity"
+        rationale: "Meta-identity links wallet addresses to verified identity"
+    ssid_shards:
+      - shard: "23_compliance/shards/10_finanzen_banking"
+        note: "Crypto-asset wallet identity binding"
+      - shard: "23_compliance/shards/15_handel_transaktionen"
+        note: "Transaction identity attestations"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 68"
+    title: "Complaint handling"
+    ssid_role: "identity_verified_complaint_submission"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Complainant identity verification; non-repudiation"
+      - root: "02_audit_logging"
+        rationale: "Immutable complaint audit trail"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Complainant identity for dispute resolution"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 70"
+    title: "Prevention of market abuse — insider dealing, market manipulation"
+    ssid_role: "identity_traceability_for_market_surveillance"
+    ssid_roots:
+      - root: "02_audit_logging"
+        rationale: "WORM audit trail of transaction identities for surveillance"
+      - root: "08_identity_score"
+        rationale: "Behavioural anomaly scoring; suspicious pattern detection"
+      - root: "03_core"
+        rationale: "Identity-transaction linkage for market abuse investigations"
+    ssid_shards:
+      - shard: "23_compliance/shards/15_handel_transaktionen"
+        note: "Transaction identity traceability"
+      - shard: "23_compliance/shards/10_finanzen_banking"
+        note: "Financial account-to-identity linkage"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 72"
+    title: "KYC/AML requirements for CASPs"
+    ssid_role: "primary_kyc_infrastructure"
+    ssid_roots:
+      - root: "08_identity_score"
+        rationale: "KYC score; identity risk assessment for onboarding"
+      - root: "03_core"
+        rationale: "KYC gate validator; blocks service if KYC not cleared"
+      - root: "09_meta_identity"
+        rationale: "Composite identity from multiple verified sources"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Government ID verification for KYC"
+      - shard: "23_compliance/shards/02_dokumente_nachweise"
+        note: "Supporting document verification"
+      - shard: "23_compliance/shards/10_finanzen_banking"
+        note: "Financial history for enhanced due diligence"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 76"
+    title: "Transfer of crypto-assets — Travel Rule (Regulation (EU) 2023/1113)"
+    ssid_role: "travel_rule_identity_provider"
+    ssid_roots:
+      - root: "10_interoperability"
+        rationale: "Travel rule message exchange (TRISA/OpenVASP protocol adapter)"
+      - root: "03_core"
+        rationale: "Originator and beneficiary identity validation"
+      - root: "21_post_quantum_crypto"
+        rationale: "Encrypted travel rule message signing"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Originator/beneficiary identity attributes (name, address)"
+      - shard: "23_compliance/shards/15_handel_transaktionen"
+        note: "Transaction reference linking to identity"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 78-80"
+    title: "Asset-Referenced Token (ART) — Reserve and governance"
+    ssid_role: "reserve_custodian_identity_verification"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Reserve custodian identity verification; management body KYC"
+      - root: "23_compliance"
+        rationale: "ART governance documentation and compliance records"
+    ssid_shards:
+      - shard: "23_compliance/shards/10_finanzen_banking"
+        note: "Reserve asset custody identity"
+      - shard: "23_compliance/shards/13_unternehmen_gewerbe"
+        note: "Issuer entity identity for ART"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 48-58"
+    title: "E-Money Token (EMT) — Issuance and redemption"
+    ssid_role: "emt_holder_identity_verification"
+    ssid_roots:
+      - root: "08_identity_score"
+        rationale: "EMT holder KYC score for redemption limits"
+      - root: "03_core"
+        rationale: "Redemption identity gate; AML screening"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "EMT holder identity verification"
+      - shard: "23_compliance/shards/10_finanzen_banking"
+        note: "Bank account linkage for EMT redemption"
+    status: "mapped"
+    gap: null

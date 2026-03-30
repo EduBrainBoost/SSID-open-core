@@ -1,0 +1,747 @@
+# SOC 2 Compliance Mapping — SSID Platform
+# SoT v4.1.0 | Classification: Compliance
+# Framework: SOC 2 Trust Service Criteria (AICPA TSC 2017, updated 2022)
+# Generated: 2026-03-15
+
+framework_id: "soc2"
+framework_name: "SOC 2 Trust Service Criteria"
+standard: "AICPA TSC 2017 (2022 points of focus update)"
+report_type: "Type II"
+version: "1.0.0"
+final_authority: "03_core"
+applicability: >
+  SSID is a self-sovereign identity platform providing identity verification,
+  attestation, and credential management services. SOC 2 Type II applicability
+  spans the Security (CC) trust service category as mandatory, with Availability,
+  Processing Integrity, Confidentiality, and Privacy as applicable additional
+  categories given the nature of identity data processing.
+
+trust_service_categories:
+  - id: "security"
+    criteria_prefix: "CC"
+    criteria_range: "CC1-CC9"
+    required: true
+    rationale: "Mandatory for all SOC 2 engagements; core security controls across SSID platform"
+  - id: "availability"
+    criteria_prefix: "A"
+    required: true
+    rationale: "Identity verification services must maintain availability SLAs for relying parties"
+  - id: "processing_integrity"
+    criteria_prefix: "PI"
+    required: true
+    rationale: "Identity attestation processing must be complete, valid, accurate, and timely"
+  - id: "confidentiality"
+    criteria_prefix: "C"
+    required: true
+    rationale: "Cryptographic credentials and identity attributes are confidential information"
+  - id: "privacy"
+    criteria_prefix: "P"
+    required: true
+    rationale: "Personal identity data subject to privacy TSC; SSID processes PII for all users"
+
+# ---------------------------------------------------------------------
+# COMMON CRITERIA (CC) — SECURITY TRUST SERVICE CATEGORY
+# CC1: Control Environment | CC2: Communication and Information
+# CC3: Risk Assessment | CC4: Monitoring Activities
+# CC5: Control Activities | CC6: Logical and Physical Access
+# CC7: System Operations | CC8: Change Management
+# CC9: Risk Mitigation
+# ---------------------------------------------------------------------
+
+criteria_mappings:
+
+  - criteria_id: "CC1.1"
+    title: "COSO Principle 1 — Commitment to integrity and ethical values"
+    category: "security"
+    ssid_roots:
+      - root: "07_governance_legal"
+        rationale: "Code of conduct, ethics policy, and governance documentation"
+      - root: "23_compliance"
+        rationale: "Ethics and integrity policy registry; compliance programme oversight"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC1.2"
+    title: "COSO Principle 2 — Board demonstrates independence and oversight"
+    category: "security"
+    ssid_roots:
+      - root: "07_governance_legal"
+        rationale: "Board oversight documentation; governance structure and reporting lines"
+      - root: "23_compliance"
+        rationale: "Compliance reporting to board; audit committee relationship"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC1.3"
+    title: "COSO Principle 3 — Management establishes structure, authority, and responsibility"
+    category: "security"
+    ssid_roots:
+      - root: "07_governance_legal"
+        rationale: "Organisational structure, authority matrix, and responsibility assignments"
+      - root: "24_meta_orchestration"
+        rationale: "Operational authority and delegation in platform orchestration layer"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC1.4"
+    title: "COSO Principle 4 — Commitment to attract, develop, and retain competent individuals"
+    category: "security"
+    ssid_roots:
+      - root: "07_governance_legal"
+        rationale: "HR competency framework; training requirements for InfoSec roles"
+      - root: "23_compliance"
+        rationale: "Competency tracking; security training completion records"
+    ssid_shards:
+      - shard: "23_compliance/shards/06_bildung_qualifikationen"
+        note: "Staff qualification verification via SSID credential system"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC1.5"
+    title: "COSO Principle 5 — Enforces accountability for information security"
+    category: "security"
+    ssid_roots:
+      - root: "02_audit_logging"
+        rationale: "WORM audit trail creates immutable accountability record for all actions"
+      - root: "03_core"
+        rationale: "Non-repudiation enforcement via cryptographic identity binding"
+      - root: "07_governance_legal"
+        rationale: "Performance management and accountability procedures"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC2.1"
+    title: "COSO Principle 13 — Uses relevant, quality information"
+    category: "security"
+    ssid_roots:
+      - root: "18_data_layer"
+        rationale: "Data quality controls; integrity validation at ingestion"
+      - root: "03_core"
+        rationale: "Quality gate validators; schema enforcement on all data inputs"
+      - root: "17_observability"
+        rationale: "Data quality monitoring and anomaly detection"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC2.2"
+    title: "COSO Principle 14 — Internally communicates information"
+    category: "security"
+    ssid_roots:
+      - root: "17_observability"
+        rationale: "Internal alerting and notification pipeline; SLA dashboard communication"
+      - root: "23_compliance"
+        rationale: "Internal compliance communication; policy distribution"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC2.3"
+    title: "COSO Principle 15 — Communicates externally"
+    category: "security"
+    ssid_roots:
+      - root: "13_ui_layer"
+        rationale: "External-facing user communication; privacy notices and security disclosures"
+      - root: "10_interoperability"
+        rationale: "External partner and relying party communication protocols"
+      - root: "23_compliance"
+        rationale: "External regulatory communication; breach notification procedures"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity holder communications — transparency disclosures"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC3.1"
+    title: "COSO Principle 6 — Specifies suitable objectives"
+    category: "security"
+    ssid_roots:
+      - root: "23_compliance"
+        rationale: "Compliance objectives registry; security objective definitions"
+      - root: "07_governance_legal"
+        rationale: "Business and security objectives documentation"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC3.2"
+    title: "COSO Principle 7 — Identifies and analyses risk"
+    category: "security"
+    ssid_roots:
+      - root: "23_compliance"
+        rationale: "Risk register; risk assessment methodology and results"
+      - root: "08_identity_score"
+        rationale: "Risk scoring for identity-related threats; automated risk assessment"
+      - root: "17_observability"
+        rationale: "Operational risk monitoring; threat surface visibility"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity data risk classification"
+      - shard: "23_compliance/shards/05_gesundheit_medizin"
+        note: "High-risk special category data risk assessment"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC3.3"
+    title: "COSO Principle 8 — Assesses fraud risk"
+    category: "security"
+    ssid_roots:
+      - root: "08_identity_score"
+        rationale: "Fraud scoring and behavioural anomaly detection for identity fraud"
+      - root: "03_core"
+        rationale: "Anti-fraud validation gates; suspicious activity detection"
+      - root: "02_audit_logging"
+        rationale: "Fraud event audit trail for investigation"
+    ssid_shards:
+      - shard: "23_compliance/shards/10_finanzen_banking"
+        note: "Financial fraud risk detection"
+      - shard: "23_compliance/shards/15_handel_transaktionen"
+        note: "Transaction fraud detection"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC3.4"
+    title: "COSO Principle 9 — Identifies and analyses significant change"
+    category: "security"
+    ssid_roots:
+      - root: "04_deployment"
+        rationale: "Change management pipeline; significant change identification and review"
+      - root: "17_observability"
+        rationale: "Change impact monitoring; post-deployment anomaly detection"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC4.1"
+    title: "COSO Principle 16 — Conducts ongoing and/or separate evaluations"
+    category: "security"
+    ssid_roots:
+      - root: "17_observability"
+        rationale: "Continuous monitoring of control effectiveness via observability layer"
+      - root: "23_compliance"
+        rationale: "Periodic control evaluation schedule; internal review programme"
+      - root: "11_test_simulation"
+        rationale: "Automated control testing via simulation framework"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC4.2"
+    title: "COSO Principle 17 — Evaluates and communicates deficiencies"
+    category: "security"
+    ssid_roots:
+      - root: "23_compliance"
+        rationale: "Control deficiency register; remediation tracking and escalation"
+      - root: "17_observability"
+        rationale: "Automated deficiency alerting; dashboard visibility for management"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC5.1"
+    title: "COSO Principle 10 — Selects and develops control activities"
+    category: "security"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Core control activity implementation; processing gate validators"
+      - root: "23_compliance"
+        rationale: "Control selection and design documentation"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC5.2"
+    title: "COSO Principle 11 — Selects and develops general controls over technology"
+    category: "security"
+    ssid_roots:
+      - root: "04_deployment"
+        rationale: "General IT controls in CI/CD pipeline; automated control enforcement"
+      - root: "12_tooling"
+        rationale: "Technology control tooling; SAST, DAST, configuration scanning"
+      - root: "15_infra"
+        rationale: "Infrastructure-level general controls; network and compute security"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC5.3"
+    title: "COSO Principle 12 — Deploys through policies and procedures"
+    category: "security"
+    ssid_roots:
+      - root: "23_compliance"
+        rationale: "Policy and procedure library; deployment via policy enforcement"
+      - root: "07_governance_legal"
+        rationale: "Operational procedure documentation"
+      - root: "04_deployment"
+        rationale: "Automated policy enforcement in deployment pipeline"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC6.1"
+    title: "Logical access security software, infrastructure, and architectures"
+    category: "security"
+    ssid_roots:
+      - root: "14_zero_time_auth"
+        rationale: "Zero-time authentication; logical access control enforcement"
+      - root: "21_post_quantum_crypto"
+        rationale: "Cryptographic access security; post-quantum key management"
+      - root: "15_infra"
+        rationale: "Infrastructure-level access controls; VPC, IAM, network segmentation"
+    ssid_shards:
+      - shard: "23_compliance/shards/03_zugang_berechtigungen"
+        note: "Access rights and permissions registry"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC6.2"
+    title: "Prior to issuance, registered and authorised with credentials"
+    category: "security"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Credential issuance gate; identity verification before access grant"
+      - root: "08_identity_score"
+        rationale: "Identity assurance scoring; credential eligibility determination"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity credential registration and authorisation"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC6.3"
+    title: "Role-based access control and least privilege"
+    category: "security"
+    ssid_roots:
+      - root: "14_zero_time_auth"
+        rationale: "RBAC enforcement; least-privilege access by default"
+      - root: "03_core"
+        rationale: "Permission gate validators; minimum necessary access enforcement"
+      - root: "24_meta_orchestration"
+        rationale: "Orchestration-layer role assignments and permission delegation"
+    ssid_shards:
+      - shard: "23_compliance/shards/03_zugang_berechtigungen"
+        note: "Role and permission definitions"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC6.4"
+    title: "Physical access controls"
+    category: "security"
+    ssid_roots:
+      - root: "15_infra"
+        rationale: "Physical access controls delegated to certified DC providers"
+    ssid_shards: []
+    status: "mapped"
+    gap: "Physical controls at DC provider; asserted via contractual compliance and certification"
+
+  - criteria_id: "CC6.5"
+    title: "Logical access — discontinued when no longer required"
+    category: "security"
+    ssid_roots:
+      - root: "14_zero_time_auth"
+        rationale: "Automated access revocation on role change or departure"
+      - root: "02_audit_logging"
+        rationale: "WORM audit of access deprovisioning events"
+    ssid_shards:
+      - shard: "23_compliance/shards/03_zugang_berechtigungen"
+        note: "Access termination records"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC6.6"
+    title: "Logical access security measures — external threats"
+    category: "security"
+    ssid_roots:
+      - root: "17_observability"
+        rationale: "External threat detection; IDS/IPS alerting"
+      - root: "15_infra"
+        rationale: "DDoS protection; firewall and WAF at network perimeter"
+      - root: "21_post_quantum_crypto"
+        rationale: "Cryptographic protection against external access attempts"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC6.7"
+    title: "Transmission of confidential information"
+    category: "security"
+    ssid_roots:
+      - root: "21_post_quantum_crypto"
+        rationale: "Post-quantum TLS encryption for all data in transit"
+      - root: "10_interoperability"
+        rationale: "Secure transmission protocols for all external data exchanges"
+      - root: "03_core"
+        rationale: "Transmission security gate; blocks unencrypted output channels"
+    ssid_shards:
+      - shard: "23_compliance/shards/04_kommunikation_daten"
+        note: "Communication data transmission security"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC6.8"
+    title: "Prevents or detects and acts upon the introduction of unauthorised software"
+    category: "security"
+    ssid_roots:
+      - root: "04_deployment"
+        rationale: "Immutable container images; no runtime software installation allowed"
+      - root: "12_tooling"
+        rationale: "Dependency scanning; software composition analysis"
+      - root: "17_observability"
+        rationale: "Runtime anomaly detection for unauthorised process execution"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC7.1"
+    title: "Detects and monitors for new vulnerabilities"
+    category: "security"
+    ssid_roots:
+      - root: "12_tooling"
+        rationale: "Automated vulnerability scanning; CVE feed integration"
+      - root: "17_observability"
+        rationale: "Runtime vulnerability detection; anomaly-based detection"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC7.2"
+    title: "Monitors system components for anomalous behaviour"
+    category: "security"
+    ssid_roots:
+      - root: "17_observability"
+        rationale: "Real-time system monitoring; anomaly detection and alerting"
+      - root: "08_identity_score"
+        rationale: "Behavioural anomaly scoring for identity-layer operations"
+      - root: "02_audit_logging"
+        rationale: "Audit event stream for anomaly baseline comparison"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC7.3"
+    title: "Evaluates security events to determine if a security incident has occurred"
+    category: "security"
+    ssid_roots:
+      - root: "17_observability"
+        rationale: "Automated security event triage; severity classification"
+      - root: "23_compliance"
+        rationale: "Incident classification criteria and escalation matrix"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC7.4"
+    title: "Responds to identified security incidents"
+    category: "security"
+    ssid_roots:
+      - root: "17_observability"
+        rationale: "Automated incident response triggers; containment automation"
+      - root: "02_audit_logging"
+        rationale: "Incident response audit trail; evidence preservation"
+      - root: "23_compliance"
+        rationale: "Incident response procedures; communication templates"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC7.5"
+    title: "Identifies, develops, and implements activities to recover from incidents"
+    category: "security"
+    ssid_roots:
+      - root: "15_infra"
+        rationale: "Recovery infrastructure; automated failover and restoration"
+      - root: "11_test_simulation"
+        rationale: "Recovery procedure testing; simulation of incident scenarios"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC8.1"
+    title: "Authorises, designs, develops, acquires, and implements changes"
+    category: "security"
+    ssid_roots:
+      - root: "04_deployment"
+        rationale: "Gated CI/CD pipeline; change authorisation workflow enforcement"
+      - root: "02_audit_logging"
+        rationale: "Immutable change history; deployment audit trail"
+      - root: "07_governance_legal"
+        rationale: "Change advisory board process; emergency change procedure"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC9.1"
+    title: "Identifies, selects, and develops risk mitigation activities"
+    category: "security"
+    ssid_roots:
+      - root: "23_compliance"
+        rationale: "Risk treatment register; risk mitigation plan tracking"
+      - root: "03_core"
+        rationale: "Technical risk mitigation via validation gates"
+      - root: "08_identity_score"
+        rationale: "Risk-based processing controls; automated risk response"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "CC9.2"
+    title: "Assesses and manages risks from vendors and business partners"
+    category: "security"
+    ssid_roots:
+      - root: "10_interoperability"
+        rationale: "Third-party integration security assessment"
+      - root: "23_compliance"
+        rationale: "Vendor risk register; contractual risk transfer documentation"
+      - root: "07_governance_legal"
+        rationale: "Vendor security due diligence and contractual requirements"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  # ---- AVAILABILITY (A) ----
+
+  - criteria_id: "A1.1"
+    title: "Current processing capacity and usage"
+    category: "availability"
+    ssid_roots:
+      - root: "17_observability"
+        rationale: "Capacity monitoring dashboards; utilisation metrics and forecasting"
+      - root: "15_infra"
+        rationale: "Auto-scaling infrastructure; capacity management controls"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "A1.2"
+    title: "Environmental threats to availability"
+    category: "availability"
+    ssid_roots:
+      - root: "15_infra"
+        rationale: "Multi-region deployment; environmental redundancy at cloud provider"
+      - root: "17_observability"
+        rationale: "Environmental monitoring; availability SLA tracking"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "A1.3"
+    title: "Recovery plan objectives and procedures"
+    category: "availability"
+    ssid_roots:
+      - root: "15_infra"
+        rationale: "Documented RTO/RPO targets; automated recovery procedures"
+      - root: "11_test_simulation"
+        rationale: "Annual BCP/DR testing via simulation framework"
+      - root: "23_compliance"
+        rationale: "Recovery plan documentation and review cycle"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  # ---- PROCESSING INTEGRITY (PI) ----
+
+  - criteria_id: "PI1.1"
+    title: "Complete, valid, accurate, timely, and authorised processing"
+    category: "processing_integrity"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Processing completeness and validity gate; authorisation enforcement"
+      - root: "02_audit_logging"
+        rationale: "Processing integrity audit trail; completion verification"
+      - root: "18_data_layer"
+        rationale: "Data integrity validation at input and output"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity attestation processing integrity"
+      - shard: "23_compliance/shards/02_dokumente_nachweise"
+        note: "Document verification processing integrity"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "PI1.2"
+    title: "System processing is complete, accurate, and authorised"
+    category: "processing_integrity"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "End-to-end processing authorisation; complete pipeline validation"
+      - root: "17_observability"
+        rationale: "Processing pipeline monitoring; error rate and accuracy tracking"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "PI1.3"
+    title: "Outputs are complete, accurate, and distributed to appropriate parties"
+    category: "processing_integrity"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Output validation and authorised recipient enforcement"
+      - root: "10_interoperability"
+        rationale: "Output distribution protocols; recipient verification"
+      - root: "02_audit_logging"
+        rationale: "Output delivery audit trail; recipient confirmation logging"
+    ssid_shards: []
+    status: "mapped"
+    gap: null
+
+  # ---- CONFIDENTIALITY (C) ----
+
+  - criteria_id: "C1.1"
+    title: "Identifies and maintains confidential information"
+    category: "confidentiality"
+    ssid_roots:
+      - root: "23_compliance"
+        rationale: "Confidential information classification registry; data classification scheme"
+      - root: "18_data_layer"
+        rationale: "Confidential data tagging and tracking at storage layer"
+      - root: "03_core"
+        rationale: "Confidentiality enforcement gate; blocks non-authorised access to confidential data"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity credentials classified as confidential"
+      - shard: "23_compliance/shards/05_gesundheit_medizin"
+        note: "Health data classified as restricted/confidential"
+      - shard: "23_compliance/shards/10_finanzen_banking"
+        note: "Financial data classified as confidential"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "C1.2"
+    title: "Disposes of confidential information to meet objectives"
+    category: "confidentiality"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Secure deletion API; cryptographic erasure for confidential data"
+      - root: "18_data_layer"
+        rationale: "Secure storage disposal; key destruction ensures data unrecoverability"
+      - root: "02_audit_logging"
+        rationale: "WORM deletion audit for confidential data disposal"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity credential disposal on request or retention expiry"
+    status: "mapped"
+    gap: null
+
+  # ---- PRIVACY (P) ----
+
+  - criteria_id: "P1.1"
+    title: "Privacy notice communicates purpose, choices, and consequences"
+    category: "privacy"
+    ssid_roots:
+      - root: "13_ui_layer"
+        rationale: "Privacy notice UI; layered transparency presentation"
+      - root: "23_compliance"
+        rationale: "Privacy notice templates and regulatory disclosure requirements"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity data privacy disclosures"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "P2.1"
+    title: "Provides choices on collection, use, retention, and disclosure"
+    category: "privacy"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Consent management; granular choice enforcement"
+      - root: "13_ui_layer"
+        rationale: "Consent and choice UI; opt-in/opt-out controls"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity holder consent choices"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "P3.1"
+    title: "Collects personal information consistent with objectives"
+    category: "privacy"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Data minimisation enforcement; hash-only evidence strategy"
+      - root: "23_compliance"
+        rationale: "Collection purpose registry; shard-level purpose limitation"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity data collection scope and purpose definition"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "P4.1"
+    title: "Uses personal information consistent with objectives"
+    category: "privacy"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Purpose limitation gate; blocks processing beyond declared purpose"
+      - root: "23_compliance"
+        rationale: "Purpose limitation policies per processing activity"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity data use purpose enforcement"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "P5.1"
+    title: "Grants data subjects ability to access their information"
+    category: "privacy"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Data subject access API; self-sovereign data access by design"
+      - root: "13_ui_layer"
+        rationale: "Subject access request portal; data download capability"
+      - root: "09_meta_identity"
+        rationale: "Meta-identity export; full data portability"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Primary identity data subject access"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "P6.1"
+    title: "Discloses personal information to third parties with consent or legitimate purpose"
+    category: "privacy"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Disclosure authorisation gate; consent verification before third-party sharing"
+      - root: "10_interoperability"
+        rationale: "Third-party disclosure protocols; recipient identity verification"
+      - root: "02_audit_logging"
+        rationale: "WORM audit of all third-party disclosures"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity disclosure consent records"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "P7.1"
+    title: "Collects and maintains accurate, complete, current personal information"
+    category: "privacy"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Data quality validators; accuracy enforcement at ingestion"
+      - root: "09_meta_identity"
+        rationale: "Meta-identity freshness tracking; credential expiry management"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity data accuracy and currency maintenance"
+    status: "mapped"
+    gap: null
+
+  - criteria_id: "P8.1"
+    title: "Responds to requests to correct or delete personal information"
+    category: "privacy"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Right-to-rectification and erasure API; 30-day SLA enforced"
+      - root: "13_ui_layer"
+        rationale: "Subject rights request portal for correction and deletion"
+      - root: "02_audit_logging"
+        rationale: "WORM audit of all correction and deletion request handling"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity data correction and deletion handling"
+    status: "mapped"
+    gap: null

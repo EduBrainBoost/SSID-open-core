@@ -1,0 +1,124 @@
+# NIS2 — Network and Information Security Directive 2 Mapping
+# Directive (EU) 2022/2555
+# SAFE-FIX: No PII, no secrets. Pure regulatory mapping.
+# Generated: 2026-03-29 | Agent: A8-COMPLIANCE-MAPPING-CLOSURE
+
+regulation_id: "NIS2"
+regulation_name: "Network and Information Security Directive 2"
+reference: "Directive (EU) 2022/2555"
+version: "1.0.0"
+effective_date: "2023-01-16"
+transposition_deadline: "2024-10-17"
+last_reviewed: "2026-03-29"
+
+ssid_context: >
+  NIS2 expands cybersecurity obligations to additional sectors including
+  digital infrastructure and digital providers. SSID may qualify as an
+  "important entity" (Annex II) under the digital infrastructure or
+  trust service provider categories depending on scale and market position.
+
+non_custodial_note: >
+  Non-custodial architecture does not exempt SSID from NIS2. The directive
+  applies based on sector classification and entity size, not data custody model.
+
+articles:
+  - article_id: "Art. 21"
+    title: "Cybersecurity risk management measures"
+    ssid_root: "15_infra"
+    ssid_shard: "security/cybersecurity_measures"
+    control_type: "technical"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/deployment/cybersecurity_measures.json"
+    notes: "Multi-layered security: mTLS, post-quantum crypto, vault-based secrets"
+
+  - article_id: "Art. 21(2)(a)"
+    title: "Policies on risk analysis and information system security"
+    ssid_root: "15_infra"
+    ssid_shard: "security/risk_analysis_policy"
+    control_type: "organizational"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/deployment/risk_analysis_policy.json"
+    notes: "Risk analysis framework defined; formal policy documentation in progress"
+
+  - article_id: "Art. 21(2)(b)"
+    title: "Incident handling"
+    ssid_root: "17_observability"
+    ssid_shard: "incidents/nis2_incident_handling"
+    control_type: "technical"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/audit/incident_handling.json"
+    notes: "Incident response with detection, analysis, containment, recovery phases"
+
+  - article_id: "Art. 21(2)(c)"
+    title: "Business continuity and crisis management"
+    ssid_root: "04_deployment"
+    ssid_shard: "continuity/bcp"
+    control_type: "organizational"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/deployment/bcp.json"
+    notes: "Business continuity plan outlined; disaster recovery testing pending"
+
+  - article_id: "Art. 21(2)(d)"
+    title: "Supply chain security"
+    ssid_root: "12_tooling"
+    ssid_shard: "supply_chain/sbom"
+    control_type: "technical"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/deployment/supply_chain_security.json"
+    notes: "SBOM generation, dependency scanning, SLSA compliance"
+
+  - article_id: "Art. 21(2)(e)"
+    title: "Security in network and information systems acquisition"
+    ssid_root: "15_infra"
+    ssid_shard: "security/procurement_security"
+    control_type: "organizational"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/deployment/procurement_security.json"
+    notes: "Secure development lifecycle documented; procurement guidelines partial"
+
+  - article_id: "Art. 21(2)(h)"
+    title: "Cryptography and encryption"
+    ssid_root: "21_post_quantum_crypto"
+    ssid_shard: "crypto/encryption_standards"
+    control_type: "technical"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/encryption_standards.json"
+    notes: "Post-quantum crypto (Kyber/Dilithium), mTLS, vault-based key management"
+
+  - article_id: "Art. 23"
+    title: "Incident notification"
+    ssid_root: "17_observability"
+    ssid_shard: "incidents/nis2_notification"
+    control_type: "technical"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/audit/nis2_notification.json"
+    notes: "24h early warning, 72h incident notification, 1-month final report framework"
+
+  - article_id: "Art. 24"
+    title: "Use of European cybersecurity certification schemes"
+    ssid_root: "23_compliance"
+    ssid_shard: "standards/eu_certification"
+    control_type: "organizational"
+    implementation_status: "planned"
+    evidence_path: "23_compliance/evidence/core/eu_certification.json"
+    notes: "Assessment of applicable EU cybersecurity certification schemes"
+
+  - article_id: "Art. 29"
+    title: "Cybersecurity information sharing"
+    ssid_root: "23_compliance"
+    ssid_shard: "security/info_sharing"
+    control_type: "organizational"
+    implementation_status: "planned"
+    evidence_path: "23_compliance/evidence/core/info_sharing.json"
+    notes: "Participation in relevant ISACs/CERTs planned"
+
+coverage_summary:
+  total_articles_mapped: 10
+  implemented: 4
+  partial: 4
+  planned: 2
+  coverage_level: "substantial"
+  ssid_classification: "potentially_important_entity"
+
+review_cycle: "quarterly"
+next_review: "2026-06-29"

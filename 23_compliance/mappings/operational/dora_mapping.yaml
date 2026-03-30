@@ -1,0 +1,106 @@
+# DORA — Digital Operational Resilience Act Mapping
+# Regulation (EU) 2022/2554
+# SAFE-FIX: No PII, no secrets. Pure regulatory mapping.
+# Generated: 2026-03-29 | Agent: A8-COMPLIANCE-MAPPING-CLOSURE
+
+regulation_id: "DORA"
+regulation_name: "Digital Operational Resilience Act"
+reference: "Regulation (EU) 2022/2554"
+version: "1.0.0"
+effective_date: "2025-01-17"
+last_reviewed: "2026-03-29"
+
+ssid_context: >
+  DORA establishes ICT risk management requirements for financial entities
+  and their critical third-party ICT service providers. SSID may qualify
+  as a critical third-party ICT provider if financial institutions rely
+  on it for identity verification. DORA applies directly since Jan 2025.
+
+non_custodial_note: >
+  Non-custodial architecture reduces DORA scope but does not eliminate it.
+  If SSID is designated as a critical ICT third-party provider by ESAs,
+  direct oversight provisions (Chapter V, Section II) would apply.
+
+articles:
+  - article_id: "Art. 5-16"
+    title: "ICT risk management framework"
+    ssid_root: "15_infra"
+    ssid_shard: "security/ict_risk_framework"
+    control_type: "organizational"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/deployment/ict_risk_framework.json"
+    notes: "ICT risk management framework documented; continuous monitoring in 17_observability"
+
+  - article_id: "Art. 17-23"
+    title: "ICT-related incident management"
+    ssid_root: "17_observability"
+    ssid_shard: "incidents/incident_response"
+    control_type: "technical"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/audit/incident_response.json"
+    notes: "Incident response policy with classification, escalation, and notification"
+
+  - article_id: "Art. 24-27"
+    title: "Digital operational resilience testing"
+    ssid_root: "11_test_simulation"
+    ssid_shard: "tests_compliance/resilience_testing"
+    control_type: "technical"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/core/resilience_testing.json"
+    notes: "Test simulation framework supports TLPT-style testing; full TLPT pending"
+
+  - article_id: "Art. 28-30"
+    title: "Third-party ICT risk management"
+    ssid_root: "23_compliance"
+    ssid_shard: "contracts/third_party_ict"
+    control_type: "organizational"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/core/third_party_ict.json"
+    notes: "Third-party risk assessment for KYC providers and infrastructure dependencies"
+
+  - article_id: "Art. 31-44"
+    title: "Oversight of critical third-party ICT providers"
+    ssid_root: "23_compliance"
+    ssid_shard: "regulatory_intelligence/dora_oversight"
+    control_type: "organizational"
+    implementation_status: "monitoring"
+    evidence_path: "23_compliance/evidence/core/dora_oversight.json"
+    notes: "Monitoring ESA designation process; preparing for potential direct oversight"
+
+  - article_id: "Art. 45-56"
+    title: "Information sharing and reporting"
+    ssid_root: "02_audit_logging"
+    ssid_shard: "audit/dora_reporting"
+    control_type: "technical"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/audit/dora_reporting.json"
+    notes: "Audit log exports for incident reporting; major incident classification"
+
+  - article_id: "RTS on ICT Risk"
+    title: "Regulatory Technical Standards — ICT Risk"
+    ssid_root: "15_infra"
+    ssid_shard: "security/ict_rts"
+    control_type: "technical"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/deployment/ict_rts_compliance.json"
+    notes: "RTS requirements mapped to infrastructure controls"
+
+  - article_id: "RTS on Incident Reporting"
+    title: "Regulatory Technical Standards — Incident Reporting"
+    ssid_root: "17_observability"
+    ssid_shard: "incidents/dora_incident_rts"
+    control_type: "technical"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/audit/dora_incident_rts.json"
+    notes: "Incident classification and reporting templates per DORA RTS"
+
+coverage_summary:
+  total_articles_mapped: 8
+  implemented: 1
+  partial: 6
+  monitoring: 1
+  coverage_level: "partial"
+  ssid_role: "potential_critical_ict_third_party"
+
+review_cycle: "quarterly"
+next_review: "2026-06-29"

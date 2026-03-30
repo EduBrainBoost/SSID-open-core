@@ -1,0 +1,14 @@
+# License Fee Matrix — Meta Orchestration
+schema_version: "1.0"
+root: "24_meta_orchestration"
+fee_type: developer_reward
+reward_nature: "non-custodial, autonomous, immutable"
+
+modules:
+  - module_id: "orch_orchestrator"
+    name: "Orchestrator"
+    description: "Meta-level orchestration engine coordinating cross-root workflows"
+    fee_percent: 0.20
+    responsible_maintainer: "SSID Core Team"
+    hook_contract: "IdentityFeeRouter.sol"
+    category: "A"

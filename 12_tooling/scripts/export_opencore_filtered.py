@@ -10,7 +10,7 @@ import re
 import subprocess
 import sys
 import zipfile
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Any
 
 import yaml
@@ -18,7 +18,7 @@ import yaml
 EXIT_HARD_FAIL = 24
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 TOOL_VERSION = "2.0.0"
-MANIFEST_SCHEMA_VERSION = "2.0.0"
+DEFAULT_ALLOWLIST = "23_compliance/policies/open_core_export_allowlist.yaml"
 
 
 def utc_now() -> str:
@@ -118,26 +118,45 @@ def load_policy(policy_path: Path) -> dict[str, Any]:
     return data
 
 
+def load_allowlist(allowlist_path: Path) -> dict[str, Any]:
+    data = yaml.safe_load(allowlist_path.read_text(encoding="utf-8")) or {}
+    root_files = data.get("root_files", []) or []
+    allowed_paths = data.get("allowed_paths", []) or []
+    denied_patterns = data.get("denied_patterns", []) or []
+    if not isinstance(root_files, list):
+        raise ValueError("allowlist root_files must be a list")
+    if not isinstance(allowed_paths, list):
+        raise ValueError("allowlist allowed_paths must be a list")
+    return data
+
+
+def is_allowed(path_posix: str, allowlist: dict[str, Any], extra_allowed: set[str]) -> bool:
+    if path_posix in extra_allowed:
+        return True
+    root_files = set(allowlist.get("root_files", []) or [])
+    if "/" not in path_posix and path_posix in root_files:
+        return True
+    allowed_paths = allowlist.get("allowed_paths", []) or []
+    for prefix in allowed_paths:
+        prefix_clean = prefix.rstrip("/") + "/"
+        if path_posix.startswith(prefix_clean) or path_posix == prefix.rstrip("/"):
+            return True
+    return False
+
+
 def is_denied(path_posix: str, deny_globs: list[str]) -> bool:
     return any(fnmatch.fnmatch(path_posix, pattern) for pattern in deny_globs)
 
 
-def is_allowed_prefix(path_posix: str, allow_prefixes: list[str]) -> bool:
-    """Check if path starts with one of the allowed prefixes."""
-    if not allow_prefixes:
-        return True  # no allowlist = allow all (backward compat)
-    return any(path_posix.startswith(prefix) or path_posix == prefix.rstrip("/") for prefix in allow_prefixes)
-
-
-def is_allowed_extension(path_posix: str, allow_extensions: list[str]) -> bool:
-    """Check if file extension is in the allowed list."""
-    if not allow_extensions:
-        return True  # no extension allowlist = allow all (backward compat)
-    suffix = PurePosixPath(path_posix).suffix.lower()
-    # files without extension (e.g. Makefile, LICENSE) are allowed
-    if not suffix:
-        return True
-    return suffix in allow_extensions
+def matches_denied_patterns(path_posix: str, denied_patterns: list[str]) -> bool:
+    basename = path_posix.rsplit("/", 1)[-1] if "/" in path_posix else path_posix
+    for pattern in denied_patterns:
+        if pattern.endswith("/"):
+            if f"/{pattern}" in f"/{path_posix}/" or path_posix.startswith(pattern):
+                return True
+        elif fnmatch.fnmatch(basename, pattern):
+            return True
+    return False
 
 
 def compile_secret_patterns(raw_patterns: list[str]) -> list[re.Pattern[str]]:
@@ -161,75 +180,63 @@ def export_filtered_archive(
     commit_ref: str,
     policy_path: Path,
     *,
-    target_ref: str = "",
+    allowlist_path: Path | None = None,
+    dry_run: bool = False,
 ) -> dict[str, Any]:
     policy = load_policy(policy_path)
     deny_globs = policy.get("deny_globs", []) or []
-    allow_prefixes = policy.get("allow_prefixes", []) or []
-    allow_extensions = policy.get("allow_extensions", []) or []
-    max_file_size = policy.get("max_file_size_bytes", 0) or 0
     secret_patterns = compile_secret_patterns(policy.get("secret_scan_regex", []) or [])
-    policy_version = policy.get("schema_version", "unknown")
+
+    allowlist: dict[str, Any] = {}
+    allowlist_rel_posix = ""
+    denied_patterns: list[str] = []
+    if allowlist_path and allowlist_path.exists():
+        allowlist = load_allowlist(allowlist_path)
+        allowlist_rel_posix = allowlist_path.resolve().relative_to(repo_root).as_posix()
+        denied_patterns = allowlist.get("denied_patterns", []) or []
 
     source_commit = str(git(repo_root, ["rev-parse", commit_ref]).strip())
     short_commit = source_commit[:7]
     zip_name = f"SSID_OPENCORERELEASE_{short_commit}.zip"
     zip_path = output_dir / zip_name
     sha_path = output_dir / f"{zip_name}.SHA256.txt"
-    manifest_path = output_dir / f"{zip_name}.manifest.json"
+    evidence_path = output_dir / f"{zip_name}.evidence.json"
 
     tracked_files_raw = str(git(repo_root, ["ls-tree", "-r", "--name-only", source_commit]))
     tracked_files = [p.strip() for p in tracked_files_raw.splitlines() if p.strip()]
 
     included: list[str] = []
-    excluded_entries: list[dict[str, str]] = []
+    excluded: list[str] = []
+    not_allowed: list[str] = []
+    denied_by_pattern: list[str] = []
     secret_hits: list[dict[str, str]] = []
     file_bytes: dict[str, bytes] = {}
-    file_hashes: dict[str, str] = {}
-    file_sizes: dict[str, int] = {}
-    file_provenance: dict[str, dict[str, Any]] = {}
 
     policy_rel_posix = policy_path.resolve().relative_to(repo_root).as_posix()
+    extra_allowed = {policy_rel_posix}
+    if allowlist_rel_posix:
+        extra_allowed.add(allowlist_rel_posix)
 
     for rel_path in tracked_files:
         rel_posix = rel_path.replace("\\", "/")
-
-        # --- Gate 1: allow_prefixes ---
-        if not is_allowed_prefix(rel_posix, allow_prefixes):
-            excluded_entries.append({"path": rel_posix, "reason": "not_in_allow_prefixes"})
+        if allowlist and not is_allowed(rel_posix, allowlist, extra_allowed):
+            not_allowed.append(rel_posix)
+            excluded.append(rel_posix)
             continue
-
-        # --- Gate 2: deny_globs ---
         if is_denied(rel_posix, deny_globs):
-            excluded_entries.append({"path": rel_posix, "reason": "deny_glob_match"})
+            excluded.append(rel_posix)
             continue
-
-        # --- Gate 3: allow_extensions ---
-        if not is_allowed_extension(rel_posix, allow_extensions):
-            excluded_entries.append({"path": rel_posix, "reason": "extension_not_allowed"})
+        if denied_patterns and matches_denied_patterns(rel_posix, denied_patterns):
+            denied_by_pattern.append(rel_posix)
+            excluded.append(rel_posix)
             continue
-
-        blob = git(repo_root, ["show", f"{source_commit}:{rel_posix}"], text=False)
-        blob_bytes = blob if isinstance(blob, bytes) else blob.encode("utf-8")
-
-        # --- Gate 4: max file size ---
-        if max_file_size > 0 and len(blob_bytes) > max_file_size:
-            excluded_entries.append({"path": rel_posix, "reason": "oversized"})
-            continue
-
-        file_bytes[rel_posix] = blob_bytes
-        file_hashes[rel_posix] = sha256_bytes(blob_bytes)
-        file_sizes[rel_posix] = len(blob_bytes)
-        file_provenance[rel_posix] = {
-            "status": "unchanged",
-            "public_safe": True,
-            "sanitization_rule": None,
-            "policy_ref": policy_path.name,
-        }
+        if not dry_run:
+            blob = git(repo_root, ["show", f"{source_commit}:{rel_posix}"], text=False)
+            blob_bytes = blob if isinstance(blob, bytes) else blob.encode("utf-8")
+            file_bytes[rel_posix] = blob_bytes
         included.append(rel_posix)
-
-        if rel_posix != policy_rel_posix:
-            secret_hits.extend(secret_hits_for_content(rel_posix, blob_bytes, secret_patterns))
+        if not dry_run and rel_posix != policy_rel_posix:
+            secret_hits.extend(secret_hits_for_content(rel_posix, file_bytes[rel_posix], secret_patterns))
 
     if secret_hits:
         fail_ts = utc_now()
@@ -245,7 +252,6 @@ def export_filtered_archive(
             status="SECRET_SCAN_FAIL",
         )
         payload = {
-            "schema_version": MANIFEST_SCHEMA_VERSION,
             "generated_utc": fail_ts,
             "status": "SECRET_SCAN_FAIL",
             "source_commit": source_commit,
@@ -255,11 +261,50 @@ def export_filtered_archive(
             "hits": secret_hits,
         }
         output_dir.mkdir(parents=True, exist_ok=True)
-        manifest_path.write_text(
+        evidence_path.write_text(
             json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
         raise SystemExit(EXIT_HARD_FAIL)
+
+    if dry_run:
+        allowlist_sha = sha256_file(allowlist_path) if allowlist_path and allowlist_path.exists() else ""
+        dry_manifest = {
+            "generated_utc": utc_now(),
+            "status": "DRY_RUN",
+            "source_commit": source_commit,
+            "tool_version": TOOL_VERSION,
+            "allowlist_file": allowlist_rel_posix,
+            "allowlist_sha256": allowlist_sha,
+            "policy_file": policy_rel_posix,
+            "counts": {
+                "tracked_files": len(tracked_files),
+                "included_files": len(included),
+                "excluded_not_allowed": len(not_allowed),
+                "excluded_deny_globs": len(excluded) - len(not_allowed) - len(denied_by_pattern),
+                "excluded_deny_patterns": len(denied_by_pattern),
+            },
+            "included_files": sorted(included),
+            "not_allowed_files": sorted(not_allowed)[:50],
+        }
+        output_dir.mkdir(parents=True, exist_ok=True)
+        manifest_path = output_dir / f"SSID_OPENCORERELEASE_{short_commit}.dry_run.json"
+        manifest_path.write_text(
+            json.dumps(dry_manifest, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        return {
+            "zip_path": manifest_path,
+            "sha_path": manifest_path,
+            "evidence_path": manifest_path,
+            "worm_evidence_path": manifest_path,
+            "zip_sha256": "",
+            "policy_sha256": sha256_file(policy_path),
+            "source_commit": source_commit,
+            "dry_run": True,
+            "included_count": len(included),
+            "excluded_count": len(excluded),
+        }
 
     output_dir.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(zip_path, mode="w", compression=zipfile.ZIP_STORED) as zf:
@@ -273,6 +318,7 @@ def export_filtered_archive(
     sha_path.write_text(f"{zip_sha256}  {zip_name}\n", encoding="utf-8")
     pass_ts = utc_now()
     policy_sha = sha256_file(policy_path)
+    allowlist_sha = sha256_file(allowlist_path) if allowlist_path and allowlist_path.exists() else ""
     worm_evidence = write_worm_export_evidence(
         repo_root,
         timestamp_utc=pass_ts,
@@ -284,55 +330,46 @@ def export_filtered_archive(
         status="PASS",
     )
 
-    # --- Build standardized export manifest ---
-    manifest_payload: dict[str, Any] = {
-        "schema_version": MANIFEST_SCHEMA_VERSION,
+    evidence_payload = {
         "generated_utc": pass_ts,
         "status": "PASS",
-        "source_repo": policy.get("source_repo", ""),
-        "source_ref": source_commit,
-        "target_repo": policy.get("target_repo", ""),
-        "target_ref": target_ref or "",
-        "policy_file": policy_rel_posix,
-        "policy_version": policy_version,
+        "source_repo": policy.get("source_repo"),
+        "target_repo": policy.get("target_repo"),
+        "mode": policy.get("mode"),
+        "source_commit": source_commit,
+        "source_commit_short": short_commit,
+        "policy_file": policy_path.as_posix(),
         "policy_sha256": policy_sha,
-        "tool_version": TOOL_VERSION,
+        "allowlist_file": allowlist_rel_posix,
+        "allowlist_sha256": allowlist_sha,
         "deny_globs": deny_globs,
-        "allow_prefixes": allow_prefixes,
-        "allow_extensions": allow_extensions,
-        "max_file_size_bytes": max_file_size,
+        "denied_patterns": denied_patterns,
         "secret_scan_exempt_paths": [policy_rel_posix],
         "secret_scan_regex": [p.pattern for p in secret_patterns],
+        "tool_version": TOOL_VERSION,
         "worm_evidence_path": worm_evidence.relative_to(repo_root).as_posix(),
         "counts": {
             "tracked_files": len(tracked_files),
             "included_files": len(included),
-            "excluded_files": len(excluded_entries),
+            "excluded_not_allowed": len(not_allowed),
+            "excluded_deny_globs": len(excluded) - len(not_allowed) - len(denied_by_pattern),
+            "excluded_deny_patterns": len(denied_by_pattern),
+            "total_excluded": len(excluded),
         },
-        "files": [
-            {
-                "path": rel_posix,
-                "sha256": file_hashes[rel_posix],
-                "size_bytes": file_sizes[rel_posix],
-                "sanitized": file_provenance[rel_posix]["status"] == "redacted",
-                "provenance": file_provenance[rel_posix],
-            }
-            for rel_posix in sorted(included)
-        ],
-        "excluded_files": sorted(excluded_entries, key=lambda e: e["path"]),
-        "bundle_sha256": zip_sha256,
+        "excluded_files": sorted(excluded),
         "zip_artifact": zip_name,
+        "zip_sha256": zip_sha256,
         "sha256_file": sha_path.name,
     }
-    manifest_path.write_text(
-        json.dumps(manifest_payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+    evidence_path.write_text(
+        json.dumps(evidence_payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
 
     return {
         "zip_path": zip_path,
         "sha_path": sha_path,
-        "manifest_path": manifest_path,
+        "evidence_path": evidence_path,
         "worm_evidence_path": worm_evidence,
         "zip_sha256": zip_sha256,
         "policy_sha256": policy_sha,
@@ -343,18 +380,23 @@ def export_filtered_archive(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="export_opencore_filtered.py",
-        description="Create deterministic OpenCore export ZIP from an SSID commit.",
+        description="Create deterministic OpenCore export ZIP from an SSID commit (allow-only).",
     )
     parser.add_argument("--commit", default="HEAD", help="source commit (default: HEAD)")
     parser.add_argument(
         "--policy",
         default="16_codex/opencore_export_policy.yaml",
-        help="export policy file path (repo-relative or absolute)",
+        help="deny/secret policy file path (repo-relative or absolute)",
+    )
+    parser.add_argument(
+        "--allowlist",
+        default=DEFAULT_ALLOWLIST,
+        help="allowlist file path (repo-relative or absolute, default: %(default)s)",
     )
     parser.add_argument(
         "--output-dir",
         default=".",
-        help="output directory for ZIP, SHA256, and manifest JSON",
+        help="output directory for ZIP, SHA256, and evidence JSON",
     )
     parser.add_argument(
         "--outdir",
@@ -362,14 +404,15 @@ def parse_args() -> argparse.Namespace:
         help="alias for --output-dir (runbook compatibility)",
     )
     parser.add_argument(
-        "--target-ref",
-        default="",
-        help="target repo ref/branch (metadata only)",
-    )
-    parser.add_argument(
         "--repo-root",
         default=str(Path(__file__).resolve().parents[2]),
         help="repository root path (for testing or external invocation)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="output manifest JSON without creating ZIP (verify allowlist scope)",
     )
     return parser.parse_args()
 
@@ -386,13 +429,21 @@ def main() -> int:
         print(f"ERROR: policy file not found: {policy_path.as_posix()}", file=sys.stderr)
         return EXIT_HARD_FAIL
 
+    allowlist_path = Path(args.allowlist)
+    if not allowlist_path.is_absolute():
+        allowlist_path = repo_root / allowlist_path
+    if not allowlist_path.exists():
+        print(f"ERROR: allowlist file not found: {allowlist_path.as_posix()}", file=sys.stderr)
+        return EXIT_HARD_FAIL
+
     try:
         result = export_filtered_archive(
             repo_root=repo_root,
             output_dir=output_dir,
             commit_ref=args.commit,
             policy_path=policy_path,
-            target_ref=args.target_ref,
+            allowlist_path=allowlist_path,
+            dry_run=args.dry_run,
         )
     except (RuntimeError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
@@ -402,13 +453,20 @@ def main() -> int:
             return exc.code
         return EXIT_HARD_FAIL
 
-    print(f"SOURCE_COMMIT={result['source_commit']}")
-    print(f"ZIP={Path(result['zip_path']).as_posix()}")
-    print(f"SHA256={result['zip_sha256']}")
-    print(f"POLICY_SHA256={result['policy_sha256']}")
-    print(f"SHA_FILE={Path(result['sha_path']).as_posix()}")
-    print(f"MANIFEST={Path(result['manifest_path']).as_posix()}")
-    print(f"WORM_EVIDENCE={Path(result['worm_evidence_path']).as_posix()}")
+    if args.dry_run:
+        print(f"DRY_RUN=true")
+        print(f"SOURCE_COMMIT={result['source_commit']}")
+        print(f"INCLUDED={result['included_count']}")
+        print(f"EXCLUDED={result['excluded_count']}")
+        print(f"MANIFEST={Path(result['zip_path']).as_posix()}")
+    else:
+        print(f"SOURCE_COMMIT={result['source_commit']}")
+        print(f"ZIP={Path(result['zip_path']).as_posix()}")
+        print(f"SHA256={result['zip_sha256']}")
+        print(f"POLICY_SHA256={result['policy_sha256']}")
+        print(f"SHA_FILE={Path(result['sha_path']).as_posix()}")
+        print(f"EVIDENCE={Path(result['evidence_path']).as_posix()}")
+        print(f"WORM_EVIDENCE={Path(result['worm_evidence_path']).as_posix()}")
     return 0
 
 

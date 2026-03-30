@@ -1,5 +1,0 @@
-interface_id: 23_compliance.06_bildung_qualifikationen.primary
-root_id: 23_compliance
-shard_id: 06_bildung_qualifikationen
-kind: bootstrap_contract
-status: active

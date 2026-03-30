@@ -1,3 +1,29 @@
 # 24_meta_orchestration/13_unternehmen_gewerbe
 
-Capability definition for deterministic shard contract baseline.
+## Purpose
+
+Meta-Orchestration layer for enterprise and business operations within the SSID ecosystem.
+This shard provides cross-root orchestration, task dispatch, evidence collection specifically scoped to Unternehmen & Gewerbe.
+
+## Structure
+
+```
+13_unternehmen_gewerbe/
+  chart.yaml          - Shard capability definition (SoT)
+  manifest.yaml       - Deployment manifest
+  docs/               - Technical documentation
+  tests/              - Test suites
+  implementations/    - Language-specific implementations
+    python/src/       - Python modules
+```
+
+## Interfaces
+
+- **Inbound**: Receives requests from `03_core` and `24_meta_orchestration`
+- **Outbound**: Emits evidence to `23_compliance`, logs to `17_observability`
+- **Data**: Hash-only, non-custodial architecture (no PII storage)
+
+## Policies
+
+- `hash_only`: No PII stored; proofs and SHA-256 hashes only
+- `non_custodial`: No custody; peer-to-peer flows; autonomous smart contracts

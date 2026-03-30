@@ -1,0 +1,51 @@
+# REPO_TARGET_LOCK — Kanonische Repo-Zuordnung
+# Generated: 2026-03-29T16:00:00Z
+# Agent: HARD_REALITY_RESET
+# Rule: Nur ein Repo darf zu origin/main pushen. Alle anderen sind read-only oder branch-only.
+
+version: "1.0.0"
+
+primary_push_source:
+  repo: "workspace_ssid"
+  path: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github\\SSID"
+  remote: "https://github.com/EduBrainBoost/SSID.git"
+  branch: "main"
+  permission: "push"
+  current_head: "773b26c5539455aa435e0d6c25566ec7af4231c7"
+
+secondary_repos:
+  canonical_ssid:
+    path: "C:\\Users\\bibel\\Documents\\Github\\SSID"
+    remote: "https://github.com/EduBrainBoost/SSID.git"
+    permission: "pull-only"
+    current_head: "6c8f47d2f5efc55df2b6d364f29330e43bfcdcf2"
+    status: "BEHIND_BY_4_COMMITS"
+    dirty_files: 47
+    action_required: "Pull after workspace push, then commit or discard dirty files"
+
+  ssid_ems:
+    path: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github\\SSID-EMS"
+    remote: "https://github.com/EduBrainBoost/SSID-EMS.git"
+    permission: "push"
+    current_head: "cc3bf3e4d2c1ac23b297d7be88d276ff4694a43d"
+    status: "CLEAN"
+
+  ssid_open_core:
+    path: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github\\SSID-open-core"
+    remote: "https://github.com/EduBrainBoost/SSID-open-core.git"
+    permission: "push"
+    current_head: "d662a53f0e2a43b52c35b937d846b69d738e41fa"
+    status: "CLEAN"
+
+  ssid_docs:
+    path: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github\\SSID-docs"
+    remote: "https://github.com/EduBrainBoost/SSID-docs.git"
+    permission: "push"
+    current_head: "19e35c5175ae227e068abf128f528c21578c73b0"
+    status: "CLEAN"
+
+rules:
+  - "NIEMALS aus zwei Repos gleichzeitig auf denselben Remote pushen"
+  - "canonical_ssid ist pull-only bis Divergenz aufgeloest"
+  - "Workspace-Repo ist Single Source of Push fuer SSID main"
+  - "Jeder Push muss vorher git pull --rebase durchfuehren"

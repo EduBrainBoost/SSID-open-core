@@ -1,0 +1,20 @@
+{
+  "event_id": "0eaa55e19d726732663773eaba7a40cc1593d1c4e520a57f1fc7f58efcf8ecf8",
+  "event_type": "merge_recorded",
+  "merge_sha": "63deeaa87cf680066221ac53124415202e4248ea",
+  "observed_utc": "2026-02-28T02:46:57Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 20,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-63deeaa/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "63deeaa87cf680066221ac53124415202e4248ea",
+  "summary": "INTEGRATOR_MERGE_CHECKS_001: enforce merge checks via CI + PR template + ADR-0016 (#20)",
+  "task_id": null
+}

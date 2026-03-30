@@ -1,0 +1,160 @@
+{
+  "schema_version": "1.0.0",
+  "generated": "2026-03-27T12:00:00Z",
+  "description": "SSIDCTL Activation Profiles — deterministische Subset-Startprofile",
+  "matrix_ref": "24_meta_orchestration/registry/ssidctl_agent_matrix.v1.json",
+  "profiles": [
+    {
+      "profile_id": "gate55_core_11",
+      "description": "Gate 5.5 Stabilisierung + Phase 6 Identity Core — 11er Fuehrungsverbund",
+      "activation_rule": "Agents 00-05 zuerst, 06-10 nur nach Gate-Freigabe durch L0",
+      "phase_a_agents": [
+        "ssidctl.l0.master_orchestrator",
+        "ssidctl.l4.structure_guardian",
+        "ssidctl.l4.secret_sentinel",
+        "ssidctl.l4.config_sanitizer",
+        "ssidctl.l4.test_orchestrator",
+        "ssidctl.l4.ci_gatekeeper",
+        "ssidctl.l4.metrics_collector",
+        "ssidctl.l2.17_observability",
+        "ssidctl.l1.repo_ssid",
+        "ssidctl.l1.repo_ems",
+        "ssidctl.l1.repo_orchestrator"
+      ],
+      "phase_b_agents": [
+        "ssidctl.l5.did_method_engineer",
+        "ssidctl.l5.vc_issuer_engineer",
+        "ssidctl.l5.vc_verifier_engineer",
+        "ssidctl.l5.wallet_runtime_engineer",
+        "ssidctl.l5.webauthn_binding_engineer",
+        "ssidctl.l5.ems_console_runtime_engineer"
+      ],
+      "gate_condition": "phase_a PASS oder PASS_WITH_NON_BLOCKING_WARNINGS",
+      "use_case": "Gate-5.5-Stabilisierung vor Phase-6-Produktausbau"
+    },
+    {
+      "profile_id": "full_87",
+      "description": "Vollstaendiger 87-Agenten-Verbund — alle Ebenen aktiv",
+      "activation_rule": "L0 startet, L1 folgt, L2 parallel, L3 bei Shard-Bedarf, L4 immer, L5 bei Produktarbeit",
+      "agents": ["*"],
+      "gate_condition": "L0 muss aktiv sein",
+      "use_case": "Vollstaendiger Systembetrieb"
+    },
+    {
+      "profile_id": "ems_runtime_only",
+      "description": "Nur EMS-relevante Agents — Portal, Backend, Console",
+      "activation_rule": "EMS-Repo isoliert bearbeiten",
+      "agents": [
+        "ssidctl.l0.master_orchestrator",
+        "ssidctl.l1.repo_ems",
+        "ssidctl.l5.ems_console_runtime_engineer",
+        "ssidctl.l4.secret_sentinel",
+        "ssidctl.l4.config_sanitizer",
+        "ssidctl.l4.test_orchestrator",
+        "ssidctl.l4.dependency_curator"
+      ],
+      "gate_condition": "keine — isolierter EMS-Scope",
+      "use_case": "EMS-Portal-Arbeit ohne SSID-Hauptrepo-Impact"
+    },
+    {
+      "profile_id": "identity_core_phase6",
+      "description": "Phase 6 Identity Core — DID/VC/Wallet/Auth Produktkern",
+      "activation_rule": "nur nach Gate-5.5-Freigabe",
+      "agents": [
+        "ssidctl.l0.master_orchestrator",
+        "ssidctl.l1.repo_ssid",
+        "ssidctl.l2.09_meta_identity",
+        "ssidctl.l2.10_interoperability",
+        "ssidctl.l2.14_zero_time_auth",
+        "ssidctl.l2.13_ui_layer",
+        "ssidctl.l2.23_compliance",
+        "ssidctl.l3.shard_01_identitaet_personen",
+        "ssidctl.l3.shard_02_dokumente_nachweise",
+        "ssidctl.l3.shard_03_zugang_berechtigungen",
+        "ssidctl.l5.did_method_engineer",
+        "ssidctl.l5.vc_issuer_engineer",
+        "ssidctl.l5.vc_verifier_engineer",
+        "ssidctl.l5.wallet_runtime_engineer",
+        "ssidctl.l5.webauthn_binding_engineer",
+        "ssidctl.l4.evidence_sealer",
+        "ssidctl.l4.hash_chain_auditor",
+        "ssidctl.l4.contract_guard",
+        "ssidctl.l4.policy_enforcer"
+      ],
+      "gate_condition": "Gate 5.5 PASS erforderlich",
+      "use_case": "Aufbau des SSI-Produktkerns"
+    },
+    {
+      "profile_id": "docs_registry_only",
+      "description": "Nur Docs-/Registry-bezogene Agents",
+      "activation_rule": "Docs und Registry isoliert bearbeiten",
+      "agents": [
+        "ssidctl.l0.master_orchestrator",
+        "ssidctl.l1.repo_docs",
+        "ssidctl.l1.repo_ssid",
+        "ssidctl.l2.05_documentation",
+        "ssidctl.l2.16_codex",
+        "ssidctl.l2.24_meta_orchestration",
+        "ssidctl.l4.docs_normalizer",
+        "ssidctl.l4.state_registry_keeper",
+        "ssidctl.l5.docs_site_publisher"
+      ],
+      "gate_condition": "keine — isolierter Docs-Scope",
+      "use_case": "Dokumentations- und Registry-Pflege"
+    },
+    {
+      "profile_id": "security_audit",
+      "description": "Security-/Compliance-Audit-Profil",
+      "activation_rule": "Security-Audit isoliert durchfuehren",
+      "agents": [
+        "ssidctl.l0.master_orchestrator",
+        "ssidctl.l4.secret_sentinel",
+        "ssidctl.l4.hash_chain_auditor",
+        "ssidctl.l4.evidence_sealer",
+        "ssidctl.l4.policy_enforcer",
+        "ssidctl.l4.config_sanitizer",
+        "ssidctl.l2.02_audit_logging",
+        "ssidctl.l2.23_compliance",
+        "ssidctl.l2.15_infra",
+        "ssidctl.l5.compliance_evidence_clerk",
+        "ssidctl.l5.policy_mapping_analyst",
+        "ssidctl.l5.pqc_migration_engineer"
+      ],
+      "gate_condition": "keine — Audit ist immer erlaubt",
+      "use_case": "Sicherheits- und Compliance-Pruefung"
+    },
+    {
+      "profile_id": "orchestrator_runtime_only",
+      "description": "Nur Orchestrator-relevante Agents",
+      "activation_rule": "Orchestrator isoliert bearbeiten",
+      "agents": [
+        "ssidctl.l0.master_orchestrator",
+        "ssidctl.l1.repo_orchestrator",
+        "ssidctl.l5.orchestrator_server_engineer",
+        "ssidctl.l4.worker_resolver",
+        "ssidctl.l4.provider_failover_manager",
+        "ssidctl.l4.sandbox_controller",
+        "ssidctl.l4.secret_sentinel",
+        "ssidctl.l4.test_orchestrator"
+      ],
+      "gate_condition": "keine — isolierter Orchestrator-Scope",
+      "use_case": "Orchestrator-Arbeit ohne SSID-Hauptrepo-Impact"
+    },
+    {
+      "profile_id": "forensic_salvage",
+      "description": "Forensik- und Salvage-Profil fuer Workspace-Bereinigung",
+      "activation_rule": "bei Workspace-Drift oder Proto-Repo-Uebernahme",
+      "agents": [
+        "ssidctl.l0.master_orchestrator",
+        "ssidctl.l4.diff_forensics_analyst",
+        "ssidctl.l4.salvage_coordinator",
+        "ssidctl.l4.structure_guardian",
+        "ssidctl.l4.hash_chain_auditor",
+        "ssidctl.l4.evidence_sealer",
+        "ssidctl.l1.repo_ssid"
+      ],
+      "gate_condition": "L0-Freigabe fuer Salvage erforderlich",
+      "use_case": "Forensische Analyse und kontrollierte Delta-Uebernahme"
+    }
+  ]
+}

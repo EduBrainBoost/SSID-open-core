@@ -1,0 +1,906 @@
+schema_version: 1.0.0
+total_pairs: 43
+pairs:
+- pair_id: pair.orchestrator.runtime
+  pair_name: runtime pair
+  domain: runtime
+  primary_agent_id: agentswarm.orchestrator.runtime.primary
+  sentinel_agent_id: agentswarm.orchestrator.runtime.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.orchestrator
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/runtime/
+  allowed_handoffs:
+  - pair.orchestrator.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: orchestrator domain pair for runtime
+- pair_id: pair.orchestrator.frontend
+  pair_name: frontend pair
+  domain: frontend
+  primary_agent_id: agentswarm.orchestrator.frontend.primary
+  sentinel_agent_id: agentswarm.orchestrator.frontend.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.orchestrator
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/frontend/
+  allowed_handoffs:
+  - pair.orchestrator.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: orchestrator domain pair for frontend
+- pair_id: pair.orchestrator.backend
+  pair_name: backend pair
+  domain: backend
+  primary_agent_id: agentswarm.orchestrator.backend.primary
+  sentinel_agent_id: agentswarm.orchestrator.backend.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.orchestrator
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/backend/
+  allowed_handoffs:
+  - pair.orchestrator.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: orchestrator domain pair for backend
+- pair_id: pair.orchestrator.orchestrator
+  pair_name: orchestrator pair
+  domain: orchestrator
+  primary_agent_id: agentswarm.orchestrator.orchestrator.primary
+  sentinel_agent_id: agentswarm.orchestrator.orchestrator.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.orchestrator
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/orchestrator/
+  allowed_handoffs:
+  - pair.orchestrator.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: orchestrator domain pair for orchestrator
+- pair_id: pair.orchestrator.provider
+  pair_name: provider pair
+  domain: provider
+  primary_agent_id: agentswarm.orchestrator.provider.primary
+  sentinel_agent_id: agentswarm.orchestrator.provider.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.orchestrator
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/provider/
+  allowed_handoffs:
+  - pair.orchestrator.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: orchestrator domain pair for provider
+- pair_id: pair.orchestrator.queue
+  pair_name: queue pair
+  domain: queue
+  primary_agent_id: agentswarm.orchestrator.queue.primary
+  sentinel_agent_id: agentswarm.orchestrator.queue.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.orchestrator
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/queue/
+  allowed_handoffs:
+  - pair.orchestrator.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: orchestrator domain pair for queue
+- pair_id: pair.orchestrator.policy
+  pair_name: policy pair
+  domain: policy
+  primary_agent_id: agentswarm.orchestrator.policy.primary
+  sentinel_agent_id: agentswarm.orchestrator.policy.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.orchestrator
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/policy/
+  allowed_handoffs:
+  - pair.orchestrator.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: orchestrator domain pair for policy
+- pair_id: pair.orchestrator.registry
+  pair_name: registry pair
+  domain: registry
+  primary_agent_id: agentswarm.orchestrator.registry.primary
+  sentinel_agent_id: agentswarm.orchestrator.registry.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.orchestrator
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/registry/
+  allowed_handoffs:
+  - pair.orchestrator.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: orchestrator domain pair for registry
+- pair_id: pair.orchestrator.audit
+  pair_name: audit pair
+  domain: audit
+  primary_agent_id: agentswarm.orchestrator.audit.primary
+  sentinel_agent_id: agentswarm.orchestrator.audit.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.orchestrator
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/audit/
+  allowed_handoffs:
+  - pair.orchestrator.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: orchestrator domain pair for audit
+- pair_id: pair.orchestrator.browser
+  pair_name: browser pair
+  domain: browser
+  primary_agent_id: agentswarm.orchestrator.browser.primary
+  sentinel_agent_id: agentswarm.orchestrator.browser.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.orchestrator
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/browser/
+  allowed_handoffs:
+  - pair.orchestrator.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: orchestrator domain pair for browser
+- pair_id: pair.orchestrator.release
+  pair_name: release pair
+  domain: release
+  primary_agent_id: agentswarm.orchestrator.release.primary
+  sentinel_agent_id: agentswarm.orchestrator.release.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.orchestrator
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/release/
+  allowed_handoffs:
+  - pair.orchestrator.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: orchestrator domain pair for release
+- pair_id: pair.orchestrator.repair
+  pair_name: repair pair
+  domain: repair
+  primary_agent_id: agentswarm.orchestrator.repair.primary
+  sentinel_agent_id: agentswarm.orchestrator.repair.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.orchestrator
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/repair/
+  allowed_handoffs:
+  - pair.orchestrator.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: orchestrator domain pair for repair
+- pair_id: pair.execution.auth_runtime
+  pair_name: auth-runtime pair
+  domain: auth-runtime
+  primary_agent_id: agentswarm.execution.auth_runtime.primary
+  sentinel_agent_id: agentswarm.execution.auth_runtime.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/auth_runtime/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for auth-runtime
+- pair_id: pair.execution.routing_runtime
+  pair_name: routing-runtime pair
+  domain: routing-runtime
+  primary_agent_id: agentswarm.execution.routing_runtime.primary
+  sentinel_agent_id: agentswarm.execution.routing_runtime.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/routing_runtime/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for routing-runtime
+- pair_id: pair.execution.console_runtime
+  pair_name: console-runtime pair
+  domain: console-runtime
+  primary_agent_id: agentswarm.execution.console_runtime.primary
+  sentinel_agent_id: agentswarm.execution.console_runtime.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/console_runtime/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for console-runtime
+- pair_id: pair.execution.autorunner_runtime
+  pair_name: autorunner-runtime pair
+  domain: autorunner-runtime
+  primary_agent_id: agentswarm.execution.autorunner_runtime.primary
+  sentinel_agent_id: agentswarm.execution.autorunner_runtime.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/autorunner_runtime/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for autorunner-runtime
+- pair_id: pair.execution.eventflow_runtime
+  pair_name: eventflow-runtime pair
+  domain: eventflow-runtime
+  primary_agent_id: agentswarm.execution.eventflow_runtime.primary
+  sentinel_agent_id: agentswarm.execution.eventflow_runtime.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/eventflow_runtime/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for eventflow-runtime
+- pair_id: pair.execution.registry_sync
+  pair_name: registry-sync pair
+  domain: registry-sync
+  primary_agent_id: agentswarm.execution.registry_sync.primary
+  sentinel_agent_id: agentswarm.execution.registry_sync.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/registry_sync/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for registry-sync
+- pair_id: pair.execution.skill_sync
+  pair_name: skill-sync pair
+  domain: skill-sync
+  primary_agent_id: agentswarm.execution.skill_sync.primary
+  sentinel_agent_id: agentswarm.execution.skill_sync.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/skill_sync/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for skill-sync
+- pair_id: pair.execution.agent_registry
+  pair_name: agent-registry pair
+  domain: agent-registry
+  primary_agent_id: agentswarm.execution.agent_registry.primary
+  sentinel_agent_id: agentswarm.execution.agent_registry.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/agent_registry/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for agent-registry
+- pair_id: pair.execution.task_factory
+  pair_name: task-factory pair
+  domain: task-factory
+  primary_agent_id: agentswarm.execution.task_factory.primary
+  sentinel_agent_id: agentswarm.execution.task_factory.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/task_factory/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for task-factory
+- pair_id: pair.execution.root24_guard
+  pair_name: root24-guard pair
+  domain: root24-guard
+  primary_agent_id: agentswarm.execution.root24_guard.primary
+  sentinel_agent_id: agentswarm.execution.root24_guard.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/root24_guard/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for root24-guard
+- pair_id: pair.execution.sot_parity
+  pair_name: sot-parity pair
+  domain: sot-parity
+  primary_agent_id: agentswarm.execution.sot_parity.primary
+  sentinel_agent_id: agentswarm.execution.sot_parity.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/sot_parity/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for sot-parity
+- pair_id: pair.execution.build_executor
+  pair_name: build-executor pair
+  domain: build-executor
+  primary_agent_id: agentswarm.execution.build_executor.primary
+  sentinel_agent_id: agentswarm.execution.build_executor.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/build_executor/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for build-executor
+- pair_id: pair.execution.unit_test_executor
+  pair_name: unit-test-executor pair
+  domain: unit-test-executor
+  primary_agent_id: agentswarm.execution.unit_test_executor.primary
+  sentinel_agent_id: agentswarm.execution.unit_test_executor.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/unit_test_executor/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for unit-test-executor
+- pair_id: pair.execution.integration_test_executor
+  pair_name: integration-test-executor pair
+  domain: integration-test-executor
+  primary_agent_id: agentswarm.execution.integration_test_executor.primary
+  sentinel_agent_id: agentswarm.execution.integration_test_executor.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/integration_test_executor/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for integration-test-executor
+- pair_id: pair.execution.e2e_executor
+  pair_name: e2e-executor pair
+  domain: e2e-executor
+  primary_agent_id: agentswarm.execution.e2e_executor.primary
+  sentinel_agent_id: agentswarm.execution.e2e_executor.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/e2e_executor/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for e2e-executor
+- pair_id: pair.execution.browser_proof
+  pair_name: browser-proof pair
+  domain: browser-proof
+  primary_agent_id: agentswarm.execution.browser_proof.primary
+  sentinel_agent_id: agentswarm.execution.browser_proof.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/browser_proof/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for browser-proof
+- pair_id: pair.execution.observability_proof
+  pair_name: observability-proof pair
+  domain: observability-proof
+  primary_agent_id: agentswarm.execution.observability_proof.primary
+  sentinel_agent_id: agentswarm.execution.observability_proof.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/observability_proof/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for observability-proof
+- pair_id: pair.execution.docs_proof
+  pair_name: docs-proof pair
+  domain: docs-proof
+  primary_agent_id: agentswarm.execution.docs_proof.primary
+  sentinel_agent_id: agentswarm.execution.docs_proof.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/docs_proof/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for docs-proof
+- pair_id: pair.execution.rollback_repair
+  pair_name: rollback-repair pair
+  domain: rollback-repair
+  primary_agent_id: agentswarm.execution.rollback_repair.primary
+  sentinel_agent_id: agentswarm.execution.rollback_repair.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.execution
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/rollback_repair/
+  allowed_handoffs:
+  - pair.execution.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: execution domain pair for rollback-repair
+- pair_id: pair.control.loop_detection
+  pair_name: loop-detection pair
+  domain: loop-detection
+  primary_agent_id: agentswarm.control.loop_detection.primary
+  sentinel_agent_id: agentswarm.control.loop_detection.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.control
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/loop_detection/
+  allowed_handoffs:
+  - pair.control.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: control domain pair for loop-detection
+- pair_id: pair.control.timeout_control
+  pair_name: timeout-control pair
+  domain: timeout-control
+  primary_agent_id: agentswarm.control.timeout_control.primary
+  sentinel_agent_id: agentswarm.control.timeout_control.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.control
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/timeout_control/
+  allowed_handoffs:
+  - pair.control.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: control domain pair for timeout-control
+- pair_id: pair.control.takeover_manager
+  pair_name: takeover-manager pair
+  domain: takeover-manager
+  primary_agent_id: agentswarm.control.takeover_manager.primary
+  sentinel_agent_id: agentswarm.control.takeover_manager.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.control
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/takeover_manager/
+  allowed_handoffs:
+  - pair.control.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: control domain pair for takeover-manager
+- pair_id: pair.control.policy_drift
+  pair_name: policy-drift pair
+  domain: policy-drift
+  primary_agent_id: agentswarm.control.policy_drift.primary
+  sentinel_agent_id: agentswarm.control.policy_drift.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.control
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/policy_drift/
+  allowed_handoffs:
+  - pair.control.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: control domain pair for policy-drift
+- pair_id: pair.control.permissions_guard
+  pair_name: permissions-guard pair
+  domain: permissions-guard
+  primary_agent_id: agentswarm.control.permissions_guard.primary
+  sentinel_agent_id: agentswarm.control.permissions_guard.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.control
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/permissions_guard/
+  allowed_handoffs:
+  - pair.control.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: control domain pair for permissions-guard
+- pair_id: pair.control.evidence_integrity
+  pair_name: evidence-integrity pair
+  domain: evidence-integrity
+  primary_agent_id: agentswarm.control.evidence_integrity.primary
+  sentinel_agent_id: agentswarm.control.evidence_integrity.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.control
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/evidence_integrity/
+  allowed_handoffs:
+  - pair.control.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: control domain pair for evidence-integrity
+- pair_id: pair.control.result_verifier
+  pair_name: result-verifier pair
+  domain: result-verifier
+  primary_agent_id: agentswarm.control.result_verifier.primary
+  sentinel_agent_id: agentswarm.control.result_verifier.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.control
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/result_verifier/
+  allowed_handoffs:
+  - pair.control.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: control domain pair for result-verifier
+- pair_id: pair.control.concurrency_guard
+  pair_name: concurrency-guard pair
+  domain: concurrency-guard
+  primary_agent_id: agentswarm.control.concurrency_guard.primary
+  sentinel_agent_id: agentswarm.control.concurrency_guard.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.control
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/concurrency_guard/
+  allowed_handoffs:
+  - pair.control.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: control domain pair for concurrency-guard
+- pair_id: pair.control.cost_guard
+  pair_name: cost-guard pair
+  domain: cost-guard
+  primary_agent_id: agentswarm.control.cost_guard.primary
+  sentinel_agent_id: agentswarm.control.cost_guard.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.control
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/cost_guard/
+  allowed_handoffs:
+  - pair.control.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: control domain pair for cost-guard
+- pair_id: pair.control.memory_guard
+  pair_name: memory-guard pair
+  domain: memory-guard
+  primary_agent_id: agentswarm.control.memory_guard.primary
+  sentinel_agent_id: agentswarm.control.memory_guard.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.control
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/memory_guard/
+  allowed_handoffs:
+  - pair.control.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: control domain pair for memory-guard
+- pair_id: pair.control.incident_manager
+  pair_name: incident-manager pair
+  domain: incident-manager
+  primary_agent_id: agentswarm.control.incident_manager.primary
+  sentinel_agent_id: agentswarm.control.incident_manager.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.control
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/incident_manager/
+  allowed_handoffs:
+  - pair.control.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: control domain pair for incident-manager
+- pair_id: pair.control.worktree_guard
+  pair_name: worktree-guard pair
+  domain: worktree-guard
+  primary_agent_id: agentswarm.control.worktree_guard.primary
+  sentinel_agent_id: agentswarm.control.worktree_guard.sentinel
+  takeover_owner: sentinel
+  arbitration_mode: sentinel_monitors_primary
+  heartbeat_policy_ref: policy.heartbeat.default
+  stagnation_policy_ref: policy.stagnation.default
+  takeover_policy_ref: policy.takeover.default
+  result_contract_ref: contract.result.control
+  evidence_targets:
+  - 02_audit_logging/evidence/agentswarm/worktree_guard/
+  allowed_handoffs:
+  - pair.control.*
+  blocked_handoffs: []
+  fail_closed_on:
+  - no_heartbeat_3x
+  - policy_violation
+  - scope_breach
+  notes: control domain pair for worktree-guard

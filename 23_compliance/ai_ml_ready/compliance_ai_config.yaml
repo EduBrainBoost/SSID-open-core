@@ -1,0 +1,74 @@
+compliance_ai:
+  version: "1.0.0"
+  description: >
+    Configuration for AI/ML-powered compliance automation in SSID.
+    Governs model selection, inference parameters, bias auditing,
+    and EU AI Act conformity for compliance decision support.
+
+models:
+  policy_classifier:
+    type: text_classification
+    framework: transformer
+    purpose: Classify operations against applicable regulatory policies
+    max_inference_latency_ms: 200
+    confidence_threshold: 0.85
+    fallback_on_low_confidence: manual_review
+
+  anomaly_detector:
+    type: unsupervised_anomaly
+    framework: isolation_forest
+    purpose: Detect unusual compliance patterns requiring investigation
+    sensitivity: medium
+    alert_threshold_sigma: 3.0
+
+  jurisdiction_mapper:
+    type: multi_label_classification
+    framework: transformer
+    purpose: Map operations to applicable jurisdictions and regulations
+    supported_jurisdictions: 45
+    update_frequency: monthly
+
+inference:
+  batch_size: 32
+  max_concurrent_requests: 100
+  timeout_ms: 5000
+  retry_policy:
+    max_retries: 2
+    backoff_ms: 500
+
+bias_audit:
+  schedule: quarterly
+  metrics:
+    - demographic_parity
+    - equalized_odds
+    - calibration_by_group
+  protected_attributes:
+    - jurisdiction
+    - provider_type
+  max_disparity_ratio: 0.8
+  report_path: 02_audit_logging/reports
+
+eu_ai_act:
+  risk_classification: limited
+  transparency_obligations:
+    - model_card_published
+    - decision_explanations_available
+    - human_oversight_enabled
+  conformity_assessment: self_assessment
+  registration: eu_ai_database
+
+human_oversight:
+  enabled: true
+  escalation_threshold: 0.70
+  reviewer_roles:
+    - compliance_officer
+    - legal_counsel
+  max_auto_approve_risk_score: 0.30
+
+knowledge_base:
+  path: 23_compliance/ai_ml_ready/knowledge_base
+  update_frequency: weekly
+  sources:
+    - regulatory_feeds
+    - internal_policy_updates
+    - enforcement_action_database

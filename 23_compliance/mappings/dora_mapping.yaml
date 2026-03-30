@@ -1,0 +1,184 @@
+# DORA — Digital Operational Resilience Act
+# Regulation (EU) 2022/2554
+# Effective: 17 January 2025
+# SSID Compliance Mapping
+#
+# SAFE-FIX: No PII, no secrets. Pure regulatory mapping.
+# Generated: 2026-03-29
+
+regulation:
+  id: DORA
+  full_name: Digital Operational Resilience Act
+  reference: "Regulation (EU) 2022/2554"
+  effective_date: "2025-01-17"
+  scope: >
+    Financial entities and their ICT third-party service providers
+    operating within the EU. Establishes uniform requirements for
+    ICT risk management, incident reporting, resilience testing,
+    and third-party risk management.
+  ssid_applicability: >
+    SSID operates as a digital identity and crypto-asset infrastructure
+    provider. Where SSID serves financial entities (banks, payment
+    institutions, crypto-asset service providers under MiCA), DORA
+    requirements apply to SSID as a critical ICT third-party service
+    provider (CTPP) under Chapter V. Direct applicability depends on
+    contractual relationships and designation by ESAs.
+
+coverage_level: partial
+
+key_articles:
+
+  - article: "Art. 5-16 — ICT Risk Management Framework"
+    chapter: "II"
+    description: >
+      Financial entities must establish and maintain resilient ICT systems,
+      including identification, protection, detection, response, and recovery
+      capabilities.
+    ssid_relevance: high
+    ssid_assessment: >
+      SSID's infrastructure must support ICT risk management requirements
+      for financial entity clients. Identity verification, authentication,
+      and key management services must meet DORA resilience standards.
+    coverage: partial
+    gaps:
+      - "Formal DORA-specific ICT risk management policy document"
+      - "ICT risk appetite statement aligned to DORA Art. 6(8)"
+    ssid_root_mapping:
+      - root: 03_core
+        rationale: "Core identity and authentication services — ICT system resilience"
+      - root: 15_infra
+        rationale: "Infrastructure availability, redundancy, and recovery"
+      - root: 14_zero_time_auth
+        rationale: "Authentication continuity under degraded conditions"
+      - root: 17_observability
+        rationale: "Monitoring and anomaly detection for ICT risk identification"
+
+  - article: "Art. 17-23 — ICT-Related Incident Management"
+    chapter: "III"
+    description: >
+      Mandatory classification, reporting, and management of ICT-related
+      incidents. Major incidents must be reported to competent authorities
+      within prescribed timelines (initial: 4 hours, intermediate: 72 hours,
+      final: 1 month).
+    ssid_relevance: high
+    ssid_assessment: >
+      SSID must provide incident detection and reporting capabilities
+      that enable financial entity clients to meet DORA reporting timelines.
+      As a potential CTPP, SSID itself may face direct reporting obligations.
+    coverage: partial
+    gaps:
+      - "DORA-compliant incident classification taxonomy"
+      - "Automated incident reporting pipeline to competent authorities"
+      - "4-hour initial notification workflow"
+    ssid_root_mapping:
+      - root: 02_audit_logging
+        rationale: "Incident detection, logging, and evidence trail"
+      - root: 17_observability
+        rationale: "Real-time monitoring for incident detection"
+      - root: 24_meta_orchestration
+        rationale: "Incident response coordination across subsystems"
+
+  - article: "Art. 24-27 — Digital Operational Resilience Testing"
+    chapter: "IV"
+    description: >
+      Mandatory resilience testing programme including vulnerability
+      assessments, network security scans, and for significant entities,
+      threat-led penetration testing (TLPT) at least every 3 years.
+    ssid_relevance: high
+    ssid_assessment: >
+      SSID must implement and demonstrate digital operational resilience
+      testing. TLPT requirements may apply if SSID is designated as a
+      critical ICT third-party provider by ESAs.
+    coverage: planned
+    gaps:
+      - "TLPT programme aligned to TIBER-EU framework"
+      - "Annual resilience testing schedule"
+      - "Red-team testing of identity infrastructure"
+    ssid_root_mapping:
+      - root: 11_test_simulation
+        rationale: "Resilience testing, simulation, and TLPT execution"
+      - root: 15_infra
+        rationale: "Infrastructure-level vulnerability assessment"
+      - root: 21_post_quantum_crypto
+        rationale: "Cryptographic resilience testing"
+
+  - article: "Art. 28-44 — ICT Third-Party Risk Management"
+    chapter: "V"
+    description: >
+      Framework for managing ICT third-party risk, including mandatory
+      contractual provisions, concentration risk assessment, and the
+      oversight framework for critical ICT third-party providers (CTPPs).
+    ssid_relevance: critical
+    ssid_assessment: >
+      SSID may be designated as a Critical ICT Third-Party Provider
+      (CTPP) if financial entities depend on SSID for identity services.
+      This would subject SSID to direct ESA oversight under Art. 31-44.
+      Contractual arrangements must include DORA-mandated provisions
+      (Art. 30).
+    coverage: gap
+    gaps:
+      - "CTPP designation readiness assessment"
+      - "DORA Art. 30 compliant contract templates"
+      - "Concentration risk documentation for clients"
+      - "Sub-outsourcing chain transparency"
+      - "Exit strategy and transition plans for clients"
+    ssid_root_mapping:
+      - root: 19_adapters
+        rationale: "Third-party integrations and sub-outsourcing chain"
+      - root: 07_governance_legal
+        rationale: "Contractual compliance and legal framework"
+      - root: 04_deployment
+        rationale: "Exit strategy, data portability, and transition support"
+
+  - article: "Art. 45 — Information Sharing"
+    chapter: "VI"
+    description: >
+      Voluntary cyber threat intelligence sharing arrangements among
+      financial entities.
+    ssid_relevance: medium
+    ssid_assessment: >
+      SSID can facilitate threat intelligence sharing for financial
+      entity clients through standardised data feeds.
+    coverage: planned
+    gaps:
+      - "Threat intelligence sharing API"
+      - "STIX/TAXII integration for financial sector CTI"
+    ssid_root_mapping:
+      - root: 10_interoperability
+        rationale: "Standardised threat intelligence data exchange"
+      - root: 06_data_pipeline
+        rationale: "Threat data ingestion and distribution pipeline"
+
+root_coverage_summary:
+  primary_roots:
+    - 02_audit_logging
+    - 03_core
+    - 11_test_simulation
+    - 15_infra
+    - 17_observability
+    - 19_adapters
+  secondary_roots:
+    - 04_deployment
+    - 06_data_pipeline
+    - 07_governance_legal
+    - 10_interoperability
+    - 14_zero_time_auth
+    - 21_post_quantum_crypto
+    - 24_meta_orchestration
+
+action_items:
+  - priority: critical
+    item: "Assess CTPP designation likelihood and prepare oversight readiness"
+    target_root: 07_governance_legal
+  - priority: high
+    item: "Implement DORA-compliant incident classification and reporting pipeline"
+    target_root: 02_audit_logging
+  - priority: high
+    item: "Establish TLPT programme aligned to TIBER-EU"
+    target_root: 11_test_simulation
+  - priority: medium
+    item: "Create DORA Art. 30 compliant contract templates"
+    target_root: 07_governance_legal
+  - priority: medium
+    item: "Document ICT risk management framework per Art. 5-16"
+    target_root: 15_infra

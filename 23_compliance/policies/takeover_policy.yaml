@@ -1,0 +1,10 @@
+policy_id: compliance.takeover_policy
+version: 1.0.0
+enforcement: fail_closed
+scope: agentswarm
+rules:
+  no_orphans: true
+  no_duplicates: true
+  evidence_required: true
+  canonical_write_forbidden: true
+  root24_lock_enforced: true

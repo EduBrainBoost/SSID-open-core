@@ -13,7 +13,7 @@ deterministic report generation, and CI-integrated E2E gates.
 Add:
 - `24_meta_orchestration/queue/tasks/PILOT_TASK_0001.yaml` — pilot task definition
 - `24_meta_orchestration/queue/inputs/INPUT_DESC_PILOT_0001.json` — input descriptor
-- `24_meta_orchestration/dispatcher/dispatcher.py` (additive `run-task` subcommand)
+- `24_meta_orchestration/dispatcher/e2e_dispatcher.py` (additive `run-task` subcommand)
 - `12_tooling/cli/_lib/run_id.py` — deterministic run_id computation
 - `12_tooling/cli/shards_registry_build.py` — extended with `--source`, `--deterministic`
 - Per-shard index files upgraded to TS030 schema (shard_id, specs with sha256, fixtures with expect)

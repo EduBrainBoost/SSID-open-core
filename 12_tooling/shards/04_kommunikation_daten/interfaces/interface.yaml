@@ -1,5 +1,0 @@
-interface_id: 12_tooling.04_kommunikation_daten.primary
-root_id: 12_tooling
-shard_id: 04_kommunikation_daten
-kind: bootstrap_contract
-status: active

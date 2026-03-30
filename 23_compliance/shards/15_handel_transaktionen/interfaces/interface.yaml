@@ -1,5 +1,0 @@
-interface_id: 23_compliance.15_handel_transaktionen.primary
-root_id: 23_compliance
-shard_id: 15_handel_transaktionen
-kind: bootstrap_contract
-status: active

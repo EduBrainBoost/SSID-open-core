@@ -1,0 +1,36 @@
+
+{
+  "task_id": "TASK_BOOTSTRAP_AGENT_STACK",
+  "description": "Bootstrap the initial agent stack components as per the project specification.",
+  "agent_roles": [
+    "System Architect",
+    "Infrastructure Engineer"
+  ],
+  "allowed_paths": [
+    "12_tooling/cli/ssid_dispatcher.py",
+    "12_tooling/cli/",
+    "03_core/validators/sot/",
+    "23_compliance/policies/sot/",
+    "16_codex/contracts/sot/",
+    "11_test_simulation/tests_compliance/",
+    "02_audit_logging/reports/",
+    "16_codex/agents/",
+    "24_meta_orchestration/registry/tasks/",
+    "12_tooling/wrappers/"
+  ],
+  "expected_artifacts": [
+    "patch.diff",
+    "patch.sha256",
+    "manifest.json"
+  ],
+  "acceptance_checks": [
+    "All local gates (Policy, SoT, QA) must pass.",
+    "The generated patch must apply cleanly to the codebase.",
+    "No new files created outside of 'allowed_paths'.",
+    "SoT scorecard must show 'PASS' for all defined rules."
+  ],
+  "patch_strategy": "APPLY_AUTOMATICALLY_AFTER_REVIEW",
+  "created_by": "System Bootstrap Agent",
+  "creation_date": "2026-02-11T12:00:00Z",
+  "version": "1.0.0"
+}

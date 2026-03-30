@@ -1,0 +1,25 @@
+# Contract: sot_policy
+# Source: 23_compliance/policies/sot/sot_policy.rego
+# Generated: Phase 2 — A02_A03_COMPLETION
+# SoT Reference: 16_codex/contracts/sot/
+contract_id: "sot_policy-contract"
+rule_id: "sot_policy"
+package: "sot_policy"
+type: compliance_contract
+version: "4.1.0"
+derived_from: "23_compliance/policies/sot/sot_policy.rego"
+enforcement: rego_policy
+status: active
+default_decision: deny
+description: >
+  SSID SoT Policy v4.1 - Full Enforcement.
+  E2: Policy Gate (OPA/REGO) — Structure/Compliance enforcement.
+  Requires ROOT-24-LOCK security context for all writes.
+deny_conditions:
+  - id: "ROOT_24_LOCK_REQUIRED"
+    trigger: "security_context != ROOT-24-LOCK"
+  - id: "WRITE_GATE_VIOLATION"
+    trigger: "changed file path not in allowlist"
+input_schema:
+  security_context: "string (must be ROOT-24-LOCK)"
+  changed_files: "list of {path}"

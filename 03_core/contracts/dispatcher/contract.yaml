@@ -1,0 +1,64 @@
+# Contract: Dispatcher
+# Root: 03_core | SoT v4.1.0 | ROOT-24-LOCK
+# Description: Defines the interface contract for the SSID Dispatcher module.
+#   The Dispatcher routes task requests to the appropriate handler based on
+#   task type, root affiliation, and execution policy. It enforces session
+#   isolation, lock acquisition, and evidence logging for every dispatch.
+
+contract_id: "dispatcher"
+version: "4.1.0"
+status: "active"
+root: "03_core"
+classification: "Internal — System Infrastructure"
+
+interface:
+  module: "12_tooling/cli/ssid_dispatcher.py"
+  entry_point: "dispatch"
+  accepts:
+    - name: "task_spec"
+      type: "dict"
+      required: true
+      description: "Task specification containing task_type, target_root, and payload."
+      schema:
+        task_type:
+          type: "string"
+          enum: ["gate_check", "evidence_write", "report", "audit", "deploy"]
+        target_root:
+          type: "string"
+          description: "One of the 24 canonical ROOT-24-LOCK roots."
+        payload:
+          type: "dict"
+          description: "Opaque payload passed to the target handler."
+  returns:
+    - name: "dispatch_result"
+      type: "dict"
+      description: "Contains dispatch_id, status, and optional error."
+      schema:
+        dispatch_id:
+          type: "string"
+          format: "uuid4"
+        status:
+          type: "string"
+          enum: ["dispatched", "rejected", "failed"]
+        error:
+          type: "string"
+          nullable: true
+
+invariants:
+  - "Every dispatch MUST acquire a session lock before execution."
+  - "Every dispatch MUST produce an evidence record in 02_audit_logging."
+  - "Dispatch to roots outside ROOT-24-LOCK MUST be rejected."
+  - "NON-INTERACTIVE mode: no user prompts during dispatch."
+  - "SAFE-FIX enforced: only additive writes permitted."
+
+dependencies:
+  upstream:
+    - "24_meta_orchestration/src/orchestrator.py"
+  downstream:
+    - "02_audit_logging/src/evidence_chain_engine.py"
+    - "12_tooling/cli/run_all_gates.py"
+
+evidence:
+  on_dispatch: "SHA256 hash of task_spec recorded pre-execution"
+  on_complete: "SHA256 hash of result recorded post-execution"
+  storage: "02_audit_logging/storage/worm/"

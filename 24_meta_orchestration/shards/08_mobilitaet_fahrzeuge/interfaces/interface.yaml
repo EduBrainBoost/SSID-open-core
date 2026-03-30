@@ -1,5 +1,0 @@
-interface_id: 24_meta_orchestration.08_mobilitaet_fahrzeuge.primary
-root_id: 24_meta_orchestration
-shard_id: 08_mobilitaet_fahrzeuge
-kind: bootstrap_contract
-status: active

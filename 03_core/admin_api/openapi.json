@@ -1,0 +1,353 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SSID Admin Dashboard API",
+    "version": "1.0.0",
+    "description": "REST API for the SSID Admin Dashboard. All endpoints (except /health) require JWT Bearer authentication and RBAC role verification."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local development (C)"
+    },
+    {
+      "url": "http://localhost:8100",
+      "description": "Local development (G)"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "description": "Returns service health status. No authentication required.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "version": { "type": "string", "example": "1.0.0" },
+                    "timestamp": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Authenticate operator",
+        "description": "Validates credentials and returns JWT in httpOnly cookie.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "password"],
+                "properties": {
+                  "username": { "type": "string" },
+                  "password": { "type": "string", "format": "password" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful, JWT set in cookie" },
+          "401": { "description": "Invalid credentials" },
+          "429": { "description": "Rate limit exceeded" }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Refresh JWT",
+        "description": "Exchanges a valid refresh token for a new access token.",
+        "responses": {
+          "200": { "description": "New access token issued" },
+          "401": { "description": "Invalid or expired refresh token" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Logout operator",
+        "description": "Clears JWT cookie and revokes session.",
+        "responses": {
+          "200": { "description": "Logged out successfully" }
+        }
+      }
+    },
+    "/admin/dashboard/summary": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get dashboard summary",
+        "description": "Returns aggregated dashboard metrics. Requires admin:viewer or higher.",
+        "responses": {
+          "200": {
+            "description": "Dashboard summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total_events": { "type": "integer" },
+                    "audit_score_status": { "type": "string", "enum": ["PASS", "FAIL"] },
+                    "observer_running": { "type": "boolean" },
+                    "active_alerts": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden — insufficient role" }
+        }
+      }
+    },
+    "/admin/dashboard/activity": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get recent activity",
+        "description": "Returns recent admin activity events.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 20, "maximum": 100 }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List of recent activity events" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/admin/audit/events": {
+      "get": {
+        "tags": ["Audit"],
+        "summary": "List audit events",
+        "description": "Returns paginated audit events from the WORM log. Requires admin:auditor or higher.",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": { "type": "integer", "default": 0 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 50, "maximum": 200 }
+          },
+          {
+            "name": "event_type",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filter by event type"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Paginated list of audit events" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/admin/audit/events/{event_id}": {
+      "get": {
+        "tags": ["Audit"],
+        "summary": "Get audit event detail",
+        "description": "Returns full detail of a single audit event including PQC signature.",
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Audit event detail" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Event not found" }
+        }
+      }
+    },
+    "/admin/compliance/score": {
+      "get": {
+        "tags": ["Compliance"],
+        "summary": "Get audit score",
+        "description": "Returns the current PASS/FAIL audit score. Requires admin:auditor or higher.",
+        "responses": {
+          "200": {
+            "description": "Audit score with PASS/FAIL per criterion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "criteria": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                          "status": { "type": "string", "enum": ["PASS", "FAIL"] },
+                          "description": { "type": "string" }
+                        }
+                      }
+                    },
+                    "summary": {
+                      "type": "object",
+                      "properties": {
+                        "overall": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/admin/compliance/seal": {
+      "get": {
+        "tags": ["Compliance"],
+        "summary": "Get production seal",
+        "description": "Returns the current production seal certificate.",
+        "responses": {
+          "200": { "description": "Production seal JSON" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/admin/certificates": {
+      "get": {
+        "tags": ["Certificates"],
+        "summary": "List certificates",
+        "description": "Returns all compliance certificates. Requires admin:operator or higher.",
+        "responses": {
+          "200": { "description": "List of certificates" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/admin/certificates/{cert_id}": {
+      "get": {
+        "tags": ["Certificates"],
+        "summary": "Get certificate detail",
+        "description": "Returns full certificate JSON including simulation warnings.",
+        "parameters": [
+          {
+            "name": "cert_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Certificate detail" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Certificate not found" }
+        }
+      }
+    },
+    "/admin/observer/status": {
+      "get": {
+        "tags": ["Observer"],
+        "summary": "Get observer status",
+        "description": "Returns current observer running state and counters. Requires admin:operator or higher.",
+        "responses": {
+          "200": {
+            "description": "Observer status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "running": { "type": "boolean" },
+                    "last_check_utc": { "type": "string", "format": "date-time", "nullable": true },
+                    "checks_performed": { "type": "integer" },
+                    "alerts_raised": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/admin/observer/alerts": {
+      "get": {
+        "tags": ["Observer"],
+        "summary": "Get observer alerts",
+        "description": "Returns list of observer alerts.",
+        "responses": {
+          "200": {
+            "description": "Alert list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "alerts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "severity": { "type": "string" },
+                          "message": { "type": "string" },
+                          "timestamp_utc": { "type": "string", "format": "date-time" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token from /auth/login (also sent via httpOnly cookie)"
+      }
+    }
+  },
+  "tags": [
+    { "name": "Health", "description": "Service health endpoints" },
+    { "name": "Auth", "description": "Authentication and session management" },
+    { "name": "Dashboard", "description": "Dashboard summary and activity" },
+    { "name": "Audit", "description": "Audit trail access" },
+    { "name": "Compliance", "description": "Compliance score and seals" },
+    { "name": "Certificates", "description": "Certificate management" },
+    { "name": "Observer", "description": "Observer status and alerts" }
+  ]
+}

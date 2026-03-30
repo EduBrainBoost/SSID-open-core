@@ -1,0 +1,14 @@
+{
+  "solc_version": "0.8.29",
+  "evm_target": "cancun",
+  "optimization": {
+    "enabled": true,
+    "runs": 200
+  },
+  "abi_hash_sha256": "a967bd615e4bb440479250dc63a2b7e37d9f5944c642c5bf09f0e2df2b9aaff4",
+  "bytecode_hash_sha256": "345d608a546fe4f2bf5ff534f073ee582902f82ab2b8ea84bb5226855905f487",
+  "compiled_at": "2026-03-04T19:00:00Z",
+  "compiler_source": "py-solc-x (solcx.compile_source, deterministic)",
+  "target_network": "Polygon Amoy (chainId: 80002)",
+  "notes": "Recompiled from canonical ProofRegistry spec. Previous bytecode had wrong selectors (non-matching ABI)."
+}

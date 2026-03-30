@@ -1,0 +1,34 @@
+{
+  "description": "Canonical repo missing expected artifacts. Scanner reports FAIL. Expected: DENY (fail).",
+  "scan": {
+    "status": "FAIL",
+    "repo_name": "SSID",
+    "repo_role": "canonical",
+    "drift_findings": [],
+    "missing_artifacts": [
+      "03_core/README.md",
+      "12_tooling/module.yaml"
+    ],
+    "root_count": 24
+  },
+  "sync": {
+    "status": "pass",
+    "canonical_repo": "SSID",
+    "derivative_repo": "SSID-open-core",
+    "findings": [],
+    "registry_binding_status": "consistent",
+    "missing_exports": [],
+    "forbidden_exports": [],
+    "actual_exports": ["03_core", "12_tooling", "16_codex"],
+    "allowed_exports": ["03_core", "12_tooling", "16_codex"],
+    "derivation_mode": "selective"
+  },
+  "expected": {
+    "decision": "fail",
+    "exit_code": 2,
+    "min_deny_findings": 1,
+    "severity_counts_min": {
+      "critical": 1
+    }
+  }
+}

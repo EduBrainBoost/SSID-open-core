@@ -1,0 +1,20 @@
+{
+  "event_id": "cc16a14a63644976509092e5b216f37620a60284ff26d931dbded1c87bd4d780",
+  "event_type": "merge_recorded",
+  "merge_sha": "fa46a157feef3c8f5134c2bc184b555d56dfaaae",
+  "observed_utc": "2026-03-01T05:32:07Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 52,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-fa46a15/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "fa46a157feef3c8f5134c2bc184b555d56dfaaae",
+  "summary": "chore(audit): read-only PR/CI/HEAD consolidation (2026-03-01 05:57 CET) (#52)",
+  "task_id": null
+}

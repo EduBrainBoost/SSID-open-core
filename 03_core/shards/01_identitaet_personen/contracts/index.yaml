@@ -1,4 +1,6 @@
-schema_version: 1.0.0
-entries:
-- kind: json_schema
-  path: identity_proof.schema.json
+schema_version: "1.0.0"
+shard_id: "03_core/01_identitaet_personen"
+specs:
+  - path: "identity_proof.schema.json"
+    format: "json-schema-draft-2020-12"
+    sha256: "8ae0b81426792fc3c7b9c24d5a63eec2073f55b1b80e8c7054cf040d8f560def"

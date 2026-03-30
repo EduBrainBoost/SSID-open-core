@@ -1,0 +1,137 @@
+# MiCA (Markets in Crypto-Assets Regulation) Mapping for SSID
+# Regulation: EU Regulation 2023/1114 (MiCA)
+# Context: Non-custodial, hash-only, utility-token infrastructure
+# Version: 1.0.0
+# Last updated: 2026-03-15
+
+regulation_id: "EU-2023-1114"
+name: "Markets in Crypto-Assets Regulation (MiCA)"
+effective_date: "2024-12-30"
+description: >
+  MiCA establishes a comprehensive regulatory framework for crypto-assets
+  in the EU. It covers issuers of crypto-assets and crypto-asset service
+  providers (CASPs). SSID operates as non-custodial identity infrastructure
+  and its token is classified as a utility token under MiCA Title II.
+
+articles_relevant:
+  - article: "Art. 2 - Scope"
+    relevance: "high"
+    ssid_context: >
+      Defines scope of regulation. SSID must assess whether its
+      activities fall under CASP definitions or are exempt.
+
+  - article: "Art. 3(1)(9) - Utility Token Definition"
+    relevance: "critical"
+    ssid_context: >
+      SSID token is a utility token: it provides access to identity
+      verification services on the SSID network. No investment,
+      yield, or e-money claims are made.
+
+  - article: "Art. 4-14 - Title II: Crypto-Assets Other Than ARTs/EMTs"
+    relevance: "high"
+    ssid_context: >
+      Utility token issuers must publish a crypto-asset white paper
+      with mandatory disclosures (Art. 6), notify competent
+      authorities (Art. 8), and comply with marketing rules (Art. 7).
+
+  - article: "Art. 6 - White Paper Requirements"
+    relevance: "high"
+    ssid_context: >
+      White paper must include: description of issuer, project,
+      technology, rights and obligations, risks, and environmental
+      impact. SSID white paper must comply.
+
+  - article: "Art. 14 - Exemptions for Utility Tokens"
+    relevance: "critical"
+    ssid_context: >
+      Utility tokens offered free of charge, automatically created
+      through mining/validation, or offered to fewer than 150
+      persons per member state may be exempt from Title II.
+
+  - article: "Art. 59-64 - CASP Authorization"
+    relevance: "medium"
+    ssid_context: >
+      SSID as non-custodial infrastructure is not a CASP.
+      However, partners integrating SSID who provide custody
+      or exchange services must obtain CASP authorization.
+
+  - article: "Art. 68 - CASP Obligations (Prudential)"
+    relevance: "low"
+    ssid_context: >
+      Not directly applicable to SSID. Relevant for CASP
+      partners using SSID infrastructure.
+
+  - article: "Art. 76 - Transfer of Crypto-Assets (Travel Rule)"
+    relevance: "medium"
+    ssid_context: >
+      MiCA Art. 76 implements FATF Travel Rule in EU law.
+      Cross-reference with fatf_travel_rule.yaml.
+
+ssid_mapping:
+  - mapping_id: "MICA-MAP-01"
+    mica_article: "Art. 3(1)(9)"
+    ssid_component: "token_model"
+    control: "Utility token classification enforced in all documentation and UX"
+    evidence: "07_governance_legal/token/utility_classification.yaml"
+
+  - mapping_id: "MICA-MAP-02"
+    mica_article: "Art. 6"
+    ssid_component: "documentation"
+    control: "Compliant white paper with mandatory MiCA disclosures"
+    evidence: "05_documentation/whitepaper/"
+
+  - mapping_id: "MICA-MAP-03"
+    mica_article: "Art. 7"
+    ssid_component: "marketing"
+    control: "All marketing materials include mandatory MiCA disclaimers"
+    evidence: "07_governance_legal/marketing_compliance/"
+
+  - mapping_id: "MICA-MAP-04"
+    mica_article: "Art. 76"
+    ssid_component: "travel_rule_support"
+    control: "Hash-based identity attestation for CASP partners"
+    evidence: "23_compliance/global/fatf_travel_rule.yaml"
+    cross_reference: "fatf_travel_rule.yaml"
+
+  - mapping_id: "MICA-MAP-05"
+    mica_article: "Art. 59-64"
+    ssid_component: "partner_guidance"
+    control: "CASP authorization guidance for integration partners"
+    evidence: "07_governance_legal/partner_compliance/"
+
+non_custodial_exemptions:
+  - exemption_id: "NCE-MICA-01"
+    mica_reference: "Art. 3(1)(18) - CASP Definition"
+    description: >
+      SSID does not provide custody, exchange, transfer, or
+      advisory services for crypto-assets. It is infrastructure
+      for decentralized identity, not a CASP.
+
+  - exemption_id: "NCE-MICA-02"
+    mica_reference: "Art. 2(3) - Scope Exclusions"
+    description: >
+      Crypto-assets that are unique and not fungible (certain
+      identity NFTs/credentials) are excluded from MiCA scope.
+
+  - exemption_id: "NCE-MICA-03"
+    mica_reference: "Art. 14 - Small Offerings"
+    description: >
+      Utility tokens offered free of charge or to fewer than
+      150 persons per member state are exempt from Title II
+      white paper requirements.
+
+  - exemption_id: "NCE-MICA-04"
+    mica_reference: "Recital 22"
+    description: >
+      Purely decentralized DeFi services without an intermediary
+      may fall outside MiCA scope. SSID's non-custodial
+      architecture supports this position.
+
+token_classification:
+  type: "utility_token"
+  investment_claims: false
+  yield_claims: false
+  e_money_claims: false
+  governance_rights: true
+  reward_mechanism: true
+  payment_function: false

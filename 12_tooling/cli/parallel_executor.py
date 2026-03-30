@@ -189,10 +189,29 @@ class ParallelExecutor:
                     )
                 
                 sandbox_dir = sandbox_line[0].split("SANDBOX:")[1].strip()
-                
-                # Execute actual tool in sandbox (placeholder - real implementation would call the CLI tool)
-                # For now, simulate tool execution
-                time.sleep(1)  # Simulate work
+
+                # Execute the tool in the sandbox worktree
+                tool_cmd = self._build_tool_command(task.tool, temp_spec, sandbox_dir)
+                if tool_cmd:
+                    tool_proc = subprocess.run(
+                        tool_cmd,
+                        cwd=sandbox_dir,
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        timeout=TASK_TIMEOUT,
+                    )
+                    if tool_proc.returncode != 0:
+                        return TaskResult(
+                            task_id=task.task_id,
+                            success=False,
+                            exit_code=tool_proc.returncode,
+                            evidence_dir=None,
+                            error_message=f"Tool execution failed: {tool_proc.stderr.strip()[:500]}",
+                            started_utc=started_utc,
+                            completed_utc=datetime.datetime.now(datetime.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+                            execution_time_seconds=time.time() - start_time,
+                        )
                 
                 # Package results
                 package_cmd = [sys.executable, str(self.dispatcher), "package", "--task", str(temp_spec), "--sandbox", sandbox_dir]
@@ -266,6 +285,23 @@ class ParallelExecutor:
                 execution_time_seconds=time.time() - start_time
             )
     
+    @staticmethod
+    def _build_tool_command(tool: str, task_spec: Path, sandbox_dir: str) -> list[str]:
+        """Build the CLI command to execute the given tool inside the sandbox.
+
+        Maps each supported tool name to its actual CLI invocation. Returns an
+        empty list if the tool is not locally executable (e.g. cloud-only tools).
+        """
+        tool_map: Dict[str, list[str]] = {
+            "claude": ["claude", "--task", str(task_spec)],
+            "codex": ["codex", "--task", str(task_spec)],
+            "gemini": ["gemini", "--task", str(task_spec)],
+            "kilo": ["kilo", "run", "--task", str(task_spec)],
+            "copilot": ["copilot", "run", "--task", str(task_spec)],
+            "opencode": ["opencode", "run", "--task", str(task_spec)],
+        }
+        return tool_map.get(tool, [])
+
     def _check_dependencies(self, task: ParallelTask) -> bool:
         """Check if task dependencies are satisfied"""
         for dep_id in task.dependencies:

@@ -1,0 +1,11 @@
+policy_id: compliance.token_governance_restrictions
+version: 1.0.0
+never_votable:
+- profit_distribution_to_holders
+- redemption_mechanism
+- price_management
+- yield_generation
+- treasury_payout_to_token_holders
+- manual_privileges_without_timelock
+enforcement: fail_closed
+violation_response: proposal_rejected_automatically

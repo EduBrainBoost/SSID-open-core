@@ -1,0 +1,57 @@
+# SSID Health Check Configuration
+# Defines required checks per root-type and status thresholds.
+
+thresholds:
+  healthy: 100    # percent of checks that must pass for "healthy"
+  degraded: 50    # below this -> "down"
+
+required_checks:
+  default:
+    - name: core_module_yaml
+      path: 03_core/module.yaml
+    - name: tooling_module_yaml
+      path: 12_tooling/module.yaml
+    - name: compliance_module_yaml
+      path: 23_compliance/module.yaml
+
+  core:
+    - name: core_module_yaml
+      path: 03_core/module.yaml
+    - name: core_src_dir
+      path: 03_core/src
+    - name: core_shards
+      path: 03_core/shards
+    - name: audit_evidence_dir
+      path: 02_audit_logging/reports
+
+  tooling:
+    - name: tooling_module_yaml
+      path: 12_tooling/module.yaml
+    - name: tooling_scripts
+      path: 12_tooling/scripts
+    - name: tooling_schemas
+      path: 12_tooling/schemas
+
+  compliance:
+    - name: compliance_module_yaml
+      path: 23_compliance/module.yaml
+    - name: compliance_shards
+      path: 23_compliance/shards
+    - name: compliance_policies
+      path: 23_compliance/policies
+
+  identity:
+    - name: identity_score_module
+      path: 08_identity_score/module.yaml
+    - name: meta_identity_module
+      path: 09_meta_identity/module.yaml
+    - name: zero_time_auth_module
+      path: 14_zero_time_auth/module.yaml
+
+  infrastructure:
+    - name: infra_module_yaml
+      path: 15_infra/module.yaml
+    - name: deployment_module_yaml
+      path: 04_deployment/module.yaml
+    - name: observability_module_yaml
+      path: 17_observability/module.yaml

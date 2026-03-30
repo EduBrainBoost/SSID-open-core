@@ -1,3 +1,29 @@
 # 24_meta_orchestration/07_familie_soziales
 
-Capability definition for deterministic shard contract baseline.
+## Purpose
+
+Meta-Orchestration layer for family and social services within the SSID ecosystem.
+This shard provides cross-root orchestration, task dispatch, evidence collection specifically scoped to Familie & Soziales.
+
+## Structure
+
+```
+07_familie_soziales/
+  chart.yaml          - Shard capability definition (SoT)
+  manifest.yaml       - Deployment manifest
+  docs/               - Technical documentation
+  tests/              - Test suites
+  implementations/    - Language-specific implementations
+    python/src/       - Python modules
+```
+
+## Interfaces
+
+- **Inbound**: Receives requests from `03_core` and `24_meta_orchestration`
+- **Outbound**: Emits evidence to `23_compliance`, logs to `17_observability`
+- **Data**: Hash-only, non-custodial architecture (no PII storage)
+
+## Policies
+
+- `hash_only`: No PII stored; proofs and SHA-256 hashes only
+- `non_custodial`: No custody; peer-to-peer flows; autonomous smart contracts

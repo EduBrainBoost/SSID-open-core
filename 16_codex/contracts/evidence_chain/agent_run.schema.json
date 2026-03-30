@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentRunRecord",
+  "description": "Minimal audit record per merge commit in 02_audit_logging/agent_runs/",
+  "type": "object",
+  "required": ["merge_sha", "commit_date_utc", "subject", "repo", "backfill"],
+  "properties": {
+    "merge_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "commit_date_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "repo": {
+      "type": "string",
+      "enum": ["SSID", "SSID-EMS", "SSID-docs", "SSID-open-core"]
+    },
+    "pr_number": {
+      "type": ["integer", "null"]
+    },
+    "task_id": {
+      "type": ["string", "null"]
+    },
+    "backfill": {
+      "type": "boolean",
+      "description": "true if generated retroactively by evidence_chain backfill"
+    },
+    "backfill_date_utc": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

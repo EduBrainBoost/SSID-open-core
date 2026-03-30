@@ -1,0 +1,8 @@
+{
+  "canonical_path": "24_meta_orchestration/agents/claude/",
+  "manifest": "agents_manifest.json",
+  "count": 28,
+  "runtime_targets": [
+    "SSID-EMS/.claude/agents/"
+  ]
+}

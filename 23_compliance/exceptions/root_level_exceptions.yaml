@@ -10,11 +10,25 @@ allowed_directories:
 - .pytest_cache
 - .pytest_tmp
 - .ruff_cache
+- .ssid-system
+- .ssid_sandbox
+- .venv
+- .continue
+- __pycache__
+- docs
 allowed_files:
 - .auto-claude-security.json
 - .claude_settings.json
+- .env.example
 - .gitignore
+- .pre-commit-config.yaml
+- CHANGELOG.md
+- CLAUDE.md
 - CONTRIBUTING.md
 - LICENSE
 - README.md
+- SECURITY.md
+- DCO.txt
+- conftest.py
+- pyproject.toml
 - pytest.ini

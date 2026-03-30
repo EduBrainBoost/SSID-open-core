@@ -1,0 +1,18 @@
+rule_id: "RULE-002"
+name: "SAFE-FIX"
+version: "1.0.0"
+enforcement_level: "MANDATORY"
+description: >
+  Ausschliesslich additives Schreiben. Kein Ueberschreiben bestehender
+  Inhalte ohne expliziten Nachweis. SHA256-Hashes vor und nach jeder
+  Schreiboperation werden im Evidence-Log dokumentiert.
+constraints:
+  - "Vor jedem Schreibzugriff SHA256 des bestehenden Inhalts berechnen"
+  - "Nach jedem Schreibzugriff SHA256 des neuen Inhalts berechnen"
+  - "Beide Hashes in Evidence-Log schreiben"
+  - "Bei Ueberschreibung muss expliziter SAFE-FIX-Auftrag vorliegen"
+  - "Evidence-Format: JSON mit timestamp, agent_id, operation, file_affected, sha256_before, sha256_after, safe_fix_confirmed"
+violations:
+  - "Blindes Ueberschreiben ohne SHA256-Nachweis"
+  - "Schreiben ohne Evidence-Eintrag"
+  - "Loeschen ohne Nachweis"

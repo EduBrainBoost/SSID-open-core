@@ -1,0 +1,23 @@
+# Contract: interfederation_claims_guard
+# Source: 23_compliance/policies/interfederation/interfederation_claims_guard.rego
+# Generated: Phase 2 — A02_A03_COMPLETION
+# SoT Reference: 16_codex/contracts/sot/
+contract_id: "interfederation_claims_guard-contract"
+rule_id: "interfederation_claims_guard"
+package: "ssid.interfederation_claims_guard"
+type: compliance_contract
+version: "1.0.0"
+derived_from: "23_compliance/policies/interfederation/interfederation_claims_guard.rego"
+enforcement: rego_policy
+status: active
+description: >
+  Denies any report/doc containing bidirectional/mutual claims
+  unless a valid cross-repo proof snapshot exists.
+deny_conditions:
+  - id: "INTERFEDERATION_CLAIM_WITHOUT_PROOF"
+    trigger: "forbidden claim in document without proof snapshot"
+  - id: "INTERFEDERATION_SCORE_CLAIM"
+    trigger: "numeric score for interfederation metrics"
+input_schema:
+  documents: "list of {path, content}"
+  proof_snapshot: "{ssid_commit, opencore_commit, file_hashes}"

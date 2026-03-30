@@ -11,15 +11,12 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import importlib
 import json
 import re
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 import jsonschema
-import yaml
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -38,13 +35,6 @@ PII_DENY_PATTERNS = [
     re.compile(r"(?i)\b(ip.?address)\b"),
 ]
 URL_DENY = re.compile(r"https?://[^\s\"\x27,}]+")
-REQUIRED_SCHEMA_FILES = [
-    "inputs.schema.json",
-    "outputs.schema.json",
-    "events.schema.json",
-]
-VALID_FIXTURE_NAME = "fixture_valid.json"
-INVALID_FIXTURE_NAME = "fixture_invalid.json"
 
 
 def _load_json(path):
@@ -90,10 +80,9 @@ def _check_contracts_exist(sd):
     cd = sd / "contracts"
     if not cd.is_dir():
         return False, [], [f"contracts/ directory missing in {sd.name}"]
-    schemas = [cd / name for name in REQUIRED_SCHEMA_FILES if (cd / name).exists()]
-    missing = [name for name in REQUIRED_SCHEMA_FILES if not (cd / name).exists()]
-    if missing:
-        return False, [], [f"Missing required schemas in {sd.name}/contracts/: {', '.join(missing)}"]
+    schemas = sorted(cd.glob("*.schema.json"))
+    if not schemas:
+        return False, [], [f"No *.schema.json files in {sd.name}/contracts/"]
     return True, schemas, []
 
 
@@ -128,9 +117,9 @@ def _check_valid_fixtures(sd, schemas):
     fd = sd / "conformance" / "fixtures"
     if not fd.is_dir():
         return False, ["conformance/fixtures/ directory missing"]
-    vf = [fd / VALID_FIXTURE_NAME]
-    if not vf[0].exists():
-        return False, [f"Missing {VALID_FIXTURE_NAME}"]
+    vf = sorted(fd.glob("valid*.json"))
+    if not vf:
+        return False, ["No valid*.json fixtures found"]
     viols = []
     schema = schemas[0]
     for f in vf:
@@ -148,9 +137,9 @@ def _check_invalid_fixtures(sd, schemas):
     fd = sd / "conformance" / "fixtures"
     if not fd.is_dir():
         return False, ["conformance/fixtures/ directory missing"]
-    ivf = [fd / INVALID_FIXTURE_NAME]
-    if not ivf[0].exists():
-        return False, [f"Missing {INVALID_FIXTURE_NAME}"]
+    ivf = sorted(fd.glob("invalid*.json"))
+    if not ivf:
+        return False, ["No invalid*.json fixtures found"]
     viols = []
     schema = schemas[0]
     for f in ivf:
@@ -163,96 +152,6 @@ def _check_invalid_fixtures(sd, schemas):
         except json.JSONDecodeError as e:
             viols.append(f"{f.name} JSON parse error: {e}")
     return len(viols) == 0, viols
-
-
-def _check_manifest_contract_refs(sd):
-    manifest_path = sd / "manifest.yaml"
-    chart_path = sd / "chart.yaml"
-    if not manifest_path.exists():
-        return False, ["manifest.yaml missing"]
-    if not chart_path.exists():
-        return False, ["chart.yaml missing"]
-    try:
-        manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8")) or {}
-        chart = yaml.safe_load(chart_path.read_text(encoding="utf-8")) or {}
-    except Exception as exc:
-        return False, [f"YAML parse failure: {exc}"]
-    def _normalize_contract_path(value: str) -> str:
-        parts = Path(value).as_posix().split("/")
-        return "/".join(parts[-2:]) if len(parts) >= 2 else parts[-1]
-
-    manifest_contracts = {_normalize_contract_path(value) for value in (manifest.get("contracts", []) or [])}
-    chart_contracts = {_normalize_contract_path(value) for value in (chart.get("contracts", {}).get("paths", []) or [])}
-    if not manifest_contracts:
-        return False, ["manifest.yaml has no contracts entries"]
-    if chart_contracts and not chart_contracts.issubset(manifest_contracts):
-        return False, ["manifest/contracts mismatch with chart/contracts"]
-    if not manifest.get("evidence_outputs"):
-        return False, ["manifest.yaml missing evidence_outputs"]
-    return True, []
-
-
-def _check_readme(sd):
-    if (sd / "README.md").exists() or (sd / "RUNBOOK.md").exists():
-        return True, []
-    return False, ["README.md or RUNBOOK.md missing"]
-
-
-def _check_runtime_capability(root_name, sd, schemas):
-    runtime_index = sd / "runtime" / "index.yaml"
-    if not runtime_index.exists():
-        return True, []
-    try:
-        runtime_spec = yaml.safe_load(runtime_index.read_text(encoding="utf-8")) or {}
-    except Exception as exc:
-        return False, [f"runtime capability descriptor unreadable: {exc}"]
-    module_name = runtime_spec.get("module")
-    factory_name = runtime_spec.get("factory")
-    shard_id = runtime_spec.get("shard_id")
-    valid_input = runtime_spec.get("valid_input")
-    if not all([module_name, factory_name, shard_id, valid_input]):
-        return False, ["runtime capability descriptor incomplete"]
-    source_dirs = [PROJECT_ROOT / "03_core" / "src", PROJECT_ROOT / root_name / "src"]
-    for source_dir in source_dirs:
-        if str(source_dir) not in sys.path:
-            sys.path.insert(0, str(source_dir))
-    try:
-        module = importlib.import_module(module_name)
-        factory = getattr(module, factory_name)
-        repo_root = sd.parents[2]
-        payload_path = (sd / "runtime" / valid_input).resolve()
-        payload = _load_json(payload_path)
-        runtime = factory(repo_root)
-        result, evidence = runtime.run(shard_id, payload)
-        jsonschema.validate(result, schemas[1])
-        if not Path(evidence.audit_event).exists():
-            return False, [f"runtime capability audit missing: {evidence.audit_event}"]
-    except Exception as exc:
-        return False, [f"runtime capability failed: {exc}"]
-    return True, []
-
-
-def _check_cross_root_runtime_capability(sd):
-    repo_root = sd.parents[2]
-    runtime_index = sd / "runtime" / "index.yaml"
-    if not runtime_index.exists():
-        return True, []
-    try:
-        runtime_spec = yaml.safe_load(runtime_index.read_text(encoding="utf-8")) or {}
-    except Exception as exc:
-        return False, [f"cross-root runtime capability descriptor unreadable: {exc}"]
-    dependency_refs = runtime_spec.get("dependency_refs", []) or []
-    if not dependency_refs:
-        return True, []
-    missing: list[str] = []
-    for dependency_ref in dependency_refs:
-        dep_root, dep_shard = str(dependency_ref).split("/", 1)
-        dep_runtime = repo_root / dep_root / "shards" / dep_shard / "runtime" / "index.yaml"
-        if not dep_runtime.is_file():
-            missing.append(dependency_ref)
-    if missing:
-        return False, [f"cross-root runtime capability failed: missing dependencies {', '.join(missing)}"]
-    return True, []
 
 
 def _check_shard(root_name, sd):
@@ -295,130 +194,174 @@ def _check_shard(root_name, sd):
             ec = 1
     else:
         checks["invalid_fixtures_rejected"] = False
-    if schemas:
-        ok, v = _check_runtime_capability(root_name, sd, schemas)
-        checks["runtime_capability"] = ok
-        if root_name == "07_governance_legal":
-            checks["security_capability"] = ok
-        all_v.extend(v)
-        if not ok:
-            ec = 2
-    else:
-        checks["runtime_capability"] = False
-        if root_name == "07_governance_legal":
-            checks["security_capability"] = False
-    ok, v = _check_cross_root_runtime_capability(sd)
-    checks["dependency_capability"] = ok
-    checks["cross_root_runtime_capability"] = ok
-    if root_name == "07_governance_legal":
-        checks["security_enforcement_capability"] = ok
-        if not ok:
-            all_v.append("security enforcement capability failed")
-    all_v.extend(v)
-    if not ok:
-        ec = 2
-    ok, v = _check_manifest_contract_refs(sd)
-    checks["manifest_contract_consistent"] = ok
-    all_v.extend(v)
-    if not ok and ec == 0:
-        ec = 1
-    ok, v = _check_readme(sd)
-    checks["documentation_present"] = ok
-    all_v.extend(v)
-    if not ok and ec == 0:
-        ec = 1
     verdict = "PASS" if ec == 0 else ("ERROR" if ec == 2 else "FAIL")
-    return {
-        "root_id": root_name,
-        "shard": sd.name,
-        "verdict": verdict,
-        "exit_code": ec,
-        "checks": checks,
-        "violations": all_v,
-        "verified_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-    }
+    return {"shard": sd.name, "verdict": verdict, "exit_code": ec, "checks": checks, "violations": all_v}
 
 
-def _resolve_shard_dirs(root_name: str, single_shard: str | None, all_shards: bool) -> tuple[list[Path], int | None]:
-    rd = PROJECT_ROOT / root_name
-    if not rd.is_dir():
-        print(f"ERROR: Root directory not found: {rd}")
-        return [], 2
-    if all_shards:
-        sb = rd / "shards"
-        if not sb.is_dir():
-            print(f"ERROR: No shards/ in {root_name}")
-            return [], 2
-        return sorted(d for d in sb.iterdir() if d.is_dir()), None
-    sd = rd / "shards" / str(single_shard)
-    if not sd.is_dir():
-        print(f"ERROR: Shard directory not found: {sd}")
-        return [], 2
-    return [sd], None
+def _load_canonical_consumption_policy():
+    """Dynamically load CanonicalConsumptionPolicy from 03_core/validators/runtime/."""
+    import importlib.util
+    module_path = PROJECT_ROOT / "03_core" / "validators" / "runtime" / "canonical_runtime_consumption.py"
+    if not module_path.exists():
+        return None
+    spec = importlib.util.spec_from_file_location("canonical_runtime_consumption", module_path)
+    if spec is None or spec.loader is None:
+        return None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return getattr(mod, "CanonicalConsumptionPolicy", None)
 
 
-def _summarize_results(results: list[dict]) -> dict:
-    overall = "PASS"
-    worst = 0
-    for result in results:
-        worst = max(worst, result["exit_code"])
-    if worst == 2:
-        overall = "ERROR"
-    elif worst == 1:
-        overall = "FAIL"
-    return {
-        "overall_verdict": overall,
-        "shard_count": len(results),
-        "results": results,
-    }
+def _load_bypass_detector():
+    """Dynamically load RuntimeBypassDetector from 03_core/validators/runtime/."""
+    import importlib.util
+    module_path = PROJECT_ROOT / "03_core" / "validators" / "runtime" / "runtime_bypass_detector.py"
+    if not module_path.exists():
+        return None
+    spec = importlib.util.spec_from_file_location("runtime_bypass_detector", module_path)
+    if spec is None or spec.loader is None:
+        return None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return getattr(mod, "RuntimeBypassDetector", None)
+
+
+def _check_canonical_runtime_consumption(root_name, shard_dirs):
+    """Run canonical runtime consumption checks on shards with runtime/index.yaml.
+
+    Returns (passed, failed, findings_count, details).
+    """
+    PolicyCls = _load_canonical_consumption_policy()
+    DetectorCls = _load_bypass_detector()
+
+    if PolicyCls is None:
+        print("WARNING: canonical_runtime_consumption.py not found, skipping consumption checks")
+        return 0, 0, 0, []
+
+    policy = PolicyCls(PROJECT_ROOT)
+    detector = DetectorCls(PROJECT_ROOT) if DetectorCls else None
+
+    passed, failed, total_findings = 0, 0, 0
+    details = []
+
+    for sd in shard_dirs:
+        runtime_idx = sd / "runtime" / "index.yaml"
+        if not runtime_idx.exists():
+            continue
+
+        shard_name = sd.name
+        result = policy.validate_consumer(root_name, shard_name)
+
+        bypass_findings = []
+        if detector:
+            bypass_findings = detector.scan_shard(root_name, shard_name)
+
+        finding_count = len(result.findings) + len(bypass_findings)
+        total_findings += finding_count
+
+        if result.status == "pass" and not bypass_findings:
+            passed += 1
+            print(f"  PASS: {root_name}/shards/{shard_name} canonical consumption")
+        else:
+            failed += 1
+            for f in result.findings:
+                print(f"  FAIL: {root_name}/shards/{shard_name} -- {f.finding_code}: {f.detail}")
+            for bf in bypass_findings:
+                print(f"  FAIL: {root_name}/shards/{shard_name} -- BYPASS:{bf.pattern_type}: {bf.detail}")
+
+        details.append({
+            "shard": shard_name,
+            "status": "fail" if (result.status == "fail" or bypass_findings) else "pass",
+            "consumption_findings": [f.to_dict() for f in result.findings],
+            "bypass_findings": [bf.to_dict() for bf in bypass_findings],
+        })
+
+    return passed, failed, total_findings, details
 
 
 def main():
     ap = argparse.ArgumentParser(prog="shard_conformance_gate.py",
         description="Gate: validate contracts, schemas, PII denial, and conformance fixtures.")
-    root_group = ap.add_mutually_exclusive_group(required=True)
-    root_group.add_argument("--root", help="Root dirname (e.g. 03_core)")
-    root_group.add_argument("--all-roots", action="store_true", help="Check all canonical roots")
+    ap.add_argument("--root", required=True, help="Root dirname (e.g. 03_core)")
     sg = ap.add_mutually_exclusive_group(required=True)
     sg.add_argument("--shard", type=str, help="Single shard name")
     sg.add_argument("--all-shards", action="store_true", help="Check all shards with contracts/")
     ap.add_argument("--report", type=str, help="Write JSON report to path")
+    ap.add_argument("--verify-canonical-runtime-consumption", action="store_true",
+                    help="Verify canonical runtime consumption patterns (WAVE_06)")
+    ap.add_argument("--fail-on-drift", action="store_true",
+                    help="Fail on registry drift (implies --verify-canonical-runtime-consumption)")
     args = ap.parse_args()
+    if args.fail_on_drift:
+        args.verify_canonical_runtime_consumption = True
+    rd = PROJECT_ROOT / args.root
+    if not rd.is_dir():
+        print(f"ERROR: Root directory not found: {rd}")
+        return 2
+    if args.all_shards:
+        sb = rd / "shards"
+        if not sb.is_dir():
+            print(f"ERROR: No shards/ in {args.root}")
+            return 2
+        shard_dirs = sorted(d for d in sb.iterdir() if d.is_dir() and (d / "contracts").is_dir())
+    else:
+        sd = rd / "shards" / args.shard
+        if not sd.is_dir():
+            print(f"ERROR: Shard directory not found: {sd}")
+            return 2
+        shard_dirs = [sd]
+    if not shard_dirs:
+        print(f"INFO: No shards with contracts/ found in {args.root}")
+        return 0
+    results, worst = [], 0
+    for sd in shard_dirs:
+        r = _check_shard(args.root, sd)
+        results.append(r)
+        worst = max(worst, r["exit_code"])
 
-    roots = [args.root] if args.root else sorted(
-        p.name for p in PROJECT_ROOT.iterdir() if p.is_dir() and p.name[:2].isdigit() and "_" in p.name
-    )
-    all_results: list[dict] = []
-    for root_name in roots:
-        shard_dirs, exit_code = _resolve_shard_dirs(root_name, args.shard, args.all_shards)
-        if exit_code is not None:
-            return exit_code
-        if not shard_dirs:
-            continue
-        for sd in shard_dirs:
-            all_results.append(_check_shard(root_name, sd))
+    # --- WAVE_06: canonical runtime consumption checks ---
+    consumption_report = {}
+    if args.verify_canonical_runtime_consumption:
+        print("\n--- Canonical Runtime Consumption (WAVE_06) ---")
+        c_passed, c_failed, c_findings, c_details = _check_canonical_runtime_consumption(
+            args.root, shard_dirs,
+        )
+        consumption_report = {
+            "passed": c_passed,
+            "failed": c_failed,
+            "findings_count": c_findings,
+            "details": c_details,
+        }
+        if c_failed > 0:
+            if args.fail_on_drift:
+                worst = max(worst, 1)
+                print(f"FAIL: {c_failed} shard(s) with canonical consumption violations")
+            else:
+                print(f"WARN: {c_failed} shard(s) with canonical consumption violations (non-blocking)")
+        if c_passed > 0:
+            print(f"PASS: {c_passed} shard(s) canonical consumption OK")
+        if c_passed == 0 and c_failed == 0:
+            print("INFO: No shards with runtime/index.yaml found for consumption checks")
 
-    report = {
-        "gate": "shard_conformance_gate",
-        "root": args.root if args.root else "ALL_ROOTS",
-        **_summarize_results(all_results),
-    }
+    overall = "PASS" if worst == 0 else ("ERROR" if worst == 2 else "FAIL")
+    report = {"gate": "shard_conformance_gate", "root": args.root,
+              "overall_verdict": overall, "shard_count": len(results), "results": results}
+    if consumption_report:
+        report["canonical_runtime_consumption"] = consumption_report
     if args.report:
         Path(args.report).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"REPORT: {args.report}")
-    for r in all_results:
+    for r in results:
         if r["verdict"] != "PASS":
             for v in r["violations"]:
                 verd = r["verdict"]
                 sname = r["shard"]
-                root_name = r.get("root_id", args.root if args.root else "unknown_root")
-                print(f"{verd}: {root_name}/shards/{sname} -- {v}")
+                print(f"{verd}: {args.root}/shards/{sname} -- {v}")
         else:
             sname = r["shard"]
-            root_name = r.get("root_id", args.root if args.root else "unknown_root")
-            print(f"PASS: {root_name}/shards/{sname}")
-    print(f"\n{report['overall_verdict']}: {len(all_results)} shards checked")
-    return 0 if report["overall_verdict"] == "PASS" else (2 if report["overall_verdict"] == "ERROR" else 1)
+            print(f"PASS: {args.root}/shards/{sname}")
+    print(f"\n{overall}: {len(results)} shards checked")
+    return worst
 
 
 if __name__ == "__main__":

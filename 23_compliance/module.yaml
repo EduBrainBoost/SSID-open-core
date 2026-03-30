@@ -1,9 +1,9 @@
 # 23_compliance - Module Descriptor
 # SoT v4.1.0 | ROOT-24-LOCK | Classification: Compliance
-# Generated: 2026-03-09
+# Generated: 2026-02-28 | Updated: 2026-03-29
 
 module_id: "23_compliance"
-name: "Compliance & Governance"
+name: "Compliance, Governance & Regulatory Framework"
 version: "4.1.0"
 status: "ROOT-24-LOCK"
 classification: "Compliance"
@@ -16,25 +16,74 @@ structure:
     - "src"
     - "tests"
     - "config"
+    - "policies"
+    - "evidence"
+    - "exceptions"
+    - "frameworks"
+    - "mappings"
+    - "jurisdictions"
+    - "certificates"
+    - "badges"
+    - "governance"
+    - "rules"
+    - "validators"
+    - "metrics"
+    - "security"
+    - "privacy"
+    - "anti_gaming"
   must_files:
     - "module.yaml"
     - "README.md"
+    - "compliance_matrix_global.yaml"
+    - "audit_cycle.yaml"
+    - "gitleaks.toml"
   forbidden_paths:
-    - "compliance_policies"
     - "audit_storage"
-    - "governance_rules"
+    - "runtime_data"
 
 interfaces:
+  inputs:
+    - ref: "23_compliance/evidence/*"
+      type: "evidence_collection"
+      description: "Evidence inputs from all 24 root modules"
   outputs:
     - ref: "17_observability/logs/compliance"
       type: "log_sink"
+      description: "Compliance audit and policy enforcement logging"
   evidence:
     - ref: "23_compliance/evidence/compliance"
       type: "evidence_target"
+      description: "Self-compliance evidence (hash-only)"
+
+capabilities:
+  - id: "regulatory_mapping"
+    description: "Map SSID operations to GDPR, eIDAS2, MiCA, NIS2, DORA, AI Act, PSD2/PSD3"
+    status: "active"
+  - id: "evidence_collection"
+    description: "Central evidence collection target for all modules"
+    status: "active"
+  - id: "exception_management"
+    description: "Root-level and structural exception management"
+    status: "active"
+  - id: "secret_scanning"
+    description: "Gitleaks-based secret scanning enforcement"
+    status: "active"
+  - id: "audit_cycle"
+    description: "Quarterly audit cycle management and scheduling"
+    status: "active"
+  - id: "compliance_matrix"
+    description: "Global compliance matrix across all regulatory frameworks"
+    status: "active"
+  - id: "anti_gaming"
+    description: "Anti-gaming and fraud prevention rule enforcement"
+    status: "active"
+  - id: "privacy_compliance"
+    description: "GDPR and data minimization compliance"
+    status: "active"
 
 shard_count: 16
 evidence_strategy: "hash_manifest_only"
 governance_rules:
-  - "SOT_AGENT_021"
-  - "SOT_AGENT_022"
-  - "SOT_AGENT_023"
+  - "SOT_AGENT_060"
+  - "SOT_AGENT_061"
+  - "SOT_AGENT_062"

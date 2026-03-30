@@ -1,0 +1,32 @@
+rule_id: "RULE-004"
+name: "PORT-POLICY"
+version: "1.0.0"
+enforcement_level: "IMMUTABLE"
+description: >
+  Ports werden nicht erfunden. Nur die kanonische Port-Matrix gilt.
+  Zwei Umgebungen: C (Lokal/Kanonisch) und G (Arbeitsstand).
+constraints:
+  - "Nur kanonische Port-Matrix gueltig"
+  - "C-Ports: Frontend=3000, Backend=8000, Legacy=3001, Docs=3002, Orchestrator=3210/5173, SSID-docs=4321, Dashboard=4322"
+  - "G-Ports: Frontend=3100, Backend=8100, Legacy=3101, Docs=3102, Orchestrator=3310/5273, SSID-docs=4331, Dashboard=4332"
+  - "Port-Zuweisung pro Agent ist fix definiert"
+agent_ports:
+  11_repo_ems:
+    G: [3100, 8100]
+    C: [3000, 8000]
+  10_repo_ssid:
+    G: [3101]
+    C: [3001]
+  13_repo_docs:
+    G: [3102, 4331]
+    C: [3002, 4321]
+  14_repo_orchestrator:
+    G: [3310, 5273]
+    C: [3210, 5173]
+  55_ui_runtime_dashboard:
+    G: [4332]
+    C: [4322]
+violations:
+  - "Ports selbst erfinden"
+  - "Port-Matrix aendern"
+  - "Fremde Ports nutzen"

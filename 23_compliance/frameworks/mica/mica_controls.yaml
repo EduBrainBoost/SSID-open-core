@@ -1,0 +1,114 @@
+# MiCA Controls — SSID Platform
+# SoT v4.1.0 | Classification: Compliance
+# Framework: Markets in Crypto-Assets Regulation (EU) 2023/1114
+# Generated: 2026-03-15
+
+framework_id: "mica"
+version: "1.0.0"
+final_authority: "03_core"
+
+controls:
+
+  - control_id: "MICA-C-001"
+    article: "Art. 59"
+    title: "CASP identity verification — management body"
+    description: >
+      Identity verification and background checks for CASP management body
+      members. Produces identity assertion for national competent authority.
+    implementation_root: "08_identity_score"
+    supporting_roots: ["03_core", "23_compliance"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/09_arbeit_karriere"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/mica/management_kyc/"
+
+  - control_id: "MICA-C-002"
+    article: "Art. 72"
+    title: "Client KYC onboarding gate"
+    description: >
+      Identity verification before any CASP service. Risk-based approach:
+      standard KYC for retail, enhanced due diligence for high-risk clients.
+    implementation_root: "08_identity_score"
+    supporting_roots: ["03_core", "09_meta_identity"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/02_dokumente_nachweise"
+      - "23_compliance/shards/10_finanzen_banking"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/mica/kyc/"
+
+  - control_id: "MICA-C-003"
+    article: "Art. 76"
+    title: "Travel Rule — originator/beneficiary data transmission"
+    description: >
+      Transmit originator and beneficiary identity data with every qualifying
+      crypto-asset transfer. Threshold: 1000 EUR (Regulation 2023/1113).
+    implementation_root: "10_interoperability"
+    supporting_roots: ["03_core", "21_post_quantum_crypto"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/15_handel_transaktionen"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/mica/travel_rule/"
+
+  - control_id: "MICA-C-004"
+    article: "Art. 67"
+    title: "Wallet-to-identity cryptographic binding"
+    description: >
+      Cryptographic proof that a wallet address is controlled by the
+      verified identity holder. Prevents custodian substitution.
+    implementation_root: "21_post_quantum_crypto"
+    supporting_roots: ["14_zero_time_auth", "09_meta_identity"]
+    shards:
+      - "23_compliance/shards/10_finanzen_banking"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/mica/wallet_binding/"
+
+  - control_id: "MICA-C-005"
+    article: "Art. 70"
+    title: "Market abuse monitoring — identity traceability"
+    description: >
+      All crypto-asset transactions traceable to verified identity.
+      Audit trail available to competent authority on request.
+    implementation_root: "02_audit_logging"
+    supporting_roots: ["08_identity_score", "03_core"]
+    shards:
+      - "23_compliance/shards/15_handel_transaktionen"
+      - "23_compliance/shards/10_finanzen_banking"
+    type: "detective"
+    status: "required"
+    evidence_path: "23_compliance/evidence/mica/market_abuse/"
+
+  - control_id: "MICA-C-006"
+    article: "Art. 78"
+    title: "ART reserve custodian KYC"
+    description: >
+      Identity verification for all entities holding ART reserve assets.
+      Continuous monitoring for changes in beneficial ownership.
+    implementation_root: "08_identity_score"
+    supporting_roots: ["23_compliance"]
+    shards:
+      - "23_compliance/shards/10_finanzen_banking"
+      - "23_compliance/shards/13_unternehmen_gewerbe"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/mica/art_custodian/"
+
+  - control_id: "MICA-C-007"
+    article: "Art. 68"
+    title: "Complaint identity verification"
+    description: >
+      Complainant identity verified before complaint registration.
+      Non-repudiation ensured via qualified electronic signature.
+    implementation_root: "03_core"
+    supporting_roots: ["02_audit_logging", "21_post_quantum_crypto"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+    type: "detective"
+    status: "required"
+    evidence_path: "23_compliance/evidence/mica/complaints/"

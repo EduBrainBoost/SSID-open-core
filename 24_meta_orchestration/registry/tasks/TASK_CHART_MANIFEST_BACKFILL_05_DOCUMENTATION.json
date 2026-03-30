@@ -1,0 +1,59 @@
+{
+  "task_id": "TASK_CHART_MANIFEST_BACKFILL_05_DOCUMENTATION",
+  "title": "Chart & Manifest Backfill: Documentation",
+  "intent": "Ensure 05_documentation/ has complete chart.yaml (WAS) and manifest.yaml (WIE) for all shards, contracts, and implementations. Project documentation, ADRs, and specification files.",
+  "repo_path": "C:/Users/bibel/SSID-Workspace/SSID-Arbeitsbereich/Github/SSID",
+  "base_sha": "b2dfa48162a2af50a05d60f7cf5d57136701583f",
+  "scope_paths_allow": [
+    "05_documentation/shards/**",
+    "05_documentation/contracts/**",
+    "05_documentation/implementations/**",
+    "05_documentation/chart.yaml",
+    "05_documentation/manifest.yaml"
+  ],
+  "scope_paths_deny": [
+    "**/.env",
+    "**/secrets/**",
+    "**/credentials/**"
+  ],
+  "allowed_filetypes": [
+    ".yaml",
+    ".yml",
+    ".json",
+    ".md"
+  ],
+  "forbidden_extensions": [
+    ".ipynb",
+    ".parquet",
+    ".sqlite",
+    ".db"
+  ],
+  "gates_profile": "standard",
+  "approval": {
+    "required": true,
+    "granted": false
+  },
+  "sot_write_allowed": false,
+  "acceptance_checks": [
+    "chart.yaml exists and is fully populated in 05_documentation/",
+    "manifest.yaml exists and is fully populated in 05_documentation/",
+    "All module references resolve to existing paths",
+    "All local gates (Policy, SoT, QA) pass",
+    "No new files created outside of scope_paths_allow",
+    "SoT scorecard shows PASS for all defined rules"
+  ],
+  "expected_artifacts": [
+    "plan.md",
+    "patch.diff",
+    "gate_report.md",
+    "evidence_index.json"
+  ],
+  "agent_roles": [
+    "Implementer",
+    "Auditor"
+  ],
+  "patch_strategy": "APPLY_AUTOMATICALLY_AFTER_REVIEW",
+  "created_by": "Orchestrator",
+  "creation_date": "2026-03-15T00:00:00Z",
+  "version": "1.0.0"
+}

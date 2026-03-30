@@ -1,0 +1,121 @@
+{
+  "$schema": "urn:ssid:registry:admin_api:v1",
+  "registry_type": "admin_api_routes",
+  "version": "1.0.0",
+  "created": "2026-03-28T00:00:00Z",
+  "description": "API route registry for the SSID Admin Dashboard backend. All endpoints, methods, auth requirements, and rate limits.",
+  "base_url": "/api/v1/admin",
+  "port": 8000,
+  "auth_required": true,
+  "default_rate_limit": "100/min",
+  "routes": {
+    "health": {
+      "path": "/health",
+      "method": "GET",
+      "auth": false,
+      "rate_limit": "300/min",
+      "description": "System health check. Returns component statuses and uptime.",
+      "response_schema": "schemas/health_response.json",
+      "handler": "admin_api/routes/health.py",
+      "sha256": "PENDING_BUILD_HASH"
+    },
+    "metrics": {
+      "path": "/metrics",
+      "method": "GET",
+      "auth": true,
+      "roles": ["admin", "observer"],
+      "rate_limit": "100/min",
+      "description": "Aggregated system metrics: latency, sessions, throughput.",
+      "handler": "admin_api/routes/metrics.py",
+      "sha256": "PENDING_BUILD_HASH"
+    },
+    "components": {
+      "path": "/components",
+      "method": "GET",
+      "auth": true,
+      "roles": ["admin"],
+      "rate_limit": "60/min",
+      "description": "List all registered dashboard components and their versions.",
+      "handler": "admin_api/routes/components.py",
+      "sha256": "PENDING_BUILD_HASH"
+    },
+    "evidence_list": {
+      "path": "/evidence",
+      "method": "GET",
+      "auth": true,
+      "roles": ["admin", "auditor"],
+      "rate_limit": "60/min",
+      "description": "List evidence entries with pagination. Supports filter by agent, date, operation.",
+      "query_params": ["agent_id", "date_from", "date_to", "operation", "page", "per_page"],
+      "handler": "admin_api/routes/evidence.py",
+      "sha256": "PENDING_BUILD_HASH"
+    },
+    "evidence_detail": {
+      "path": "/evidence/{evidence_id}",
+      "method": "GET",
+      "auth": true,
+      "roles": ["admin", "auditor"],
+      "rate_limit": "60/min",
+      "description": "Retrieve a single evidence entry by ID, including SHA-256 hashes.",
+      "handler": "admin_api/routes/evidence.py",
+      "sha256": "PENDING_BUILD_HASH"
+    },
+    "evidence_verify": {
+      "path": "/evidence/{evidence_id}/verify",
+      "method": "GET",
+      "auth": true,
+      "roles": ["admin", "auditor"],
+      "rate_limit": "30/min",
+      "description": "Verify integrity of an evidence entry against stored SHA-256 chain.",
+      "handler": "admin_api/routes/evidence_verify.py",
+      "sha256": "PENDING_BUILD_HASH"
+    },
+    "sessions_list": {
+      "path": "/sessions",
+      "method": "GET",
+      "auth": true,
+      "roles": ["admin"],
+      "rate_limit": "60/min",
+      "description": "List active and recent agent sessions with lock status.",
+      "handler": "admin_api/routes/sessions.py",
+      "sha256": "PENDING_BUILD_HASH"
+    },
+    "policy_status": {
+      "path": "/policy/status",
+      "method": "GET",
+      "auth": true,
+      "roles": ["admin", "auditor"],
+      "rate_limit": "30/min",
+      "description": "OPA/Rego policy evaluation status and last check results.",
+      "handler": "admin_api/routes/policy.py",
+      "sha256": "PENDING_BUILD_HASH"
+    },
+    "scorecard": {
+      "path": "/scorecard",
+      "method": "GET",
+      "auth": true,
+      "roles": ["admin"],
+      "rate_limit": "30/min",
+      "description": "Overall system compliance scorecard: identity, audit, policy, crypto scores.",
+      "handler": "admin_api/routes/scorecard.py",
+      "sha256": "PENDING_BUILD_HASH"
+    },
+    "identity_scores": {
+      "path": "/identity/scores",
+      "method": "GET",
+      "auth": true,
+      "roles": ["admin"],
+      "rate_limit": "30/min",
+      "description": "Aggregated identity scores (hash-only, no PII). Returns SHA3-256 hashes only.",
+      "handler": "admin_api/routes/identity.py",
+      "sha256": "PENDING_BUILD_HASH"
+    }
+  },
+  "middleware": [
+    { "name": "cors", "config": { "origins": ["http://localhost:3000"], "credentials": true } },
+    { "name": "jwt_auth", "config": { "algorithm": "RS256", "issuer": "ssid-auth" } },
+    { "name": "rate_limiter", "config": { "backend": "memory", "default": "100/min" } },
+    { "name": "audit_logger", "config": { "log_all_requests": true, "hash_pii_fields": true } },
+    { "name": "request_id", "config": { "header": "X-Request-ID" } }
+  ]
+}

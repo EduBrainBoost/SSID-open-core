@@ -1,9 +1,9 @@
 # 12_tooling - Module Descriptor
 # SoT v4.1.0 | ROOT-24-LOCK | Classification: Developer Tools
-# Generated: 2026-03-09
+# Generated: 2026-02-28 | Updated: 2026-03-29
 
 module_id: "12_tooling"
-name: "Tooling & CLI Infrastructure"
+name: "Developer Tooling & CLI Infrastructure"
 version: "4.1.0"
 status: "ROOT-24-LOCK"
 classification: "Developer Tools"
@@ -16,6 +16,15 @@ structure:
     - "src"
     - "tests"
     - "config"
+    - "cli"
+    - "hooks"
+    - "ops"
+    - "sbom"
+    - "schemas"
+    - "scripts"
+    - "security"
+    - "supply_chain"
+    - "ssid_autorunner"
   must_files:
     - "module.yaml"
     - "README.md"
@@ -28,13 +37,35 @@ interfaces:
   outputs:
     - ref: "17_observability/logs/tooling"
       type: "log_sink"
+      description: "Tooling execution and CLI event logging"
   evidence:
     - ref: "23_compliance/evidence/tooling"
       type: "evidence_target"
+      description: "Tooling evidence (hash-only)"
+
+capabilities:
+  - id: "sot_validation"
+    description: "SoT structure validation CLI (sot_validator.py)"
+    status: "active"
+  - id: "sbom_generation"
+    description: "Software Bill of Materials generation and verification"
+    status: "active"
+  - id: "supply_chain_verification"
+    description: "Dependency attestation and supply chain security"
+    status: "active"
+  - id: "autorunner"
+    description: "Automated CI/test execution framework"
+    status: "active"
+  - id: "git_hooks"
+    description: "Pre-commit and CI hook enforcement"
+    status: "active"
+  - id: "schema_validation"
+    description: "Schema validation for YAML/JSON artifacts"
+    status: "active"
 
 shard_count: 16
 evidence_strategy: "hash_manifest_only"
 governance_rules:
-  - "SOT_AGENT_021"
-  - "SOT_AGENT_022"
-  - "SOT_AGENT_023"
+  - "SOT_AGENT_030"
+  - "SOT_AGENT_031"
+  - "SOT_AGENT_032"

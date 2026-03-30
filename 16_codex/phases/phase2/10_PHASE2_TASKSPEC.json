@@ -1,0 +1,20 @@
+{
+  "task_id": "ssid_global_phase2_384_sot_completion",
+  "title": "Complete all 384 chart definitions and prepare phase 3 candidate map",
+  "timestamp_utc": "2026-03-26T12:00:00Z",
+  "mode": "plan_apply_via_ems",
+  "repo": "SSID",
+  "scope": "global_phase_2",
+  "success_criteria": [
+    "384_chart_files_complete",
+    "chart_template_minimum_satisfied",
+    "registry_and_evidence_artifacts_created",
+    "phase3_manifest_candidates_marked_only"
+  ],
+  "blockers": [
+    "root_24_lock_violation",
+    "registry_semantics_violation",
+    "manifest_generated_without_real_implementation",
+    "phase_drift_into_code_implementation"
+  ]
+}

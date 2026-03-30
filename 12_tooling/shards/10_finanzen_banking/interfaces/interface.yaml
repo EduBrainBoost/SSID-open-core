@@ -1,5 +1,0 @@
-interface_id: 12_tooling.10_finanzen_banking.primary
-root_id: 12_tooling
-shard_id: 10_finanzen_banking
-kind: bootstrap_contract
-status: active

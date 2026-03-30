@@ -1,0 +1,83 @@
+# TASK_INTAKE_POLICY.yaml
+# T-019 WP3 — Sub-Orchestrator Intake Rules
+# Generated: 2026-03-29
+# Scope: Jeder Nutzerauftrag muss sauber erfasst und geledgert werden.
+---
+policy_id: orchestrator.task_intake
+version: 1.0.0
+enforcement: fail_closed
+
+rules:
+  task_id_required:
+    description: >
+      Jeder Nutzerauftrag erhaelt eine eindeutige task_id im Format
+      T-<NNN>_<unix_epoch>_<short_sha256>.
+    format: "T-{seq}_{epoch}_{sha256_8}"
+    example: "T-019_1743206400_a1b2c3d4"
+
+  sha256_hash_required:
+    description: >
+      Jeder Task wird mit SHA256 des Auftragstexts gehasht.
+      Der Hash dient als Integritaetsnachweis und Deduplizierung.
+    hash_algorithm: SHA3-256
+    hash_input: task_description + timestamp_utc
+    stored_in: task_ledger
+
+  append_only_ledger:
+    description: >
+      Alle Tasks werden in ein append-only Ledger geschrieben.
+      Kein Task darf geloescht oder ueberschrieben werden.
+    ledger_path: 24_meta_orchestration/orchestrator/task_ledger.jsonl
+    write_mode: append_only
+    format: jsonl
+    fields:
+      - task_id
+      - sha256_hash
+      - timestamp_utc
+      - description
+      - repo_target
+      - status
+      - assigned_orchestrator
+      - requestor
+
+  repo_target_required:
+    description: >
+      Kein Task ohne Repo-Ziel. Jeder Task muss mindestens einem
+      der kanonischen Repos zugeordnet sein.
+    allowed_repos:
+      - SSID
+      - SSID-EMS
+      - SSID-orchestrator
+      - SSID-open-core
+      - SSID-docs
+    validation: fail_if_empty
+
+  no_silent_drop:
+    description: >
+      Kein stilles Droppen von Tasks. Jeder Task erhaelt einen Status:
+      accepted, rejected (mit Grund), in_progress, completed, failed.
+    required_statuses:
+      - accepted
+      - rejected
+      - in_progress
+      - completed
+      - failed
+    rejection_requires: reason_text
+    audit_trail: mandatory
+
+  evidence_on_intake:
+    description: >
+      Bei Aufnahme eines Tasks wird ein Evidence-Eintrag erzeugt.
+    evidence_format:
+      timestamp: ISO8601
+      task_id: string
+      sha256_hash: string
+      operation: task_intake
+      repo_target: string
+
+forbidden:
+  - Tasks ohne task_id annehmen
+  - Tasks ohne Repo-Ziel routen
+  - Tasks still droppen ohne Statusaenderung
+  - Ledger-Eintraege loeschen oder ueberschreiben
+  - Tasks ohne SHA256-Hash erfassen

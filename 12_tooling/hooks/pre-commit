@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# SSID Pre-Commit Hook
+# Runs structure guard and SHA256 lock verification before each commit.
+# Installed via: git config core.hooksPath 12_tooling/hooks
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+echo "=== SSID Pre-Commit: Structure Guard ==="
+python "${REPO_ROOT}/12_tooling/scripts/structure_guard.py" --check 2>/dev/null || \
+    python "${REPO_ROOT}/12_tooling/scripts/structure_guard.py" 2>/dev/null || \
+    python3 "${REPO_ROOT}/12_tooling/scripts/structure_guard.py" --check 2>/dev/null || \
+    python3 "${REPO_ROOT}/12_tooling/scripts/structure_guard.py"
+echo ""
+
+echo "=== SSID Pre-Commit: SHA256 Lock Verification ==="
+LOCK_FAIL=0
+CRITICAL_FILES=(
+  "24_meta_orchestration/registry/registry.yaml"
+  "23_compliance/policies/structure_policy.yaml"
+  "23_compliance/exceptions/structure_exceptions.yaml"
+  "12_tooling/scripts/structure_guard.sh"
+  "24_meta_orchestration/triggers/ci/gates/structure_lock_l3.py"
+)
+
+for rel_path in "${CRITICAL_FILES[@]}"; do
+    src="${REPO_ROOT}/${rel_path}"
+    lock="${REPO_ROOT}/${rel_path}.lock"
+
+    if [ ! -f "$src" ]; then
+        echo "SKIP: ${rel_path} (source not found)"
+        continue
+    fi
+
+    if [ ! -f "$lock" ]; then
+        echo "FAIL: Missing lock file for ${rel_path}"
+        LOCK_FAIL=1
+        continue
+    fi
+
+    expected="$(cat "$lock" | tr -d '[:space:]')"
+    actual="$(sha256sum "$src" | awk '{print $1}')"
+
+    if [ "$actual" != "$expected" ]; then
+        echo "FAIL: TAMPER DETECTED — ${rel_path} hash mismatch"
+        echo "  expected: ${expected}"
+        echo "  actual:   ${actual}"
+        LOCK_FAIL=1
+    else
+        echo "OK: ${rel_path}"
+    fi
+done
+
+if [ "$LOCK_FAIL" -ne 0 ]; then
+    echo ""
+    echo "SHA256 lock verification FAILED. Commit blocked."
+    echo "Run 'bash 12_tooling/scripts/gen_sha256_locks.sh' to regenerate locks after intentional changes."
+    exit 1
+fi
+
+echo ""
+
+echo "=== SSID Pre-Commit: SoT Validator (--verify-all) ==="
+python "${REPO_ROOT}/12_tooling/cli/sot_validator.py" --verify-all 2>/dev/null || \
+    python3 "${REPO_ROOT}/12_tooling/cli/sot_validator.py" --verify-all
+SOT_EXIT=$?
+if [ "$SOT_EXIT" -ne 0 ]; then
+    echo ""
+    echo "SoT Validator --verify-all FAILED (exit code ${SOT_EXIT}). Commit blocked."
+    exit 1
+fi
+echo ""
+
+echo "PRE-COMMIT PASS"
+exit 0

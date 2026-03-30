@@ -1,0 +1,38 @@
+# License Fee Matrix — Core
+schema_version: "1.0"
+root: "03_core"
+fee_type: developer_reward
+reward_nature: "non-custodial, autonomous, immutable"
+
+modules:
+  - module_id: "core_core_engine"
+    name: "Core Engine"
+    description: "Central identity processing engine and state machine"
+    fee_percent: 0.20
+    responsible_maintainer: "SSID Core Team"
+    hook_contract: "IdentityFeeRouter.sol"
+    category: "A"
+
+  - module_id: "core_reward_handler"
+    name: "Reward Handler"
+    description: "Processes and distributes non-custodial developer rewards"
+    fee_percent: 0.20
+    responsible_maintainer: "SSID Core Team"
+    hook_contract: "IdentityFeeRouter.sol"
+    category: "A"
+
+  - module_id: "core_approval_gate"
+    name: "Approval Gate"
+    description: "Enforces approval workflows for critical state transitions"
+    fee_percent: 0.15
+    responsible_maintainer: "SSID Core Team"
+    hook_contract: "IdentityFeeRouter.sol"
+    category: "A"
+
+  - module_id: "core_feedback_collector"
+    name: "Feedback Collector"
+    description: "Collects and aggregates feedback signals for brain control loop"
+    fee_percent: 0.10
+    responsible_maintainer: "SSID Core Team"
+    hook_contract: "IdentityFeeRouter.sol"
+    category: "A"

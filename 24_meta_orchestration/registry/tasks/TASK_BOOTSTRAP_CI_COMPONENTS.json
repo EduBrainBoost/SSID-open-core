@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "generated_utc": "2026-02-27T00:00:00Z",
+  "components": [
+    {
+      "component_id": "automation_loop",
+      "version": "0.1.0",
+      "paths": [
+        "12_tooling/cli/automation_loop.py"
+      ],
+      "owner_author_id": "edubrainboost",
+      "evidence_ref": "02_audit_logging/storage/worm/BOOTSTRAP/"
+    },
+    {
+      "component_id": "stability_gate",
+      "version": "0.1.0",
+      "paths": [
+        "12_tooling/cli/stability_gate.py"
+      ],
+      "owner_author_id": "edubrainboost",
+      "evidence_ref": "02_audit_logging/storage/worm/BOOTSTRAP/"
+    },
+    {
+      "component_id": "bootstrap_ci",
+      "version": "0.1.0",
+      "paths": [
+        ".github/workflows/ssid_ci.yml"
+      ],
+      "owner_author_id": "edubrainboost",
+      "evidence_ref": "02_audit_logging/storage/worm/BOOTSTRAP/"
+    }
+  ]
+}

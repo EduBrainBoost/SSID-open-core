@@ -6,17 +6,22 @@
 
 ## Purpose
 
-Central validation authority and final arbiter for all SSID module interactions. Delegates from 01_ai_layer.
+Final authority module for the SSID platform. Houses the master SoT validator,
+security primitives (data minimization, forensic management), and the central
+interface bus that all advisory modules route through.
 
 ## Structure
 
-| Directory    | Purpose                              |
-|-------------|--------------------------------------|
-| `validators/` | SoT and structure validators        |
-| `docs/`      | Module-level documentation           |
-| `src/`       | Source code                          |
-| `tests/`     | Module-scoped test stubs             |
-| `config/`    | Module configuration                 |
+| Directory   | Purpose                                    |
+|-------------|--------------------------------------------|
+| `docs/`     | Module-level documentation                 |
+| `src/`      | Core source code                           |
+| `tests/`    | Module-scoped test stubs                   |
+| `config/`   | Module configuration                       |
+| `interfaces/` | Central bus definitions (ai_validator_bus) |
+| `security/` | Data minimization, forensic manager        |
+| `validators/` | SoT validator core                       |
+| `shards/`   | 16 domain shards                           |
 
 ## Governance
 

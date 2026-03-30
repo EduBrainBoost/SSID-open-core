@@ -9,5 +9,5 @@ from pathlib import Path
 # - patch.sha256
 # - hash-only
 # - 02_audit_logging
-DISPATCHER = Path(__file__).resolve().parents[3] / "24_meta_orchestration" / "dispatcher" / "e2e_dispatcher.py"
+DISPATCHER = Path(__file__).resolve().parents[2] / "24_meta_orchestration" / "dispatcher" / "e2e_dispatcher.py"
 runpy.run_path(DISPATCHER.as_posix(), run_name="__main__")

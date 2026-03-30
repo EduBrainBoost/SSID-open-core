@@ -1,0 +1,103 @@
+{
+  "$schema": "urn:ssid:registry:evidence_index:v1",
+  "registry_type": "evidence_index",
+  "version": "1.0.0",
+  "created": "2026-03-28T00:00:00Z",
+  "description": "Index of all evidence files produced by the admin dashboard system. Maps evidence categories to their storage locations and provides chain verification metadata.",
+  "evidence_root": "02_audit_logging/evidence/",
+  "archive_root": "02_audit_logging/archives/",
+  "categories": {
+    "agent_writes": {
+      "description": "Evidence entries for all agent write operations (SAFE-FIX enforced).",
+      "path_pattern": "02_audit_logging/evidence/{agent_id}/{session_id}/writes/*.json",
+      "schema": {
+        "timestamp": "ISO8601",
+        "agent_id": "string",
+        "operation": "write",
+        "file_affected": "string",
+        "sha256_before": "hex_string|null",
+        "sha256_after": "hex_string",
+        "safe_fix_confirmed": "boolean"
+      },
+      "retention_days": 365
+    },
+    "auth_events": {
+      "description": "Authentication and authorization events (login, logout, failures).",
+      "path_pattern": "02_audit_logging/evidence/auth/{date}/events.jsonl",
+      "schema": {
+        "timestamp": "ISO8601",
+        "event_type": "string",
+        "user_hash": "sha3_256_hex",
+        "ip_hash": "sha3_256_hex",
+        "result": "success|failure",
+        "failure_reason": "string|null"
+      },
+      "retention_days": 180
+    },
+    "policy_evaluations": {
+      "description": "OPA/Rego policy evaluation results.",
+      "path_pattern": "02_audit_logging/evidence/policy/{date}/evaluations.jsonl",
+      "schema": {
+        "timestamp": "ISO8601",
+        "policy_id": "string",
+        "input_hash": "sha256_hex",
+        "result": "allow|deny",
+        "decision_reasons": "string[]"
+      },
+      "retention_days": 365
+    },
+    "observer_reports": {
+      "description": "Observer daemon metric collection reports.",
+      "path_pattern": "17_observability/reports/observer_report_*.json",
+      "schema": {
+        "report_type": "observer_daemon",
+        "generated_at": "ISO8601",
+        "source_timestamp": "ISO8601",
+        "data": "object",
+        "report_sha256": "hex_string"
+      },
+      "retention_days": 90
+    },
+    "config_changes": {
+      "description": "Configuration change evidence with before/after hashes.",
+      "path_pattern": "02_audit_logging/evidence/config/{date}/changes.jsonl",
+      "schema": {
+        "timestamp": "ISO8601",
+        "user_hash": "sha3_256_hex",
+        "config_key": "string",
+        "sha256_before": "hex_string",
+        "sha256_after": "hex_string",
+        "safe_fix_confirmed": "boolean"
+      },
+      "retention_days": 365
+    },
+    "session_events": {
+      "description": "Session lifecycle events (create, terminate, timeout, error).",
+      "path_pattern": "02_audit_logging/evidence/sessions/{date}/events.jsonl",
+      "schema": {
+        "timestamp": "ISO8601",
+        "session_id": "string",
+        "agent_id": "string",
+        "event": "start|stop|error|timeout",
+        "lock_status": "string"
+      },
+      "retention_days": 90
+    }
+  },
+  "chain_metadata": {
+    "chain_head_location": "02_audit_logging/evidence/chain_head.json",
+    "chain_head_schema": {
+      "last_entry_sha256": "hex_string",
+      "entry_count": "integer",
+      "last_updated": "ISO8601"
+    },
+    "anchor_ref": "24_meta_orchestration/registry/anchors/admin_dashboard_anchor.json"
+  },
+  "archive_policy": {
+    "trigger": "daily at 02:00 UTC",
+    "compression": "gzip",
+    "archive_format": "{category}/{year}/{month}/archive_{date}.jsonl.gz",
+    "verify_after_archive": true,
+    "delete_source_after_archive": true
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "class_counts": {
+    "content_drift": 1,
+    "enforcement_gap": 1,
+    "missing_expected_export": 1,
+    "policy_info": 6,
+    "policy_warn": 4,
+    "stale_derivative_binding": 1,
+    "unsanctioned_public_artifact": 1
+  },
+  "decision": "warn",
+  "exit_code": 1,
+  "exit_label": "warn",
+  "findings": [
+    {
+      "class": "missing_expected_export",
+      "details": "API docs not exported",
+      "id": "opencore_sync-0000",
+      "path": "docs/api.md",
+      "repo": "",
+      "severity": "medium",
+      "source": "opencore_sync"
+    },
+    {
+      "class": "unsanctioned_public_artifact",
+      "details": "Unsanctioned artifact in derivative",
+      "id": "opencore_sync-0001",
+      "path": "docs/internal_notes.md",
+      "repo": "",
+      "severity": "medium",
+      "source": "opencore_sync"
+    },
+    {
+      "class": "policy_warn",
+      "details": "CONVERGENCE_WARN: stale derivative binding at 03_core/bindings.json \u2014 Stale binding detected",
+      "id": "policy-0000",
+      "path": "03_core/bindings.json",
+      "repo": "SSID",
+      "severity": "medium",
+      "source": "policy"
+    },
+    {
+      "class": "policy_info",
+      "details": "CONVERGENCE_INFO: medium drift in 03_core/bindings.json \u2014 Stale binding detected (class: stale_derivative_binding)",
+      "id": "policy-0001",
+      "path": "03_core/bindings.json",
+      "repo": "SSID",
+      "severity": "info",
+      "source": "policy"
+    },
+    {
+      "class": "policy_info",
+      "details": "CONVERGENCE_INFO: enforcement gap at 05_governance/gaps.md \u2014 Uncovered enforcement rule (severity: low)",
+      "id": "policy-0002",
+      "path": "05_governance/gaps.md",
+      "repo": "SSID",
+      "severity": "info",
+      "source": "policy"
+    },
+    {
+      "class": "policy_info",
+      "details": "CONVERGENCE_INFO: low drift in 05_governance/gaps.md \u2014 Uncovered enforcement rule (class: enforcement_gap)",
+      "id": "policy-0003",
+      "path": "05_governance/gaps.md",
+      "repo": "SSID",
+      "severity": "info",
+      "source": "policy"
+    },
+    {
+      "class": "policy_info",
+      "details": "CONVERGENCE_INFO: medium drift in 12_tooling/config.yaml \u2014 Config drift between repos (class: content_drift)",
+      "id": "policy-0004",
+      "path": "12_tooling/config.yaml",
+      "repo": "SSID",
+      "severity": "info",
+      "source": "policy"
+    },
+    {
+      "class": "policy_warn",
+      "details": "CONVERGENCE_WARN: repo SSID has 3 drift findings",
+      "id": "policy-0005",
+      "path": "",
+      "repo": "SSID",
+      "severity": "medium",
+      "source": "policy"
+    },
+    {
+      "class": "policy_warn",
+      "details": "DERIVATION_WARN: expected public artifact missing from derivative \u2014 API docs not exported (path: docs/api.md)",
+      "id": "policy-0006",
+      "path": "docs/api.md",
+      "repo": "SSID-open-core",
+      "severity": "medium",
+      "source": "policy"
+    },
+    {
+      "class": "policy_warn",
+      "details": "DERIVATION_WARN: unsanctioned artifact in derivative \u2014 Unsanctioned artifact in derivative (path: docs/internal_notes.md)",
+      "id": "policy-0007",
+      "path": "docs/internal_notes.md",
+      "repo": "SSID-open-core",
+      "severity": "medium",
+      "source": "policy"
+    },
+    {
+      "class": "policy_info",
+      "details": "DERIVATION_INFO: partial export \u2014 2 of 4 allowed artifacts present in derivative",
+      "id": "policy-0008",
+      "path": "",
+      "repo": "SSID-open-core",
+      "severity": "info",
+      "source": "policy"
+    },
+    {
+      "class": "policy_info",
+      "details": "DERIVATION_INFO: derivation mode is 'selective' for SSID -> SSID-open-core",
+      "id": "policy-0009",
+      "path": "",
+      "repo": "SSID-open-core",
+      "severity": "info",
+      "source": "policy"
+    },
+    {
+      "class": "stale_derivative_binding",
+      "details": "Stale binding detected",
+      "id": "scanner-0000",
+      "path": "03_core/bindings.json",
+      "repo": "",
+      "severity": "medium",
+      "source": "scanner"
+    },
+    {
+      "class": "enforcement_gap",
+      "details": "Uncovered enforcement rule",
+      "id": "scanner-0001",
+      "path": "05_governance/gaps.md",
+      "repo": "",
+      "severity": "low",
+      "source": "scanner"
+    },
+    {
+      "class": "content_drift",
+      "details": "Config drift between repos",
+      "id": "scanner-0002",
+      "path": "12_tooling/config.yaml",
+      "repo": "",
+      "severity": "medium",
+      "source": "scanner"
+    }
+  ],
+  "fixture_name": "Multiple findings from all sources to test deterministic sort order. Findings should always appear in same order regardless of input order.",
+  "max_severity": "medium",
+  "severity_counts": {
+    "info": 6,
+    "low": 1,
+    "medium": 8
+  },
+  "total_findings": 15
+}

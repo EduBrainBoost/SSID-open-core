@@ -1,4 +1,6 @@
-schema_version: 1.0.0
-entries:
-- kind: json_schema
-  path: document_proof.schema.json
+schema_version: "1.0.0"
+shard_id: "03_core/02_dokumente_nachweise"
+specs:
+  - path: "document_proof.schema.json"
+    format: "json-schema-draft-2020-12"
+    sha256: "a27a460c5628c5390995c32f914edbdf59845bcba416b0a1e54e5f5c28523ded"

@@ -1,0 +1,19 @@
+{
+  "event_id": "868dd28904f71b7f42b840b08a9e8aa80bd53d678e9d9d579abefafde90fc328",
+  "event_type": "ops",
+  "merge_sha": null,
+  "observed_utc": "2026-03-05T04:33:00Z",
+  "origin": "imported",
+  "payload": {
+    "ems_jwt_secret_rotated": false,
+    "note": "EMS_JWT_SECRET rotation in staging/prod — manual ops item, awaiting confirmation",
+    "status": "pending"
+  },
+  "pr_number": null,
+  "refs": {},
+  "repo": "SSID-EMS",
+  "severity": "warn",
+  "sha": "596c4ed368cefab569cd61f0579c00c526a6703f",
+  "summary": "EMS_JWT_SECRET rotation: PENDING — sole remaining operational item",
+  "task_id": null
+}

@@ -1,0 +1,20 @@
+{
+  "event_id": "46507c2f84045ce981dd5451661c5064bbbbe80b13bd4be7076e8f3039c9a31a",
+  "event_type": "merge_recorded",
+  "merge_sha": "2b51c211709340d28d035f2e58a8fe6ae4f7ac71",
+  "observed_utc": "2026-03-01T02:55:50Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 5,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-2b51c21/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "2b51c211709340d28d035f2e58a8fe6ae4f7ac71",
+  "summary": "chore(deps): bump axios in /05_documentation/legacy_root_items/website (#5)",
+  "task_id": null
+}

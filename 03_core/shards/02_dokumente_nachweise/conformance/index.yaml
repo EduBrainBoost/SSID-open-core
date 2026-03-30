@@ -1,6 +1,10 @@
-schema_version: 1.0.0
-entries:
-- kind: fixture
-  path: fixtures/valid_identity.json
-- kind: fixture
-  path: fixtures/invalid_identity.json
+schema_version: "1.0.0"
+shard_id: "03_core/02_dokumente_nachweise"
+gate_target: "shard_conformance_gate.py --root 03_core --shard 02_dokumente_nachweise"
+fixtures:
+  - path: "fixtures/valid.json"
+    expect: "pass"
+  - path: "fixtures/invalid_format.json"
+    expect: "fail"
+  - path: "fixtures/invalid_pii.json"
+    expect: "fail"

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SSID EMS OIDC Configuration",
+  "description": "Optional OIDC identity verification. Disabled by default. Requires local JWKS file when enabled.",
+  "type": "object",
+  "required": ["enabled"],
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable OIDC token verification. False = skip entirely."
+    },
+    "issuer": {
+      "type": "string",
+      "description": "OIDC issuer URL. Required when enabled."
+    },
+    "client_id": {
+      "type": "string",
+      "description": "OIDC client ID."
+    },
+    "audience": {
+      "type": "string",
+      "description": "Expected audience claim."
+    },
+    "algorithms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512"]
+      },
+      "default": ["RS256"]
+    },
+    "jwks_path": {
+      "type": "string",
+      "description": "Absolute path to local JWKS JSON file. REQUIRED when enabled. No remote fetch."
+    }
+  },
+  "if": {
+    "properties": {"enabled": {"const": true}}
+  },
+  "then": {
+    "required": ["enabled", "issuer", "client_id", "jwks_path"]
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,122 @@
+sector_compatibility:
+  version: "1.0.0"
+  description: >
+    Sector compatibility matrix for SSID identity services.
+    Maps platform capabilities to sector-specific requirements
+    for financial services, healthcare, government, education,
+    and enterprise sectors.
+
+sectors:
+  - sector_id: financial_services
+    name: Financial Services
+    subsectors:
+      - banking
+      - insurance
+      - asset_management
+      - payment_services
+    requirements:
+      - kyc_aml_cft: critical
+      - psd2_sca: required
+      - dora_resilience: required
+      - sanctions_screening: real_time
+      - transaction_monitoring: continuous
+    ssid_coverage: full
+    regulatory_refs:
+      - MiCA
+      - PSD2
+      - DORA
+      - AML6
+
+  - sector_id: healthcare
+    name: Healthcare
+    subsectors:
+      - hospitals
+      - telemedicine
+      - health_insurance
+      - pharmaceutical
+    requirements:
+      - patient_identity_verification: critical
+      - hipaa_compliance: required_us
+      - gdpr_health_data: required_eu
+      - consent_management: granular
+      - audit_trail: immutable
+    ssid_coverage: partial
+    notes: Healthcare-specific data handling extensions required
+    regulatory_refs:
+      - GDPR_Art_9
+      - HIPAA
+
+  - sector_id: government
+    name: Government and Public Sector
+    subsectors:
+      - citizen_services
+      - tax_administration
+      - law_enforcement
+      - border_control
+    requirements:
+      - eidas2_compliance: critical
+      - high_assurance_identity: required
+      - sovereignty_requirements: jurisdiction_specific
+      - interoperability_standards: mandatory
+    ssid_coverage: partial
+    notes: eIDAS2 EUDI wallet integration in progress
+    regulatory_refs:
+      - eIDAS2
+      - NIS2
+
+  - sector_id: education
+    name: Education
+    subsectors:
+      - universities
+      - online_learning
+      - credential_verification
+    requirements:
+      - student_identity_verification: required
+      - credential_portability: w3c_vc
+      - age_verification: required
+      - parental_consent: required_for_minors
+    ssid_coverage: full
+    regulatory_refs:
+      - GDPR
+      - W3C_VC
+
+  - sector_id: enterprise
+    name: Enterprise / Corporate
+    subsectors:
+      - employee_onboarding
+      - supply_chain
+      - b2b_verification
+    requirements:
+      - corporate_identity_verification: required
+      - beneficial_ownership: required
+      - supply_chain_due_diligence: recommended
+      - sso_integration: required
+    ssid_coverage: full
+    regulatory_refs:
+      - AML6
+      - NIS2
+
+  - sector_id: web3_defi
+    name: Web3 / DeFi
+    subsectors:
+      - decentralised_exchanges
+      - dao_governance
+      - nft_marketplaces
+      - defi_lending
+    requirements:
+      - self_sovereign_identity: native
+      - wallet_based_auth: required
+      - on_chain_attestation: required
+      - travel_rule: required_for_vasps
+    ssid_coverage: full
+    regulatory_refs:
+      - MiCA
+      - FATF_Rec_16
+
+compatibility_summary:
+  total_sectors: 6
+  full_coverage: 4
+  partial_coverage: 2
+  coverage_gaps:
+    - healthcare_specific_data_handling
+    - eidas2_eudi_wallet_integration

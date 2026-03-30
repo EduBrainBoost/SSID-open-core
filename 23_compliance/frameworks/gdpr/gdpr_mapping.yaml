@@ -1,0 +1,188 @@
+# GDPR Compliance Mapping — SSID Platform
+# SoT v4.1.0 | Classification: Compliance
+# Framework: General Data Protection Regulation (EU) 2016/679
+# Generated: 2026-03-15
+
+framework_id: "gdpr"
+framework_name: "General Data Protection Regulation"
+regulation: "(EU) 2016/679"
+effective_date: "2018-05-25"
+jurisdiction: ["EU", "EEA"]
+version: "1.0.0"
+final_authority: "03_core"
+
+# ---------------------------------------------------------------------
+# ARTICLE MAPPINGS — SSID capabilities per GDPR article
+# ---------------------------------------------------------------------
+
+articles:
+
+  - article: "Art. 5"
+    title: "Principles relating to processing of personal data"
+    principles:
+      - lawfulness_fairness_transparency
+      - purpose_limitation
+      - data_minimisation
+      - accuracy
+      - storage_limitation
+      - integrity_confidentiality
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Final authority; enforces data minimisation policy and hash-only evidence strategy"
+      - root: "02_audit_logging"
+        rationale: "WORM audit trail; data_statement enforces hash-only, no raw PII persisted"
+      - root: "23_compliance"
+        rationale: "Policy source-of-truth; purpose limitation and storage limitation rules"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity data subject to data minimisation and purpose limitation"
+      - shard: "23_compliance/shards/04_kommunikation_daten"
+        note: "Communication data subject to integrity and confidentiality controls"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 6"
+    title: "Lawfulness of processing"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Consent and contract basis enforced at core validator level"
+      - root: "23_compliance"
+        rationale: "Legal basis registry; tracks lawful basis per processing activity"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Consent records for identity data processing"
+      - shard: "23_compliance/shards/14_vertraege_vereinbarungen"
+        note: "Contractual basis documentation"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 7"
+    title: "Conditions for consent"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Consent withdrawal mechanism; revocable at any time"
+      - root: "13_ui_layer"
+        rationale: "User-facing consent management UI; granular opt-in/opt-out"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Consent state stored non-custodially per identity shard"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 9"
+    title: "Processing of special categories of personal data"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Special category flag enforcement; explicit consent gate"
+      - root: "23_compliance"
+        rationale: "Special category policy rules and audit requirements"
+    ssid_shards:
+      - shard: "23_compliance/shards/05_gesundheit_medizin"
+        note: "Health/medical data — highest protection tier"
+      - shard: "23_compliance/shards/07_familie_soziales"
+        note: "Family/social data — biometric and ethnic origin controls"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 12-14"
+    title: "Transparency and information to data subjects"
+    ssid_roots:
+      - root: "13_ui_layer"
+        rationale: "Privacy notice rendering; layered transparency UI"
+      - root: "23_compliance"
+        rationale: "Privacy notice templates and disclosure registry"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity holder disclosure requirements"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 15-22"
+    title: "Rights of the data subject (access, rectification, erasure, portability, objection)"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Data subject rights API; enforces right to erasure via shard deletion"
+      - root: "09_meta_identity"
+        rationale: "Meta-identity portability; export and migration capabilities"
+      - root: "13_ui_layer"
+        rationale: "Subject rights portal for access, rectification, deletion requests"
+      - root: "02_audit_logging"
+        rationale: "Erasure audit trail; WORM log of deletion events"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Primary subject rights target"
+      - shard: "23_compliance/shards/02_dokumente_nachweise"
+        note: "Document erasure and rectification"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 25"
+    title: "Data protection by design and by default"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "Non-custodial architecture by design; minimal data collection enforced"
+      - root: "21_post_quantum_crypto"
+        rationale: "Encryption by default; post-quantum security baseline"
+      - root: "02_audit_logging"
+        rationale: "Hash-only evidence by default; no raw output persisted"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 30"
+    title: "Records of processing activities"
+    ssid_roots:
+      - root: "02_audit_logging"
+        rationale: "WORM audit ledger serves as processing activity record"
+      - root: "23_compliance"
+        rationale: "Processing activity register and data flow documentation"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 32"
+    title: "Security of processing"
+    ssid_roots:
+      - root: "21_post_quantum_crypto"
+        rationale: "Post-quantum cryptography; encryption in transit and at rest"
+      - root: "14_zero_time_auth"
+        rationale: "Zero-time authentication; secure access control"
+      - root: "03_core"
+        rationale: "Core security validators; integrity enforcement"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 33-34"
+    title: "Notification of personal data breach"
+    ssid_roots:
+      - root: "02_audit_logging"
+        rationale: "Breach detection via anomaly in audit trail; 72h notification pipeline"
+      - root: "17_observability"
+        rationale: "Real-time monitoring and breach alert triggers"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 35"
+    title: "Data protection impact assessment (DPIA)"
+    ssid_roots:
+      - root: "23_compliance"
+        rationale: "DPIA templates and risk assessment framework"
+      - root: "03_core"
+        rationale: "High-risk processing gate; DPIA required before enabling"
+    ssid_shards:
+      - shard: "23_compliance/shards/05_gesundheit_medizin"
+        note: "Health data — mandatory DPIA"
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Large-scale identity processing — DPIA required"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 44-49"
+    title: "Transfers of personal data to third countries"
+    ssid_roots:
+      - root: "10_interoperability"
+        rationale: "Cross-border data transfer protocols; adequacy decision enforcement"
+      - root: "23_compliance"
+        rationale: "Transfer mechanism registry (SCCs, BCRs, adequacy decisions)"
+      - root: "03_core"
+        rationale: "Transfer gate validator; blocks non-adequate transfers"
+    status: "mapped"
+    gap: null

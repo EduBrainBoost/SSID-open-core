@@ -1,16 +1,20 @@
-name: 01_identitaet_personen
-layer: 16_codex
-implementation:
-  language: python
-  entrypoint: implementations/main.py
-  dependencies:
-  - pydantic
-  - jinja2
-tests:
-  - tests/unit
-  - tests/integration
-contracts:
-  - contracts/openapi.yaml
-conformance:
-  chart_ref: chart.yaml
-  semver: "0.1.0"
+manifest_version: "1.0"
+generated_at_utc: "2026-03-27T03:15:56.771341+00:00"
+root_id: "16_codex"
+shard_id: "01_identitaet_personen"
+implementation_status: "active"
+implementation_type: "python"
+entrypoints:
+  - "src/sot_validator.py"
+source_paths:
+  - "16_codex/shards/01_identitaet_personen/implementations/python/"
+test_paths:
+  []
+security_constraints:
+  - "hash_only"
+  - "non_custodial"
+  - "no_pii"
+owner: "SSID Architecture Board"
+last_verified_at: "2026-03-27T03:15:56.771341+00:00"
+parity_with_chart: true
+notes: "Real implementation - Phase 4+ vertical slice"

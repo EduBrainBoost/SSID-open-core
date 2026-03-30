@@ -1,0 +1,208 @@
+{
+  "version": 1,
+  "agents": [
+    {
+      "agent_id": "01_ssid_planner",
+      "filename": "01_ssid_planner.md",
+      "sha256": "3e49412704e3e952dfe380a6f41092e47250c6ddde7f85b5b7e663ebda1954c8",
+      "bytes": 1834,
+      "lines": 59
+    },
+    {
+      "agent_id": "02_scope_sentry",
+      "filename": "02_scope_sentry.md",
+      "sha256": "ddb3f294c0bd82673a57df2a498943fdc4f772b0415448c5eab6aeae40e01937",
+      "bytes": 1638,
+      "lines": 58
+    },
+    {
+      "agent_id": "03_patch_implementer",
+      "filename": "03_patch_implementer.md",
+      "sha256": "f092146a0cf9e127bf52668c64daf97e665aa1eb835a7b42c526443a7499f6bc",
+      "bytes": 1766,
+      "lines": 63
+    },
+    {
+      "agent_id": "04_gate_runner_auditor",
+      "filename": "04_gate_runner_auditor.md",
+      "sha256": "e5da2004ff7037b784e77d760fbfc7b861ca85deba9089b277fdd86bb92cf378",
+      "bytes": 1836,
+      "lines": 65
+    },
+    {
+      "agent_id": "05_security_compliance",
+      "filename": "05_security_compliance.md",
+      "sha256": "ca582a98b46cac981a9d4d626623860e4b7cac384ea935cfc6416ba14c6d3aa3",
+      "bytes": 1714,
+      "lines": 56
+    },
+    {
+      "agent_id": "06_evidence_worm",
+      "filename": "06_evidence_worm.md",
+      "sha256": "e902e6818089d30e3a72013623bf0929fcae515cc55c9271262ed4c980e97324",
+      "bytes": 1674,
+      "lines": 59
+    },
+    {
+      "agent_id": "07_pr_integrator",
+      "filename": "07_pr_integrator.md",
+      "sha256": "9cdcc4b94b4aa05c03a948e4a9d9ca42d0d78feecf63372d34b47a52b4bbe6d8",
+      "bytes": 1715,
+      "lines": 62
+    },
+    {
+      "agent_id": "08_ops_runner",
+      "filename": "08_ops_runner.md",
+      "sha256": "85bb68e29ba8df73dd8956d95b6e76d0f21bd9bc77f3376f1c4bc1837b1ba217",
+      "bytes": 1523,
+      "lines": 54
+    },
+    {
+      "agent_id": "09_content_writer",
+      "filename": "09_content_writer.md",
+      "sha256": "5a889bc16edbbbcd12ccd789f98e32b81f7935078b93812fafa2b806f3d661d1",
+      "bytes": 1481,
+      "lines": 52
+    },
+    {
+      "agent_id": "10_designer",
+      "filename": "10_designer.md",
+      "sha256": "70435f9d20796a7fd2621f8d99a4543f8617ef3a2078441e2131b249537dca4c",
+      "bytes": 1409,
+      "lines": 50
+    },
+    {
+      "agent_id": "11_board_manager",
+      "filename": "11_board_manager.md",
+      "sha256": "ff110f17855b4b95de721d7a4485e3549ce03f4d792206750a28df37e0c983aa",
+      "bytes": 1609,
+      "lines": 64
+    },
+    {
+      "agent_id": "12_test_runner",
+      "filename": "12_test_runner.md",
+      "sha256": "7b024cbfe7a3c1d9fdf727f502d853f0915daf6d68dab8afdec40f07008c79cb",
+      "bytes": 3405,
+      "lines": 138
+    },
+    {
+      "agent_id": "13_crypto_auditor",
+      "filename": "13_crypto_auditor.md",
+      "sha256": "31d21f55c91af255eb5256f673229cdac15b50259ff9bd138fc31c581706bad7",
+      "bytes": 2377,
+      "lines": 71
+    },
+    {
+      "agent_id": "14_compliance_officer",
+      "filename": "14_compliance_officer.md",
+      "sha256": "97ff576f0a6a422f770ac3aa4feb9afb11f3fe8096fae07e2c13259c51c305c7",
+      "bytes": 2556,
+      "lines": 72
+    },
+    {
+      "agent_id": "15_data_pipeline_engineer",
+      "filename": "15_data_pipeline_engineer.md",
+      "sha256": "f92750110fa0d150f4e0598b6e5761d9c411293f22253f629655e1b67d42c994",
+      "bytes": 2255,
+      "lines": 81
+    },
+    {
+      "agent_id": "16_identity_architect",
+      "filename": "16_identity_architect.md",
+      "sha256": "7a560a307dc5e7a5247ac286fb491d3f2bf9856c6cc1bcadbc1aa25e86369b8f",
+      "bytes": 2596,
+      "lines": 85
+    },
+    {
+      "agent_id": "17_observability_engineer",
+      "filename": "17_observability_engineer.md",
+      "sha256": "b1f7ccf7b07a0caa5c6aa73efe043bf781387e9881460213b366574c8de7726e",
+      "bytes": 2525,
+      "lines": 83
+    },
+    {
+      "agent_id": "18_infra_deployer",
+      "filename": "18_infra_deployer.md",
+      "sha256": "57f3475c0c8b304b7d959a9f6d0d43de2ea2251a28f0c8f675646a2a6a090b4d",
+      "bytes": 2530,
+      "lines": 85
+    },
+    {
+      "agent_id": "19_interop_specialist",
+      "filename": "19_interop_specialist.md",
+      "sha256": "6889245d0bebd741108327f13730d3b5fb268228cb1da670225b6b4b595e86f9",
+      "bytes": 2543,
+      "lines": 83
+    },
+    {
+      "agent_id": "20_documentation_curator",
+      "filename": "20_documentation_curator.md",
+      "sha256": "9d40aa78729819c269b12b5e0b0472e62a9351fd79029b429b8d66ba346fea3b",
+      "bytes": 2570,
+      "lines": 84
+    },
+    {
+      "agent_id": "21_debugger",
+      "filename": "21_debugger.md",
+      "sha256": "18630b75156d1c9cc8a2d967f58195def7cd8e2819b4a7b2d8e11cebc3d69851",
+      "bytes": 2318,
+      "lines": 74
+    },
+    {
+      "agent_id": "22_code_reviewer",
+      "filename": "22_code_reviewer.md",
+      "sha256": "c1d3a2b34cb054f79f9f3189b6c52f0241745f23009b02b3ef1e8ffa2af69723",
+      "bytes": 2136,
+      "lines": 68
+    },
+    {
+      "agent_id": "23_research_engineer",
+      "filename": "23_research_engineer.md",
+      "sha256": "e86fca62b550c3de980351f0cbc91414a82480dd4f758a8c77045d52c0091eab",
+      "bytes": 2057,
+      "lines": 66
+    },
+    {
+      "agent_id": "24_api_specialist",
+      "filename": "24_api_specialist.md",
+      "sha256": "cb72737c4fa0dc8c2e50bbbf2aab8b258c57498d56f6fb6691028cbf4aae8a3e",
+      "bytes": 2007,
+      "lines": 76
+    },
+    {
+      "agent_id": "25_devops_engineer",
+      "filename": "25_devops_engineer.md",
+      "sha256": "fe1c82958d55e66a97191fdc14fd2d3c3f1622bf6cdf64b9049b86e3476279ca",
+      "bytes": 2077,
+      "lines": 74
+    },
+    {
+      "agent_id": "26_ux_designer",
+      "filename": "26_ux_designer.md",
+      "sha256": "a969df04d0eaac0362b7d7603fb1a019f1bee8ab3e6971c734e45399c365e31a",
+      "bytes": 1917,
+      "lines": 72
+    },
+    {
+      "agent_id": "27_legal_analyst",
+      "filename": "27_legal_analyst.md",
+      "sha256": "8ab423cd71541c94c60029ac91d44ba9c46a22302fb4ae6edb04e00526dc0dfc",
+      "bytes": 2317,
+      "lines": 67
+    },
+    {
+      "agent_id": "28_performance_engineer",
+      "filename": "28_performance_engineer.md",
+      "sha256": "3f4f83f0fb96c86b43bd1b1bc0a4929343df8a91963f6c36ab12b91a5faa10ab",
+      "bytes": 2335,
+      "lines": 72
+    },
+    {
+      "agent_id": "29_autoresearcher",
+      "filename": "29_autoresearcher.md",
+      "sha256": "6a37ecc92f3b0de2f25fecbe41e812d575335679ca5826ff05fa0a7737c41810",
+      "bytes": 3492,
+      "lines": 102
+    }
+  ]
+}

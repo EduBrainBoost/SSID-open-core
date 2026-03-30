@@ -1,0 +1,127 @@
+{
+  "$schema": "urn:ssid:registry:admin_auth:v1",
+  "registry_type": "admin_auth_rbac",
+  "version": "1.0.0",
+  "created": "2026-03-28T00:00:00Z",
+  "description": "Auth and RBAC registry for the SSID Admin Dashboard. Defines roles, permissions, auth methods, and session policies.",
+  "auth_methods": {
+    "primary": {
+      "type": "jwt",
+      "algorithm": "RS256",
+      "issuer": "ssid-auth",
+      "token_lifetime_seconds": 3600,
+      "refresh_lifetime_seconds": 86400,
+      "key_rotation_policy": "quarterly"
+    },
+    "mtls": {
+      "type": "mutual_tls",
+      "required_for": ["api_to_api"],
+      "ca_cert_ref": "vault://ssid/ca-cert",
+      "min_tls_version": "1.3"
+    },
+    "did_session": {
+      "type": "did_session_token",
+      "required_for": ["identity_endpoints"],
+      "did_method": "did:ssid",
+      "verification": "post_quantum_dilithium"
+    }
+  },
+  "roles": {
+    "super_admin": {
+      "description": "Full system access. Can manage all components, users, and policies.",
+      "permissions": [
+        "admin:read",
+        "admin:write",
+        "admin:delete",
+        "evidence:read",
+        "evidence:verify",
+        "policy:read",
+        "policy:write",
+        "sessions:read",
+        "sessions:terminate",
+        "identity:read",
+        "scorecard:read",
+        "users:manage",
+        "roles:manage"
+      ],
+      "max_concurrent_sessions": 2,
+      "session_timeout_minutes": 30,
+      "mfa_required": true
+    },
+    "admin": {
+      "description": "Standard admin. Can read all data and manage components.",
+      "permissions": [
+        "admin:read",
+        "admin:write",
+        "evidence:read",
+        "evidence:verify",
+        "policy:read",
+        "sessions:read",
+        "identity:read",
+        "scorecard:read"
+      ],
+      "max_concurrent_sessions": 3,
+      "session_timeout_minutes": 60,
+      "mfa_required": true
+    },
+    "auditor": {
+      "description": "Read-only access to evidence and policy status for compliance audits.",
+      "permissions": [
+        "evidence:read",
+        "evidence:verify",
+        "policy:read",
+        "scorecard:read"
+      ],
+      "max_concurrent_sessions": 5,
+      "session_timeout_minutes": 120,
+      "mfa_required": true
+    },
+    "observer": {
+      "description": "Machine role for the observer daemon. Read-only metrics and health.",
+      "permissions": [
+        "admin:read",
+        "scorecard:read"
+      ],
+      "max_concurrent_sessions": 1,
+      "session_timeout_minutes": 0,
+      "mfa_required": false,
+      "auth_method": "mtls"
+    },
+    "readonly": {
+      "description": "Minimal read-only access for monitoring dashboards.",
+      "permissions": [
+        "admin:read"
+      ],
+      "max_concurrent_sessions": 10,
+      "session_timeout_minutes": 120,
+      "mfa_required": false
+    }
+  },
+  "session_policy": {
+    "idle_timeout_minutes": 15,
+    "absolute_timeout_minutes": 480,
+    "concurrent_session_enforcement": "deny_new",
+    "token_storage": "httponly_cookie",
+    "csrf_protection": "double_submit_cookie",
+    "session_binding": "ip_and_user_agent"
+  },
+  "pii_policy": {
+    "storage": "never",
+    "hash_algorithm": "sha3-256",
+    "display": "hash_only",
+    "note": "Non-custodial: NIEMALS PII speichern, nur SHA3-256-Hashes"
+  },
+  "crypto_standards": {
+    "symmetric": "AES-256-GCM",
+    "asymmetric": "Kyber-1024",
+    "signatures": "Dilithium-5",
+    "hashing": "SHA3-256",
+    "key_derivation": "Argon2id"
+  },
+  "components": {
+    "jwt_middleware": { "path": "14_zero_time_auth/admin_rbac/jwt_middleware.py", "sha256": "PENDING_BUILD_HASH" },
+    "rbac_engine": { "path": "14_zero_time_auth/admin_rbac/rbac_engine.py", "sha256": "PENDING_BUILD_HASH" },
+    "session_manager": { "path": "14_zero_time_auth/admin_rbac/session_manager.py", "sha256": "PENDING_BUILD_HASH" },
+    "did_verifier": { "path": "14_zero_time_auth/admin_rbac/did_verifier.py", "sha256": "PENDING_BUILD_HASH" }
+  }
+}

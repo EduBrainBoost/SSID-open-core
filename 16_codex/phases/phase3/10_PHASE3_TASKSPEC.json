@@ -1,0 +1,30 @@
+{
+  "task_id": "phase3_manifest_materialization",
+  "timestamp_utc": "2026-03-26T20:09:26Z",
+  "objective": "Classify all shards and generate manifest.yaml only for READY_FOR_MANIFEST implementations",
+  "inputs": [
+    "canonical_sot",
+    "phase0_outputs",
+    "phase1_outputs",
+    "phase2_outputs"
+  ],
+  "constraints": [
+    "root_24_lock",
+    "safe_fix",
+    "contract_first",
+    "no_fake_manifests",
+    "evidence_required"
+  ],
+  "deliverables": [
+    "manifest_eligibility_matrix",
+    "implementation_readiness_matrix_csv",
+    "phase3_registry_json",
+    "phase3_audit_report_json"
+  ],
+  "definition_of_done": [
+    "384 shards classified",
+    "only real implementations receive manifests",
+    "registry and evidence updated",
+    "phase status explicit"
+  ]
+}

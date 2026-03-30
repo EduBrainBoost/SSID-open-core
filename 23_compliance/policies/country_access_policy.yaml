@@ -1,0 +1,183 @@
+# SSID Country Access Policy
+# SoT v4.1.0 | ROOT-24-LOCK | Module: 23_compliance
+#
+# Defines country access tiers for SSID services.
+# Enforcement mode: FAIL_CLOSED (deny by default, allow only listed tiers)
+#
+# Cross-ref: 23_compliance/policies/jurisdiction_blacklist.yaml
+# Cross-ref: 23_compliance/jurisdictions/global_sanctions.py
+
+version: "1.0.0"
+policy_id: "country_access_policy"
+status: active
+last_updated: "2026-03-29"
+review_cycle: "quarterly"
+enforcement: fail_closed
+
+principle: >
+  Access to SSID services is governed by a tiered country classification.
+  The default posture is fail_closed: any jurisdiction not explicitly listed
+  in allowed or amber is denied unless individually reviewed and approved.
+
+tiers:
+  allowed:
+    description: "Full access to all SSID services without additional restrictions"
+    countries:
+      # EU Member States
+      - code: "AT"
+        name: "Austria"
+      - code: "BE"
+        name: "Belgium"
+      - code: "BG"
+        name: "Bulgaria"
+      - code: "HR"
+        name: "Croatia"
+      - code: "CY"
+        name: "Cyprus"
+      - code: "CZ"
+        name: "Czech Republic"
+      - code: "DK"
+        name: "Denmark"
+      - code: "EE"
+        name: "Estonia"
+      - code: "FI"
+        name: "Finland"
+      - code: "FR"
+        name: "France"
+      - code: "DE"
+        name: "Germany"
+      - code: "GR"
+        name: "Greece"
+      - code: "HU"
+        name: "Hungary"
+      - code: "IE"
+        name: "Ireland"
+      - code: "IT"
+        name: "Italy"
+      - code: "LV"
+        name: "Latvia"
+      - code: "LT"
+        name: "Lithuania"
+      - code: "LU"
+        name: "Luxembourg"
+      - code: "MT"
+        name: "Malta"
+      - code: "NL"
+        name: "Netherlands"
+      - code: "PL"
+        name: "Poland"
+      - code: "PT"
+        name: "Portugal"
+      - code: "RO"
+        name: "Romania"
+      - code: "SK"
+        name: "Slovakia"
+      - code: "SI"
+        name: "Slovenia"
+      - code: "ES"
+        name: "Spain"
+      - code: "SE"
+        name: "Sweden"
+      # EEA (non-EU)
+      - code: "IS"
+        name: "Iceland"
+      - code: "LI"
+        name: "Liechtenstein"
+      - code: "NO"
+        name: "Norway"
+      # Additional
+      - code: "CH"
+        name: "Switzerland"
+      - code: "GB"
+        name: "United Kingdom"
+
+  restricted:
+    description: "Access permitted only with enhanced due diligence (EDD)"
+    enforcement: "enhanced_due_diligence"
+    requirements:
+      - "manual_identity_verification"
+      - "source_of_funds_documentation"
+      - "ongoing_monitoring"
+      - "quarterly_review"
+    countries:
+      - code: "RU"
+        name: "Russia (Russian Federation)"
+        note: "Sub-regions RU_CRIMEA, RU_DNR, RU_LNR are denied (see jurisdiction_blacklist.yaml)"
+      - code: "BY"
+        name: "Belarus"
+      - code: "VE"
+        name: "Venezuela"
+      - code: "AF"
+        name: "Afghanistan"
+      - code: "MM"
+        name: "Myanmar (Burma)"
+      - code: "YE"
+        name: "Yemen"
+      - code: "ZW"
+        name: "Zimbabwe"
+    cross_ref: "23_compliance/policies/jurisdiction_blacklist.yaml#high_risk"
+
+  denied:
+    description: "Full embargo -- no SSID services permitted"
+    enforcement: "deny"
+    override: "requires_rfc_and_legal_counsel"
+    countries:
+      - code: "IR"
+        name: "Iran (Islamic Republic of)"
+      - code: "KP"
+        name: "North Korea (Democratic People's Republic of Korea)"
+      - code: "SY"
+        name: "Syria (Syrian Arab Republic)"
+      - code: "CU"
+        name: "Cuba"
+    sanctioned_regions:
+      - code: "RU_CRIMEA"
+        name: "Crimea Region (Ukraine, occupied)"
+      - code: "RU_DNR"
+        name: "Donetsk People's Republic (Ukraine, occupied)"
+      - code: "RU_LNR"
+        name: "Luhansk People's Republic (Ukraine, occupied)"
+    cross_ref:
+      - "23_compliance/policies/jurisdiction_blacklist.yaml#blacklisted"
+      - "23_compliance/jurisdictions/global_sanctions.py"
+
+  amber:
+    description: "Case-by-case review required before granting access"
+    enforcement: "manual_review"
+    requirements:
+      - "compliance_officer_approval"
+      - "risk_assessment_documentation"
+      - "legal_review_where_applicable"
+    countries:
+      - code: "TR"
+        name: "Turkey"
+        reason: "FATF grey list monitoring"
+      - code: "AE"
+        name: "United Arab Emirates"
+        reason: "Elevated financial crime risk"
+      - code: "SA"
+        name: "Saudi Arabia"
+        reason: "Regulatory uncertainty for digital identity"
+      - code: "NG"
+        name: "Nigeria"
+        reason: "FATF grey list monitoring"
+      - code: "ZA"
+        name: "South Africa"
+        reason: "FATF grey list monitoring"
+      - code: "PH"
+        name: "Philippines"
+        reason: "FATF grey list monitoring"
+
+enforcement_rules:
+  default_action: "deny"
+  unlisted_jurisdiction: "denied_until_classified"
+  classification_request: "compliance_officer_review"
+  review_sla_days: 14
+  audit_trail: "02_audit_logging/reports/"
+
+# Cross-references:
+#   - 23_compliance/policies/jurisdiction_blacklist.yaml
+#   - 23_compliance/jurisdictions/global_sanctions.py
+#   - 23_compliance/compliance_matrix_global.yaml
+#   - 23_compliance/frameworks/fatf/
+#   - 09_meta_identity/docs/trust_framework.yaml

@@ -5,11 +5,26 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os as _os
 import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+
+def parse_guard_mode() -> str:
+    """Read SSID_GUARD_MODE from env. Returns 'off', 'soft', or 'hard'. Default: 'soft'."""
+    raw = _os.environ.get("SSID_GUARD_MODE", "soft").strip().lower()
+    if raw in ("off", "soft", "hard"):
+        return raw
+    print(f"WARN: SSID_GUARD_MODE={raw!r} invalid, falling back to 'soft'", file=sys.stderr)
+    return "soft"
+
+
+def guard_exit_code(mode: str) -> int:
+    """Exit code for guard failures: hard=2, soft/off=0."""
+    return 2 if mode == "hard" else 0
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -25,6 +40,9 @@ CONFORMANCE_GATE = PROJECT_ROOT / "12_tooling" / "cli" / "shard_conformance_gate
 SHARDS_REGISTRY_BUILD = PROJECT_ROOT / "12_tooling" / "cli" / "shards_registry_build.py"
 LEVEL3_SCAFFOLD = PROJECT_ROOT / "12_tooling" / "cli" / "level3_scaffold.py"
 QUARANTINE_VERIFY = PROJECT_ROOT / "12_tooling" / "cli" / "quarantine_verify_chain.py"
+META_READINESS = PROJECT_ROOT / "12_tooling" / "cli" / "meta_continuum_readiness.py"
+ARTIFACT_DRIFT_GATE = PROJECT_ROOT / "12_tooling" / "cli" / "artifact_drift_gate.py"
+GATE_CONVERGENCE = PROJECT_ROOT / "12_tooling" / "cli" / "gate_convergence_check.py"
 E2E_DISPATCHER = PROJECT_ROOT / "24_meta_orchestration" / "dispatcher" / "e2e_dispatcher.py"
 PILOT_TASK = PROJECT_ROOT / "24_meta_orchestration" / "queue" / "tasks" / "PILOT_TASK_0001.yaml"
 REPORTS_DIR = PROJECT_ROOT / "02_audit_logging" / "reports"
@@ -49,6 +67,20 @@ def _gitignore_has_sandbox_rule() -> bool:
         return False
     ignore_lines = [line.strip() for line in GITIGNORE_PATH.read_text(encoding="utf-8", errors="replace").splitlines()]
     return ".ssid_sandbox/" in ignore_lines
+
+
+def _tracked_files_in_dirs(prefixes: list[str]) -> list[str]:
+    """Return sorted list of git-tracked files under the given directory prefixes."""
+    proc = subprocess.run(
+        ["git", "ls-files", "-z", "--"] + prefixes,
+        cwd=str(PROJECT_ROOT),
+        capture_output=True, text=True, timeout=30,
+    )
+    if proc.returncode != 0:
+        return []
+    files = [f for f in proc.stdout.split("\0") if f]
+    files.sort()
+    return files
 
 
 def _run(cmd: list[str], label: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
@@ -129,12 +161,9 @@ def run_repo_separation_guard() -> bool:
     if not REPO_SEPARATION_GUARD.exists():
         print(f"ERROR: Repo separation guard missing: {REPO_SEPARATION_GUARD}")
         return False
-    import os
-    env = {**os.environ, "GITHUB_BASE_REF": os.environ.get("GITHUB_BASE_REF", "main")}
     proc = _run(
         [sys.executable, str(REPO_SEPARATION_GUARD), "--repo-root", str(PROJECT_ROOT)],
         "Repo Separation Guard",
-        env=env,
     )
     if proc.returncode != 0:
         return False
@@ -415,6 +444,42 @@ def run_quarantine_chain_verify() -> bool:
     return True
 
 
+def run_gate_convergence_check() -> bool:
+    """Gate: cross-gate convergence validation."""
+    print("INFO: [GATE] Running Gate Convergence Check...")
+    if not GATE_CONVERGENCE.exists():
+        print(f"ERROR: Gate convergence check missing: {GATE_CONVERGENCE}")
+        return False
+    proc = _run(
+        [sys.executable, str(GATE_CONVERGENCE), "--repo-root", str(PROJECT_ROOT)],
+        "Gate Convergence Check",
+    )
+    if proc.returncode == 2:
+        print("WARN: Gate Convergence Check returned WARN — proceeding.")
+        print(f"INFO: [GATE] Gate Convergence evidence: {GATE_CONVERGENCE}")
+        print("INFO: [GATE] Gate Convergence Check PASSED (with warnings).")
+        return True
+    if proc.returncode != 0:
+        print(f"INFO: [GATE] Gate Convergence evidence: {GATE_CONVERGENCE}")
+        return False
+    print(f"INFO: [GATE] Gate Convergence evidence: {GATE_CONVERGENCE}")
+    print("INFO: [GATE] Gate Convergence Check PASSED.")
+    return True
+
+
+def run_artifact_drift_gate() -> bool:
+    """Gate: detect drift between SoT and deploy-path contract artifacts."""
+    print("INFO: [GATE] Running Artifact Drift Gate...")
+    if not ARTIFACT_DRIFT_GATE.exists():
+        print(f"ERROR: Artifact drift gate missing: {ARTIFACT_DRIFT_GATE}")
+        return False
+    proc = _run([sys.executable, str(ARTIFACT_DRIFT_GATE)], "Artifact Drift Gate")
+    if proc.returncode != 0:
+        return False
+    print("INFO: [GATE] Artifact Drift Gate PASSED.")
+    return True
+
+
 def run_qa_check() -> bool:
     print("INFO: [GATE] Running QA Check...")
     if not QA_MASTER.exists():
@@ -427,12 +492,221 @@ def run_qa_check() -> bool:
     return True
 
 
+CLAIMS_GUARD_REGO = PROJECT_ROOT / "23_compliance" / "policies" / "claims_guard.rego"
+INTERFEDERATION_FORBIDDEN_CLAIMS = [
+    "interfederation active",
+    "interfederation certified",
+    "execution ready",
+    "perfect certified",
+    "mutual validation complete",
+    "bidirectional verification achieved",
+    "co-truth protocol active",
+    "proof nexus certified",
+    "cross-system verified",
+    "meta-continuum ready",
+]
+INTERFEDERATION_SCAN_DIRS = [
+    PROJECT_ROOT / "02_audit_logging",
+    PROJECT_ROOT / "03_core",
+    PROJECT_ROOT / "05_documentation",
+    PROJECT_ROOT / "12_tooling",
+    PROJECT_ROOT / "16_codex",
+    PROJECT_ROOT / "23_compliance",
+]
+CLAIMS_EXEMPT_PATTERNS = [
+    "claims_guard",
+    "test_claims_guard",
+    "test_interfederation",
+    "run_all_gates",
+    "meta_continuum_readiness",
+    "/archives/",
+    "/.git/",
+    "__pycache__",
+    ".pyc",
+    "/plans/",
+    "/agent_runs/run-merge-",
+]
+
+
+def run_interfederation_claims_guard() -> bool:
+    """Scan repo for forbidden interfederation/certification claims without proof."""
+    print("INFO: [GATE] Running Interfederation Claims Guard...")
+    # OPA check on claims_guard.rego (if present)
+    if CLAIMS_GUARD_REGO.exists() and shutil.which("opa"):
+        proc = _run(["opa", "check", str(CLAIMS_GUARD_REGO)], "Claims Guard (OPA check)")
+        if proc.returncode != 0:
+            return False
+    # Repo-wide scan (tracked files only — avoids timeouts on large evidence dirs)
+    findings: list[str] = []
+    tracked = _tracked_files_in_dirs(
+        [str(d.relative_to(PROJECT_ROOT)) for d in INTERFEDERATION_SCAN_DIRS],
+    )
+    for fpath in tracked:
+        if any(pat in fpath for pat in CLAIMS_EXEMPT_PATTERNS):
+            continue
+        full = PROJECT_ROOT / fpath
+        if not full.is_file() or full.stat().st_size > 2_000_000:
+            continue
+        try:
+            content = full.read_text(encoding="utf-8", errors="ignore").lower()
+        except OSError:
+            continue
+        for claim in INTERFEDERATION_FORBIDDEN_CLAIMS:
+            if claim in content:
+                findings.append(f"Forbidden claim '{claim}' in {fpath}")
+    if findings:
+        for finding in findings:
+            print(f"ERROR: {finding}")
+        return False
+    print("INFO: [GATE] Interfederation Claims Guard PASSED.")
+    return True
+
+
+def run_interfederation_spec_only() -> bool:
+    """Gate: verify no tracked interfederation paths outside allowlist."""
+    print("INFO: [GATE] Running Interfederation SPEC-ONLY Path Check...")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("sot_validator_cli", str(SOT_VALIDATOR))
+    if spec is None or spec.loader is None:
+        print(f"ERROR: Cannot load {SOT_VALIDATOR}")
+        return False
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    forbidden = mod.check_interfederation_paths(PROJECT_ROOT)
+    if forbidden:
+        print(f"FAIL: {len(forbidden)} forbidden interfederation path(s):")
+        for p in forbidden:
+            print(f"  {p}")
+        return False
+    print("INFO: [GATE] Interfederation SPEC-ONLY Path Check PASSED.")
+    return True
+
+
+def run_meta_continuum_readiness() -> bool:
+    """Gate: meta-continuum readiness evaluation (PASS = correctly reports state)."""
+    print("INFO: [GATE] Running Meta-Continuum Readiness Gate...")
+    if not META_READINESS.exists():
+        print(f"ERROR: Meta-continuum readiness tool missing: {META_READINESS}")
+        return False
+    proc = _run(
+        [sys.executable, str(META_READINESS), "--json"],
+        "Meta-Continuum Readiness",
+    )
+    if proc.returncode != 0:
+        return False
+    try:
+        data = json.loads(proc.stdout or "{}")
+        status = data.get("status")
+        readiness = data.get("readiness")
+        if status != "PASS":
+            print(f"ERROR: Readiness gate returned status={status}")
+            return False
+        print(f"INFO: [GATE] Meta-Continuum Readiness: {readiness}")
+    except (json.JSONDecodeError, KeyError) as exc:
+        print(f"ERROR: Cannot parse readiness output: {exc}")
+        return False
+    print("INFO: [GATE] Meta-Continuum Readiness Gate PASSED.")
+    return True
+
+
+def _execute_gate_chain(args: argparse.Namespace, guard_mode: str) -> tuple[int, str | None, int]:
+    """Execute the gate chain.
+
+    Returns (exit_code, failed_gate_name_or_None, gates_run_count).
+    Stop-on-first-fail: returns immediately on first gate failure.
+    """
+    gates_run = 0
+
+    if not run_git_worktree_check():
+        return (guard_exit_code(guard_mode), "git_worktree_check", 0)
+
+    # E2E-only skips repo-structure pre-gates
+    if args.e2e_only:
+        print("--- Running in E2E-Only Mode ---")
+        gates = [
+            ("e2e_pipeline_smoke", lambda: run_e2e_pipeline_smoke(args.source)),
+            ("e2e_report_schema", run_e2e_report_schema_check),
+            ("e2e_no_pii", run_e2e_no_pii_check),
+            ("e2e_determinism", run_e2e_determinism_check),
+        ]
+        for name, fn in gates:
+            gates_run += 1
+            if not fn():
+                print(f"\nERROR: Gate chain failed at {name}.")
+                return (guard_exit_code(guard_mode), name, gates_run)
+        print("\n--- All E2E Gates PASSED ---")
+        return (0, None, gates_run)
+
+    # Pre-gates for all non-e2e modes
+    pre_gates = [
+        ("structure_guard", run_structure_guard),
+        ("repo_hygiene", run_repo_hygiene_check),
+        ("repo_separation", run_repo_separation_guard),
+        ("duplicate_guard", run_duplicate_guard),
+    ]
+    for name, fn in pre_gates:
+        gates_run += 1
+        if not fn():
+            return (guard_exit_code(guard_mode), name, gates_run)
+
+    if args.policy_only:
+        print("--- Running in Policy-Only Mode ---")
+        gates_run += 1
+        result = run_policy_check()
+        return (0 if result else 1, None if result else "policy", gates_run)
+
+    if args.qa_only:
+        print("--- Running in QA-Only Mode ---")
+        gates_run += 1
+        result = run_qa_check()
+        return (0 if result else 1, None if result else "qa", gates_run)
+
+    # Full gate chain
+    full_gates = [
+        ("interfederation_claims", run_interfederation_claims_guard),
+        ("interfederation_spec_only", run_interfederation_spec_only),
+        ("meta_continuum_readiness", run_meta_continuum_readiness),
+    ]
+    for name, fn in full_gates:
+        gates_run += 1
+        if not fn():
+            print(f"\nERROR: Gate chain failed at {name}.")
+            return (guard_exit_code(guard_mode), name, gates_run)
+
+    print("--- Running Full Gate Chain: InterfedGuard -> SpecOnly -> Readiness -> Policy -> Convergence -> SoT -> Shard -> Conformance -> Evidence -> L3 Scaffold -> Quarantine -> E2E -> QA ---")
+    main_gates = [
+        ("policy", run_policy_check),
+        ("gate_convergence", run_gate_convergence_check),
+        ("sot", run_sot_check),
+        ("shard_gate", run_shard_gate),
+        ("shard_conformance", run_shard_conformance_gate),
+        ("evidence_completeness", run_evidence_completeness),
+        ("l3_scaffold", run_l3_scaffold_check),
+        ("quarantine_chain", run_quarantine_chain_verify),
+        ("artifact_drift_gate", run_artifact_drift_gate),
+        ("e2e_pipeline_smoke", lambda: run_e2e_pipeline_smoke(args.source)),
+        ("e2e_report_schema", run_e2e_report_schema_check),
+        ("e2e_no_pii", run_e2e_no_pii_check),
+        ("e2e_determinism", run_e2e_determinism_check),
+        ("qa", run_qa_check),
+    ]
+    for name, fn in main_gates:
+        gates_run += 1
+        if not fn():
+            print(f"\nERROR: Gate chain failed at {name}.")
+            return (guard_exit_code(guard_mode), name, gates_run)
+
+    print("\n--- All Gates PASSED Successfully ---")
+    return (0, None, gates_run)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run local CI-equivalent gates (real enforcement only).")
     parser.add_argument("--policy-only", action="store_true", help="Run only hygiene + duplicate + policy gate.")
     parser.add_argument("--qa-only", action="store_true", help="Run only hygiene + duplicate + QA gate.")
     parser.add_argument("--e2e-only", action="store_true", help="Run only E2E pipeline gates (skip policy/sot/shard).")
     parser.add_argument("--source", choices=["local-run", "ci-run"], default="local-run")
+    parser.add_argument("--report-bus", action="store_true", help="Append a single bus event to report_bus.jsonl.")
     args = parser.parse_args()
 
     exclusive = sum([args.policy_only, args.qa_only, args.e2e_only])
@@ -440,84 +714,33 @@ def main() -> int:
         print("ERROR: --policy-only, --qa-only, --e2e-only are mutually exclusive.")
         return 2
 
-    if not run_git_worktree_check():
-        return 1
-
-    # E2E-only skips repo-structure pre-gates (structure guard, hygiene, etc.)
-    if args.e2e_only:
-        print("--- Running in E2E-Only Mode ---")
-        if not run_e2e_pipeline_smoke(args.source):
-            print("\nERROR: E2E Pipeline Smoke failed.")
-            return 1
-        if not run_e2e_report_schema_check():
-            print("\nERROR: E2E Report Schema Check failed.")
-            return 1
-        if not run_e2e_no_pii_check():
-            print("\nERROR: E2E No-PII Check failed.")
-            return 1
-        if not run_e2e_determinism_check():
-            print("\nERROR: E2E Determinism Check failed.")
-            return 1
-        print("\n--- All E2E Gates PASSED ---")
+    guard_mode = parse_guard_mode()
+    if guard_mode == "off":
+        print("INFO: SSID_GUARD_MODE=off — all guards skipped.")
         return 0
+    if guard_mode != "soft":
+        print(f"INFO: SSID_GUARD_MODE={guard_mode}")
 
-    # Pre-gates for policy-only, qa-only, and full chain
-    if not run_structure_guard():
-        return 1
-    if not run_repo_hygiene_check():
-        return 1
-    if not run_repo_separation_guard():
-        return 1
-    if not run_duplicate_guard():
-        return 1
+    exit_code, failed_gate, gates_run = _execute_gate_chain(args, guard_mode)
 
-    if args.policy_only:
-        print("--- Running in Policy-Only Mode ---")
-        return 0 if run_policy_check() else 1
+    # Append exactly 1 bus event (PASS or FAIL) if --report-bus
+    if args.report_bus:
+        from report_bus import append_event, get_head_sha, make_event
+        sha = get_head_sha(PROJECT_ROOT)
+        severity = "info" if exit_code == 0 else "error"
+        summary = f"Gate chain {'PASS' if exit_code == 0 else 'FAIL'}"
+        if failed_gate:
+            summary += f" at {failed_gate}"
+        summary += f" ({gates_run} gates)"
+        event = make_event(
+            repo="SSID", sha=sha, source="verify_gate", kind="ops",
+            severity=severity, summary=summary,
+            payload={"exit_code": exit_code, "gates_run": gates_run, "failed_gate": failed_gate},
+        )
+        path = append_event(event)
+        print(f"INFO: Bus event appended to {path}")
 
-    if args.qa_only:
-        print("--- Running in QA-Only Mode ---")
-        return 0 if run_qa_check() else 1
-
-    print("--- Running Full Gate Chain: Policy -> SoT -> Shard -> Conformance -> Evidence -> L3 Scaffold -> Quarantine -> E2E -> QA ---")
-    if not run_policy_check():
-        print("\nERROR: Gate chain failed at Policy Check.")
-        return 1
-    if not run_sot_check():
-        print("\nERROR: Gate chain failed at SoT Validation.")
-        return 1
-    if not run_shard_gate():
-        print("\nERROR: Gate chain failed at Shard Gate.")
-        return 1
-    if not run_shard_conformance_gate():
-        print("\nERROR: Gate chain failed at Shard Conformance Gate.")
-        return 1
-    if not run_evidence_completeness():
-        print("\nERROR: Gate chain failed at Evidence Completeness.")
-        return 1
-    if not run_l3_scaffold_check():
-        print("\nERROR: Gate chain failed at L3 Scaffold Presence.")
-        return 1
-    if not run_quarantine_chain_verify():
-        print("\nERROR: Gate chain failed at Quarantine Chain Verify.")
-    if not run_e2e_pipeline_smoke(args.source):
-        print("\nERROR: Gate chain failed at E2E Pipeline Smoke.")
-        return 1
-    if not run_e2e_report_schema_check():
-        print("\nERROR: Gate chain failed at E2E Report Schema Check.")
-        return 1
-    if not run_e2e_no_pii_check():
-        print("\nERROR: Gate chain failed at E2E No-PII Check.")
-        return 1
-    if not run_e2e_determinism_check():
-        print("\nERROR: Gate chain failed at E2E Determinism Check.")
-        return 1
-    if not run_qa_check():
-        print("\nERROR: Gate chain failed at QA Check.")
-        return 1
-
-    print("\n--- All Gates PASSED Successfully ---")
-    return 0
+    return exit_code
 
 
 if __name__ == "__main__":

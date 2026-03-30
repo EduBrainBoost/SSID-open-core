@@ -1,5 +1,0 @@
-policy_id: 23_compliance.10_finanzen_banking.baseline_policy
-root_id: 23_compliance
-shard_id: 10_finanzen_banking
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

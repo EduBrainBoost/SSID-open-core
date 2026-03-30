@@ -1,0 +1,69 @@
+{
+  "fixtures": [
+    {
+      "name": "fixture_healthy.json",
+      "state": "healthy",
+      "sha256": "ced6548be4222737245a6f17a4525df4be5b3be2a7d125050661037dda2ec805",
+      "expected_exit_code": 0,
+      "expected_overall_classification": "healthy",
+      "expected_contract_status": "valid",
+      "operator_action": "No action required. System is operating normally.",
+      "valid_for_schema": true
+    },
+    {
+      "name": "fixture_denied.json",
+      "state": "denied",
+      "sha256": "a466796d3b427a5ad15e0120dbe890be7c79ee83d6845a5465ce0fc96a2cc4f9",
+      "expected_exit_code": 1,
+      "expected_overall_classification": "denied",
+      "expected_contract_status": "valid",
+      "operator_action": "REQUIRED: Review PolicyDecisionPayload.reason. Escalate to compliance team or fix upstream inputs.",
+      "valid_for_schema": true
+    },
+    {
+      "name": "fixture_degraded.json",
+      "state": "degraded",
+      "sha256": "ade425b27286999a81298efd629f601248e1325f191532b0edfe84969fb34185",
+      "expected_exit_code": 2,
+      "expected_overall_classification": "degraded",
+      "expected_contract_status": "valid",
+      "operator_action": "RECOMMENDED: Check ModuleHealthPayload.detail for affected modules. Restore dependencies and re-probe.",
+      "valid_for_schema": true
+    },
+    {
+      "name": "fixture_invalid_schema.json",
+      "state": "invalid_schema",
+      "sha256": "f2213106a1d0fe47baed17e241cde16088c73e39dc1020097377541f1a0105b5",
+      "expected_exit_code": 5,
+      "expected_overall_classification": "error",
+      "expected_contract_status": "incomplete",
+      "operator_action": "REQUIRED: Update EMS consumer to match new schema. Review CHANGELOG for breaking changes.",
+      "valid_for_schema": false
+    },
+    {
+      "name": "fixture_version_mismatch.json",
+      "state": "version_mismatch",
+      "sha256": "1c5cb51c9f76ffa4d45a05f7a45c6a4c4ded3990060a75b8dd5fe5b2636a47f4",
+      "expected_exit_code": 4,
+      "expected_overall_classification": "error",
+      "expected_contract_status": "version_mismatch",
+      "operator_action": "REQUIRED: Align SSID and EMS versions. Check CONTRACT_GOVERNANCE.md for migration steps.",
+      "valid_for_schema": false
+    },
+    {
+      "name": "fixture_incomplete.json",
+      "state": "incomplete",
+      "sha256": "f9119493d058e43ca9370f21c9481d6c87e5bf24b3af95a03e9f77d4e816df10",
+      "expected_exit_code": 5,
+      "expected_overall_classification": "error",
+      "expected_contract_status": "incomplete",
+      "operator_action": "REQUIRED: Report is missing required fields. Check SsidRuntimeReporter version.",
+      "valid_for_schema": false
+    }
+  ],
+  "schema_version": "1.0.0",
+  "generated_at": "2026-03-16T12:00:00+00:00",
+  "total_fixtures": 6,
+  "valid_fixtures": 3,
+  "invalid_fixtures": 3
+}

@@ -4,8 +4,8 @@
 
 | Variable | Description | Required For |
 |----------|-------------|-------------|
-| `RPC_URL` | JSON-RPC endpoint (e.g. Sepolia, Goerli) | deploy, verify, e2e |
-| `CHAIN_ID` | Target chain ID (e.g. 11155111 for Sepolia) | deploy |
+| `RPC_URL` | JSON-RPC endpoint (Polygon Amoy testnet) | deploy, verify, e2e |
+| `CHAIN_ID` | Target chain ID (80002 for Polygon Amoy) | deploy |
 | `PRIVATE_KEY` | Deployer wallet private key (hex, no 0x prefix) | deploy, verify |
 | `CONTRACT_ADDRESS` | Deployed ProofRegistry address | verify, e2e |
 
@@ -47,7 +47,7 @@ Skips gracefully when ENV vars are absent. No failures in CI.
 |---------|----------|
 | `RPC_URL not set` | Export RPC_URL with your testnet endpoint |
 | `PRIVATE_KEY not set` | Export hex private key (no 0x prefix) |
-| `Transaction reverted` | Check wallet has testnet ETH (faucet) |
+| `Transaction reverted` | Check wallet has testnet POL on Polygon Amoy (faucet) |
 | `Connection timeout` | Verify RPC endpoint is reachable |
 | `proof already exists` | Contract rejects duplicate hashes |
 

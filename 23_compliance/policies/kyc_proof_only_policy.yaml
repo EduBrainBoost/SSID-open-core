@@ -1,0 +1,65 @@
+# KYC Proof-Only Policy — Consolidated
+# SSID receives only cryptographic proof, never raw KYC data
+---
+version: "1.0.0"
+policy_id: "kyc_proof_only"
+status: active
+
+principle: >
+  Users pay KYC/verification providers directly.
+  SSID receives only cryptographic proof (hash attestation).
+  No raw KYC data is stored, transmitted, or processed by SSID.
+
+rules:
+  - id: "kyc_001_direct_payment"
+    description: "User pays verification provider directly, not through SSID"
+    enforcement: "smart_contract"
+    custodial: false
+
+  - id: "kyc_002_proof_only"
+    description: "SSID receives only proof hash, never PII or raw documents"
+    enforcement: "validator + policy"
+    data_stored: "sha3_256_hash_only"
+
+  - id: "kyc_003_no_raw_storage"
+    description: "No raw KYC data stored on-chain or off-chain by SSID"
+    enforcement: "hash_only_data.rego + non_custodial_enforcement.rego"
+
+  - id: "kyc_004_provider_direct"
+    description: "Provider receives payment and delivers verification directly to user"
+    enforcement: "verification_payment.sol"
+
+provider_hierarchy:
+  pilot_default: "didit"
+  strategic_order:
+    - rank: 1
+      provider: "d-trust-sign-me"
+      type: "eIDAS qualified"
+    - rank: 2
+      provider: "namirial"
+      type: "eIDAS qualified"
+    - rank: 3
+      provider: "infocert"
+      type: "eIDAS qualified"
+    - rank: 4
+      provider: "quadrata"
+      type: "web3 native"
+    - rank: 5
+      provider: "kilt"
+      type: "web3 native"
+  regulated_b2b_only:
+    - "idnow"
+    - "verimi"
+  deprecated:
+    - provider: "swisscom"
+      reason: "April 2026 service changes"
+  not_primary:
+    - "yoti"
+    - "blockpass"
+
+compliance_refs:
+  - "23_compliance/policies/non_custodial_enforcement.rego"
+  - "23_compliance/policies/hash_only_data.rego"
+  - "20_foundation/tokenomics/contracts/verification_payment.sol"
+  - "20_foundation/tokenomics/ssid_token_economics.yaml"
+  - "07_governance_legal/LEGAL_NON_CUSTODIAL_NOTICE.md"

@@ -1,0 +1,160 @@
+---
+# ORCHESTRATOR_HIERARCHY.yaml — T-019 WP2
+# Generated: 2026-03-29
+# Purpose: Defines the Claude Code Top-Orchestrator hierarchy (L0-L5)
+
+schema_version: "1.0.0"
+task_id: T-019
+generated: "2026-03-29T00:00:00Z"
+
+layers:
+  L0_top_orchestrator:
+    name: "Claude Code"
+    role: "Task Intake, Routing, Merge/Defer/Reject, Supervisor, Closure"
+    capabilities:
+      - task_intake
+      - routing
+      - repo_lock
+      - merge_decision
+      - supervisor_report
+      - closure
+      - conflict_resolution
+      - go_no_go
+    rules:
+      - "Kein Lauf ohne Task-ID"
+      - "Kein Lauf ohne Repo-Ziel"
+      - "Kein Agent ohne Sub-Orchestrator"
+      - "Kein Abschluss ohne Verifier"
+      - "Kein stilles Droppen"
+      - "append-only task ledger Pflicht"
+
+  L1_sub_orchestrators:
+    - id: structure_orchestrator
+      scope: "Root-24, Shards, manifests, docs, tests, path hygiene"
+      agents:
+        - ssidctl.l2.01_ai_layer
+        - ssidctl.l2.03_core
+        - ssidctl.l2.05_documentation
+        - ssidctl.l2.08_identity_score
+        - ssidctl.l2.09_meta_identity
+        - ssidctl.l2.10_interoperability
+        - ssidctl.l2.13_ui_layer
+        - ssidctl.l2.18_data_layer
+        - ssidctl.l2.20_foundation
+        - ssidctl.l2.22_datasets
+        - ssidctl.l3.shard_01_identitaet_personen
+        - ssidctl.l3.shard_02_dokumente_nachweise
+        - ssidctl.l3.shard_06_bildung_qualifikationen
+        - ssidctl.l3.shard_07_familie_soziales
+        - ssidctl.l3.shard_08_mobilitaet_fahrzeuge
+        - ssidctl.l3.shard_09_arbeit_karriere
+        - ssidctl.l3.shard_11_versicherungen_risiken
+        - ssidctl.l3.shard_12_immobilien_grundstuecke
+        - ssidctl.l4.structure_guardian
+        - ssidctl.l4.docs_normalizer
+        - ssidctl.l5.did_method_engineer
+        - ssidctl.l5.vc_issuer_engineer
+        - ssidctl.l5.tokenomics_contract_engineer
+
+    - id: policy_orchestrator
+      scope: "SoT, Rego, YAML, policy centralization, compliance"
+      agents:
+        - ssidctl.l2.07_governance_legal
+        - ssidctl.l2.14_zero_time_auth
+        - ssidctl.l2.16_codex
+        - ssidctl.l2.21_post_quantum_crypto
+        - ssidctl.l2.23_compliance
+        - ssidctl.l3.shard_03_zugang_berechtigungen
+        - ssidctl.l3.shard_05_gesundheit_medizin
+        - ssidctl.l3.shard_10_finanzen_banking
+        - ssidctl.l3.shard_13_unternehmen_gewerbe
+        - ssidctl.l3.shard_14_vertraege_vereinbarungen
+        - ssidctl.l3.shard_16_behoerden_verwaltung
+        - ssidctl.l4.contract_guard
+        - ssidctl.l4.policy_enforcer
+        - ssidctl.l5.webauthn_binding_engineer
+        - ssidctl.l5.policy_mapping_analyst
+        - ssidctl.l5.dao_governance_engineer
+        - ssidctl.l5.pqc_migration_engineer
+        - ssidctl.l5.compliance_evidence_clerk
+
+    - id: runtime_orchestrator
+      scope: "ssidctl, hooks, subprocess, shells, EMS config"
+      agents:
+        - ssidctl.l2.04_deployment
+        - ssidctl.l2.06_data_pipeline
+        - ssidctl.l2.12_tooling
+        - ssidctl.l2.15_infra
+        - ssidctl.l2.19_adapters
+        - ssidctl.l3.shard_04_kommunikation_daten
+        - ssidctl.l3.shard_15_handel_transaktionen
+        - ssidctl.l4.branch_lock_manager
+        - ssidctl.l4.worktree_manager
+        - ssidctl.l4.config_sanitizer
+        - ssidctl.l4.provider_failover_manager
+        - ssidctl.l4.worker_resolver
+        - ssidctl.l4.sandbox_controller
+        - ssidctl.l4.remediation_planner
+        - ssidctl.l4.dependency_curator
+        - ssidctl.l5.wallet_runtime_engineer
+        - ssidctl.l5.adapter_integration_engineer
+        - ssidctl.l5.ems_console_runtime_engineer
+        - ssidctl.l5.orchestrator_server_engineer
+
+    - id: agent_orchestrator
+      scope: "Agent registry, enablement, skill binding"
+      agents:
+        - ssidctl.l2.24_meta_orchestration
+        - ssidctl.l4.prompt_compiler
+        - ssidctl.l4.task_router
+        - ssidctl.l4.state_registry_keeper
+
+    - id: verification_orchestrator
+      scope: "Gates, tests, completion proof, evidence, export"
+      agents:
+        - ssidctl.l2.02_audit_logging
+        - ssidctl.l2.11_test_simulation
+        - ssidctl.l2.17_observability
+        - ssidctl.l4.test_orchestrator
+        - ssidctl.l4.ci_gatekeeper
+        - ssidctl.l4.evidence_sealer
+        - ssidctl.l4.hash_chain_auditor
+        - ssidctl.l4.secret_sentinel
+        - ssidctl.l4.release_readiness_board
+        - ssidctl.l4.metrics_collector
+        - ssidctl.l5.vc_verifier_engineer
+        - ssidctl.l5.incident_response_operator
+        - ssidctl.l5.chaos_rehearsal_operator
+
+    - id: repo_sync_orchestrator
+      scope: "Workspace vs canonical, push safety, branch governance"
+      agents:
+        - ssidctl.l1.repo_ssid
+        - ssidctl.l1.repo_ems
+        - ssidctl.l1.repo_orchestrator
+        - ssidctl.l1.repo_open_core
+        - ssidctl.l1.repo_docs
+        - ssidctl.l4.diff_forensics_analyst
+        - ssidctl.l4.salvage_coordinator
+        - ssidctl.l5.open_core_packager
+        - ssidctl.l5.docs_site_publisher
+
+  L2_root_agents:
+    count: 24
+    note: "One per canonical Root (01-24), owned by respective Sub-Orchestrators"
+
+  L3_shard_agents:
+    count: 16
+    note: "Domain-scoped agents for the 16 canonical Shards"
+
+  L4_platform_agents:
+    count: 24
+    note: "Cross-cutting platform services (locks, routing, CI, evidence, etc.)"
+
+  L5_specialist_agents:
+    count: 17
+    note: "Product/specialist engineers (DID, VC, Wallet, PQC, EMS, etc.)"
+
+  workers:
+    count: 11
+    note: "SSIDCTL CLI worker commands (supervisor, dispatch, build, test, browser, policy, audit, registry, provider, release, repair)"

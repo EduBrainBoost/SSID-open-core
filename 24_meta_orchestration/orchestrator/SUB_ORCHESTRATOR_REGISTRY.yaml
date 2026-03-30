@@ -1,0 +1,159 @@
+---
+# SUB_ORCHESTRATOR_REGISTRY.yaml — T-019 WP2
+# Generated: 2026-03-29
+# Purpose: Registers all 6 Sub-Orchestrators under the L0 Claude Code Top-Orchestrator
+
+schema_version: "1.0.0"
+task_id: T-019
+generated: "2026-03-29T00:00:00Z"
+
+sub_orchestrators:
+  - id: structure_orchestrator
+    name: "Structure Sub-Orchestrator"
+    layer: L1
+    scope: "Root-24, Shards, manifests, docs, tests, path hygiene"
+    responsibilities:
+      - Root-24-Lock enforcement
+      - Shard structure validation
+      - Manifest consistency
+      - Documentation structure
+      - Path hygiene across roots
+    agent_count: 23
+    key_agents:
+      - ssidctl.l4.structure_guardian
+      - ssidctl.l4.docs_normalizer
+      - ssidctl.l5.did_method_engineer
+      - ssidctl.l5.vc_issuer_engineer
+      - ssidctl.l5.tokenomics_contract_engineer
+    verifier_agents:
+      - ssidctl.l4.structure_guardian
+      - ssidctl.l4.contract_guard
+    activation: "Bei jeder Root/Shard-Aenderung"
+    priority: high
+
+  - id: policy_orchestrator
+    name: "Policy Sub-Orchestrator"
+    layer: L1
+    scope: "SoT, Rego, YAML, policy centralization, compliance"
+    responsibilities:
+      - SoT consistency enforcement
+      - Policy rule centralization
+      - Compliance mapping
+      - Auth/crypto policy governance
+      - Regulatory requirement tracking
+    agent_count: 18
+    key_agents:
+      - ssidctl.l4.policy_enforcer
+      - ssidctl.l4.contract_guard
+      - ssidctl.l5.policy_mapping_analyst
+      - ssidctl.l5.compliance_evidence_clerk
+    verifier_agents:
+      - ssidctl.l4.policy_enforcer
+      - ssidctl.l4.contract_guard
+    activation: "Bei Policy-/Compliance-Aenderungen"
+    priority: high
+
+  - id: runtime_orchestrator
+    name: "Runtime Sub-Orchestrator"
+    layer: L1
+    scope: "ssidctl, hooks, subprocess, shells, EMS config, infra"
+    responsibilities:
+      - CLI runtime management
+      - Worker command coordination
+      - Config hygiene
+      - Dependency management
+      - Provider failover
+      - Sandbox lifecycle
+    agent_count: 19
+    key_agents:
+      - ssidctl.l4.branch_lock_manager
+      - ssidctl.l4.worktree_manager
+      - ssidctl.l4.config_sanitizer
+      - ssidctl.l4.sandbox_controller
+      - ssidctl.l5.ems_console_runtime_engineer
+      - ssidctl.l5.orchestrator_server_engineer
+    verifier_agents:
+      - ssidctl.l4.branch_lock_manager
+      - ssidctl.l4.structure_guardian
+    activation: "Bei Runtime-/Config-/Infra-Aenderungen"
+    priority: normal
+
+  - id: agent_orchestrator
+    name: "Agent Management Sub-Orchestrator"
+    layer: L1
+    scope: "Agent registry, enablement, skill binding, task routing"
+    responsibilities:
+      - Agent registry consistency
+      - Skill binding management
+      - Prompt compilation
+      - Task routing
+      - State management
+    agent_count: 4
+    key_agents:
+      - ssidctl.l2.24_meta_orchestration
+      - ssidctl.l4.prompt_compiler
+      - ssidctl.l4.task_router
+      - ssidctl.l4.state_registry_keeper
+    verifier_agents:
+      - ssidctl.l4.state_registry_keeper
+    activation: "Bei Agent-/Registry-/Skill-Aenderungen"
+    priority: normal
+
+  - id: verification_orchestrator
+    name: "Verification Sub-Orchestrator"
+    layer: L1
+    scope: "Gates, tests, completion proof, evidence, export, metrics"
+    responsibilities:
+      - Test coordination and execution
+      - CI gate evaluation
+      - Evidence sealing and chain integrity
+      - Secret detection
+      - Release readiness assessment
+      - Metrics collection
+      - Incident response
+    agent_count: 13
+    key_agents:
+      - ssidctl.l4.test_orchestrator
+      - ssidctl.l4.ci_gatekeeper
+      - ssidctl.l4.evidence_sealer
+      - ssidctl.l4.hash_chain_auditor
+      - ssidctl.l4.release_readiness_board
+      - ssidctl.l5.incident_response_operator
+    verifier_agents:
+      - ssidctl.l4.hash_chain_auditor
+      - ssidctl.l0.master_orchestrator
+    activation: "Bei jeder Verifikation, Gate-Bewertung, Evidence-Erzeugung"
+    priority: high
+
+  - id: repo_sync_orchestrator
+    name: "Repo Sync Sub-Orchestrator"
+    layer: L1
+    scope: "Workspace vs canonical, push safety, branch governance"
+    responsibilities:
+      - Workspace-canonical delta management
+      - Branch governance
+      - Push safety
+      - Diff forensics
+      - Salvage coordination
+      - Open-core packaging
+      - Docs publishing
+    agent_count: 9
+    key_agents:
+      - ssidctl.l1.repo_ssid
+      - ssidctl.l1.repo_ems
+      - ssidctl.l1.repo_orchestrator
+      - ssidctl.l4.diff_forensics_analyst
+      - ssidctl.l4.salvage_coordinator
+    verifier_agents:
+      - ssidctl.l4.diff_forensics_analyst
+      - ssidctl.l0.master_orchestrator
+    activation: "Bei Repo-Sync, Push, Branch-Operationen"
+    priority: normal
+
+total_sub_orchestrators: 6
+total_managed_agents: 87
+enforcement:
+  - "Jeder Agent gehoert zu genau einem Sub-Orchestrator"
+  - "Sub-Orchestratoren berichten an L0"
+  - "Keine direkte Agent-Steuerung durch L0 — immer via Sub-Orchestrator"
+  - "Sub-Orchestrator-Aenderungen erfordern RFC"

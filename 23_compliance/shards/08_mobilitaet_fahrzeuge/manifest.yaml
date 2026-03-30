@@ -1,16 +1,26 @@
-name: 08_mobilitaet_fahrzeuge
-layer: 23_compliance
-implementation:
-  language: python
-  entrypoint: implementations/main.py
-  dependencies:
-  - pydantic
-  - jsonschema
-tests:
-  - tests/unit
-  - tests/integration
-contracts:
-  - contracts/openapi.yaml
+shard_id: 08_mobilitaet_fahrzeuge
+root_id: 23_compliance
+version: 1.0.0
+generated_utc: '2026-03-02T19:39:35Z'
+implementation_stack: generated
+contracts: []
 conformance:
-  chart_ref: chart.yaml
-  semver: "0.1.0"
+  policies: 23_compliance/policies/policy.yaml
+  compliance: GDPR, eIDAS, ISO-27001, SOC2, MiCA
+policies:
+- ref: hash_only
+- ref: non_custodial
+implementation:
+  language: YAML
+  entry_point: 23_compliance/shards/08_mobilitaet_fahrzeuge/implementations/python/main.py
+runtime:
+  environment: python3.12
+dependencies:
+- 17_observability/logs/compliance
+tests:
+  unit: 23_compliance/tests/test_root_smoke.py
+  integration: 23_compliance/tests/unit/test_structure_build.py
+observability:
+  metrics: 17_observability/metrics/compliance.yaml
+security:
+  sbom: true

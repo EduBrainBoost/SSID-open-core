@@ -25,10 +25,40 @@ FORBIDDEN_GLOBS: Sequence[str] = (
     "*.token",
 )
 
+ROOT_LEVEL_EXCEPTIONS_PATH = (
+    Path(__file__).resolve().parent.parent.parent
+    / "23_compliance"
+    / "exceptions"
+    / "root_level_exceptions.yaml"
+)
+
+_allowed_files_cache: Optional[frozenset] = None
+
+
+def _load_allowed_files() -> frozenset:
+    global _allowed_files_cache
+    if _allowed_files_cache is not None:
+        return _allowed_files_cache
+    if ROOT_LEVEL_EXCEPTIONS_PATH.exists():
+        data = yaml.safe_load(
+            ROOT_LEVEL_EXCEPTIONS_PATH.read_text(encoding="utf-8")
+        ) or {}
+        _allowed_files_cache = frozenset(data.get("allowed_files", []))
+    else:
+        _allowed_files_cache = frozenset()
+    return _allowed_files_cache
+
 FORBIDDEN_PATH_PREFIXES: Sequence[str] = (
     ".ssid_sandbox/",
     "02_audit_logging/agent_runs/",
     "02_audit_logging/raw_logs/",
+)
+
+# Paths matching these prefixes are exempt from FORBIDDEN_PATH_PREFIXES
+# (e.g., backfill evidence derived from git history)
+ALLOWED_EXCEPTIONS: Sequence[str] = (
+    "02_audit_logging/agent_runs/run-merge-",
+    "02_audit_logging/agent_runs/backfill/",
 )
 
 PLAN_SCHEMA = "24_meta_orchestration/plans/TASK_SPEC_MINIMAL.schema.yaml"
@@ -68,12 +98,17 @@ def _tracked_files(root: Path) -> List[str]:
 
 def _has_forbidden_path(path: str) -> bool:
     norm = path.replace("\\", "/")
+    if any(norm.startswith(ex) for ex in ALLOWED_EXCEPTIONS):
+        return False
     return any(norm.startswith(prefix) for prefix in FORBIDDEN_PATH_PREFIXES)
 
 
 def _matches_forbidden_glob(path: str) -> bool:
     norm = path.replace("\\", "/")
     name = Path(norm).name
+    # Root-level files listed in exceptions are never forbidden
+    if "/" not in norm and name in _load_allowed_files():
+        return False
     if name == ".env" or name.startswith(".env."):
         return True
     return any(fnmatch.fnmatch(name, pattern) or fnmatch.fnmatch(norm, pattern) for pattern in FORBIDDEN_GLOBS)
@@ -91,10 +126,14 @@ def _iter_tree_files(root: Path) -> Iterable[str]:
 
 def _iter_forbidden_glob_matches(root: Path, paths: Iterable[str]) -> Iterable[str]:
     path_set = set(paths)
+    allowed = _load_allowed_files()
     for pattern in FORBIDDEN_GLOBS:
         for p in root.glob(pattern):
             if p.is_file():
                 rel = p.relative_to(root).as_posix()
+                # Root-level allowed files are exempt
+                if "/" not in rel and rel in allowed:
+                    continue
                 if rel in path_set:
                     yield rel
 
@@ -113,7 +152,9 @@ def _validate_plan_specs(root: Path) -> List[str]:
     required = set(schema.get("required", []))
 
     plan_files = sorted(
-        [p for p in plans_dir.glob("*.yaml") if p.name != Path(PLAN_SCHEMA).name],
+        [p for p in plans_dir.glob("*.yaml")
+         if p.name != Path(PLAN_SCHEMA).name
+         and not p.name.startswith("PLANSPEC_")],
         key=lambda p: p.name,
     )
     if not plan_files:
@@ -155,6 +196,10 @@ def _changed_files_for_adr(root: Path) -> Tuple[Optional[List[str]], Optional[st
         ranges.append(f"{base_ref}...HEAD")
         ranges.append("HEAD~1...HEAD")
     else:
+        # No PR context (workflow_dispatch, push): use merge-base against origin/main
+        mb = _run_git(root, ["merge-base", "HEAD", "origin/main"])
+        if mb.returncode == 0 and mb.stdout.strip():
+            ranges.append(f"{mb.stdout.strip()}...HEAD")
         ranges.append("HEAD~1...HEAD")
 
     last_error = ""
@@ -211,6 +256,9 @@ def _audit_path_violations(paths: Iterable[str]) -> List[str]:
         if _has_forbidden_path(norm):
             violations.append(norm)
         if norm.startswith("02_audit_logging/agent_runs/"):
+            # Allow backfill/run-merge paths (any filenames)
+            if any(norm.startswith(ex) for ex in ALLOWED_EXCEPTIONS):
+                continue
             base = Path(norm).name
             if base not in {"manifest.json", "patch.diff", "patch.sha256"}:
                 violations.append(norm)

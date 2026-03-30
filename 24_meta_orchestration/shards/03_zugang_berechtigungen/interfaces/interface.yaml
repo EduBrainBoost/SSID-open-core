@@ -1,5 +1,0 @@
-interface_id: 24_meta_orchestration.03_zugang_berechtigungen.primary
-root_id: 24_meta_orchestration
-shard_id: 03_zugang_berechtigungen
-kind: bootstrap_contract
-status: active

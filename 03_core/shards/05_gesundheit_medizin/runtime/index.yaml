@@ -1,8 +1,8 @@
-schema_version: 1.0.0
-kind: reference_runtime
-module: wave03_reference
-factory: Root03ReferenceWave
-service_method: run
-shard_id: 05_claims_binding
-valid_input: ../conformance/fixtures/fixture_valid.json
-expected_output_schema: ../contracts/outputs.schema.json
+schema_version: "1.0.0"
+root_id: "03_core"
+shard_id: "05_gesundheit_medizin"
+service_runtime_status: "ready"
+provided_capabilities:
+  - "health_data_proof"
+contracts:
+  - "contracts/health_data_proof.schema.json"

@@ -1,0 +1,11 @@
+{
+  "task_id": "PHASE1_ROOT_03_CORE",
+  "root": "03_core",
+  "phase": 1,
+  "scope": "chart_fill_and_first_implementation",
+  "allowed_paths": ["03_core/"],
+  "forbidden_paths": ["01_ai_layer/", "24_meta_orchestration/", "*/mainnet/"],
+  "acceptance_checks": ["chart_fields_complete", "policy_hash_only", "policy_non_custodial", "evidence_path_defined", "no_fake_manifest", "dispatcher_integration"],
+  "evidence_targets": ["23_compliance/evidence/phase2/", "17_observability/score/"],
+  "no_cross_worktree": true
+}

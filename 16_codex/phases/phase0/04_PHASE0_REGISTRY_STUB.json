@@ -1,0 +1,52 @@
+{
+  "package_id": "SSID-PHASE0-20260326",
+  "generated_at_utc": "2026-03-26T19:13:43Z",
+  "registry_scope": "phase0_canonical_freeze",
+  "status": "READY_FOR_EXECUTION",
+  "owner": "Bruder",
+  "artifacts": [
+    {
+      "path": "05_documentation/phase0/PHASE0_CANONICAL_SOURCE_MATRIX.md",
+      "kind": "documentation"
+    },
+    {
+      "path": "05_documentation/phase0/PHASE0_REPO_ROLE_MATRIX.md",
+      "kind": "documentation"
+    },
+    {
+      "path": "05_documentation/phase0/PHASE0_STANDARDS_BASELINE.md",
+      "kind": "documentation"
+    },
+    {
+      "path": "05_documentation/phase0/PHASE0_REGULATORY_BASELINE.md",
+      "kind": "documentation"
+    },
+    {
+      "path": "24_meta_orchestration/registry/phase0_registry_lock.json",
+      "kind": "registry"
+    },
+    {
+      "path": "23_compliance/evidence/phase0/phase0_canonical_freeze_report.json",
+      "kind": "evidence"
+    },
+    {
+      "path": "23_compliance/evidence/phase0/phase0_source_hashes.json",
+      "kind": "evidence"
+    },
+    {
+      "path": "23_compliance/evidence/phase0/phase0_decision_log.jsonl",
+      "kind": "evidence"
+    },
+    {
+      "path": "17_observability/score/phase0_status.json",
+      "kind": "score"
+    }
+  ],
+  "phase1_blockers_until_phase0_complete": [
+    "no canonical source matrix",
+    "no repo role lock",
+    "no standards baseline",
+    "no regulatory baseline",
+    "no registry freeze artifacts"
+  ]
+}

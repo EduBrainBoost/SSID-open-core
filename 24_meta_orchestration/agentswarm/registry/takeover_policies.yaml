@@ -1,0 +1,21 @@
+policies:
+- policy_id: policy.takeover.default
+  triggers:
+  - no_heartbeat_3x
+  - same_error_3x
+  - no_evidence_growth_5min
+  - max_runtime_exceeded
+  - policy_violation
+  interventions:
+  - warn
+  - soft_intervene
+  - pause_agent
+  - pair_takeover
+  - hard_kill
+  - rollback
+  escalation_order:
+  - warn
+  - soft_intervene
+  - pause_agent
+  - pair_takeover
+  - hard_kill

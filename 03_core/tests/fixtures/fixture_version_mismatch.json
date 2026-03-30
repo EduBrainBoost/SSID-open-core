@@ -1,0 +1,8 @@
+{
+  "schema_version": "2.0.0",
+  "generated_at": "2026-03-16T12:04:00+00:00",
+  "module_health": [
+    {"module_name": "fee_distribution_engine", "status": "healthy", "version": "2.0.0", "last_checked_utc": "2026-03-16T12:04:00+00:00"}
+  ],
+  "flow_statuses": []
+}

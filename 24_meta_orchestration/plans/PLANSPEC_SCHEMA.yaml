@@ -1,0 +1,26 @@
+version: "1.0"
+description: "Schema for PlanSpec — multi-task plan specification format"
+required:
+  - plan_id
+  - title
+  - tasks
+  - acceptance_criteria
+constraints:
+  tasks:
+    min_items: 1
+    item_required:
+      - task_id
+      - title
+    item_optional:
+      - depends_on
+      - notes
+  acceptance_criteria:
+    min_items: 1
+  depends_on:
+    type: "list[str]"
+    description: "List of task_ids that must complete before this task can start"
+    no_cycles: true
+notes:
+  executable_unit: "planspec references task-specs"
+  validation_tool: "12_tooling/cli/planspec_validator.py"
+  task_spec_dir: "24_meta_orchestration/tasks/specs/"

@@ -1,0 +1,784 @@
+version: "1.0.0"
+task_group: "chart_population"
+description: >
+  Tasks for populating all 384 chart.yaml files across the 24 root modules
+  (16 shards each). Each task targets a single root/shard pair and must produce
+  a fully-populated chart.yaml conforming to the SoT schema.
+generated_utc: "2026-03-15T00:00:00Z"
+
+tasks:
+  # ── 01_ai_layer ──────────────────────────────────────────────────────────────
+  - id: "TASK-001"
+    title: "Populate chart.yaml for 01_ai_layer / 01_identitaet_personen"
+    scope: "01_ai_layer/shards/01_identitaet_personen"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-002"
+    title: "Populate chart.yaml for 01_ai_layer / 02_dokumente_nachweise"
+    scope: "01_ai_layer/shards/02_dokumente_nachweise"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-003"
+    title: "Populate chart.yaml for 01_ai_layer / 03_zugang_berechtigungen"
+    scope: "01_ai_layer/shards/03_zugang_berechtigungen"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-004"
+    title: "Populate chart.yaml for 01_ai_layer / 04_kommunikation_daten"
+    scope: "01_ai_layer/shards/04_kommunikation_daten"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-005"
+    title: "Populate chart.yaml for 01_ai_layer / 05_gesundheit_medizin"
+    scope: "01_ai_layer/shards/05_gesundheit_medizin"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-006"
+    title: "Populate chart.yaml for 01_ai_layer / 06_bildung_qualifikationen"
+    scope: "01_ai_layer/shards/06_bildung_qualifikationen"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-007"
+    title: "Populate chart.yaml for 01_ai_layer / 07_familie_soziales"
+    scope: "01_ai_layer/shards/07_familie_soziales"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-008"
+    title: "Populate chart.yaml for 01_ai_layer / 08_mobilitaet_fahrzeuge"
+    scope: "01_ai_layer/shards/08_mobilitaet_fahrzeuge"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-009"
+    title: "Populate chart.yaml for 01_ai_layer / 09_arbeit_karriere"
+    scope: "01_ai_layer/shards/09_arbeit_karriere"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-010"
+    title: "Populate chart.yaml for 01_ai_layer / 10_finanzen_banking"
+    scope: "01_ai_layer/shards/10_finanzen_banking"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-011"
+    title: "Populate chart.yaml for 01_ai_layer / 11_versicherungen_risiken"
+    scope: "01_ai_layer/shards/11_versicherungen_risiken"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-012"
+    title: "Populate chart.yaml for 01_ai_layer / 12_immobilien_grundstuecke"
+    scope: "01_ai_layer/shards/12_immobilien_grundstuecke"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-013"
+    title: "Populate chart.yaml for 01_ai_layer / 13_unternehmen_gewerbe"
+    scope: "01_ai_layer/shards/13_unternehmen_gewerbe"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-014"
+    title: "Populate chart.yaml for 01_ai_layer / 14_vertraege_vereinbarungen"
+    scope: "01_ai_layer/shards/14_vertraege_vereinbarungen"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-015"
+    title: "Populate chart.yaml for 01_ai_layer / 15_handel_transaktionen"
+    scope: "01_ai_layer/shards/15_handel_transaktionen"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-016"
+    title: "Populate chart.yaml for 01_ai_layer / 16_behoerden_verwaltung"
+    scope: "01_ai_layer/shards/16_behoerden_verwaltung"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  # ── 02_audit_logging ──────────────────────────────────────────────────────────
+  - id: "TASK-017"
+    title: "Populate chart.yaml for 02_audit_logging / 01_identitaet_personen"
+    scope: "02_audit_logging/shards/01_identitaet_personen"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-018"
+    title: "Populate chart.yaml for 02_audit_logging / 02_dokumente_nachweise"
+    scope: "02_audit_logging/shards/02_dokumente_nachweise"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-019"
+    title: "Populate chart.yaml for 02_audit_logging / 03_zugang_berechtigungen"
+    scope: "02_audit_logging/shards/03_zugang_berechtigungen"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-020"
+    title: "Populate chart.yaml for 02_audit_logging / 04_kommunikation_daten"
+    scope: "02_audit_logging/shards/04_kommunikation_daten"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-021"
+    title: "Populate chart.yaml for 02_audit_logging / 05_gesundheit_medizin"
+    scope: "02_audit_logging/shards/05_gesundheit_medizin"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-022"
+    title: "Populate chart.yaml for 02_audit_logging / 06_bildung_qualifikationen"
+    scope: "02_audit_logging/shards/06_bildung_qualifikationen"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-023"
+    title: "Populate chart.yaml for 02_audit_logging / 07_familie_soziales"
+    scope: "02_audit_logging/shards/07_familie_soziales"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-024"
+    title: "Populate chart.yaml for 02_audit_logging / 08_mobilitaet_fahrzeuge"
+    scope: "02_audit_logging/shards/08_mobilitaet_fahrzeuge"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-025"
+    title: "Populate chart.yaml for 02_audit_logging / 09_arbeit_karriere"
+    scope: "02_audit_logging/shards/09_arbeit_karriere"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-026"
+    title: "Populate chart.yaml for 02_audit_logging / 10_finanzen_banking"
+    scope: "02_audit_logging/shards/10_finanzen_banking"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-027"
+    title: "Populate chart.yaml for 02_audit_logging / 11_versicherungen_risiken"
+    scope: "02_audit_logging/shards/11_versicherungen_risiken"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-028"
+    title: "Populate chart.yaml for 02_audit_logging / 12_immobilien_grundstuecke"
+    scope: "02_audit_logging/shards/12_immobilien_grundstuecke"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-029"
+    title: "Populate chart.yaml for 02_audit_logging / 13_unternehmen_gewerbe"
+    scope: "02_audit_logging/shards/13_unternehmen_gewerbe"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-030"
+    title: "Populate chart.yaml for 02_audit_logging / 14_vertraege_vereinbarungen"
+    scope: "02_audit_logging/shards/14_vertraege_vereinbarungen"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-031"
+    title: "Populate chart.yaml for 02_audit_logging / 15_handel_transaktionen"
+    scope: "02_audit_logging/shards/15_handel_transaktionen"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-032"
+    title: "Populate chart.yaml for 02_audit_logging / 16_behoerden_verwaltung"
+    scope: "02_audit_logging/shards/16_behoerden_verwaltung"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  # ── 03_core ──────────────────────────────────────────────────────────────────
+  - id: "TASK-033"
+    title: "Populate chart.yaml for 03_core / 01_identitaet_personen"
+    scope: "03_core/shards/01_identitaet_personen"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-034"
+    title: "Populate chart.yaml for 03_core / 02_dokumente_nachweise"
+    scope: "03_core/shards/02_dokumente_nachweise"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-035"
+    title: "Populate chart.yaml for 03_core / 03_zugang_berechtigungen"
+    scope: "03_core/shards/03_zugang_berechtigungen"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-036"
+    title: "Populate chart.yaml for 03_core / 04_kommunikation_daten"
+    scope: "03_core/shards/04_kommunikation_daten"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-037"
+    title: "Populate chart.yaml for 03_core / 05_gesundheit_medizin"
+    scope: "03_core/shards/05_gesundheit_medizin"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-038"
+    title: "Populate chart.yaml for 03_core / 06_bildung_qualifikationen"
+    scope: "03_core/shards/06_bildung_qualifikationen"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-039"
+    title: "Populate chart.yaml for 03_core / 07_familie_soziales"
+    scope: "03_core/shards/07_familie_soziales"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-040"
+    title: "Populate chart.yaml for 03_core / 08_mobilitaet_fahrzeuge"
+    scope: "03_core/shards/08_mobilitaet_fahrzeuge"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-041"
+    title: "Populate chart.yaml for 03_core / 09_arbeit_karriere"
+    scope: "03_core/shards/09_arbeit_karriere"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-042"
+    title: "Populate chart.yaml for 03_core / 10_finanzen_banking"
+    scope: "03_core/shards/10_finanzen_banking"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-043"
+    title: "Populate chart.yaml for 03_core / 11_versicherungen_risiken"
+    scope: "03_core/shards/11_versicherungen_risiken"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-044"
+    title: "Populate chart.yaml for 03_core / 12_immobilien_grundstuecke"
+    scope: "03_core/shards/12_immobilien_grundstuecke"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-045"
+    title: "Populate chart.yaml for 03_core / 13_unternehmen_gewerbe"
+    scope: "03_core/shards/13_unternehmen_gewerbe"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-046"
+    title: "Populate chart.yaml for 03_core / 14_vertraege_vereinbarungen"
+    scope: "03_core/shards/14_vertraege_vereinbarungen"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-047"
+    title: "Populate chart.yaml for 03_core / 15_handel_transaktionen"
+    scope: "03_core/shards/15_handel_transaktionen"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-048"
+    title: "Populate chart.yaml for 03_core / 16_behoerden_verwaltung"
+    scope: "03_core/shards/16_behoerden_verwaltung"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+
+  # ── 04_deployment through 24_meta_orchestration (roots 04–24, 16 shards each) ─
+  # IDs TASK-049 through TASK-384 follow the same pattern: one task per shard.
+  # For brevity, roots 04–24 are enumerated as batch entries below.
+  # Each batch entry expands to 16 individual shard tasks at dispatch time.
+
+  - id: "TASK-049"
+    title: "Populate all 16 chart.yaml files for 04_deployment"
+    scope: "04_deployment/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-065"
+    title: "Populate all 16 chart.yaml files for 05_documentation"
+    scope: "05_documentation/shards"
+    status: "pending"
+    priority: "medium"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-081"
+    title: "Populate all 16 chart.yaml files for 06_data_pipeline"
+    scope: "06_data_pipeline/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-097"
+    title: "Populate all 16 chart.yaml files for 07_governance_legal"
+    scope: "07_governance_legal/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-113"
+    title: "Populate all 16 chart.yaml files for 08_identity_score"
+    scope: "08_identity_score/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-129"
+    title: "Populate all 16 chart.yaml files for 09_meta_identity"
+    scope: "09_meta_identity/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-145"
+    title: "Populate all 16 chart.yaml files for 10_interoperability"
+    scope: "10_interoperability/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-161"
+    title: "Populate all 16 chart.yaml files for 11_test_simulation"
+    scope: "11_test_simulation/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-177"
+    title: "Populate all 16 chart.yaml files for 12_tooling"
+    scope: "12_tooling/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-193"
+    title: "Populate all 16 chart.yaml files for 13_ui_layer"
+    scope: "13_ui_layer/shards"
+    status: "pending"
+    priority: "medium"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-209"
+    title: "Populate all 16 chart.yaml files for 14_zero_time_auth"
+    scope: "14_zero_time_auth/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-225"
+    title: "Populate all 16 chart.yaml files for 15_infra"
+    scope: "15_infra/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-241"
+    title: "Populate all 16 chart.yaml files for 16_codex"
+    scope: "16_codex/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-257"
+    title: "Populate all 16 chart.yaml files for 17_observability"
+    scope: "17_observability/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-273"
+    title: "Populate all 16 chart.yaml files for 18_data_layer"
+    scope: "18_data_layer/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-289"
+    title: "Populate all 16 chart.yaml files for 19_adapters"
+    scope: "19_adapters/shards"
+    status: "pending"
+    priority: "medium"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-305"
+    title: "Populate all 16 chart.yaml files for 20_foundation"
+    scope: "20_foundation/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-321"
+    title: "Populate all 16 chart.yaml files for 21_post_quantum_crypto"
+    scope: "21_post_quantum_crypto/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-337"
+    title: "Populate all 16 chart.yaml files for 22_datasets"
+    scope: "22_datasets/shards"
+    status: "pending"
+    priority: "medium"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-353"
+    title: "Populate all 16 chart.yaml files for 23_compliance"
+    scope: "23_compliance/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]
+
+  - id: "TASK-369"
+    title: "Populate all 16 chart.yaml files for 24_meta_orchestration"
+    scope: "24_meta_orchestration/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: []
+    assigned_agent: ""
+    evidence_required: true
+    batch_expand: true
+    shard_range: ["01_identitaet_personen", "02_dokumente_nachweise", "03_zugang_berechtigungen",
+                  "04_kommunikation_daten", "05_gesundheit_medizin", "06_bildung_qualifikationen",
+                  "07_familie_soziales", "08_mobilitaet_fahrzeuge", "09_arbeit_karriere",
+                  "10_finanzen_banking", "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+                  "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+                  "15_handel_transaktionen", "16_behoerden_verwaltung"]

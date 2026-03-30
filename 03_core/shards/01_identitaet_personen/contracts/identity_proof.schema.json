@@ -1,19 +1,39 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ssid/03_core/shards/01_identitaet_personen/identity_proof",
+  "title": "Identity Proof (hash-only, no PII)",
+  "description": "Minimal identity proof commitment. Hash-only, no personally identifiable information.",
   "type": "object",
-  "required": [
-    "proof_hash",
-    "issuer_code"
-  ],
+  "required": ["schema_version", "proof_hash", "hash_alg", "identity_type", "issued_at_utc"],
+  "additionalProperties": false,
   "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
     "proof_hash": {
       "type": "string",
-      "minLength": 32
+      "pattern": "^0x[0-9a-f]{64}$",
+      "description": "SHA256 or Keccak256 hex digest with 0x prefix"
     },
-    "issuer_code": {
+    "hash_alg": {
       "type": "string",
-      "minLength": 2
+      "enum": ["sha256", "keccak256"]
+    },
+    "identity_type": {
+      "type": "string",
+      "enum": ["person", "org", "device"]
+    },
+    "issuer_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9:._-]+$",
+      "maxLength": 128,
+      "description": "Opaque issuer identifier. No URLs, no emails."
+    },
+    "issued_at_utc": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+      "description": "RFC3339 UTC timestamp ending in Z"
     }
-  },
-  "additionalProperties": false
+  }
 }

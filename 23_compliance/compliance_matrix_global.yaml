@@ -1,250 +1,275 @@
-# SSID Global Compliance Matrix
-# SSID-open-core | 23_compliance/
-# Classification: Compliance | Level-3 Specification
-# Generated: 2026-03-15
+# Global Compliance Matrix for SSID
+# Aggregated view across all regulations and jurisdictions
+# Context: Non-custodial, hash-only, utility-token infrastructure
 # Version: 1.0.0
+# Last updated: 2026-03-15
 
-metadata:
-  id: "GLOBAL-COMPLIANCE-MATRIX-001"
-  name: "SSID Global Compliance Matrix"
-  version: "1.0.0"
-  status: "active"
-  purpose: >
-    Maps all jurisdiction-specific and global regulatory policies to SSID
-    architectural layers and capabilities. Provides a single-source-of-truth
-    for compliance coverage, gap analysis, and evidence routing.
-  last_reviewed: "2026-03-15"
-  next_review: "2027-03-15"
+matrix_id: "SSID-COMPLIANCE-MATRIX-GLOBAL"
+name: "SSID Global Compliance Matrix"
+description: >
+  Aggregated compliance matrix mapping SSID controls to regulatory
+  requirements across all applicable jurisdictions. SSID operates
+  as non-custodial, hash-only identity infrastructure with a
+  utility token model.
 
-ssid_architecture_layers:
-  - id: "L1"
-    name: "Identity Layer"
-    description: "Hash-based identity credential storage and proof generation"
-    path: "SSID core identity modules"
-  - id: "L2"
-    name: "Shard Layer"
-    description: "Encrypted shard storage, shard-per-transaction-hash strategy"
-    path: "23_compliance/shards/"
-  - id: "L3"
-    name: "Compliance Layer"
-    description: "Policy enforcement, evidence generation, exception management"
-    path: "23_compliance/"
-  - id: "L4"
-    name: "Observability Layer"
-    description: "Compliance logging, anomaly detection, audit trail"
-    path: "17_observability/logs/compliance/"
-  - id: "L5"
-    name: "Evidence Layer"
-    description: "Hash manifests, immutable audit records"
-    path: "23_compliance/evidence/compliance/"
+ssid_architecture_principles:
+  - principle: "non_custodial"
+    description: "Users hold their own keys and credentials. SSID never has custody."
+  - principle: "hash_only"
+    description: "Only SHA-256 hashes of identity attributes are stored. No raw PII."
+  - principle: "utility_token"
+    description: "Token provides access to network services. No investment/yield/e-money claims."
+  - principle: "data_minimization"
+    description: "Minimal data collection and processing by design."
+  - principle: "selective_disclosure"
+    description: "ZKP-based proofs reveal only necessary attributes."
 
-core_principles:
-  P1:
-    name: "Hash-Only Data Handling"
-    description: "All PII stored exclusively as SHA-256 hashes with per-user salts"
-    applies_to: "All policies"
-  P2:
-    name: "Non-Custodial Architecture"
-    description: "SSID never holds customer assets or plaintext PII"
-    applies_to: "All policies"
-  P3:
-    name: "Zero PII Storage"
-    description: "No personally identifiable information stored anywhere in SSID"
-    applies_to: "All policies"
-  P4:
-    name: "SHA-256 Evidence Chain"
-    description: "All compliance evidence recorded as SHA-256 hash manifests"
-    applies_to: "All policies"
-  P5:
-    name: "ZK-Proof Selective Disclosure"
-    description: "Zero-knowledge proofs enable compliance verification without data exposure"
-    applies_to: "eIDAS, MiCA, GDPR, MAS, JFSA"
+source_mappings:
+  global:
+    - file: "23_compliance/global/fatf_travel_rule.yaml"
+      regulation: "FATF Recommendation 16 (Travel Rule)"
+      status: "mapped"
 
-policies:
-  - policy_id: "GLOBAL-FATF-TR-001"
-    name: "FATF Travel Rule"
-    file: "global/fatf/travel_rule/fatf_travel_rule.yaml"
-    jurisdiction: "GLOBAL"
-    standard: "FATF Recommendation 16"
-    threshold_usd: 1000
-    ssid_layers: ["L1", "L2", "L3", "L4", "L5"]
-    capabilities:
-      - "Originator name hash (sha256)"
-      - "Originator account hash (sha256)"
-      - "Institution BIC/LEI (plaintext — not PII)"
-      - "Beneficiary name hash (sha256)"
-      - "Beneficiary account hash (sha256)"
-    principles: ["P1", "P2", "P3", "P4"]
-    status: "covered"
-    gaps: []
+    - file: "23_compliance/global/mica.yaml"
+      regulation: "EU MiCA (2023/1114)"
+      status: "mapped"
 
-  - policy_id: "EU-MICA-001"
-    name: "MiCA Regulation"
-    file: "jurisdictions/eu/micar_policy.yaml"
-    jurisdiction: "EU"
-    standard: "Regulation (EU) 2023/1114"
-    ssid_layers: ["L1", "L2", "L3", "L4", "L5"]
-    capabilities:
-      - "Customer identity hash (sha256)"
-      - "National ID hash (sha256)"
-      - "Address hash (sha256)"
-      - "Source of funds boolean + evidence hash"
-      - "Whitepaper hash registration"
-      - "Hash-based transaction monitoring"
-    principles: ["P1", "P2", "P3", "P4"]
-    status: "covered"
-    gaps:
-      - "CASP authorization: SSID is infrastructure, not a CASP — licensing responsibility on integrating entity"
+    - file: "23_compliance/global/eidas.yaml"
+      regulation: "eIDAS 2.0 (2024/1183)"
+      status: "mapped"
 
-  - policy_id: "EU-EIDAS2-001"
-    name: "eIDAS 2.0"
-    file: "jurisdictions/eu/eidas_policy.yaml"
-    jurisdiction: "EU"
-    standard: "Regulation (EU) 2024/1183"
-    ssid_layers: ["L1", "L2", "L3", "L4", "L5"]
-    capabilities:
-      - "PID hash (sha256)"
-      - "Age attestation via ZK-proof"
-      - "Address attestation via ZK-proof"
-      - "Professional qualification hash"
-      - "Wallet instance attestation hash"
-      - "Assurance level mapping (Low/Substantial/High)"
-    principles: ["P1", "P2", "P3", "P4", "P5"]
-    status: "covered"
-    gaps:
-      - "QTSP accreditation: external requirement — SSID uses QTSP outputs, does not replace them"
+    - file: "23_compliance/global/gdpr.yaml"
+      regulation: "GDPR (2016/679)"
+      status: "mapped"
 
-  - policy_id: "EU-GDPR-001"
-    name: "GDPR"
-    file: "jurisdictions/eu/gdpr_policy.yaml"
-    jurisdiction: "EU+EEA"
-    standard: "Regulation (EU) 2016/679"
-    ssid_layers: ["L1", "L2", "L3", "L4", "L5"]
-    capabilities:
-      - "Hash-only storage (pseudonymization via salt)"
-      - "Salt deletion = effective erasure (Art. 17)"
-      - "Self-service access via SSID shard (Art. 15)"
-      - "VC export for portability (Art. 20)"
-      - "DPIA completed for biometric-adjacent processing"
-      - "No cross-border personal data transfer (hashes only)"
-    principles: ["P1", "P2", "P3", "P4", "P5"]
-    status: "covered"
-    gaps:
-      - "ROPA: integrating entities must maintain their own ROPA entries"
-      - "DPO: required if integrating entity qualifies — not SSID's obligation"
+  jurisdictions:
+    - file: "23_compliance/jurisdictions/eu/eu_framework.yaml"
+      jurisdiction: "EU/EEA"
+      status: "mapped"
 
-  - policy_id: "US-SEC-001"
-    name: "SEC Digital Asset Framework"
-    file: "jurisdictions/us/sec_policy.yaml"
-    jurisdiction: "US"
-    standard: "Securities Act 1933 / Exchange Act 1934 / Cybersecurity Rules 2023"
-    ssid_layers: ["L1", "L2", "L3", "L4", "L5"]
-    capabilities:
-      - "Customer name hash (sha256)"
-      - "SSN/EIN hash (sha256 + salt)"
-      - "DOB hash (sha256)"
-      - "Address hash (sha256)"
-      - "Beneficial owner hash (25%+ threshold)"
-      - "Hash-only breach — PII not exposed"
-    principles: ["P1", "P2", "P3", "P4"]
-    status: "covered"
-    gaps:
-      - "Securities classification of SSID tokens: legal opinion required per issuance"
-      - "Broker-dealer registration: responsibility of integrating entity"
+    - file: "23_compliance/jurisdictions/us/us_framework.yaml"
+      jurisdiction: "United States"
+      status: "mapped"
 
-  - policy_id: "US-FINCEN-001"
-    name: "FinCEN / BSA Framework"
-    file: "jurisdictions/us/fincen_policy.yaml"
-    jurisdiction: "US"
-    standard: "BSA / FinCEN Guidance FIN-2019-G001 / AMLA 2020"
-    threshold_usd_travel_rule: 3000
-    ssid_layers: ["L1", "L2", "L3", "L4", "L5"]
-    capabilities:
-      - "CIP fields: name, DOB, address, ID number — all sha256_hash"
-      - "Beneficial ownership hash (CDD Rule)"
-      - "Travel Rule originator/beneficiary hashes"
-      - "SAR trigger via hash-pattern anomaly detection"
-      - "CTR support (MSB extracts plaintext for filing)"
-    principles: ["P1", "P2", "P3", "P4"]
-    status: "covered"
-    gaps:
-      - "MSB registration: responsibility of integrating entity — SSID is infrastructure only"
-      - "CTR filing: SSID provides hash evidence; MSB files Form 112 with plaintext from their records"
+    - file: "23_compliance/jurisdictions/apac/apac_framework.yaml"
+      jurisdiction: "Asia-Pacific"
+      status: "mapped"
 
-  - policy_id: "APAC-MAS-001"
-    name: "MAS Payment Services / DPT Framework"
-    file: "jurisdictions/apac/mas_policy.yaml"
-    jurisdiction: "Singapore"
-    standard: "Payment Services Act 2019 / PSA Amendment 2021 / PDPA 2012"
-    threshold_sgd_travel_rule: 1500
-    ssid_layers: ["L1", "L2", "L3", "L4", "L5"]
-    capabilities:
-      - "Customer name hash (sha256)"
-      - "NRIC/FIN/passport hash (sha256)"
-      - "DOB hash, address hash"
-      - "Nationality code (ISO 3166 — not PII)"
-      - "Enhanced CDD: source of wealth boolean + evidence hash"
-      - "STR trigger via hash-pattern anomaly"
-      - "PDPA: hash-only satisfies pseudonymization standard"
-    principles: ["P1", "P2", "P3", "P4"]
-    status: "covered"
-    gaps:
-      - "MPI/SPI licensing: responsibility of integrating DPT service provider"
-      - "Incident reporting to MAS (1h severe): integrating entity obligation"
+regulation_coverage:
+  - regulation: "FATF Travel Rule"
+    category: "aml_cft"
+    jurisdictions: ["global"]
+    ssid_impact: "medium"
+    ssid_role: "infrastructure_provider"
+    key_controls:
+      - "Hash-based identity attestation for VASPs"
+      - "ZKP-based selective disclosure"
+      - "Sanctions screening integration point"
+      - "Audit trail (hash-only)"
+    non_custodial_exemption: true
+    exemption_basis: "Not a VASP; infrastructure provider only"
 
-  - policy_id: "APAC-JFSA-001"
-    name: "JFSA Crypto-Asset Exchange Framework"
-    file: "jurisdictions/apac/jfsa_policy.yaml"
-    jurisdiction: "Japan"
-    standard: "Act on Payment Services 2009/2020 / FIEA / Criminal Proceeds Prevention Act / APPI 2022"
-    threshold_jpy_travel_rule: 100000
-    ssid_layers: ["L1", "L2", "L3", "L4", "L5"]
-    capabilities:
-      - "Customer name hash — Unicode normalized (sha256)"
-      - "My Number: double-hashed (sha256(sha256(my_number)+salt))"
-      - "DOB hash, address hash (Japan format)"
-      - "Corporate registration number hash"
-      - "JAFIC suspicious TX trigger via hash-pattern anomaly"
-      - "Travel Rule: JVCEA standard hash format"
-      - "APPI 2022: pseudonymized information (仮名加工情報) — reduced obligations"
-    principles: ["P1", "P2", "P3", "P4"]
-    status: "covered"
-    gaps:
-      - "CAESP registration: responsibility of integrating entity"
-      - "Cold storage 95% rule: SSID non-custodial — integrating CAESP's obligation"
-      - "Annual external audit: CAESP obligation"
+  - regulation: "MiCA"
+    category: "crypto_asset_regulation"
+    jurisdictions: ["EU", "EEA"]
+    ssid_impact: "high"
+    ssid_role: "utility_token_issuer"
+    key_controls:
+      - "Utility token classification enforcement"
+      - "Compliant white paper (Art. 6)"
+      - "Marketing compliance (Art. 7)"
+      - "CASP guidance for partners"
+    non_custodial_exemption: true
+    exemption_basis: "Not a CASP; utility token under Title II"
 
-compliance_coverage_summary:
-  total_policies: 8
-  jurisdictions_covered:
-    - "GLOBAL (FATF)"
-    - "European Union (MiCA, eIDAS 2.0, GDPR)"
-    - "United States (SEC, FinCEN/BSA)"
-    - "Singapore (MAS)"
-    - "Japan (JFSA)"
-  coverage_status: "full"
-  open_gaps: 9
-  gap_nature: >
-    All identified gaps are licensing/registration obligations of integrating
-    entities — not SSID infrastructure gaps. SSID provides compliant identity
-    infrastructure; regulated entity obligations remain with the integrator.
+  - regulation: "eIDAS 2.0"
+    category: "digital_identity"
+    jurisdictions: ["EU", "EEA"]
+    ssid_impact: "high"
+    ssid_role: "identity_infrastructure"
+    key_controls:
+      - "EUDI Wallet interoperability (OpenID4VC)"
+      - "LoA mapping to eIDAS levels"
+      - "Selective disclosure support"
+      - "EAA/QEAA format compatibility"
+    deadline: "2026-11-01"
 
-ssid_evidence_routing:
-  all_compliance_events: "23_compliance/evidence/compliance/"
-  sar_str_triggers: "23_compliance/evidence/compliance/sar_triggers/"
-  jafic_triggers: "23_compliance/evidence/compliance/jafic_triggers/"
-  breach_events: "23_compliance/evidence/compliance/breach_log/"
-  observability_sink: "17_observability/logs/compliance/"
-  exception_registry: "23_compliance/exceptions/"
+  - regulation: "GDPR"
+    category: "data_protection"
+    jurisdictions: ["EU", "EEA"]
+    ssid_impact: "high"
+    ssid_role: "data_minimization_by_design"
+    key_controls:
+      - "Hash-only storage (Art. 5(1)(c), Art. 25)"
+      - "Crypto-shredding for erasure (Art. 17)"
+      - "Per-user salted hashing"
+      - "ZKP selective disclosure"
+      - "No cross-service tracking"
+    non_custodial_exemption: false
+    note: "GDPR applies regardless of custody model; hash-only minimizes scope"
 
-principles_coverage:
-  P1_hash_only:
-    covered_by: ["GLOBAL-FATF-TR-001", "EU-MICA-001", "EU-EIDAS2-001", "EU-GDPR-001", "US-SEC-001", "US-FINCEN-001", "APAC-MAS-001", "APAC-JFSA-001"]
-  P2_non_custodial:
-    covered_by: ["GLOBAL-FATF-TR-001", "EU-MICA-001", "EU-EIDAS2-001", "EU-GDPR-001", "US-SEC-001", "US-FINCEN-001", "APAC-MAS-001", "APAC-JFSA-001"]
-  P3_zero_pii:
-    covered_by: ["GLOBAL-FATF-TR-001", "EU-MICA-001", "EU-EIDAS2-001", "EU-GDPR-001", "US-SEC-001", "US-FINCEN-001", "APAC-MAS-001", "APAC-JFSA-001"]
-  P4_sha256_evidence:
-    covered_by: ["GLOBAL-FATF-TR-001", "EU-MICA-001", "EU-EIDAS2-001", "EU-GDPR-001", "US-SEC-001", "US-FINCEN-001", "APAC-MAS-001", "APAC-JFSA-001"]
-  P5_zk_selective_disclosure:
-    covered_by: ["EU-EIDAS2-001", "EU-MICA-001", "EU-GDPR-001", "APAC-MAS-001", "APAC-JFSA-001"]
+  - regulation: "DORA"
+    category: "operational_resilience"
+    jurisdictions: ["EU"]
+    ssid_impact: "medium"
+    ssid_role: "third_party_ict_provider"
+    key_controls:
+      - "ICT risk management"
+      - "Incident response plans"
+      - "Business continuity"
+
+  - regulation: "NIS2"
+    category: "cybersecurity"
+    jurisdictions: ["EU"]
+    ssid_impact: "medium"
+    ssid_role: "potentially_important_entity"
+    key_controls:
+      - "Security incident notification"
+      - "Risk management measures"
+      - "Supply chain security"
+
+  - regulation: "EU AI Act"
+    category: "artificial_intelligence"
+    jurisdictions: ["EU"]
+    ssid_impact: "medium"
+    ssid_role: "limited_risk_ai_deployer"
+    key_controls:
+      - "AI model transparency"
+      - "Bias and fairness testing"
+      - "Human oversight"
+
+  - regulation: "US Securities Laws"
+    category: "securities"
+    jurisdictions: ["US"]
+    ssid_impact: "medium"
+    ssid_role: "utility_token_issuer"
+    key_controls:
+      - "Howey Test analysis (utility, not security)"
+      - "No investment/yield claims"
+      - "Decentralized governance"
+    non_custodial_exemption: true
+    exemption_basis: "Utility token; does not meet Howey Test prongs"
+
+  - regulation: "US BSA/FinCEN"
+    category: "aml_cft"
+    jurisdictions: ["US"]
+    ssid_impact: "low"
+    ssid_role: "non_msb"
+    key_controls:
+      - "Non-custodial architecture"
+    non_custodial_exemption: true
+    exemption_basis: "Not an MSB per FIN-2019-G001"
+
+  - regulation: "APAC VASP Regimes"
+    category: "crypto_asset_regulation"
+    jurisdictions: ["SG", "HK", "JP", "AU", "KR"]
+    ssid_impact: "low"
+    ssid_role: "infrastructure_provider"
+    key_controls:
+      - "Non-custodial architecture"
+      - "No exchange or trading services"
+    non_custodial_exemption: true
+    exemption_basis: "Non-custodial; not a VASP/DCE/CAESP"
+
+  - regulation: "APAC Privacy Laws"
+    category: "data_protection"
+    jurisdictions: ["SG", "HK", "JP", "AU", "KR"]
+    ssid_impact: "medium"
+    ssid_role: "data_minimization_by_design"
+    key_controls:
+      - "Hash-only processing"
+      - "Consent-based verification"
+      - "Cross-border transfer assessment"
+
+ssid_control_to_regulation_map:
+  - ssid_control: "Hash-Only Identity Storage"
+    component: "03_core/identity"
+    regulations:
+      - "GDPR Art. 5(1)(c), Art. 25"
+      - "FATF R.16 (originator/beneficiary data)"
+      - "eIDAS 2.0 Art. 5a (PID handling)"
+      - "CCPA/CPRA (data minimization)"
+      - "SG PDPA, JP APPI, AU Privacy Act"
+
+  - ssid_control: "Zero-Knowledge Proof / Selective Disclosure"
+    component: "14_zero_time_auth"
+    regulations:
+      - "GDPR Art. 5(1)(c), Art. 25"
+      - "eIDAS 2.0 Art. 5a(4)(c)"
+      - "FATF R.16 (identity attestation)"
+
+  - ssid_control: "Crypto-Shredding (Erasure)"
+    component: "03_core/identity"
+    regulations:
+      - "GDPR Art. 17"
+      - "CCPA/CPRA Right to Delete"
+      - "SG PDPA, JP APPI (deletion rights)"
+
+  - ssid_control: "Append-Only Audit Logging"
+    component: "02_audit_logging"
+    regulations:
+      - "FATF R.11 (record keeping)"
+      - "DORA (ICT risk management)"
+      - "NIS2 (incident documentation)"
+
+  - ssid_control: "Utility Token Classification"
+    component: "07_governance_legal"
+    regulations:
+      - "MiCA Art. 3(1)(9)"
+      - "US Howey Test analysis"
+      - "SG PSA, HK VASP, JP PSA token classification"
+
+  - ssid_control: "Sanctions Screening Integration"
+    component: "23_compliance/standards"
+    regulations:
+      - "FATF R.6, R.7"
+      - "US OFAC SDN List"
+      - "EU Sanctions Regulation"
+
+  - ssid_control: "EUDI Wallet Adapter"
+    component: "19_adapters"
+    regulations:
+      - "eIDAS 2.0 Art. 5a"
+    deadline: "2026-11-01"
+
+  - ssid_control: "AI Transparency and Fairness"
+    component: "01_ai_layer"
+    regulations:
+      - "EU AI Act"
+      - "GDPR Art. 22 (automated decision-making)"
+
+gaps_and_actions:
+  - gap_id: "GAP-01"
+    description: "EUDI Wallet adapter not yet certified"
+    regulation: "eIDAS 2.0"
+    priority: "high"
+    deadline: "2026-11-01"
+    action: "Complete EUDI Wallet conformance testing"
+
+  - gap_id: "GAP-02"
+    description: "DPIA not yet completed for identity scoring"
+    regulation: "GDPR Art. 35"
+    priority: "high"
+    action: "Conduct and document DPIA"
+
+  - gap_id: "GAP-03"
+    description: "MiCA white paper compliance review pending"
+    regulation: "MiCA Art. 6"
+    priority: "medium"
+    action: "Review and update white paper for MiCA Art. 6 compliance"
+
+  - gap_id: "GAP-04"
+    description: "AI Act risk classification documentation incomplete"
+    regulation: "EU AI Act"
+    priority: "medium"
+    action: "Document AI system risk classification and transparency measures"
+
+  - gap_id: "GAP-05"
+    description: "Cross-border hash transfer assessment for APAC"
+    regulation: "JP APPI, KR PIPA"
+    priority: "low"
+    action: "Assess whether hashed identity data requires cross-border transfer consent"
+
+evidence_strategy: "hash_manifest_only"
+review_cycle: "quarterly"
+next_review: "2026-06-15"

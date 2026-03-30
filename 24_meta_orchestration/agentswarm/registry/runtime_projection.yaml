@@ -1,0 +1,377 @@
+schema_version: 1.0.0
+description: >
+  Maps logical agents from agent_registry.yaml to runtime instances.
+  The 86 logical agents project onto ~10 always-on runtime containers.
+  This gap is by design -- see AGENT_LAYER_MODEL.md.
+
+runtime_modes:
+  always-on:
+    description: Permanent container, started with the swarm
+    lifecycle: swarm_start -> swarm_stop
+  on-demand:
+    description: Instantiated when triggered by task, torn down after
+    lifecycle: task_start -> task_complete
+  deferred:
+    description: Not instantiated until explicit operator activation
+    lifecycle: manual_start -> manual_stop
+  embedded:
+    description: Logic runs inside another agent's container
+    lifecycle: host_start -> host_stop
+
+# ============================================================
+# ALWAYS-ON RUNTIME INSTANCES (~10 core containers)
+# These start with the swarm and run continuously.
+# ============================================================
+
+runtime_instances:
+
+- runtime_id: rt.orchestrator.core
+  runtime_mode: always-on
+  container_name: ssid-orchestrator-core
+  description: Central orchestration runtime -- schedules tasks, manages handoffs
+  logical_agents:
+    - agentswarm.orchestrator.orchestrator.primary
+    - agentswarm.orchestrator.orchestrator.sentinel
+    - agentswarm.orchestrator.queue.primary
+    - agentswarm.orchestrator.queue.sentinel
+  pairs:
+    - pair.orchestrator.orchestrator
+    - pair.orchestrator.queue
+  resource_class: medium
+  health_endpoint: /health
+  restart_policy: always
+
+- runtime_id: rt.orchestrator.runtime
+  runtime_mode: always-on
+  container_name: ssid-runtime-manager
+  description: Runtime lifecycle management -- agent start/stop, scaling
+  logical_agents:
+    - agentswarm.orchestrator.runtime.primary
+    - agentswarm.orchestrator.runtime.sentinel
+  pairs:
+    - pair.orchestrator.runtime
+  resource_class: medium
+  health_endpoint: /health
+  restart_policy: always
+
+- runtime_id: rt.orchestrator.policy
+  runtime_mode: always-on
+  container_name: ssid-policy-engine
+  description: Policy evaluation, registry management, audit trail
+  logical_agents:
+    - agentswarm.orchestrator.policy.primary
+    - agentswarm.orchestrator.policy.sentinel
+    - agentswarm.orchestrator.registry.primary
+    - agentswarm.orchestrator.registry.sentinel
+    - agentswarm.orchestrator.audit.primary
+    - agentswarm.orchestrator.audit.sentinel
+  pairs:
+    - pair.orchestrator.policy
+    - pair.orchestrator.registry
+    - pair.orchestrator.audit
+  resource_class: medium
+  health_endpoint: /health
+  restart_policy: always
+
+- runtime_id: rt.orchestrator.provider
+  runtime_mode: always-on
+  container_name: ssid-provider-manager
+  description: External provider integration and lifecycle
+  logical_agents:
+    - agentswarm.orchestrator.provider.primary
+    - agentswarm.orchestrator.provider.sentinel
+  pairs:
+    - pair.orchestrator.provider
+  resource_class: small
+  health_endpoint: /health
+  restart_policy: always
+
+- runtime_id: rt.execution.auth
+  runtime_mode: always-on
+  container_name: ssid-auth-runtime
+  description: Authentication and routing runtime -- always needed for requests
+  logical_agents:
+    - agentswarm.execution.auth_runtime.primary
+    - agentswarm.execution.auth_runtime.sentinel
+    - agentswarm.execution.routing_runtime.primary
+    - agentswarm.execution.routing_runtime.sentinel
+  pairs:
+    - pair.execution.auth_runtime
+    - pair.execution.routing_runtime
+  resource_class: medium
+  health_endpoint: /health
+  restart_policy: always
+
+- runtime_id: rt.execution.console
+  runtime_mode: always-on
+  container_name: ssid-console-runtime
+  description: Interactive console and autorunner for operator sessions
+  logical_agents:
+    - agentswarm.execution.console_runtime.primary
+    - agentswarm.execution.console_runtime.sentinel
+    - agentswarm.execution.autorunner_runtime.primary
+    - agentswarm.execution.autorunner_runtime.sentinel
+  pairs:
+    - pair.execution.console_runtime
+    - pair.execution.autorunner_runtime
+  resource_class: small
+  health_endpoint: /health
+  restart_policy: always
+
+- runtime_id: rt.execution.registry
+  runtime_mode: always-on
+  container_name: ssid-registry-sync
+  description: Registry and skill synchronization -- keeps agent state consistent
+  logical_agents:
+    - agentswarm.execution.registry_sync.primary
+    - agentswarm.execution.registry_sync.sentinel
+    - agentswarm.execution.skill_sync.primary
+    - agentswarm.execution.skill_sync.sentinel
+    - agentswarm.execution.agent_registry.primary
+    - agentswarm.execution.agent_registry.sentinel
+  pairs:
+    - pair.execution.registry_sync
+    - pair.execution.skill_sync
+    - pair.execution.agent_registry
+  resource_class: small
+  health_endpoint: /health
+  restart_policy: always
+
+- runtime_id: rt.control.core
+  runtime_mode: always-on
+  container_name: ssid-control-plane
+  description: Core control plane -- loop detection, timeouts, takeover, policy drift
+  logical_agents:
+    - agentswarm.control.loop_detection.primary
+    - agentswarm.control.loop_detection.sentinel
+    - agentswarm.control.timeout_control.primary
+    - agentswarm.control.timeout_control.sentinel
+    - agentswarm.control.takeover_manager.primary
+    - agentswarm.control.takeover_manager.sentinel
+    - agentswarm.control.policy_drift.primary
+    - agentswarm.control.policy_drift.sentinel
+    - agentswarm.control.permissions_guard.primary
+    - agentswarm.control.permissions_guard.sentinel
+    - agentswarm.control.evidence_integrity.primary
+    - agentswarm.control.evidence_integrity.sentinel
+  pairs:
+    - pair.control.loop_detection
+    - pair.control.timeout_control
+    - pair.control.takeover_manager
+    - pair.control.policy_drift
+    - pair.control.permissions_guard
+    - pair.control.evidence_integrity
+  resource_class: medium
+  health_endpoint: /health
+  restart_policy: always
+
+- runtime_id: rt.control.resource
+  runtime_mode: always-on
+  container_name: ssid-resource-guard
+  description: Resource guardrails -- concurrency, cost, memory, worktree, incidents
+  logical_agents:
+    - agentswarm.control.result_verifier.primary
+    - agentswarm.control.result_verifier.sentinel
+    - agentswarm.control.concurrency_guard.primary
+    - agentswarm.control.concurrency_guard.sentinel
+    - agentswarm.control.cost_guard.primary
+    - agentswarm.control.cost_guard.sentinel
+    - agentswarm.control.memory_guard.primary
+    - agentswarm.control.memory_guard.sentinel
+    - agentswarm.control.incident_manager.primary
+    - agentswarm.control.incident_manager.sentinel
+    - agentswarm.control.worktree_guard.primary
+    - agentswarm.control.worktree_guard.sentinel
+  pairs:
+    - pair.control.result_verifier
+    - pair.control.concurrency_guard
+    - pair.control.cost_guard
+    - pair.control.memory_guard
+    - pair.control.incident_manager
+    - pair.control.worktree_guard
+  resource_class: medium
+  health_endpoint: /health
+  restart_policy: always
+
+- runtime_id: rt.execution.eventflow
+  runtime_mode: always-on
+  container_name: ssid-eventflow
+  description: Event flow processing and task factory
+  logical_agents:
+    - agentswarm.execution.eventflow_runtime.primary
+    - agentswarm.execution.eventflow_runtime.sentinel
+    - agentswarm.execution.task_factory.primary
+    - agentswarm.execution.task_factory.sentinel
+  pairs:
+    - pair.execution.eventflow_runtime
+    - pair.execution.task_factory
+  resource_class: small
+  health_endpoint: /health
+  restart_policy: always
+
+# ============================================================
+# ON-DEMAND RUNTIME INSTANCES
+# Spun up when triggered, torn down after completion.
+# ============================================================
+
+- runtime_id: rt.orchestrator.frontend
+  runtime_mode: on-demand
+  container_name: ssid-frontend-orchestrator
+  description: Frontend build and deployment orchestration
+  logical_agents:
+    - agentswarm.orchestrator.frontend.primary
+    - agentswarm.orchestrator.frontend.sentinel
+  pairs:
+    - pair.orchestrator.frontend
+  trigger: frontend_task_queued
+  resource_class: medium
+  restart_policy: on-failure
+
+- runtime_id: rt.orchestrator.backend
+  runtime_mode: on-demand
+  container_name: ssid-backend-orchestrator
+  description: Backend build and deployment orchestration
+  logical_agents:
+    - agentswarm.orchestrator.backend.primary
+    - agentswarm.orchestrator.backend.sentinel
+  pairs:
+    - pair.orchestrator.backend
+  trigger: backend_task_queued
+  resource_class: medium
+  restart_policy: on-failure
+
+- runtime_id: rt.orchestrator.browser
+  runtime_mode: on-demand
+  container_name: ssid-browser-orchestrator
+  description: Browser-based verification orchestration
+  logical_agents:
+    - agentswarm.orchestrator.browser.primary
+    - agentswarm.orchestrator.browser.sentinel
+  pairs:
+    - pair.orchestrator.browser
+  trigger: browser_verification_requested
+  resource_class: large
+  restart_policy: on-failure
+
+- runtime_id: rt.orchestrator.release
+  runtime_mode: on-demand
+  container_name: ssid-release-orchestrator
+  description: Release pipeline orchestration
+  logical_agents:
+    - agentswarm.orchestrator.release.primary
+    - agentswarm.orchestrator.release.sentinel
+  pairs:
+    - pair.orchestrator.release
+  trigger: release_initiated
+  resource_class: medium
+  restart_policy: on-failure
+
+- runtime_id: rt.orchestrator.repair
+  runtime_mode: on-demand
+  container_name: ssid-repair-orchestrator
+  description: Repair and rollback orchestration
+  logical_agents:
+    - agentswarm.orchestrator.repair.primary
+    - agentswarm.orchestrator.repair.sentinel
+  pairs:
+    - pair.orchestrator.repair
+  trigger: repair_initiated
+  resource_class: medium
+  restart_policy: on-failure
+
+- runtime_id: rt.execution.build
+  runtime_mode: on-demand
+  container_name: ssid-build-executor
+  description: Build execution -- compiles, bundles, packages
+  logical_agents:
+    - agentswarm.execution.build_executor.primary
+    - agentswarm.execution.build_executor.sentinel
+  pairs:
+    - pair.execution.build_executor
+  trigger: build_queued
+  resource_class: large
+  restart_policy: on-failure
+
+- runtime_id: rt.execution.test
+  runtime_mode: on-demand
+  container_name: ssid-test-executor
+  description: Test execution -- unit, integration, and e2e tests
+  logical_agents:
+    - agentswarm.execution.unit_test_executor.primary
+    - agentswarm.execution.unit_test_executor.sentinel
+    - agentswarm.execution.integration_test_executor.primary
+    - agentswarm.execution.integration_test_executor.sentinel
+    - agentswarm.execution.e2e_executor.primary
+    - agentswarm.execution.e2e_executor.sentinel
+  pairs:
+    - pair.execution.unit_test_executor
+    - pair.execution.integration_test_executor
+    - pair.execution.e2e_executor
+  trigger: test_queued
+  resource_class: large
+  restart_policy: on-failure
+
+- runtime_id: rt.execution.proof
+  runtime_mode: on-demand
+  container_name: ssid-proof-executor
+  description: Proof execution -- browser, observability, docs verification
+  logical_agents:
+    - agentswarm.execution.browser_proof.primary
+    - agentswarm.execution.browser_proof.sentinel
+    - agentswarm.execution.observability_proof.primary
+    - agentswarm.execution.observability_proof.sentinel
+    - agentswarm.execution.docs_proof.primary
+    - agentswarm.execution.docs_proof.sentinel
+  pairs:
+    - pair.execution.browser_proof
+    - pair.execution.observability_proof
+    - pair.execution.docs_proof
+  trigger: proof_requested
+  resource_class: large
+  restart_policy: on-failure
+
+# ============================================================
+# DEFERRED RUNTIME INSTANCES
+# Only activated by explicit operator command.
+# ============================================================
+
+- runtime_id: rt.execution.guardrail
+  runtime_mode: deferred
+  container_name: ssid-guardrail-executor
+  description: Root24 guard and SoT parity checks -- activated for audits
+  logical_agents:
+    - agentswarm.execution.root24_guard.primary
+    - agentswarm.execution.root24_guard.sentinel
+    - agentswarm.execution.sot_parity.primary
+    - agentswarm.execution.sot_parity.sentinel
+  pairs:
+    - pair.execution.root24_guard
+    - pair.execution.sot_parity
+  activation: operator_command
+  resource_class: small
+  restart_policy: never
+
+- runtime_id: rt.execution.rollback
+  runtime_mode: deferred
+  container_name: ssid-rollback-executor
+  description: Rollback and repair execution -- activated on incident
+  logical_agents:
+    - agentswarm.execution.rollback_repair.primary
+    - agentswarm.execution.rollback_repair.sentinel
+  pairs:
+    - pair.execution.rollback_repair
+  activation: incident_triggered
+  resource_class: medium
+  restart_policy: never
+
+# ============================================================
+# SUMMARY
+# ============================================================
+#
+# Always-on:  10 runtime instances
+# On-demand:   8 runtime instances
+# Deferred:    2 runtime instances
+# Total:      20 runtime instances hosting 86 logical agents in 43 pairs
+#
+# Visible in live swarm (idle state): ~10 containers (always-on only)
+# Visible during full workload: up to 20 containers

@@ -506,7 +506,7 @@ def _build_and_write_evidence(
         "checks": checks_results,
         "changed_files": sorted(changed_files),
         "worm_zip": {
-            "path": str(zip_path.relative_to(PROJECT_ROOT)),
+            "path": str(zip_path.relative_to(PROJECT_ROOT)) if zip_path.is_relative_to(PROJECT_ROOT) else str(zip_path),
             "sha256": zip_sha256,
             "size_bytes": zip_size,
         },

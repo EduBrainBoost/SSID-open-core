@@ -1,0 +1,178 @@
+# SSID Incident Response Policy
+# Version: 1.0.0
+# Last Updated: 2026-03-29
+
+policy:
+  name: incident_response_policy
+  version: "1.0.0"
+  scope: "All SSID infrastructure, services, and identity operations"
+  owner: "SSID Security Team"
+
+severity_levels:
+  P0:
+    name: "Critical"
+    description: "Active exploitation, data breach, identity system compromise, PII exposure"
+    examples:
+      - "Non-custodial guarantee violated (raw PII stored or leaked)"
+      - "Smart contract exploit with active fund or identity theft"
+      - "DID takeover affecting production identities"
+      - "Private key compromise of signing infrastructure"
+    response_time: "Immediate (within 15 minutes)"
+    resolution_target: "4 hours"
+    notification: "All hands -- security team, core maintainers, legal"
+
+  P1:
+    name: "High"
+    description: "Critical vulnerability discovered, auth bypass, credential forgery potential"
+    examples:
+      - "Authentication bypass in zero-time-auth"
+      - "Credential forgery vector identified"
+      - "Provider compromise affecting credential issuance"
+      - "Post-quantum crypto implementation flaw"
+    response_time: "Within 1 hour"
+    resolution_target: "24 hours"
+    notification: "Security team, affected component maintainers"
+
+  P2:
+    name: "Medium"
+    description: "High-impact logic flaw, privilege escalation potential, data integrity risk"
+    examples:
+      - "Identity score manipulation vector"
+      - "Agent privilege escalation path"
+      - "Data pipeline validation bypass"
+      - "Audit log gap or tampering possibility"
+    response_time: "Within 4 hours"
+    resolution_target: "5 business days"
+    notification: "Security team lead, component owner"
+
+  P3:
+    name: "Low"
+    description: "Theoretical vulnerability, defense-in-depth improvement, minor policy violation"
+    examples:
+      - "Non-exploitable code pattern"
+      - "Missing rate limit on non-critical endpoint"
+      - "Documentation gap in security procedures"
+      - "Minor policy enforcement inconsistency"
+    response_time: "Within 1 business day"
+    resolution_target: "Next release cycle"
+    notification: "Component owner"
+
+escalation_paths:
+  level_1:
+    role: "On-call Security Engineer"
+    responsibility: "Initial triage, severity classification, containment"
+    escalation_trigger: "P0/P1 confirmed or unable to classify within 30 minutes"
+
+  level_2:
+    role: "Security Team Lead"
+    responsibility: "Coordinate response, approve emergency changes, external communication"
+    escalation_trigger: "P0 confirmed, multi-component impact, or Level 1 unable to contain"
+
+  level_3:
+    role: "Core Maintainers + Legal"
+    responsibility: "Smart contract emergency actions, regulatory notification, disclosure decisions"
+    escalation_trigger: "PII breach, regulatory impact, blockchain state corruption"
+
+response_procedures:
+  detection:
+    - "Automated alerting via 17_observability monitoring stack"
+    - "External vulnerability reports via SECURITY.md process"
+    - "Internal audit findings from 02_audit_logging"
+    - "Community reports via community_monitoring_policy.yaml"
+
+  triage:
+    - "Classify severity (P0-P3)"
+    - "Identify affected SSID roots and components"
+    - "Determine blast radius (users, providers, contracts affected)"
+    - "Assign incident commander"
+
+  containment:
+    - "Isolate affected components without disrupting unaffected services"
+    - "Revoke compromised credentials immediately"
+    - "Enable enhanced logging on affected paths"
+    - "Block malicious actors at infrastructure level (15_infra)"
+    - "For smart contract issues: pause affected contract functions if possible"
+
+  eradication:
+    - "Identify root cause through evidence chain analysis"
+    - "Develop fix following RFC process (emergency fast-track for P0)"
+    - "All fixes require code review even under emergency"
+    - "Smart contract fixes require formal verification"
+
+  recovery:
+    - "Deploy fix through standard deployment pipeline (04_deployment)"
+    - "Verify fix effectiveness through test simulation (11_test_simulation)"
+    - "Restore normal monitoring thresholds"
+    - "Confirm no residual compromise"
+
+evidence_preservation:
+  rules:
+    - "All incident evidence is immutable once collected"
+    - "Evidence stored in dedicated incident directory under 02_audit_logging"
+    - "Chain of custody documented for all evidence artifacts"
+    - "No evidence deletion without legal approval"
+    - "SHA3-256 hash of all evidence files computed at collection time"
+
+  required_artifacts:
+    - "System logs covering incident window (minimum 72 hours before detection)"
+    - "Network traffic captures if applicable"
+    - "Affected DID documents and credential states"
+    - "Smart contract transaction history"
+    - "Agent session logs and evidence trails"
+    - "Screenshots or recordings of observed behavior"
+
+  storage:
+    format: "Timestamped, signed evidence bundles"
+    retention: "Minimum 7 years for regulatory compliance"
+    access: "Security team and legal only"
+    integrity: "SHA3-256 hash chain with blockchain anchoring for P0/P1"
+
+post_incident_review:
+  timeline: "Within 5 business days of incident resolution"
+
+  required_sections:
+    - section: "Incident Summary"
+      content: "What happened, when, severity, affected components"
+
+    - section: "Timeline"
+      content: "Detection to resolution with timestamps"
+
+    - section: "Root Cause Analysis"
+      content: "Technical root cause and contributing factors"
+
+    - section: "Impact Assessment"
+      content: "Users affected, data exposed, service disruption duration"
+
+    - section: "Response Evaluation"
+      content: "What worked, what did not, response time vs targets"
+
+    - section: "Remediation Actions"
+      content: "Immediate fixes applied, long-term improvements planned"
+
+    - section: "Threat Model Update"
+      content: "New threats identified, THREATMODEL.md updates required"
+
+    - section: "Policy Updates"
+      content: "Changes to this policy or related compliance policies"
+
+  distribution:
+    - "Security team (full report)"
+    - "Core maintainers (redacted -- no exploit details)"
+    - "Affected users (summary notification if PII involved)"
+    - "Regulatory bodies (as required by jurisdiction)"
+
+communication:
+  internal:
+    channel: "Dedicated security incident channel"
+    updates: "Every 2 hours for P0, every 4 hours for P1"
+    format: "Structured status update with current state, next actions, blockers"
+
+  external:
+    policy: "No external communication without Security Team Lead approval"
+    disclosure_timeline: "90 days coordinated disclosure per SECURITY.md"
+    user_notification: "Required within 72 hours if PII affected (GDPR)"
+
+training:
+  frequency: "Annual incident response drill"
+  scope: "All team members with system access"
+  tabletop_exercises: "Quarterly, aligned with bias audit cycle"

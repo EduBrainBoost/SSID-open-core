@@ -1,9 +1,9 @@
 # 24_meta_orchestration - Module Descriptor
 # SoT v4.1.0 | ROOT-24-LOCK | Classification: Orchestration
-# Generated: 2026-03-09
+# Generated: 2026-02-28 | Updated: 2026-03-29
 
 module_id: "24_meta_orchestration"
-name: "Meta Orchestration"
+name: "Meta Orchestration & System Coordination"
 version: "4.1.0"
 status: "ROOT-24-LOCK"
 classification: "Orchestration"
@@ -13,12 +13,24 @@ final_authority: "03_core"
 structure:
   must_dirs:
     - "docs"
-    - "src"
-    - "tests"
+    - "agents"
+    - "agentswarm"
     - "config"
+    - "contracts"
+    - "dispatcher"
+    - "incident"
+    - "monitoring"
+    - "oversight"
+    - "pipelines"
+    - "plans"
+    - "policies"
+    - "queue"
+    - "registry"
+    - "releases"
   must_files:
     - "module.yaml"
     - "README.md"
+    - "dao_treasury_policy.yaml"
   forbidden_paths:
     - "compliance_policies"
     - "audit_storage"
@@ -28,13 +40,41 @@ interfaces:
   outputs:
     - ref: "17_observability/logs/meta_orchestration"
       type: "log_sink"
+      description: "Orchestration dispatch and coordination logging"
   evidence:
     - ref: "23_compliance/evidence/meta_orchestration"
       type: "evidence_target"
+      description: "Orchestration evidence (hash-only)"
+
+capabilities:
+  - id: "agent_swarm"
+    description: "Multi-agent swarm coordination and dispatch"
+    status: "active"
+  - id: "task_dispatcher"
+    description: "NON-INTERACTIVE task dispatcher with SAFE-FIX enforcement"
+    status: "active"
+  - id: "global_registry"
+    description: "Global service and module registry"
+    status: "active"
+  - id: "incident_management"
+    description: "Incident detection, response, and recovery coordination"
+    status: "active"
+  - id: "oversight_mechanisms"
+    description: "System oversight and control plane"
+    status: "active"
+  - id: "pipeline_orchestration"
+    description: "Cross-module pipeline workflow definitions"
+    status: "active"
+  - id: "release_coordination"
+    description: "Release versioning and rollout coordination"
+    status: "active"
+  - id: "dao_treasury"
+    description: "DAO treasury policy enforcement"
+    status: "active"
 
 shard_count: 16
 evidence_strategy: "hash_manifest_only"
 governance_rules:
-  - "SOT_AGENT_021"
-  - "SOT_AGENT_022"
-  - "SOT_AGENT_023"
+  - "SOT_AGENT_063"
+  - "SOT_AGENT_064"
+  - "SOT_AGENT_065"

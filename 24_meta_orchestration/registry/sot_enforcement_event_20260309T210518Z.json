@@ -1,0 +1,10 @@
+{
+  "event_type": "sot_enforcement_gate",
+  "timestamp_utc": "2026-03-09T21:05:18Z",
+  "status": "PASS",
+  "rules_checked": 36,
+  "violations": 0,
+  "contract_version": "4.1.0",
+  "contract_sha256": "da53c4aed917af5a95c84427fcd6503f11fb14e6f2b2bfd9264bd6a2860631e0",
+  "validator_sha256": "378057402ddbb195b52906414af78127c5dc28dc6d132a5c72fef4b0377c106e"
+}

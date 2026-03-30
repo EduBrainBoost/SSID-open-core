@@ -1,0 +1,24 @@
+# Contract: structure_policy
+# Source: 23_compliance/policies/structure/structure_policy.rego
+# Generated: Phase 2 — A02_A03_COMPLETION
+# SoT Reference: 16_codex/contracts/sot/
+contract_id: "structure_policy-contract"
+rule_id: "structure_policy"
+package: "structure_policy"
+type: compliance_contract
+version: "4.1.0"
+derived_from: "23_compliance/policies/structure/structure_policy.rego"
+enforcement: rego_policy
+status: active
+default_decision: deny
+description: >
+  SSID Structure Policy v4.1 — Complements sot_policy.rego.
+  Enforces SSID directory structure and file naming conventions.
+deny_conditions:
+  - id: "STRUCTURE_VIOLATION"
+    trigger: "file path does not conform to valid SSID shard path"
+  - id: "NAMING_VIOLATION"
+    trigger: "file name does not conform to SSID naming conventions"
+input_schema:
+  file_paths: "list of strings"
+  files: "list of {name, path}"

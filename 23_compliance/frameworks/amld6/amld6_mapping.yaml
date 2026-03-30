@@ -1,0 +1,161 @@
+# AMLD6 Compliance Mapping — SSID Platform
+# SoT v4.1.0 | Classification: Compliance
+# Framework: 6th Anti-Money Laundering Directive (EU) 2018/1673
+# Note: Also covers AMLD5 (EU) 2018/843 requirements still in force
+# Generated: 2026-03-15
+
+framework_id: "amld6"
+framework_name: "6th Anti-Money Laundering Directive"
+regulation: "(EU) 2018/1673 + (EU) 2018/843 (AMLD5)"
+effective_date: "2020-12-03"
+jurisdiction: ["EU", "EEA"]
+version: "1.0.0"
+final_authority: "03_core"
+applicability: >
+  SSID provides identity verification infrastructure for obliged entities
+  under AMLD6 (credit institutions, financial institutions, CASPs,
+  notaries, lawyers, auditors, and real estate agents).
+
+# ---------------------------------------------------------------------
+# AML REQUIREMENTS MAPPED TO SSID CAPABILITIES
+# ---------------------------------------------------------------------
+
+articles:
+
+  - article: "Art. 3-4 (AMLD5)"
+    title: "Customer Due Diligence (CDD) — obliged entities"
+    ssid_role: "primary_cdd_infrastructure"
+    ssid_roots:
+      - root: "08_identity_score"
+        rationale: "KYC score and risk classification for CDD decisions"
+      - root: "03_core"
+        rationale: "CDD gate: blocks service until identity verified"
+      - root: "09_meta_identity"
+        rationale: "Composite identity from multiple authoritative sources"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Customer identity verification (name, address, DoB, nationality)"
+      - shard: "23_compliance/shards/02_dokumente_nachweise"
+        note: "Identity document verification"
+      - shard: "23_compliance/shards/10_finanzen_banking"
+        note: "Financial profile for risk assessment"
+    cdd_types_supported:
+      - "simplified_due_diligence"
+      - "standard_customer_due_diligence"
+      - "enhanced_due_diligence"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 6 (AMLD5)"
+    title: "Enhanced Due Diligence (EDD) — high-risk third countries and PEPs"
+    ssid_role: "edd_identity_enrichment"
+    ssid_roots:
+      - root: "08_identity_score"
+        rationale: "PEP/sanctions screening integration; EDD risk score"
+      - root: "09_meta_identity"
+        rationale: "Cross-source identity enrichment for PEP determination"
+      - root: "03_core"
+        rationale: "EDD gate: mandatory for PEPs, high-risk countries, complex structures"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "PEP status and political exposure determination"
+      - shard: "23_compliance/shards/13_unternehmen_gewerbe"
+        note: "Complex corporate structure unwinding for UBO"
+      - shard: "23_compliance/shards/09_arbeit_karriere"
+        note: "Professional role — PEP determination"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 30-31 (AMLD5)"
+    title: "Beneficial Ownership — UBO register access and verification"
+    ssid_role: "ubo_identity_verification"
+    ssid_roots:
+      - root: "03_core"
+        rationale: "UBO identity chain resolution; ownership threshold (>25%) enforcement"
+      - root: "08_identity_score"
+        rationale: "UBO risk scoring"
+      - root: "10_interoperability"
+        rationale: "UBO register API connector (national registers)"
+    ssid_shards:
+      - shard: "23_compliance/shards/13_unternehmen_gewerbe"
+        note: "Corporate entity and ownership structure"
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Natural person UBO identity verification"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 1 (AMLD6)"
+    title: "22 predicate offences — expanded scope"
+    ssid_role: "criminal_record_identity_check"
+    ssid_roots:
+      - root: "08_identity_score"
+        rationale: "Criminal record and adverse media screening integration"
+      - root: "03_core"
+        rationale: "Screening gate for predicate offence indicators"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Identity cross-referenced against predicate offence indicators"
+    status: "mapped"
+    gap: "Requires integration with national criminal record databases"
+
+  - article: "Art. 6 (AMLD6)"
+    title: "Corporate liability — obliged entity responsibility"
+    ssid_role: "corporate_identity_compliance_records"
+    ssid_roots:
+      - root: "02_audit_logging"
+        rationale: "WORM records proving compliance actions taken by obliged entity"
+      - root: "23_compliance"
+        rationale: "Compliance evidence package for regulatory examination"
+    ssid_shards:
+      - shard: "23_compliance/shards/13_unternehmen_gewerbe"
+        note: "Obliged entity identity and compliance records"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 7 (AMLD5)"
+    title: "Risk assessment — national and supranational"
+    ssid_role: "risk_factor_identity_data_provider"
+    ssid_roots:
+      - root: "08_identity_score"
+        rationale: "Customer risk score feeds national/institutional risk assessment"
+      - root: "23_compliance"
+        rationale: "Risk factor registry; country risk classifications"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Customer risk profile"
+      - shard: "23_compliance/shards/16_behoerden_verwaltung"
+        note: "Public sector interaction risk factors"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 23-24 (AMLD5)"
+    title: "Reporting — suspicious transaction reports (STRs)"
+    ssid_role: "str_identity_evidence_package"
+    ssid_roots:
+      - root: "02_audit_logging"
+        rationale: "Immutable identity and transaction evidence for STR filing"
+      - root: "03_core"
+        rationale: "STR identity package generation"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "Subject identity in STR"
+      - shard: "23_compliance/shards/15_handel_transaktionen"
+        note: "Transaction details linked to identity"
+    status: "mapped"
+    gap: null
+
+  - article: "Art. 40 (AMLD5)"
+    title: "Record keeping — 5 year retention"
+    ssid_role: "identity_record_retention_infrastructure"
+    ssid_roots:
+      - root: "02_audit_logging"
+        rationale: "WORM storage; configurable 5-year retention policy"
+      - root: "23_compliance"
+        rationale: "Retention policy registry; deletion schedule management"
+    ssid_shards:
+      - shard: "23_compliance/shards/01_identitaet_personen"
+        note: "CDD records retained 5 years post relationship end"
+      - shard: "23_compliance/shards/15_handel_transaktionen"
+        note: "Transaction records retained 5 years"
+    status: "mapped"
+    gap: null

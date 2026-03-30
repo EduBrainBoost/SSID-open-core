@@ -1,0 +1,163 @@
+version: "1.0.0"
+task_group: "evidence_collection"
+description: >
+  Tasks for gathering, hashing, and persisting evidence artefacts required for
+  audit compliance. Covers evidence_index.yaml population per shard, hash-chain
+  extension, WORM archive ingestion, and final SOT scorecard production.
+  These tasks are the terminal layer — all other task groups feed into them.
+generated_utc: "2026-03-15T00:00:00Z"
+
+tasks:
+  - id: "TASK-EC-001"
+    title: "Populate evidence_index.yaml for all 01_ai_layer shards"
+    scope: "01_ai_layer/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: ["TASK-CV-002", "TASK-TE-011"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-002"
+    title: "Populate evidence_index.yaml for all 02_audit_logging shards"
+    scope: "02_audit_logging/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-003", "TASK-SH-009"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-003"
+    title: "Populate evidence_index.yaml for all 03_core shards"
+    scope: "03_core/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-004", "TASK-TE-002"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-004"
+    title: "Populate evidence_index.yaml for all 04_deployment shards"
+    scope: "04_deployment/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: ["TASK-TE-006"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-005"
+    title: "Populate evidence_index.yaml for all 07_governance_legal shards"
+    scope: "07_governance_legal/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-005"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-006"
+    title: "Populate evidence_index.yaml for all 08_identity_score shards"
+    scope: "08_identity_score/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-006", "TASK-TE-003"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-007"
+    title: "Populate evidence_index.yaml for all 14_zero_time_auth shards"
+    scope: "14_zero_time_auth/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-007", "TASK-TE-004"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-008"
+    title: "Populate evidence_index.yaml for all 21_post_quantum_crypto shards"
+    scope: "21_post_quantum_crypto/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-008", "TASK-TE-005", "TASK-SH-007"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-009"
+    title: "Populate evidence_index.yaml for all 23_compliance shards"
+    scope: "23_compliance/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-009", "TASK-CV-015"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-010"
+    title: "Populate evidence_index.yaml for remaining 15 roots (batch)"
+    scope: "24_meta_orchestration/registry"
+    status: "pending"
+    priority: "high"
+    dependencies: ["TASK-CV-010", "TASK-TE-013"]
+    assigned_agent: ""
+    evidence_required: true
+    batch_roots:
+      - "05_documentation"
+      - "06_data_pipeline"
+      - "09_meta_identity"
+      - "10_interoperability"
+      - "11_test_simulation"
+      - "12_tooling"
+      - "13_ui_layer"
+      - "15_infra"
+      - "16_codex"
+      - "17_observability"
+      - "18_data_layer"
+      - "19_adapters"
+      - "20_foundation"
+      - "22_datasets"
+      - "24_meta_orchestration"
+
+  - id: "TASK-EC-011"
+    title: "Extend hash_chain.json with new evidence block for this workstream cycle"
+    scope: "24_meta_orchestration/registry/logs"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-EC-001", "TASK-EC-002", "TASK-EC-003", "TASK-EC-004",
+                   "TASK-EC-005", "TASK-EC-006", "TASK-EC-007", "TASK-EC-008",
+                   "TASK-EC-009", "TASK-EC-010"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-012"
+    title: "Ingest all evidence bundles into WORM archive storage"
+    scope: "02_audit_logging/storage/worm"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-EC-011"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-013"
+    title: "Regenerate sot_registry.json with updated SHA-256 hashes for all artefacts"
+    scope: "24_meta_orchestration/registry"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-EC-012"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-014"
+    title: "Regenerate shards_registry.json — update all null evidence_index_path entries"
+    scope: "24_meta_orchestration/registry"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-EC-010"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-EC-015"
+    title: "Publish final SOT enforcement event to report_bus and close workstream cycle"
+    scope: "24_meta_orchestration/report_bus"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-EC-013", "TASK-EC-014", "TASK-TE-014", "TASK-SH-014",
+                   "TASK-CV-015"]
+    assigned_agent: ""
+    evidence_required: true

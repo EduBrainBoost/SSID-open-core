@@ -1,0 +1,95 @@
+# OECD CARF — Crypto-Asset Reporting Framework Mapping
+# OECD CARF (2023) / EU DAC8 Implementation
+# SAFE-FIX: No PII, no secrets. Pure regulatory mapping.
+# Generated: 2026-03-29 | Agent: A8-COMPLIANCE-MAPPING-CLOSURE
+
+regulation_id: "OECD_CARF"
+regulation_name: "OECD Crypto-Asset Reporting Framework"
+reference: "OECD CARF (2023), EU DAC8 Directive 2023/2226"
+version: "1.0.0"
+carf_publication: "2023-06-10"
+dac8_effective: "2026-01-01"
+first_reporting: "2027-01-01"
+last_reviewed: "2026-03-29"
+
+ssid_context: >
+  OECD CARF establishes automatic exchange of information on crypto-asset
+  transactions between tax authorities. EU DAC8 implements CARF within
+  the EU. Reporting Crypto-Asset Service Providers (RCASPs) must report
+  user identity and transaction data. SSID is NOT an RCASP but provides
+  identity infrastructure that RCASPs may use for user identification.
+
+non_custodial_note: >
+  SSID does not custody crypto-assets, does not execute transactions,
+  and does not qualify as an RCASP. SSID's role is limited to providing
+  hash-based identity attestation that RCASPs can use to identify
+  users for CARF/DAC8 reporting purposes.
+
+articles:
+  - article_id: "CARF Section II.A"
+    title: "Reporting Crypto-Asset Service Provider definition"
+    ssid_root: "07_governance_legal"
+    ssid_shard: "legal/rcasp_exemption"
+    control_type: "legal_analysis"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/rcasp_exemption.json"
+    non_custodial_relevance: "critical"
+    notes: "SSID confirmed NOT an RCASP — no custody, no exchange services"
+
+  - article_id: "CARF Section II.B"
+    title: "Reportable Crypto-Asset definition"
+    ssid_root: "07_governance_legal"
+    ssid_shard: "legal/token_classification"
+    control_type: "legal_analysis"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/carf_token_analysis.json"
+    notes: "SSID utility token assessment under CARF crypto-asset definition"
+
+  - article_id: "CARF Section III"
+    title: "Due diligence procedures"
+    ssid_root: "08_identity_score"
+    ssid_shard: "kyc/carf_due_diligence"
+    control_type: "technical"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/core/carf_due_diligence.json"
+    notes: "SSID identity attestation supports RCASP due diligence; hash-based KYC"
+
+  - article_id: "CARF Section IV"
+    title: "Reporting requirements"
+    ssid_root: "02_audit_logging"
+    ssid_shard: "audit/carf_reporting_hooks"
+    control_type: "technical"
+    implementation_status: "planned"
+    evidence_path: "23_compliance/evidence/audit/carf_reporting.json"
+    notes: "Reporting hooks for RCASP partners planned; SSID itself does not report"
+
+  - article_id: "DAC8 Art. 8ac"
+    title: "EU implementation — automatic exchange"
+    ssid_root: "23_compliance"
+    ssid_shard: "regulatory_intelligence/dac8"
+    control_type: "organizational"
+    implementation_status: "monitoring"
+    evidence_path: "23_compliance/evidence/core/dac8_monitoring.json"
+    notes: "Monitoring DAC8 implementation across EU Member States"
+
+  - article_id: "CARF MDR Section V"
+    title: "Model competent authority agreement"
+    ssid_root: "23_compliance"
+    ssid_shard: "global/carf_mcaa"
+    control_type: "organizational"
+    implementation_status: "not_applicable"
+    evidence_path: null
+    notes: "MCAA is between competent authorities; not applicable to SSID"
+
+coverage_summary:
+  total_articles_mapped: 6
+  implemented: 2
+  partial: 1
+  planned: 1
+  monitoring: 1
+  not_applicable: 1
+  coverage_level: "partial"
+  ssid_role: "infrastructure_provider_not_rcasp"
+
+review_cycle: "quarterly"
+next_review: "2026-06-29"

@@ -1,0 +1,49 @@
+# PII Detection Patterns — AR-01 pii_scanner
+# SoT: 23_compliance, master_v1.1.1 §4 (Data Minimization)
+# Format: each pattern has id, name, regex, severity, note
+
+patterns:
+  - id: PII_EMAIL
+    name: Email Address
+    regex: '[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}'
+    severity: HIGH
+    note: "Exclude: test@example.com, noreply@github.com patterns in comments"
+
+  - id: PII_IBAN
+    name: IBAN
+    regex: '[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}([A-Z0-9]?){0,16}'
+    severity: CRITICAL
+    note: "Full IBAN detection per ISO 13616"
+
+  - id: PII_DE_PERSONALAUSWEIS
+    name: German Personalausweis Number
+    regex: '[LMNPRTVWXY][A-Z0-9]{8}[0-9]'
+    severity: CRITICAL
+    note: "German national ID card number pattern"
+
+  - id: PII_PHONE_DE
+    name: German Phone Number
+    regex: '(\+49|0049|0)[1-9][0-9\s\-\./]{6,14}[0-9]'
+    severity: MEDIUM
+    note: "German phone number format"
+
+  - id: PII_PHONE_INTL
+    name: International Phone Number
+    regex: '\+[1-9][0-9]{6,14}'
+    severity: MEDIUM
+    note: "E.164 international format"
+
+  - id: PII_IP_ADDRESS
+    name: IP Address (non-localhost)
+    regex: '(?<![\d\.])(?!(?:127\.|0\.0\.0\.0|::1))(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?![\d\.])'
+    severity: LOW
+    note: "Excludes 127.x.x.x, 0.0.0.0 (localhost/test addresses)"
+
+# False-positive exclusion rules (applied post-match)
+exclusions:
+  - pattern: '@example\.(com|org|net)'
+    reason: RFC 2606 test domains (any user@example.com/org/net)
+  - pattern: 'noreply@'
+    reason: No-reply sender addresses
+  - pattern: '# .*PII_.*'
+    reason: Pattern ID references in comments

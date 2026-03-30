@@ -1,0 +1,22 @@
+rule_id: "RULE-003"
+name: "NO-SCAN"
+version: "1.0.0"
+enforcement_level: "MANDATORY"
+description: >
+  Kein Agent darf Repos scannen, durchsuchen oder Pfade raten.
+  Scope wird beim Start per Session-Contract mitgegeben. Pfade sind
+  in der Registry definiert.
+constraints:
+  - "Scope wird beim Start per Session-Contract mitgegeben"
+  - "Pfade sind in der Registry definiert"
+  - "Port-Matrix ist in port-policy.json definiert"
+  - "Runtime-Pfade in runtime-map.json"
+  - "03_path_guard blockiert Zugriffe ausserhalb des Scopes"
+  - "01_scope_router liefert exakte Pfade"
+  - "Jeder Agent kennt seinen Scope beim Start"
+violations:
+  - "Repos scannen oder durchsuchen"
+  - "Pfade oder Dateinamen raten"
+  - "Freies Durchsuchen von Verzeichnisbaumen"
+  - "Pruefe wo das Projekt liegt"
+  - "Scanne Ordner"

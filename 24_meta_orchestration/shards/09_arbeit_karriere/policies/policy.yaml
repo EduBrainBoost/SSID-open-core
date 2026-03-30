@@ -1,5 +1,0 @@
-policy_id: 24_meta_orchestration.09_arbeit_karriere.baseline_policy
-root_id: 24_meta_orchestration
-shard_id: 09_arbeit_karriere
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

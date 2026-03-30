@@ -1,3 +1,28 @@
-# 03_core/09_arbeit_karriere
+# Core -- Arbeit & Karriere
 
-Capability definition for deterministic shard contract baseline.
+## Purpose
+
+Arbeitsverhaeltnis-Validierung und Karrieredaten-Pruefung.
+Dieser Shard verwaltet alle Arbeit & Karriere-bezogenen Operationen innerhalb des Core-Kontexts.
+Er stellt sicher, dass alle Daten non-custodial verarbeitet werden (nur SHA3-256-Hashes).
+
+## Structure
+
+```
+09_arbeit_karriere/
+  chart.yaml          # Shard-Konfiguration und Capabilities
+  manifest.yaml       # Deployment-Manifest
+  docs/               # Technische Dokumentation
+  tests/              # Automatisierte Tests
+  implementations/    # Sprachspezifische Implementierungen
+    python/src/       # Python-Module
+```
+
+## Interfaces
+
+- **Core Validator Bus**: Primaere Schnittstelle fuer Arbeit & Karriere-Daten im Core
+- **Policy Engine API**: Sekundaere Schnittstelle fuer Abfragen und Validierung
+
+## SoT Reference
+
+Kanonische Konfiguration: `03_core/shards/09_arbeit_karriere/chart.yaml`

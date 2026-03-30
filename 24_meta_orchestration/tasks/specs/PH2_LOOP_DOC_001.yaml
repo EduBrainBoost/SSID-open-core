@@ -1,0 +1,24 @@
+task_id: PH2_LOOP_DOC_001
+title: "Runbook: 1-command-per-task usage and troubleshooting (Windows/WSL/Codespaces)"
+task_type: docs
+scope_allowlist:
+  - "12_tooling/cli/docs/"
+forbidden_paths:
+  - "./"
+  - "/mnt/data"
+  - "**/.git/**"
+  - "**/secrets/**"
+required_checks:
+  - "python 12_tooling/cli/stability_gate.py --run"
+  - "python 12_tooling/cli/sot_validator.py --verify-all"
+  - "python -m pytest -q"
+acceptance_criteria:
+  - "Runbook with 1-command-per-task examples for automation_loop workflow"
+  - "Troubleshooting section covers Windows, WSL, and Codespaces environments"
+  - "Common failure modes documented with resolution steps"
+  - "No secrets in documentation"
+evidence_outputs:
+  - "02_audit_logging/agent_runs/PH2_LOOP_DOC_001/evidence.json"
+  - "02_audit_logging/agent_runs/PH2_LOOP_DOC_001/patch.diff"
+agent_cmd: "manual"
+notes: "Documentation-only changes. No code modified."

@@ -1,0 +1,20 @@
+{
+  "event_id": "659173cbdf18f76c40723f6f5fc8e24c61843bbde2063150b2ebc30dfae65028",
+  "event_type": "merge_recorded",
+  "merge_sha": "5ff4b93cd1899bab8488b8c055ca1eb61f6112b3",
+  "observed_utc": "2026-02-28T10:47:33Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 23,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-5ff4b93/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "5ff4b93cd1899bab8488b8c055ca1eb61f6112b3",
+  "summary": "Root02 Audit Logging: B1a scaffold + B1b governance + Phase C (#23)",
+  "task_id": null
+}

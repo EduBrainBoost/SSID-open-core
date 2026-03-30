@@ -1,0 +1,8 @@
+{
+  "runtime_mode": "ssidctl_v2",
+  "default_profile": "gate55_core_11",
+  "fallback_profile": "legacy_29_compat",
+  "rollback_target": "legacy_29",
+  "switch_allowed": true,
+  "rollback_allowed": true
+}

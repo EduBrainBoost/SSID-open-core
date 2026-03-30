@@ -1,189 +1,87 @@
-# OpenCore Export Policy — Public Export Contract
-# Version: 2.0.0
-# Last-updated: 2026-03-10
-# Purpose: defines allow/deny rules for SSID → SSID-open-core exports
-
-schema_version: "2.0.0"
-
+# SSID Open-Core Export Policy v2.0.0
+# Authoritative source: SSID private repo (this file)
+# Defines what MAY and what MUST NOT be mirrored to SSID-open-core
+---
+version: "2.0.0"
 source_repo: "SSID"
 target_repo: "SSID-open-core"
 mode: "filtered"
 
-# ---------------------------------------------------------------------------
-# ALLOW: only files matching these prefixes are eligible for export.
-# Everything else is implicitly denied even before deny_globs apply.
-# ---------------------------------------------------------------------------
+# Only these prefixes are allowed in open-core
 allow_prefixes:
   - "03_core/"
   - "12_tooling/"
   - "16_codex/"
   - "23_compliance/"
   - "24_meta_orchestration/"
-  - "docs/"
-  - "CONTRIBUTING.md"
+  # Top-level files
   - "LICENSE"
   - "README.md"
+  - "CONTRIBUTING.md"
+  - "AGENTS.md"
   - "pytest.ini"
+  - "pyproject.toml"
 
-# ---------------------------------------------------------------------------
-# ALLOW: only these file extensions are permitted in export bundles.
-# Binary or unknown extensions are rejected.
-# ---------------------------------------------------------------------------
-allow_extensions:
-  - ".py"
-  - ".sh"
-  - ".ps1"
-  - ".yaml"
-  - ".yml"
-  - ".json"
-  - ".md"
-  - ".txt"
-  - ".toml"
-  - ".cfg"
-  - ".ini"
-  - ".rego"
-  - ".lock"
+# These roots MUST NOT appear in open-core
+deny_roots:
+  - "01_ai_layer"        # AI/scoring algorithms, IP-sensitive
+  - "02_audit_logging"   # Evidence, WORM storage, quarantine chain
+  - "04_deployment"      # Infrastructure details
+  - "05_documentation"   # Internal docs, partner-specific
+  - "06_data_pipeline"   # Data flow architecture
+  - "07_governance_legal" # Legal/regulatory specifics
+  - "08_identity_score"  # Scoring algorithms, IP-sensitive
+  - "09_meta_identity"   # Identity logic, partner-specific
+  - "10_interoperability" # Partner interfaces, NDA-dependent
+  - "11_test_simulation" # Test infrastructure (public-safe but not core)
+  - "13_ui_layer"        # Product UI, not open-core
+  - "14_zero_time_auth"  # Auth algorithms, security-critical
+  - "15_infra"           # Infrastructure secrets risk
+  - "17_observability"   # Monitoring setup, internal
+  - "18_data_layer"      # Database schemas, internal
+  - "19_adapters"        # Partner adapters, NDA-dependent
+  - "20_foundation"      # Token/foundation, regulatory
+  - "21_post_quantum_crypto" # Crypto implementation, security-critical
+  - "22_datasets"        # PII-adjacent, regulatory
 
-# ---------------------------------------------------------------------------
-# MAX FILE SIZE: single file size cap in bytes (1 MiB)
-# Files exceeding this are excluded with reason "oversized".
-# ---------------------------------------------------------------------------
-max_file_size_bytes: 1048576
-
-# ---------------------------------------------------------------------------
-# DENY GLOBS: patterns that are always excluded, even if inside allow_prefixes
-# ---------------------------------------------------------------------------
+# Glob patterns that must never be exported
 deny_globs:
-  # --- secrets / credentials ---
   - "**/.env"
   - "**/.env.*"
+  - "**/secrets/**"
+  - "**/credentials/**"
+  - "**/private/**"
   - "**/*.pem"
   - "**/*.key"
   - "**/*.p12"
-  - "**/*.jks"
-  - "**/*.pfx"
-  - "**/*.secrets"
-  - "**/*.secret"
-  - "**/*.token"
-  - "**/credentials.json"
-  - "**/service_account*.json"
-  - "**/*secret*key*"
-  - "**/.netrc"
-  - "**/.npmrc"
-  - "**/.pypirc"
-
-  # --- private evidence / audit internals ---
   - "02_audit_logging/**"
-  - "23_compliance/evidence/**"
-  - "23_compliance/evidence/exports/**"
-  - "**/worm/**"
-  - "**/WORM/**"
-  - "**/quarantine/**"
-
-  # --- internal state / registry ---
-  - "registry/**"
-  - "**/registry/logs/**"
-  - "**/registry/locks/**"
-  - "**/registry/manifests/**"
-  - "**/registry/intake/**"
-  - "**/.ssid_sandbox/**"
-
-  # --- unsanitized docs / internal drafts ---
-  - "**/INTERNAL_*.md"
-  - "**/DRAFT_*.md"
-  - "**/PRIVATE_*.md"
-  - "**/*_internal.*"
-  - "**/*_private.*"
-
-  # --- agent runs / LLM outputs ---
-  - "**/agent_runs/**"
-  - "**/llm_outputs/**"
-  - "**/chat_ingest/**"
-
-  # --- binary / large media ---
-  - "**/*.exe"
-  - "**/*.dll"
-  - "**/*.so"
-  - "**/*.dylib"
-  - "**/*.bin"
-  - "**/*.dat"
-  - "**/*.db"
-  - "**/*.sqlite"
-  - "**/*.sqlite3"
-  - "**/*.zip"
-  - "**/*.tar"
-  - "**/*.tar.gz"
-  - "**/*.tgz"
-  - "**/*.rar"
-  - "**/*.7z"
-  - "**/*.jar"
-  - "**/*.war"
-  - "**/*.class"
-  - "**/*.pyc"
-  - "**/*.pyo"
+  - "02_audit_logging/storage/worm/**"
+  - "02_audit_logging/evidence/**"
+  - "24_meta_orchestration/registry/logs/**"
+  - "security/results/**"
   - "**/__pycache__/**"
+  - "**/node_modules/**"
 
-  # --- IDE / OS artifacts ---
-  - "**/.idea/**"
-  - "**/.vscode/**"
-  - "**/.DS_Store"
-  - "**/Thumbs.db"
-  - "**/*.swp"
-  - "**/*.swo"
-
-  # --- git internals ---
-  - ".git/**"
-  - "**/.gitmodules"
-
-# ---------------------------------------------------------------------------
-# SECRET SCAN: regex patterns applied to file content before export
-# ---------------------------------------------------------------------------
+# Secret patterns to scan before export
 secret_scan_regex:
-  - "(?i)(api[_-]?key|apikey|secret[_-]?key|access[_-]?token)\\s*[:=]\\s*['\"][^'\"]{8,}['\"]"
-  - "(?i)(password|passwd|pwd)\\s*[:=]\\s*['\"][^'\"]{4,}['\"]"
-  - "-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----"
-  - "(?i)bearer\\s+[a-zA-Z0-9_\\-\\.]{20,}"
-  - "ghp_[a-zA-Z0-9]{36}"
-  - "sk-[a-zA-Z0-9]{32,}"
+  - "BEGIN (RSA|OPENSSH|EC) PRIVATE KEY"
   - "AKIA[0-9A-Z]{16}"
+  - "xox[baprs]-"
+  - "ghp_[A-Za-z0-9]{36}"
+  - "-----BEGIN PRIVATE KEY-----"
+  - "sk-[A-Za-z0-9]{48}"
+  - "glpat-[A-Za-z0-9]{20}"
 
-# ---------------------------------------------------------------------------
-# EXPORT MANIFEST SCHEMA: required fields for every export manifest
-# ---------------------------------------------------------------------------
-export_manifest_schema:
-  required_fields:
-    - "schema_version"
-    - "generated_utc"
-    - "status"
-    - "source_repo"
-    - "source_ref"
-    - "target_repo"
-    - "target_ref"
-    - "policy_file"
-    - "policy_version"
-    - "policy_sha256"
-    - "tool_version"
-    - "files"
-    - "excluded_files"
-    - "bundle_sha256"
-  file_entry_fields:
-    - "path"
-    - "sha256"
-    - "size_bytes"
-  excluded_entry_fields:
-    - "path"
-    - "reason"
-  provenance_fields:
-    - "status"           # unchanged | redacted | generated | excluded
-    - "public_safe"      # true | false
-    - "sanitization_rule"  # rule ID or null if unchanged
-    - "policy_ref"       # policy file reference
+# Enforcement
+enforcement:
+  ci_gate_required: true
+  pre_export_scan: true
+  fail_on_deny_match: true
+  fail_on_secret_match: true
 
-# ---------------------------------------------------------------------------
-# EXIT CODES: verification tool contract
-# ---------------------------------------------------------------------------
-verification_exit_codes:
-  0: "PASS — all checks passed"
-  1: "WARN — advisory warnings only"
-  2: "FAIL — policy breach detected"
-  3: "CORRUPT — invalid manifest, hash mismatch, or corrupted bundle"
+# Status note
+note: >
+  CRITICAL: As of 2026-03-28, SSID-open-core contains all 24 roots
+  but only 5 are allowed. The 19 denied roots must be removed from
+  open-core or explicitly reclassified with governance approval.
+  This policy is the authoritative SoT for the export boundary.

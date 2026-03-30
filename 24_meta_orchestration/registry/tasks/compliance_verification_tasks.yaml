@@ -1,0 +1,162 @@
+version: "1.0.0"
+task_group: "compliance_verification"
+description: >
+  Tasks for verifying compliance across all SSID modules. Covers SoT policy
+  enforcement, GDPR / eIDAS / DSGVO alignment checks, governance-legal audits,
+  OPA/Rego policy gate runs, and conformance index population for every shard.
+generated_utc: "2026-03-15T00:00:00Z"
+
+tasks:
+  - id: "TASK-CV-001"
+    title: "Run SoT policy gate (sot_policy.rego) against all 24 roots"
+    scope: "23_compliance/policies/sot"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-MC-025"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-002"
+    title: "Populate conformance_index.yaml for all 01_ai_layer shards"
+    scope: "01_ai_layer/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: ["TASK-CV-001"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-003"
+    title: "Populate conformance_index.yaml for all 02_audit_logging shards"
+    scope: "02_audit_logging/shards"
+    status: "pending"
+    priority: "high"
+    dependencies: ["TASK-CV-001"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-004"
+    title: "Populate conformance_index.yaml for all 03_core shards"
+    scope: "03_core/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-001"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-005"
+    title: "Populate conformance_index.yaml for all 07_governance_legal shards"
+    scope: "07_governance_legal/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-001"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-006"
+    title: "Populate conformance_index.yaml for all 08_identity_score shards"
+    scope: "08_identity_score/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-001"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-007"
+    title: "Populate conformance_index.yaml for all 14_zero_time_auth shards"
+    scope: "14_zero_time_auth/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-001"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-008"
+    title: "Populate conformance_index.yaml for all 21_post_quantum_crypto shards"
+    scope: "21_post_quantum_crypto/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-001"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-009"
+    title: "Populate conformance_index.yaml for all 23_compliance shards"
+    scope: "23_compliance/shards"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-001"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-010"
+    title: "Populate conformance_index.yaml for remaining 15 roots (04–06, 09–13, 15–20, 22, 24)"
+    scope: "24_meta_orchestration/registry"
+    status: "pending"
+    priority: "high"
+    dependencies: ["TASK-CV-001"]
+    assigned_agent: ""
+    evidence_required: true
+    batch_roots:
+      - "04_deployment"
+      - "05_documentation"
+      - "06_data_pipeline"
+      - "09_meta_identity"
+      - "10_interoperability"
+      - "11_test_simulation"
+      - "12_tooling"
+      - "13_ui_layer"
+      - "15_infra"
+      - "16_codex"
+      - "17_observability"
+      - "18_data_layer"
+      - "19_adapters"
+      - "20_foundation"
+      - "22_datasets"
+      - "24_meta_orchestration"
+
+  - id: "TASK-CV-011"
+    title: "Run GDPR / DSGVO data-minimisation checks on 06_data_pipeline and 18_data_layer"
+    scope: "23_compliance/policies"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-001"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-012"
+    title: "Run eIDAS Level-of-Assurance alignment check on 08_identity_score and 14_zero_time_auth"
+    scope: "23_compliance/policies"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-006", "TASK-CV-007"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-013"
+    title: "Audit root-level exceptions file for stale or unexpired entries"
+    scope: "23_compliance/exceptions"
+    status: "pending"
+    priority: "high"
+    dependencies: ["TASK-CV-001"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-014"
+    title: "Re-run stability_gate.py and confirm all gates PASS after compliance population"
+    scope: "12_tooling/cli"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-002", "TASK-CV-003", "TASK-CV-004", "TASK-CV-005",
+                   "TASK-CV-006", "TASK-CV-007", "TASK-CV-008", "TASK-CV-009",
+                   "TASK-CV-010", "TASK-CV-011", "TASK-CV-012", "TASK-CV-013"]
+    assigned_agent: ""
+    evidence_required: true
+
+  - id: "TASK-CV-015"
+    title: "Produce compliance scorecard and persist to 02_audit_logging/reports"
+    scope: "02_audit_logging/reports"
+    status: "pending"
+    priority: "critical"
+    dependencies: ["TASK-CV-014"]
+    assigned_agent: ""
+    evidence_required: true

@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Shard-to-chunk mapping - which rules apply to which roots/shards",
+  "shard_chunks": {
+    "01_ai_layer": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "02_audit_logging": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "03_core": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "04_deployment": ["RULE-001", "RULE-002", "RULE-003", "RULE-004", "RULE-005"],
+    "05_documentation": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "06_data_pipeline": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "07_governance_legal": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "08_identity_score": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "09_meta_identity": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "10_interoperability": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "11_test_simulation": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "12_tooling": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "13_ui_layer": ["RULE-001", "RULE-002", "RULE-003", "RULE-004", "RULE-005"],
+    "14_zero_time_auth": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "15_infra": ["RULE-001", "RULE-002", "RULE-003", "RULE-004", "RULE-005"],
+    "16_codex": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "17_observability": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "18_data_layer": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "19_adapters": ["RULE-001", "RULE-002", "RULE-003", "RULE-004", "RULE-005"],
+    "20_foundation": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "21_post_quantum_crypto": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "22_datasets": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "23_compliance": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"],
+    "24_meta_orchestration": ["RULE-001", "RULE-002", "RULE-003", "RULE-005"]
+  }
+}

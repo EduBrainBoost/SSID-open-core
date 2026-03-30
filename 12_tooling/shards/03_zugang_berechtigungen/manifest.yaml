@@ -1,16 +1,10 @@
-name: 03_zugang_berechtigungen
-layer: 12_tooling
-implementation:
-  language: python
-  entrypoint: implementations/main.py
-  dependencies:
-  - click
-  - rich
-tests:
-  - tests/unit
-  - tests/integration
-contracts:
-  - contracts/openapi.yaml
-conformance:
-  chart_ref: chart.yaml
-  semver: "0.1.0"
+shard_id: 03_zugang_berechtigungen
+root_id: 12_tooling
+version: 1.0.0
+generated_utc: '2026-03-02T19:39:34Z'
+implementation_stack: generated
+contracts: []
+conformance: []
+policies:
+- ref: hash_only
+- ref: non_custodial

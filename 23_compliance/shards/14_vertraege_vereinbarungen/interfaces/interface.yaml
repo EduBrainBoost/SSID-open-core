@@ -1,5 +1,0 @@
-interface_id: 23_compliance.14_vertraege_vereinbarungen.primary
-root_id: 23_compliance
-shard_id: 14_vertraege_vereinbarungen
-kind: bootstrap_contract
-status: active

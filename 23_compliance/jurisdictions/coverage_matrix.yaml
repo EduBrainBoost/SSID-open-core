@@ -1,0 +1,122 @@
+coverage_matrix:
+  version: "1.0.0"
+  description: >
+    Jurisdiction coverage matrix for SSID compliance.
+    Maps each supported jurisdiction to its compliance readiness level,
+    applicable regulations, and operational status.
+
+coverage_levels:
+  full: All required licences obtained, controls implemented and audited
+  substantial: Controls implemented, licence applications in progress
+  partial: Gap analysis complete, implementation in progress
+  assessment: Initial regulatory assessment underway
+  planned: On roadmap, not yet started
+
+jurisdictions:
+  eu_eea:
+    - code: DE
+      name: Germany
+      level: full
+      regulations: [MiCA, GDPR, AML6, eIDAS2, EU_AI_Act, NIS2, DORA]
+    - code: FR
+      name: France
+      level: full
+      regulations: [MiCA, GDPR, AML6, eIDAS2]
+    - code: NL
+      name: Netherlands
+      level: full
+      regulations: [MiCA, GDPR, AML6, eIDAS2]
+    - code: AT
+      name: Austria
+      level: substantial
+      regulations: [MiCA, GDPR, AML6]
+    - code: IE
+      name: Ireland
+      level: substantial
+      regulations: [MiCA, GDPR, AML6]
+    - code: LU
+      name: Luxembourg
+      level: substantial
+      regulations: [MiCA, GDPR, AML6]
+    - code: IT
+      name: Italy
+      level: partial
+      regulations: [MiCA, GDPR, AML6]
+    - code: ES
+      name: Spain
+      level: partial
+      regulations: [MiCA, GDPR, AML6]
+
+  efta:
+    - code: CH
+      name: Switzerland
+      level: full
+      regulations: [DLT_Act, FADP, AMLA, FINMA_Guidance]
+    - code: LI
+      name: Liechtenstein
+      level: full
+      regulations: [TVTG, GDPR, AML6]
+
+  uk:
+    - code: GB
+      name: United Kingdom
+      level: substantial
+      regulations: [FCA_Crypto_Regime, UK_GDPR, MLR2017, FCA_PS23_6]
+
+  americas:
+    - code: US
+      name: United States
+      level: partial
+      regulations: [BSA_AML, OFAC, State_MTL, IRS_1099_DA]
+    - code: CA
+      name: Canada
+      level: partial
+      regulations: [PCMLTFA, PIPEDA]
+    - code: BR
+      name: Brazil
+      level: assessment
+      regulations: [LGPD, Law_14478]
+
+  apac:
+    - code: SG
+      name: Singapore
+      level: substantial
+      regulations: [PSA, PSN02, PDPA, Stablecoin_Framework]
+    - code: HK
+      name: Hong Kong
+      level: partial
+      regulations: [VATP, AMLO]
+    - code: JP
+      name: Japan
+      level: partial
+      regulations: [PSA_Crypto, PSA_Stablecoins, APPI]
+    - code: AU
+      name: Australia
+      level: assessment
+      regulations: [AUSTRAC_DCE, Privacy_Act]
+
+  mena_africa:
+    - code: AE
+      name: United Arab Emirates
+      level: assessment
+      regulations: [VARA, ADGM_FSRA]
+    - code: BH
+      name: Bahrain
+      level: assessment
+      regulations: [CBB_Cryptoasset_Module]
+    - code: ZA
+      name: South Africa
+      level: planned
+      regulations: [POPIA, FSCA_Crypto]
+    - code: MU
+      name: Mauritius
+      level: planned
+      regulations: [VAITOS_Act]
+
+summary:
+  total_jurisdictions: 22
+  full_coverage: 5
+  substantial_coverage: 5
+  partial_coverage: 6
+  assessment_phase: 4
+  planned: 2

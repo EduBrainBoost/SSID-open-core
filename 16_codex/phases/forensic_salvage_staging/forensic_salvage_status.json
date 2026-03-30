@@ -1,0 +1,28 @@
+{
+  "title": "forensic_salvage_gate",
+  "generated_at_utc": "2026-03-27T05:00:00Z",
+  "status": "SALVAGE_PARTIAL_PASS",
+  "source": "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github\\SSID",
+  "target": "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github\\SSID",
+  "target_written": false,
+  "classification": {
+    "KEEP_SAFE": 59,
+    "KEEP_REVIEW_REQUIRED": 500,
+    "REWORK_REQUIRED": 12,
+    "REJECT": 0,
+    "ARCHIVE_ONLY": 0,
+    "DUPLICATE_SUPERSEDED": 0,
+    "CONFLICT_CANONICAL_HIGHER": 2,
+    "CONFLICT_SOT": 0,
+    "GENERATED_NO_VALUE": 1768
+  },
+  "review_risk_breakdown": {
+    "HIGH": 34,
+    "MEDIUM": 447,
+    "LOW": 19
+  },
+  "auto_apply_ready": 59,
+  "auto_apply_executed": false,
+  "canonical_zone_untouched": true,
+  "next_step": "User entscheidet: KEEP_SAFE auto-apply freigeben oder einzeln reviewen"
+}

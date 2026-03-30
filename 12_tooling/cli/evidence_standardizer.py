@@ -308,8 +308,8 @@ def main() -> int:
         bundle = standardizer.standardize_bundle(evidence_dir)
         bundle_path = standardizer.write_standardized_bundle(bundle, output_dir)
         
-        print(f"SUCCESS: Standardized bundle written to: {bundle_path}")
-        print(f"BUNDLE_ID: {bundle.bundle_id}")
+        print(f"SUCCESS: Standardized evidence pack written to: {bundle_path}")
+        print(f"EVIDENCE_ID: {bundle.bundle_id}")
         print(f"COMPLIANCE_STATUS: {bundle.duplicate_guard_passed and bundle.write_gate_passed and bundle.sot_sync_passed}")
         
         return 0

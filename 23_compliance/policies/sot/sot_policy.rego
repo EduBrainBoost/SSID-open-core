@@ -6,17 +6,17 @@ package sot_policy
 # Default deny - explicit allow required
 default allow = false
 
-# ROOT-24-LOCK enforcement
-allow if {
-    not input.security_context == "ROOT-24-LOCK"
-    deny[msg]
-}
-
+# --- SOT_AGENT_001: ROOT-24-LOCK Security Context Gate ---
+# Mapping: functional deny-id "ROOT-24-LOCK security context required"
+#          -> canonical SOT_AGENT_001
 deny contains msg if {
     input.security_context != "ROOT-24-LOCK"
     msg := "ROOT-24-LOCK security context required"
 }
 
+# --- SOT_AGENT_002: Write-Gate Enforcement ---
+# Mapping: functional deny-id "WRITE_GATE_VIOLATION"
+#          -> canonical SOT_AGENT_002
 # Write-Gate enforcement - path allowlist checking
 deny contains msg if {
     some i
@@ -31,7 +31,9 @@ allowed_path(path) if {
     startswith(path, allowed)
 }
 
-# Duplicate-Guard enforcement
+# --- SOT_AGENT_003: Duplicate-Guard Enforcement ---
+# Mapping: functional deny-id "DUPLICATE_GUARD_FAIL"
+#          -> canonical SOT_AGENT_003 (covers all four sub-rules below)
 deny contains msg if {
     duplicate_rule_id(input.yaml_files)
     msg := "DUPLICATE_GUARD_FAIL: duplicate rule_id found"
@@ -52,7 +54,9 @@ deny contains msg if {
     msg := "DUPLICATE_GUARD_FAIL: duplicate CLI flags found"
 }
 
-# SoT artifact synchronization enforcement
+# --- SOT_AGENT_004: SoT Artifact Synchronization Enforcement ---
+# Mapping: functional deny-id "SOT_GATE_FAIL"
+#          -> canonical SOT_AGENT_004 (covers both sync sub-rules below)
 deny contains msg if {
     sot_file_changed(input.changed_files)
     missing_canonical_sot(input.canonical_sot_files)
@@ -65,7 +69,9 @@ deny contains msg if {
     msg := "SOT_GATE_FAIL: SoT artifacts not synchronized"
 }
 
-# Core logic protection
+# --- SOT_AGENT_005: Core Logic Protection ---
+# Mapping: functional deny-id "CORE_LOGIC_VIOLATION"
+#          -> canonical SOT_AGENT_005
 deny contains msg if {
     some i
     changed_file := input.changed_files[i]
@@ -117,12 +123,6 @@ deny contains msg if {
 }
 
 # Helper functions
-allowed_path(path) if {
-    some j
-    allowed := input.allowed_paths[j]
-    startswith(path, allowed)
-}
-
 duplicate_rule_id(yaml_files) if {
     count(yaml_files) > 0
     some i, j
@@ -444,6 +444,36 @@ deny contains msg if {
     msg := "SOT_AGENT_036_FAIL: Root 08 api/ directory missing"
 }
 
+# SOT_AGENT_037: Phase-5 FeeParticipant module
+deny contains msg if {
+    input.phase5_fee_participant_missing == true
+    msg := "SOT_AGENT_037_FAIL: Phase-5 FeeParticipant module missing (03_core/participants.py)"
+}
+
+# SOT_AGENT_038: Phase-5 RevenueParticipant module
+deny contains msg if {
+    input.phase5_revenue_participant_missing == true
+    msg := "SOT_AGENT_038_FAIL: Phase-5 RevenueParticipant module missing (03_core/participants.py)"
+}
+
+# SOT_AGENT_039: Phase-5 fee_proof_engine module
+deny contains msg if {
+    input.phase5_fee_proof_engine_missing == true
+    msg := "SOT_AGENT_039_FAIL: Phase-5 fee_proof_engine module missing (03_core/fee_proof_engine.py)"
+}
+
+# SOT_AGENT_040: Phase-5 identity_fee_router module
+deny contains msg if {
+    input.phase5_identity_fee_router_missing == true
+    msg := "SOT_AGENT_040_FAIL: Phase-5 identity_fee_router module missing (03_core/identity_fee_router.py)"
+}
+
+# SOT_AGENT_041: Phase-5 license_fee_splitter module
+deny contains msg if {
+    input.phase5_license_fee_splitter_missing == true
+    msg := "SOT_AGENT_041_FAIL: Phase-5 license_fee_splitter module missing (03_core/license_fee_splitter.py)"
+}
+
 # Allow rule for compliant requests
 allow if {
     input.security_context == "ROOT-24-LOCK"
@@ -497,6 +527,12 @@ evidence_compliant(ctx) if {
 
 data_minimization_compliant(ctx) if {
     ctx.log_mode == "MINIMAL"
+    ctx.prompt_persisted == false
+    ctx.stdout_persisted == false
+    ctx.sandbox_not_cleaned == false
+}
+
+data_minimization_compliant(ctx) if {
     ctx.log_mode == "FORENSIC"
     ctx.prompt_persisted == false
     ctx.stdout_persisted == false

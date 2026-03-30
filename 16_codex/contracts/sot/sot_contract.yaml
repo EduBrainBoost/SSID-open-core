@@ -145,6 +145,26 @@ rules:
     description: Root 08 Identity Score api/ MUST exist
     severity: high
     mode: hard_fail
+  - id: SOT_AGENT_037
+    description: Phase-5 FeeParticipant module exists in 03_core
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_038
+    description: Phase-5 RevenueParticipant module exists in 03_core
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_039
+    description: Phase-5 fee_proof_engine module exists in 03_core
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_040
+    description: Phase-5 identity_fee_router module exists in 03_core
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_041
+    description: Phase-5 license_fee_splitter module exists in 03_core
+    severity: high
+    mode: hard_fail
 agent_stack:
   - planner
   - implementer

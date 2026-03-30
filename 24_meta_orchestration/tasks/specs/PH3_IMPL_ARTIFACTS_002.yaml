@@ -1,0 +1,37 @@
+task_id: PH3_IMPL_ARTIFACTS_002
+title: "Testnet MVP: implement hash-only proof registry contract artifacts"
+task_type: tooling
+scope_allowlist:
+  - "24_meta_orchestration/contracts/"
+  - "02_audit_logging/agent_runs/"
+forbidden_paths:
+  - "./"
+  - "/mnt/data"
+  - "**/.git/**"
+  - "**/secrets/**"
+  - "**/*.sol"
+required_checks:
+  - "python 12_tooling/cli/stability_gate.py --run"
+  - "python 12_tooling/cli/sot_validator.py --verify-all"
+  - "python -m pytest -q"
+acceptance_criteria:
+  - "proof_registry_abi.json exists under 24_meta_orchestration/contracts/"
+  - "proof_registry_bytecode.json exists under 24_meta_orchestration/contracts/"
+  - "compiler_manifest.json exists under 24_meta_orchestration/contracts/"
+  - "proof_registry_spec.md exists under 24_meta_orchestration/contracts/"
+  - "ABI contains addProof(bytes32) and hasProof(bytes32) view functions"
+  - "ABI contains ProofAdded(bytes32 indexed proof) event"
+  - "compiler_manifest.json contains: solc_version, evm_target, optimization, sha256 hashes"
+  - "Bytecode hash in compiler_manifest.json matches sha256 of proof_registry_bytecode.json"
+  - "ABI hash in compiler_manifest.json matches sha256 of proof_registry_abi.json"
+  - "No .sol files anywhere in the repository"
+  - "No PII, secrets, or private keys in any artifact"
+evidence_outputs:
+  - "02_audit_logging/agent_runs/PH3_IMPL_ARTIFACTS_002/evidence.json"
+  - "02_audit_logging/agent_runs/PH3_IMPL_ARTIFACTS_002/patch.diff"
+agent_cmd: "manual"
+notes: >
+  Implementation of PH3_CONTRACT_ARTIFACTS_001 spec. Contract is compiled
+  externally (Remix, Hardhat, or Foundry). Only ABI, bytecode, compiler
+  manifest, and human-readable spec are committed. Deterministic hashes
+  ensure reproducibility. No .sol source files in repo.

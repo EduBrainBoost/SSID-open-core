@@ -46,6 +46,11 @@ class SoTValidatorCore:
         "SOT_AGENT_034": "Root 08 Identity Score models/ MUST exist",
         "SOT_AGENT_035": "Root 08 Identity Score rules/ MUST exist",
         "SOT_AGENT_036": "Root 08 Identity Score api/ MUST exist",
+        "SOT_AGENT_037": "Phase-5 FeeParticipant module exists in 03_core",
+        "SOT_AGENT_038": "Phase-5 RevenueParticipant module exists in 03_core",
+        "SOT_AGENT_039": "Phase-5 fee_proof_engine module exists in 03_core",
+        "SOT_AGENT_040": "Phase-5 identity_fee_router module exists in 03_core",
+        "SOT_AGENT_041": "Phase-5 license_fee_splitter module exists in 03_core",
     }
     PRIORITY = [
         "SOT_AGENT_001", "SOT_AGENT_002", "SOT_AGENT_003", "SOT_AGENT_004",
@@ -60,6 +65,8 @@ class SoTValidatorCore:
         "SOT_AGENT_029", "SOT_AGENT_030", "SOT_AGENT_031",
         "SOT_AGENT_032", "SOT_AGENT_033", "SOT_AGENT_034",
         "SOT_AGENT_035", "SOT_AGENT_036",
+        "SOT_AGENT_037", "SOT_AGENT_038", "SOT_AGENT_039",
+        "SOT_AGENT_040", "SOT_AGENT_041",
     ]
 
     ROOT01_MUST_DIRS = [
@@ -727,6 +734,41 @@ class SoTValidatorCore:
             return False
         return True
 
+    # ---------------------------------------------------------------
+    # Phase-5 checks (SOT_AGENT_037 – SOT_AGENT_041)
+    # ---------------------------------------------------------------
+
+    PHASE5_MODULE_MAP = {
+        "SOT_AGENT_037": ("03_core/participants.py", "FeeParticipant"),
+        "SOT_AGENT_038": ("03_core/participants.py", "RevenueParticipant"),
+        "SOT_AGENT_039": ("03_core/fee_proof_engine.py", "fee_proof_engine"),
+        "SOT_AGENT_040": ("03_core/identity_fee_router.py", "identity_fee_router"),
+        "SOT_AGENT_041": ("03_core/license_fee_splitter.py", "license_fee_splitter"),
+    }
+
+    def _check_phase5_module(self, rule_id: str) -> bool:
+        """Check that a Phase-5 module file exists at the expected path."""
+        file_rel, label = self.PHASE5_MODULE_MAP[rule_id]
+        if not (self.root_dir / file_rel).is_file():
+            self.violations.append((rule_id, f"missing Phase-5 module: {file_rel} ({label})"))
+            return False
+        return True
+
+    def check_phase5_fee_participant(self) -> bool:
+        return self._check_phase5_module("SOT_AGENT_037")
+
+    def check_phase5_revenue_participant(self) -> bool:
+        return self._check_phase5_module("SOT_AGENT_038")
+
+    def check_phase5_fee_proof_engine(self) -> bool:
+        return self._check_phase5_module("SOT_AGENT_039")
+
+    def check_phase5_identity_fee_router(self) -> bool:
+        return self._check_phase5_module("SOT_AGENT_040")
+
+    def check_phase5_license_fee_splitter(self) -> bool:
+        return self._check_phase5_module("SOT_AGENT_041")
+
     def validate_all(self) -> Dict[str, Dict[str, str]]:
         self.violations = []
         self.check_dispatcher_entry_point()
@@ -765,6 +807,11 @@ class SoTValidatorCore:
         self.check_root08_models_dir()
         self.check_root08_rules_dir()
         self.check_root08_api_dir()
+        self.check_phase5_fee_participant()
+        self.check_phase5_revenue_participant()
+        self.check_phase5_fee_proof_engine()
+        self.check_phase5_identity_fee_router()
+        self.check_phase5_license_fee_splitter()
 
         results: Dict[str, Dict[str, str]] = {}
         for rule in self.PRIORITY:

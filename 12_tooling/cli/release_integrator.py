@@ -187,11 +187,11 @@ class ReleaseIntegrator:
         """Main integration workflow"""
         try:
             # Step 1: Validate patch bundle
-            print(f"INFO: Validating patch bundle: {evidence_dir}")
+            print(f"INFO: Validating patch set: {evidence_dir}")
             validation_result = self._validate_patch_bundle(evidence_dir)
             task_id = validation_result["task_id"]
             changed_paths = validation_result["changed_paths"]
-            print(f"INFO: Validated bundle for task {task_id}")
+            print(f"INFO: Validated patch set for task {task_id}")
             
             # Step 2: Create backup
             print("INFO: Creating backup...")
@@ -255,7 +255,7 @@ class ReleaseIntegrator:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="SSID ReleaseIntegrator v4.1 - Mechanical Patch Application")
-    parser.add_argument("evidence_dir", help="Path to task evidence directory containing patch bundle")
+    parser.add_argument("evidence_dir", help="Path to task evidence directory containing patch set")
     parser.add_argument("--dry-run", action="store_true", help="Test patch application without applying")
     parser.add_argument("--repo-root", help="Repository root (default: auto-detect)")
     

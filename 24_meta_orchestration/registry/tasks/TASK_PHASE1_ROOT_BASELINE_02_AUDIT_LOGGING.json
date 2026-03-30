@@ -1,0 +1,11 @@
+{
+  "task_id": "PHASE1_ROOT_02_AUDIT_LOGGING",
+  "root": "02_audit_logging",
+  "phase": 1,
+  "scope": "chart_fill_and_first_implementation",
+  "allowed_paths": ["02_audit_logging/"],
+  "forbidden_paths": ["03_core/", "24_meta_orchestration/", "*/mainnet/"],
+  "acceptance_checks": ["chart_fields_complete", "policy_hash_only", "policy_non_custodial", "evidence_path_defined", "no_fake_manifest"],
+  "evidence_targets": ["23_compliance/evidence/phase2/", "17_observability/score/"],
+  "no_cross_worktree": true
+}
