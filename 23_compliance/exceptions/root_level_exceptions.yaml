@@ -22,6 +22,7 @@ allowed_files:
 - .env.example
 - .gitignore
 - .pre-commit-config.yaml
+- AGENTS.md
 - CHANGELOG.md
 - CLAUDE.md
 - CONTRIBUTING.md
