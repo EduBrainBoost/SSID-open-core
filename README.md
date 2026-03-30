@@ -1,7 +1,21 @@
-# SSID – Self-Sovereign Identity Platform
+# SSID Open Core
 
-Deterministic, auditable, non-custodial identity infrastructure.
-Hash-only evidence, zero secret persistence, full gate enforcement.
+Public derivative of the SSID Self-Sovereign Identity Platform.
+Contains the open-source subset: core validators, tooling, codex, compliance policies, and meta-orchestration.
+
+## Open-Core Scope
+
+This repository exposes **5 root modules** from the canonical SSID architecture:
+
+| Root | Purpose |
+|------|---------|
+| `03_core` | SoT validator core, identity primitives |
+| `12_tooling` | CLI tools (gates, dispatcher, validator), guard scripts |
+| `16_codex` | Architecture Decision Records (ADRs), SoT contracts |
+| `23_compliance` | OPA policies, root-level exception allowlist |
+| `24_meta_orchestration` | Canonical dispatcher, SoT artifact registry |
+
+All other SSID roots are maintained in the private canonical repository and are not part of this open-core distribution.
 
 ## Prerequisites
 
@@ -12,7 +26,7 @@ Hash-only evidence, zero secret persistence, full gate enforcement.
 ## Quickstart
 
 ```bash
-# Verify repository structure (ROOT-24-LOCK)
+# Verify repository structure
 python 12_tooling/scripts/structure_guard.py
 
 # Run full gate chain (Structure Guard -> SoT -> QA)
@@ -29,7 +43,7 @@ python 12_tooling/cli/sot_diff_alert.py
 
 | Command | Purpose |
 |---------|---------|
-| `python 12_tooling/scripts/structure_guard.py` | Enforce ROOT-24-LOCK layout |
+| `python 12_tooling/scripts/structure_guard.py` | Enforce open-core root layout |
 | `python 12_tooling/cli/run_all_gates.py` | Full gate chain (local == CI) |
 | `python 12_tooling/cli/sot_validator.py --verify-all` | Validate all SoT rules |
 | `python 12_tooling/cli/sot_diff_alert.py` | Detect SoT artifact drift |
@@ -37,8 +51,6 @@ python 12_tooling/cli/sot_diff_alert.py
 | `bash 12_tooling/scripts/run_all_gates.sh` | Shell wrapper (CI entry point) |
 
 ## Repository Layout
-
-24 numbered root modules (`01_ai_layer` through `24_meta_orchestration`), each containing up to 16 shards with contracts, tests, and docs.
 
 | Path | Role |
 |------|------|
@@ -51,8 +63,6 @@ python 12_tooling/cli/sot_diff_alert.py
 | `23_compliance/exceptions/` | Root-level exception allowlist |
 | `24_meta_orchestration/dispatcher/` | Canonical dispatcher implementation |
 | `24_meta_orchestration/registry/` | SoT artifact registry |
-| `02_audit_logging/reports/` | Evidence manifests and migration logs |
-| `02_audit_logging/archives/qa_master_suite/` | QA runner (minimal mode) |
 
 ## Governance
 

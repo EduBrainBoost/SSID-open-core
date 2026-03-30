@@ -1,4 +1,4 @@
-# Contributing to SSID
+# Contributing to SSID Open Core
 
 ## Principles
 
@@ -24,7 +24,7 @@
 All gates must pass. Order matters.
 
 1. **Git Worktree Check** — verify we are inside a valid git repository
-2. **Structure Guard** — enforce ROOT-24-LOCK (24 modules, no unauthorized root items)
+2. **Structure Guard** — enforce open-core root layout (5 allowed roots, no unauthorized root items)
 3. **Sandbox Hygiene** — ensure `.ssid_sandbox/` is gitignored and not tracked
 4. **Repo Separation Guard** — prevent cross-repo contamination
 5. **Duplicate Guard** — detect duplicated files
@@ -32,11 +32,19 @@ All gates must pass. Order matters.
 7. **SoT Validator** — verify all Source-of-Truth rules
 8. **QA Master Suite** — run quality checks in minimal mode (hash + summary only)
 
-## Root-Level Policy (ROOT-24-LOCK)
+## Open-Core Root Policy
 
-The repository root is strictly controlled. Only 24 numbered modules and explicitly allowed exceptions may exist at root level.
+This repository contains 5 root modules from the canonical SSID architecture:
 
-- Allowed exceptions are defined in `23_compliance/exceptions/root_level_exceptions.yaml`
+- `03_core` — SoT validator core, identity primitives
+- `12_tooling` — CLI tools, guard scripts
+- `16_codex` — ADRs, SoT contracts
+- `23_compliance` — OPA policies, exception allowlist
+- `24_meta_orchestration` — Dispatcher, SoT artifact registry
+
+Only these 5 roots accept contributions in this repository. Changes to other SSID roots belong in the private canonical repository.
+
+- Allowed root-level exceptions are defined in `23_compliance/exceptions/root_level_exceptions.yaml`
 - Every new root exception requires an Architecture Decision Record (ADR) in `16_codex/decisions/`
 - The structure guard (`12_tooling/scripts/structure_guard.py`) enforces this policy
 

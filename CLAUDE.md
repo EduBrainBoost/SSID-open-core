@@ -3,14 +3,16 @@
 ## Identity
 
 - **Repo**: SSID-open-core
-- **Purpose**: Public libraries, SDKs, shared types, and reusable APIs for the SSID ecosystem
-- **Scope**: Open-source components consumed by SSID-EMS, SSID-orchestrator, and external integrators
+- **Purpose**: Public open-core derivative of the SSID Self-Sovereign Identity Platform
+- **Scope**: 5 open-source root modules (03_core, 12_tooling, 16_codex, 23_compliance, 24_meta_orchestration)
+- All other SSID roots are private and not part of this repository
 - Primary branch: main
 - Working branches: develop, feature/*, fix/*
 
 ## Write Scope
 
 - Write only inside this repository
+- Only within the 5 allowed roots: 03_core, 12_tooling, 16_codex, 23_compliance, 24_meta_orchestration
 - Public APIs and type definitions
 - Reusable libraries and SDKs
 - Shared utilities and helper modules
