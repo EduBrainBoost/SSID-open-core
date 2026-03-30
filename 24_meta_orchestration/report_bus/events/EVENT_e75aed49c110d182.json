@@ -15,6 +15,6 @@
   "repo": "SSID",
   "severity": "info",
   "sha": "0ca8a78868692121a21ad5f932b4a3f16b54bf21",
-  "summary": "PH2_LOOP_DOC_001: runbook 1-command + troubleshooting (no openclaw paths) (#13)",
+  "summary": "PH2_LOOP_DOC_001: runbook 1-command + troubleshooting (cleaned) (#13)",
   "task_id": "PH2_LOOP_DOC_001"
 }

@@ -865,18 +865,6 @@
       "task_id": null
     },
     {
-      "agent_run_path": "02_audit_logging\\agent_runs\\run-merge-0ca8a78",
-      "commit_date_utc": "2026-02-28T01:34:35Z",
-      "has_agent_run": true,
-      "has_report_event": true,
-      "merge_sha": "0ca8a78868692121a21ad5f932b4a3f16b54bf21",
-      "pr_number": 13,
-      "report_event_path": "24_meta_orchestration\\report_bus\\events\\BACKFILL_EVENT_0ca8a78.json",
-      "run_id": "run-merge-0ca8a78",
-      "subject": "PH2_LOOP_DOC_001: runbook 1-command + troubleshooting (no openclaw paths) (#13)",
-      "task_id": "PH2_LOOP_DOC_001"
-    },
-    {
       "agent_run_path": "02_audit_logging\\agent_runs\\run-merge-d0bb40c",
       "commit_date_utc": "2026-02-28T01:33:05Z",
       "has_agent_run": true,

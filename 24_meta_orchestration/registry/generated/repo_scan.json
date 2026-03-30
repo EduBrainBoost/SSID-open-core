@@ -15309,13 +15309,6 @@
       "root": "12_tooling"
     },
     {
-      "path": "12_tooling\\cli\\adapters\\openclaw.py",
-      "ext": ".py",
-      "size_bytes": 260,
-      "sha256": "847d1eb9de304b43ae3b84a134249248af5a862bed2f4b0f856dea025f63eeb8",
-      "root": "12_tooling"
-    },
-    {
       "path": "12_tooling\\cli\\adapters\\skywork.py",
       "ext": ".py",
       "size_bytes": 260,
@@ -18106,13 +18099,6 @@
       "ext": ".md",
       "size_bytes": 184,
       "sha256": "f1285910f50f4a3fb0301972aae922f079beb7ffa278917a28e7f3d5a1fa00bf",
-      "root": "16_codex"
-    },
-    {
-      "path": "16_codex\\agents\\TOOL_PROFILES\\kilo_openclaw.md",
-      "ext": ".md",
-      "size_bytes": 75,
-      "sha256": "1e12acd556465fa320fa4f607ae5126310cef4c416d0bc1ddf2d2a51a23aa3e7",
       "root": "16_codex"
     },
     {
