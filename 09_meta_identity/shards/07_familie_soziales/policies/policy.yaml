@@ -1,5 +1,0 @@
-policy_id: 09_meta_identity.07_familie_soziales.baseline_policy
-root_id: 09_meta_identity
-shard_id: 07_familie_soziales
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

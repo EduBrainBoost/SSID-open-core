@@ -1,5 +1,0 @@
-interface_id: 14_zero_time_auth.16_behoerden_verwaltung.primary
-root_id: 14_zero_time_auth
-shard_id: 16_behoerden_verwaltung
-kind: bootstrap_contract
-status: active

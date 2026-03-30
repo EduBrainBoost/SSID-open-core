@@ -1,5 +1,0 @@
-interface_id: 11_test_simulation.15_handel_transaktionen.primary
-root_id: 11_test_simulation
-shard_id: 15_handel_transaktionen
-kind: bootstrap_contract
-status: active

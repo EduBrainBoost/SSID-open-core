@@ -1,5 +1,0 @@
-interface_id: 11_test_simulation.16_behoerden_verwaltung.primary
-root_id: 11_test_simulation
-shard_id: 16_behoerden_verwaltung
-kind: bootstrap_contract
-status: active

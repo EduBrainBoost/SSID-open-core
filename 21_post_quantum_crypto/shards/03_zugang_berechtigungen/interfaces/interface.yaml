@@ -1,5 +1,0 @@
-interface_id: 21_post_quantum_crypto.03_zugang_berechtigungen.primary
-root_id: 21_post_quantum_crypto
-shard_id: 03_zugang_berechtigungen
-kind: bootstrap_contract
-status: active

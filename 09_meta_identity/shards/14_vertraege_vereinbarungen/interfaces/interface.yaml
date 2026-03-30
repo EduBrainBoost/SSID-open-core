@@ -1,5 +1,0 @@
-interface_id: 09_meta_identity.14_vertraege_vereinbarungen.primary
-root_id: 09_meta_identity
-shard_id: 14_vertraege_vereinbarungen
-kind: bootstrap_contract
-status: active

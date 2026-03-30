@@ -1,5 +1,0 @@
-interface_id: 19_adapters.08_mobilitaet_fahrzeuge.primary
-root_id: 19_adapters
-shard_id: 08_mobilitaet_fahrzeuge
-kind: bootstrap_contract
-status: active

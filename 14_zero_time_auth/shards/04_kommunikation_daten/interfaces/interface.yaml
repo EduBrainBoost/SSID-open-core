@@ -1,5 +1,0 @@
-interface_id: 14_zero_time_auth.04_kommunikation_daten.primary
-root_id: 14_zero_time_auth
-shard_id: 04_kommunikation_daten
-kind: bootstrap_contract
-status: active

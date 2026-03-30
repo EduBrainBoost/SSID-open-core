@@ -1,5 +1,0 @@
-interface_id: 21_post_quantum_crypto.10_finanzen_banking.primary
-root_id: 21_post_quantum_crypto
-shard_id: 10_finanzen_banking
-kind: bootstrap_contract
-status: active

@@ -1,5 +1,0 @@
-interface_id: 17_observability.08_mobilitaet_fahrzeuge.primary
-root_id: 17_observability
-shard_id: 08_mobilitaet_fahrzeuge
-kind: bootstrap_contract
-status: active

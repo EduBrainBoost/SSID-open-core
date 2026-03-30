@@ -1,5 +1,0 @@
-interface_id: 20_foundation.03_zugang_berechtigungen.primary
-root_id: 20_foundation
-shard_id: 03_zugang_berechtigungen
-kind: bootstrap_contract
-status: active

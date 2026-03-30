@@ -1,5 +1,0 @@
-interface_id: 05_documentation.08_mobilitaet_fahrzeuge.primary
-root_id: 05_documentation
-shard_id: 08_mobilitaet_fahrzeuge
-kind: bootstrap_contract
-status: active

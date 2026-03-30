@@ -1,5 +1,0 @@
-interface_id: 10_interoperability.01_identitaet_personen.primary
-root_id: 10_interoperability
-shard_id: 01_identitaet_personen
-kind: bootstrap_contract
-status: active

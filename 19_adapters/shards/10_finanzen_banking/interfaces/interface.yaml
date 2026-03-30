@@ -1,5 +1,0 @@
-interface_id: 19_adapters.10_finanzen_banking.primary
-root_id: 19_adapters
-shard_id: 10_finanzen_banking
-kind: bootstrap_contract
-status: active

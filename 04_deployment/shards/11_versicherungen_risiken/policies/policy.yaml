@@ -1,5 +1,0 @@
-policy_id: 04_deployment.11_versicherungen_risiken.baseline_policy
-root_id: 04_deployment
-shard_id: 11_versicherungen_risiken
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

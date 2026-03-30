@@ -1,5 +1,0 @@
-interface_id: 04_deployment.10_finanzen_banking.primary
-root_id: 04_deployment
-shard_id: 10_finanzen_banking
-kind: bootstrap_contract
-status: active

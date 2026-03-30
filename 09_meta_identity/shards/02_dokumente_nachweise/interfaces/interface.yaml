@@ -1,5 +1,0 @@
-interface_id: 09_meta_identity.02_dokumente_nachweise.primary
-root_id: 09_meta_identity
-shard_id: 02_dokumente_nachweise
-kind: bootstrap_contract
-status: active

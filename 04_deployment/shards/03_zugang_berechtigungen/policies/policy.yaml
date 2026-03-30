@@ -1,5 +1,0 @@
-policy_id: 04_deployment.03_zugang_berechtigungen.baseline_policy
-root_id: 04_deployment
-shard_id: 03_zugang_berechtigungen
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

@@ -1,5 +1,0 @@
-interface_id: 20_foundation.12_immobilien_grundstuecke.primary
-root_id: 20_foundation
-shard_id: 12_immobilien_grundstuecke
-kind: bootstrap_contract
-status: active

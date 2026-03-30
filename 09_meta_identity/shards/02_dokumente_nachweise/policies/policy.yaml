@@ -1,5 +1,0 @@
-policy_id: 09_meta_identity.02_dokumente_nachweise.baseline_policy
-root_id: 09_meta_identity
-shard_id: 02_dokumente_nachweise
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

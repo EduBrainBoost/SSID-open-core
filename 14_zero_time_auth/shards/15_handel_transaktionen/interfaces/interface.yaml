@@ -1,5 +1,0 @@
-interface_id: 14_zero_time_auth.15_handel_transaktionen.primary
-root_id: 14_zero_time_auth
-shard_id: 15_handel_transaktionen
-kind: bootstrap_contract
-status: active

@@ -1,5 +1,0 @@
-interface_id: 09_meta_identity.05_gesundheit_medizin.primary
-root_id: 09_meta_identity
-shard_id: 05_gesundheit_medizin
-kind: bootstrap_contract
-status: active

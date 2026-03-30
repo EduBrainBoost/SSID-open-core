@@ -1,5 +1,0 @@
-policy_id: 06_data_pipeline.14_vertraege_vereinbarungen.baseline_policy
-root_id: 06_data_pipeline
-shard_id: 14_vertraege_vereinbarungen
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

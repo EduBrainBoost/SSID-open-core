@@ -1,5 +1,0 @@
-interface_id: 22_datasets.06_bildung_qualifikationen.primary
-root_id: 22_datasets
-shard_id: 06_bildung_qualifikationen
-kind: bootstrap_contract
-status: active

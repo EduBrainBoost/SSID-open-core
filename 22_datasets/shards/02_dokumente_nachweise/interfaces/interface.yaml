@@ -1,5 +1,0 @@
-interface_id: 22_datasets.02_dokumente_nachweise.primary
-root_id: 22_datasets
-shard_id: 02_dokumente_nachweise
-kind: bootstrap_contract
-status: active

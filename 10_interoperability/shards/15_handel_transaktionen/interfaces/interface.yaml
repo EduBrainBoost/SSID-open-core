@@ -1,5 +1,0 @@
-interface_id: 10_interoperability.15_handel_transaktionen.primary
-root_id: 10_interoperability
-shard_id: 15_handel_transaktionen
-kind: bootstrap_contract
-status: active

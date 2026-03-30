@@ -1,5 +1,0 @@
-policy_id: 21_post_quantum_crypto.11_versicherungen_risiken.baseline_policy
-root_id: 21_post_quantum_crypto
-shard_id: 11_versicherungen_risiken
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

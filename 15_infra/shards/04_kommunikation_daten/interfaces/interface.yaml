@@ -1,5 +1,0 @@
-interface_id: 15_infra.04_kommunikation_daten.primary
-root_id: 15_infra
-shard_id: 04_kommunikation_daten
-kind: bootstrap_contract
-status: active

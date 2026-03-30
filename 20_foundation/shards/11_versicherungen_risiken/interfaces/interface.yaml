@@ -1,5 +1,0 @@
-interface_id: 20_foundation.11_versicherungen_risiken.primary
-root_id: 20_foundation
-shard_id: 11_versicherungen_risiken
-kind: bootstrap_contract
-status: active

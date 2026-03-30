@@ -1,5 +1,0 @@
-interface_id: 11_test_simulation.05_gesundheit_medizin.primary
-root_id: 11_test_simulation
-shard_id: 05_gesundheit_medizin
-kind: bootstrap_contract
-status: active

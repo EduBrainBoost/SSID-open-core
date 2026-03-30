@@ -1,5 +1,0 @@
-interface_id: 17_observability.01_identitaet_personen.primary
-root_id: 17_observability
-shard_id: 01_identitaet_personen
-kind: bootstrap_contract
-status: active

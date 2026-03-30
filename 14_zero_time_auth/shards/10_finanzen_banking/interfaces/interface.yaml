@@ -1,5 +1,0 @@
-interface_id: 14_zero_time_auth.10_finanzen_banking.primary
-root_id: 14_zero_time_auth
-shard_id: 10_finanzen_banking
-kind: bootstrap_contract
-status: active

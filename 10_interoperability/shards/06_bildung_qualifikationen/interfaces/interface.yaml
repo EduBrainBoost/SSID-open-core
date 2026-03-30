@@ -1,5 +1,0 @@
-interface_id: 10_interoperability.06_bildung_qualifikationen.primary
-root_id: 10_interoperability
-shard_id: 06_bildung_qualifikationen
-kind: bootstrap_contract
-status: active

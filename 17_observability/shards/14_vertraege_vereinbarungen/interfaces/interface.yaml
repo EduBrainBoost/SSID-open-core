@@ -1,5 +1,0 @@
-interface_id: 17_observability.14_vertraege_vereinbarungen.primary
-root_id: 17_observability
-shard_id: 14_vertraege_vereinbarungen
-kind: bootstrap_contract
-status: active

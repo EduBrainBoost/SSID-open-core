@@ -1,5 +1,0 @@
-interface_id: 09_meta_identity.10_finanzen_banking.primary
-root_id: 09_meta_identity
-shard_id: 10_finanzen_banking
-kind: bootstrap_contract
-status: active

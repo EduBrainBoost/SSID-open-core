@@ -1,5 +1,0 @@
-interface_id: 08_identity_score.14_vertraege_vereinbarungen.primary
-root_id: 08_identity_score
-shard_id: 14_vertraege_vereinbarungen
-kind: bootstrap_contract
-status: active

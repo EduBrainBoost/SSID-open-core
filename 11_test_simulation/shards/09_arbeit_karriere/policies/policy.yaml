@@ -1,5 +1,0 @@
-policy_id: 11_test_simulation.09_arbeit_karriere.baseline_policy
-root_id: 11_test_simulation
-shard_id: 09_arbeit_karriere
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

@@ -1,5 +1,0 @@
-interface_id: 04_deployment.05_gesundheit_medizin.primary
-root_id: 04_deployment
-shard_id: 05_gesundheit_medizin
-kind: bootstrap_contract
-status: active

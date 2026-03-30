@@ -1,5 +1,0 @@
-interface_id: 20_foundation.06_bildung_qualifikationen.primary
-root_id: 20_foundation
-shard_id: 06_bildung_qualifikationen
-kind: bootstrap_contract
-status: active

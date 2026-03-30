@@ -1,5 +1,0 @@
-interface_id: 19_adapters.13_unternehmen_gewerbe.primary
-root_id: 19_adapters
-shard_id: 13_unternehmen_gewerbe
-kind: bootstrap_contract
-status: active

@@ -1,5 +1,0 @@
-policy_id: 15_infra.15_handel_transaktionen.baseline_policy
-root_id: 15_infra
-shard_id: 15_handel_transaktionen
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

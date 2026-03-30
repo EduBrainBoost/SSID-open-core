@@ -1,5 +1,0 @@
-interface_id: 10_interoperability.05_gesundheit_medizin.primary
-root_id: 10_interoperability
-shard_id: 05_gesundheit_medizin
-kind: bootstrap_contract
-status: active

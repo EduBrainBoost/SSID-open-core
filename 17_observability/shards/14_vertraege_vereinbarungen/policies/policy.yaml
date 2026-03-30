@@ -1,5 +1,0 @@
-policy_id: 17_observability.14_vertraege_vereinbarungen.baseline_policy
-root_id: 17_observability
-shard_id: 14_vertraege_vereinbarungen
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

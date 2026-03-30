@@ -1,5 +1,0 @@
-interface_id: 04_deployment.16_behoerden_verwaltung.primary
-root_id: 04_deployment
-shard_id: 16_behoerden_verwaltung
-kind: bootstrap_contract
-status: active

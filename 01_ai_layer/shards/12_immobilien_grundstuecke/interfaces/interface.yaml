@@ -1,5 +1,0 @@
-interface_id: 01_ai_layer.12_immobilien_grundstuecke.primary
-root_id: 01_ai_layer
-shard_id: 12_immobilien_grundstuecke
-kind: bootstrap_contract
-status: active

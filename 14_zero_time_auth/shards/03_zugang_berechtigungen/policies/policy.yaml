@@ -1,5 +1,0 @@
-policy_id: 14_zero_time_auth.03_zugang_berechtigungen.baseline_policy
-root_id: 14_zero_time_auth
-shard_id: 03_zugang_berechtigungen
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

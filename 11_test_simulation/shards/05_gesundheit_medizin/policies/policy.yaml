@@ -1,5 +1,0 @@
-policy_id: 11_test_simulation.05_gesundheit_medizin.baseline_policy
-root_id: 11_test_simulation
-shard_id: 05_gesundheit_medizin
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

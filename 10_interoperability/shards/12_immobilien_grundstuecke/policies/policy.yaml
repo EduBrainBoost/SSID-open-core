@@ -1,5 +1,0 @@
-policy_id: 10_interoperability.12_immobilien_grundstuecke.baseline_policy
-root_id: 10_interoperability
-shard_id: 12_immobilien_grundstuecke
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

@@ -1,5 +1,0 @@
-interface_id: 09_meta_identity.06_bildung_qualifikationen.primary
-root_id: 09_meta_identity
-shard_id: 06_bildung_qualifikationen
-kind: bootstrap_contract
-status: active

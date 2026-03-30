@@ -1,5 +1,0 @@
-interface_id: 04_deployment.08_mobilitaet_fahrzeuge.primary
-root_id: 04_deployment
-shard_id: 08_mobilitaet_fahrzeuge
-kind: bootstrap_contract
-status: active

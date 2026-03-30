@@ -1,8 +1,0 @@
-root_id: 01_ai_layer
-shard_id: 10_finanzen_banking
-rule_refs:
-- ROOT-24-LOCK
-- SAFE-FIX
-- SOT_AGENT_021
-- SOT_AGENT_022
-- SOT_AGENT_023

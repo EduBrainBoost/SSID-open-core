@@ -1,5 +1,0 @@
-interface_id: 15_infra.05_gesundheit_medizin.primary
-root_id: 15_infra
-shard_id: 05_gesundheit_medizin
-kind: bootstrap_contract
-status: active
