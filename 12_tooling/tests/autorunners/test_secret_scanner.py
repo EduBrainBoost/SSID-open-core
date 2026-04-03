@@ -31,17 +31,17 @@ def test_aws_key_detected():
 
 
 def test_github_pat_detected():
-    code, result = run_scan("token = 'ghp_" + "a" * 36 + "'")
+    code, result = run_scan("token = 'ghp_" + "a" * 36 + "'")  # ssid:test-fixture
     assert code == 1
 
 
 def test_private_key_detected():
-    code, result = run_scan("-----BEGIN RSA PRIVATE KEY-----\nMIIE...\n-----END RSA PRIVATE KEY-----")
+    code, result = run_scan("-----BEGIN RSA PRIVATE KEY-----\nMIIE...\n-----END RSA PRIVATE KEY-----")  # ssid:test-fixture
     assert code == 1
 
 
 def test_slack_token_detected():
-    code, result = run_scan("slack_token = 'xoxb-123456789-abcdefg'")
+    code, result = run_scan("slack_token = 'xoxb-123456789-abcdefg'")  # ssid:test-fixture
     assert code == 1
 
 

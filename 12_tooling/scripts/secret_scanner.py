@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """
 AR-08: Secret Scanner based on opencore_export_policy.yaml patterns
+
+NOTE (V-OC-SEC-02): This is the lightweight CLI scanner (AR-08 autorunner).
+The full-featured scanner lives at 12_tooling/security/secret_scanner.py
+(SecretScanner class with suppression support, pattern labels, line-level
+findings). Both are intentionally kept separate:
+  - scripts/secret_scanner.py  -> CI autorunner, simple pass/fail
+  - security/secret_scanner.py -> Library, detailed analysis + suppression
 """
 
 import argparse

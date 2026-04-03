@@ -194,7 +194,7 @@ class TestExportPolicy:
         assert policy.scan_secrets("def hello(): pass") == []
 
     def test_secret_scan_detects(self, policy: ExportPolicy) -> None:
-        content = 'api_key = "supersecretkey123456"'
+        content = 'api_key = "supersecretkey123456"'  # ssid:test-fixture
         hits = policy.scan_secrets(content)
         assert len(hits) >= 1
 
@@ -319,7 +319,9 @@ class TestRunExport:
     def test_secret_file_excluded(self, tmp_source: Path, tmp_target: Path, policy: ExportPolicy) -> None:
         # Add a file with a secret to the public module
         secret_file = tmp_source / "01_ai_layer" / "src" / "config.py"
-        secret_file.write_text('api_key = "this_is_a_very_secret_key_value"\n', encoding="utf-8")
+        secret_file.write_text(
+            'api_key = "this_is_a_very_secret_key_value"\n', encoding="utf-8"  # ssid:test-fixture
+        )
         result = run_export(tmp_source, tmp_target, policy, dry_run=True)
         excluded_paths = {e["path"] for e in result.excluded}
         assert "01_ai_layer/src/config.py" in excluded_paths
