@@ -12,12 +12,24 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Windows cp1252 safety: reconfigure stdout/stderr to UTF-8 with replacement
+if sys.stdout.encoding != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.stderr.encoding != "utf-8":
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 
 def parse_guard_mode() -> str:
-    """Read SSID_GUARD_MODE from env. Returns 'off', 'soft', or 'hard'. Default: 'soft'."""
+    """Read SSID_GUARD_MODE from env. Returns 'off', 'soft', or 'hard'. Default: 'soft'.
+
+    Accepts canonical values (off/soft/hard) and v2 aliases (disabled/advisory/strict).
+    """
     raw = _os.environ.get("SSID_GUARD_MODE", "soft").strip().lower()
-    if raw in ("off", "soft", "hard"):
-        return raw
+    # v2 alias mapping: strict->hard, advisory->soft, disabled->off
+    alias_map = {"strict": "hard", "advisory": "soft", "disabled": "off"}
+    normalized = alias_map.get(raw, raw)
+    if normalized in ("off", "soft", "hard"):
+        return normalized
     print(f"WARN: SSID_GUARD_MODE={raw!r} invalid, falling back to 'soft'", file=sys.stderr)
     return "soft"
 
