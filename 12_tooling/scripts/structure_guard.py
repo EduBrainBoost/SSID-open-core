@@ -30,7 +30,7 @@ def main() -> int:
         die(f"expected 24 root modules, found {len(roots)}: {roots}")
 
     # Forbidden archive extensions at repo root (deny even if allowlisted)
-    forbidden_archive_exts = {".zip", ".tgz", ".7z"}
+    forbidden_archive_exts = {".zip", ".tgz", ".7z", ".rar"}
 
     for p in repo_root.iterdir():
         name = p.name
