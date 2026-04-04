@@ -65,11 +65,11 @@ jobs:
       - name: Verify policy files exist
         run: |
           REQUIRED_FILES=(
-            "opencore_policy.yaml"
-            "public_export_rules.yaml"
-            "public_export_manifest.json"
-            "open_core_registry.json"
-            "public_export_policy.rego"
+            "16_codex/opencore_export_policy.yaml"
+            "23_compliance/public_export_rules.yaml"
+            "16_codex/public_export_manifest.json"
+            "16_codex/open_core_registry.json"
+            "23_compliance/public_export_policy.rego"
             "CODEOWNERS"
             "LICENSE"
             "SECURITY.md"
@@ -86,30 +86,34 @@ jobs:
           fi
           echo "All required policy files present."
 
-      - name: Validate opencore_policy.yaml
+      - name: Validate opencore_export_policy.yaml
         run: |
           python -c "
           import yaml, sys
-          with open('opencore_policy.yaml') as f:
+          with open('16_codex/opencore_export_policy.yaml') as f:
               policy = yaml.safe_load(f)
-          required = ['version', 'allowed_roots', 'blocked_extensions', 'sanitization_rules', 'enforcement']
+          required = ['schema_version', 'source_repo', 'target_repo', 'mode',
+                      'allow_prefixes', 'deny_globs', 'secret_scan_regex']
           for key in required:
               if key not in policy:
                   print(f'ERROR: Missing key in policy: {key}')
                   sys.exit(1)
-          allowed = sorted(policy['allowed_roots'])
+          allowed = sorted(
+              p.rstrip('/') for p in policy['allow_prefixes']
+              if p.rstrip('/').startswith(('0', '1', '2'))
+          )
           expected = sorted(['03_core', '12_tooling', '16_codex', '23_compliance', '24_meta_orchestration'])
           if allowed != expected:
-              print(f'ERROR: allowed_roots mismatch: {allowed} != {expected}')
+              print(f'ERROR: allow_prefixes mismatch: {allowed} != {expected}')
               sys.exit(1)
-          print('Policy validation passed.')
+          print(f'Policy validation passed (schema_version={policy[\"schema_version\"]}).')
           "
 
       - name: Validate manifest consistency
         run: |
           python -c "
           import json, sys
-          with open('public_export_manifest.json') as f:
+          with open('16_codex/public_export_manifest.json') as f:
               manifest = json.load(f)
           roots = [r['root'] for r in manifest['exported_roots']]
           expected = ['03_core', '12_tooling', '16_codex', '23_compliance', '24_meta_orchestration']
@@ -122,9 +126,9 @@ jobs:
       - name: Generate SHA256 checksums
         run: |
           echo "=== SHA256 Checksums of Policy Artifacts ==="
-          sha256sum opencore_policy.yaml \
-                    public_export_rules.yaml \
-                    public_export_manifest.json \
-                    open_core_registry.json \
-                    public_export_policy.rego \
+          sha256sum 16_codex/opencore_export_policy.yaml \
+                    23_compliance/public_export_rules.yaml \
+                    16_codex/public_export_manifest.json \
+                    16_codex/open_core_registry.json \
+                    23_compliance/public_export_policy.rego \
                     CODEOWNERS 2>/dev/null || true

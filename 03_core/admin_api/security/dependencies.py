@@ -18,8 +18,8 @@ def get_current_user(request: Request) -> dict:
         from .zerotime import decode_jwt_payload
 
         payload = decode_jwt_payload(token)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token") from None
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token") from exc
 
     role = payload.get("role", "")
     if role not in ADMIN_ROLES:

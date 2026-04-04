@@ -7,6 +7,27 @@ source_repo: "SSID"
 target_repo: "SSID-open-core"
 mode: "filtered"
 
+# Allowed file extensions for export
+allow_extensions:
+  - ".py"
+  - ".yaml"
+  - ".yml"
+  - ".json"
+  - ".toml"
+  - ".md"
+  - ".txt"
+  - ".rego"
+  - ".cfg"
+  - ".ini"
+  - ".sh"
+  - ".wasm"
+
+# Maximum file size in bytes (5 MB)
+max_file_size_bytes: 5242880
+
+# Export manifest schema version
+export_manifest_schema: "1.0.0"
+
 # Only these prefixes are allowed in open-core
 allow_prefixes:
   - "03_core/"
