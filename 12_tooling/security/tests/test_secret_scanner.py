@@ -13,6 +13,7 @@ Covers:
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import json
@@ -25,18 +26,16 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from security.secret_scanner import (
+    _SUPPRESS_COMMENT,
+    ScanSummary,
     SecretFinding,
     SecretScanner,
-    ScanSummary,
-    _SUPPRESS_COMMENT,
-    scan_file,
-    scan_directory,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _write(path: Path, content: str) -> Path:
     path.write_text(content, encoding="utf-8")
@@ -46,6 +45,7 @@ def _write(path: Path, content: str) -> Path:
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def scanner() -> SecretScanner:
@@ -96,6 +96,7 @@ def allowlist_json(tmp_path: Path) -> Path:
 # Tests — Pattern detection
 # ===========================================================================
 
+
 class TestPatternDetection:
     def test_detect_aws_access_key(self, scanner: SecretScanner, aws_key_py: Path) -> None:
         findings = scanner.scan_file(aws_key_py)
@@ -143,10 +144,9 @@ class TestPatternDetection:
 # Tests — Inline suppression
 # ===========================================================================
 
+
 class TestInlineSuppression:
-    def test_suppression_comment_prevents_finding(
-        self, scanner: SecretScanner, tmp_path: Path
-    ) -> None:
+    def test_suppression_comment_prevents_finding(self, scanner: SecretScanner, tmp_path: Path) -> None:
         f = _write(
             tmp_path / "suppressed.py",
             f'token = "AKIAIOSFODNN7EXAMPLE"  # {_SUPPRESS_COMMENT}\n',
@@ -154,13 +154,8 @@ class TestInlineSuppression:
         findings = scanner.scan_file(f)
         assert findings == []
 
-    def test_suppression_only_on_matching_line(
-        self, scanner: SecretScanner, tmp_path: Path
-    ) -> None:
-        content = (
-            f'token = "AKIAIOSFODNN7EXAMPLE"  # {_SUPPRESS_COMMENT}\n'
-            'other_key = "AKIAIOSFODNN7EXAMPLE"\n'
-        )
+    def test_suppression_only_on_matching_line(self, scanner: SecretScanner, tmp_path: Path) -> None:
+        content = f'token = "AKIAIOSFODNN7EXAMPLE"  # {_SUPPRESS_COMMENT}\nother_key = "AKIAIOSFODNN7EXAMPLE"\n'
         f = _write(tmp_path / "partial.py", content)
         findings = scanner.scan_file(f)
         # Line 1 suppressed, line 2 should still be detected
@@ -171,6 +166,7 @@ class TestInlineSuppression:
 # ===========================================================================
 # Tests — Allow-list
 # ===========================================================================
+
 
 class TestAllowList:
     def test_pattern_label_allowlist_suppresses_finding(
@@ -205,28 +201,23 @@ class TestAllowList:
 # Tests — scan_directory
 # ===========================================================================
 
+
 class TestScanDirectory:
-    def test_scan_directory_finds_secrets(
-        self, scanner: SecretScanner, tmp_path: Path
-    ) -> None:
+    def test_scan_directory_finds_secrets(self, scanner: SecretScanner, tmp_path: Path) -> None:
         _write(tmp_path / "a.py", 'k = "ghp_' + "a" * 36 + '"\n')
         _write(tmp_path / "b.py", '"""clean"""\n')
         scanner.scan_directory(tmp_path)
         labels = [f.pattern_label for f in scanner.get_findings()]
         assert "GITHUB_TOKEN_PAT" in labels
 
-    def test_scan_directory_skips_binary_extension(
-        self, scanner: SecretScanner, tmp_path: Path
-    ) -> None:
+    def test_scan_directory_skips_binary_extension(self, scanner: SecretScanner, tmp_path: Path) -> None:
         # .pyc files should be skipped regardless of content
         pyc = tmp_path / "compiled.pyc"
         pyc.write_bytes(b"AKIAIOSFODNN7EXAMPLE")
         scanner.scan_directory(tmp_path)
         assert scanner.get_findings() == []
 
-    def test_scan_directory_recurses(
-        self, scanner: SecretScanner, tmp_path: Path
-    ) -> None:
+    def test_scan_directory_recurses(self, scanner: SecretScanner, tmp_path: Path) -> None:
         subdir = tmp_path / "sub" / "nested"
         subdir.mkdir(parents=True)
         _write(subdir / "deep.py", 'k = "AKIAIOSFODNN7EXAMPLE"\n')
@@ -243,10 +234,9 @@ class TestScanDirectory:
 # Tests — get_findings() / get_summary() / reset()
 # ===========================================================================
 
+
 class TestScannerState:
-    def test_get_findings_accumulates_across_calls(
-        self, tmp_path: Path
-    ) -> None:
+    def test_get_findings_accumulates_across_calls(self, tmp_path: Path) -> None:
         scanner = SecretScanner()
         _write(tmp_path / "f1.py", 'k = "AKIAIOSFODNN7EXAMPLE"\n')
         _write(tmp_path / "f2.py", 't = "ghp_' + "a" * 36 + '"\n')

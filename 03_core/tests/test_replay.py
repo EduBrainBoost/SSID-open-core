@@ -4,29 +4,30 @@ Tests that SSID distributions produce stable, replayable results:
 - Replay: inputs → result → serialize inputs → re-run with same inputs → same result
 - Canonical hash: each result has a deterministic hash that changes when values change
 """
+
 from __future__ import annotations
+
+import hashlib
 import json
 import sys
-import hashlib
 from decimal import Decimal
 from pathlib import Path
-
-import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fee_distribution_engine import FeeDistributionEngine, FeeParticipant, ParticipantRole
-from subscription_revenue_distributor import (
-    SubscriptionRevenueDistributor, RevenueParticipant, SubscriptionTier
-)
 from governance_reward_engine import (
-    GovernanceRewardEngine, GovernanceParticipant, GovernanceActivity, GovernanceActivityType
+    GovernanceActivity,
+    GovernanceActivityType,
+    GovernanceParticipant,
+    GovernanceRewardEngine,
 )
-
+from subscription_revenue_distributor import RevenueParticipant, SubscriptionRevenueDistributor, SubscriptionTier
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def canonical_hash(allocations: dict) -> str:
     """Deterministic SHA-256 of sorted allocation dict."""
@@ -37,6 +38,7 @@ def canonical_hash(allocations: dict) -> str:
 # ---------------------------------------------------------------------------
 # Fee Distribution Replay Tests
 # ---------------------------------------------------------------------------
+
 
 class TestFeeDistributionReplay:
     """Replay and canonical-hash tests for FeeDistributionEngine."""
@@ -132,6 +134,7 @@ class TestFeeDistributionReplay:
 # Subscription Revenue Replay Tests
 # ---------------------------------------------------------------------------
 
+
 class TestSubscriptionReplay:
     """Replay and canonical-hash tests for SubscriptionRevenueDistributor."""
 
@@ -207,6 +210,7 @@ class TestSubscriptionReplay:
 # ---------------------------------------------------------------------------
 # Governance Reward Replay Tests
 # ---------------------------------------------------------------------------
+
 
 class TestGovernanceReplay:
     """Replay and canonical-hash tests for GovernanceRewardEngine."""

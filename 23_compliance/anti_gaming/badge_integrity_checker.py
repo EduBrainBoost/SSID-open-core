@@ -11,9 +11,9 @@ Detection strategies:
   - Timestamp inconsistencies in badge metadata
   - Badge inflation (claiming higher compliance than evidence supports)
 """
+
 from __future__ import annotations
 
-import json
 import logging
 import re
 import sys
@@ -76,12 +76,14 @@ def scan_badge_claims(root: Path) -> list[dict[str, Any]]:
             for line_num, line in enumerate(content.splitlines(), 1):
                 match = STATUS_PATTERN.search(line)
                 if match:
-                    claims.append({
-                        "file": str(fpath.relative_to(root)),
-                        "line": line_num,
-                        "marker": match.group(1).upper(),
-                        "context": line.strip()[:120],
-                    })
+                    claims.append(
+                        {
+                            "file": str(fpath.relative_to(root)),
+                            "line": line_num,
+                            "marker": match.group(1).upper(),
+                            "context": line.strip()[:120],
+                        }
+                    )
 
     return claims
 
@@ -126,18 +128,19 @@ def check_badge_backing(
         if claim["marker"] in ("CERTIFIED", "COMPLIANT", "APPROVED"):
             if root_evidence_count.get(claim_root, 0) == 0:
                 if claim_root not in ("02_audit_logging", "23_compliance"):
-                    findings.append({
-                        "type": "unsubstantiated_badge",
-                        "claim": claim,
-                        "reason": f"No evidence files found for root {claim_root}",
-                        "severity": "high",
-                    })
+                    findings.append(
+                        {
+                            "type": "unsubstantiated_badge",
+                            "claim": claim,
+                            "reason": f"No evidence files found for root {claim_root}",
+                            "severity": "high",
+                        }
+                    )
 
     return findings
 
 
-def validate(badge_records: list[dict[str, Any]] | None = None,
-             root: Path | None = None) -> dict[str, Any]:
+def validate(badge_records: list[dict[str, Any]] | None = None, root: Path | None = None) -> dict[str, Any]:
     """Run badge integrity validation.
 
     Args:
@@ -155,30 +158,36 @@ def validate(badge_records: list[dict[str, Any]] | None = None,
             badge_status = record.get("status", "")
             evidence_hash = record.get("evidence_hash", "")
             if badge_status in ("CERTIFIED", "COMPLIANT", "APPROVED") and not evidence_hash:
-                findings.append({
-                    "type": "badge_without_evidence",
-                    "index": idx,
-                    "badge": badge_status,
-                    "severity": "critical",
-                })
+                findings.append(
+                    {
+                        "type": "badge_without_evidence",
+                        "index": idx,
+                        "badge": badge_status,
+                        "severity": "critical",
+                    }
+                )
             timestamp = record.get("timestamp", "")
             if timestamp:
                 try:
                     dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
                     if dt.year > 2030 or dt.year < 2020:
-                        findings.append({
-                            "type": "suspicious_timestamp",
+                        findings.append(
+                            {
+                                "type": "suspicious_timestamp",
+                                "index": idx,
+                                "timestamp": timestamp,
+                                "severity": "high",
+                            }
+                        )
+                except (ValueError, TypeError):
+                    findings.append(
+                        {
+                            "type": "invalid_timestamp",
                             "index": idx,
                             "timestamp": timestamp,
-                            "severity": "high",
-                        })
-                except (ValueError, TypeError):
-                    findings.append({
-                        "type": "invalid_timestamp",
-                        "index": idx,
-                        "timestamp": timestamp,
-                        "severity": "medium",
-                    })
+                            "severity": "medium",
+                        }
+                    )
         return {
             "status": "FAIL" if findings else "PASS",
             "check": "badge_integrity_checker",

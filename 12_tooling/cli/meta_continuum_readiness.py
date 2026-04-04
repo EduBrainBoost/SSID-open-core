@@ -10,6 +10,7 @@ PASS means the system correctly knows its readiness state:
 
 FAIL means an internal error prevented evaluation.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -48,7 +49,10 @@ def check_proof_snapshot_exists() -> tuple[bool, str]:
         opencore_commit = data.get("opencore_commit", "")
         if ssid_commit and opencore_commit:
             return True, f"Proof snapshot found: {latest.name}"
-        return False, f"Proof snapshot incomplete: ssid_commit={bool(ssid_commit)}, opencore_commit={bool(opencore_commit)}"
+        return (
+            False,
+            f"Proof snapshot incomplete: ssid_commit={bool(ssid_commit)}, opencore_commit={bool(opencore_commit)}",
+        )
     except (json.JSONDecodeError, OSError) as exc:
         return False, f"Cannot parse proof snapshot: {exc}"
 
@@ -58,15 +62,31 @@ def check_claims_guard_clean() -> tuple[bool, str]:
     if not CLAIMS_GUARD_REGO.exists():
         return False, "claims_guard.rego not found"
     # Quick grep for forbidden claims (same list as run_all_gates)
-    forbidden = ["interfederation active", "mutual validation complete",
-                 "bidirectional verification achieved", "co-truth protocol active"]
-    exempt = ["claims_guard", "test_claims_guard", "test_interfederation",
-              "run_all_gates", "meta_continuum_readiness", "/archives/",
-              "__pycache__", ".pyc", "/plans/", "/agent_runs/run-merge-"]
+    forbidden = [
+        "interfederation active",
+        "mutual validation complete",
+        "bidirectional verification achieved",
+        "co-truth protocol active",
+    ]
+    exempt = [
+        "claims_guard",
+        "test_claims_guard",
+        "test_interfederation",
+        "run_all_gates",
+        "meta_continuum_readiness",
+        "/archives/",
+        "__pycache__",
+        ".pyc",
+        "/plans/",
+        "/agent_runs/run-merge-",
+    ]
     scan_prefixes = ["02_audit_logging", "05_documentation", "16_codex", "23_compliance"]
     proc = subprocess.run(
         ["git", "ls-files", "-z", "--"] + scan_prefixes,
-        cwd=str(PROJECT_ROOT), capture_output=True, text=True, timeout=30,
+        cwd=str(PROJECT_ROOT),
+        capture_output=True,
+        text=True,
+        timeout=30,
     )
     tracked = sorted(f for f in proc.stdout.split("\0") if f) if proc.returncode == 0 else []
     for fpath in tracked:
@@ -153,12 +173,14 @@ def evaluate_readiness(config: dict) -> dict:
         check_fn = CHECKS.get(check_name)
 
         if check_fn is None:
-            findings.append({
-                "id": cid,
-                "name": name,
-                "result": "ERROR",
-                "detail": f"Unknown check: {check_name}",
-            })
+            findings.append(
+                {
+                    "id": cid,
+                    "name": name,
+                    "result": "ERROR",
+                    "detail": f"Unknown check: {check_name}",
+                }
+            )
             all_met = False
             continue
 
@@ -167,12 +189,14 @@ def evaluate_readiness(config: dict) -> dict:
         except Exception as exc:
             met, detail = False, f"Check error: {exc}"
 
-        findings.append({
-            "id": cid,
-            "name": name,
-            "result": "MET" if met else "NOT_MET",
-            "detail": detail,
-        })
+        findings.append(
+            {
+                "id": cid,
+                "name": name,
+                "result": "MET" if met else "NOT_MET",
+                "detail": detail,
+            }
+        )
         if not met:
             all_met = False
 
@@ -190,8 +214,7 @@ def main() -> int:
         description="Meta-Continuum Readiness Gate. PASS/FAIL + findings.",
     )
     parser.add_argument("--json", action="store_true", help="Output as JSON")
-    parser.add_argument("--check-only", action="store_true",
-                        help="Only check config validity, skip live checks")
+    parser.add_argument("--check-only", action="store_true", help="Only check config validity, skip live checks")
     args = parser.parse_args()
 
     try:

@@ -3,28 +3,23 @@
 import pathlib
 import sys
 
-import pytest
-
 sys.path.insert(
     0,
     str(pathlib.Path(__file__).resolve().parent.parent / "jurisdictions"),
 )
 
 from eu_mica import (
+    WHITEPAPER_REQUIRED_SECTIONS,
     ComplianceStatus,
     MiCAComplianceEngine,
     MiCATokenType,
-    ReserveRequirement,
-    TokenClassification,
-    WHITEPAPER_REQUIRED_SECTIONS,
-    WhitepaperRequirement,
     WhitepaperStatus,
 )
-
 
 # ------------------------------------------------------------------
 # Token Classification
 # ------------------------------------------------------------------
+
 
 class TestTokenClassification:
     def test_utility_token_default(self):
@@ -114,6 +109,7 @@ class TestTokenClassification:
 # Whitepaper Requirements
 # ------------------------------------------------------------------
 
+
 class TestWhitepaperRequirements:
     def test_all_sections_present(self):
         engine = MiCAComplianceEngine()
@@ -145,11 +141,14 @@ class TestWhitepaperRequirements:
 # Reserve Requirements
 # ------------------------------------------------------------------
 
+
 class TestReserveRequirements:
     def test_emt_sufficient_reserve(self):
         engine = MiCAComplianceEngine()
         result = engine.check_reserve(
-            "stable1", MiCATokenType.E_MONEY_TOKEN, 1.05,
+            "stable1",
+            MiCATokenType.E_MONEY_TOKEN,
+            1.05,
         )
         assert result.compliant is True
         assert result.reserve_ratio_required == 1.0
@@ -157,21 +156,27 @@ class TestReserveRequirements:
     def test_emt_insufficient_reserve(self):
         engine = MiCAComplianceEngine()
         result = engine.check_reserve(
-            "stable2", MiCATokenType.E_MONEY_TOKEN, 0.85,
+            "stable2",
+            MiCATokenType.E_MONEY_TOKEN,
+            0.85,
         )
         assert result.compliant is False
 
     def test_art_sufficient_reserve(self):
         engine = MiCAComplianceEngine()
         result = engine.check_reserve(
-            "art1", MiCATokenType.ASSET_REFERENCED_TOKEN, 1.0,
+            "art1",
+            MiCATokenType.ASSET_REFERENCED_TOKEN,
+            1.0,
         )
         assert result.compliant is True
 
     def test_utility_no_reserve_required(self):
         engine = MiCAComplianceEngine()
         result = engine.check_reserve(
-            "util1", MiCATokenType.UTILITY_TOKEN, 0.0,
+            "util1",
+            MiCATokenType.UTILITY_TOKEN,
+            0.0,
         )
         assert result.compliant is True
         assert result.reserve_ratio_required == 0.0
@@ -179,7 +184,9 @@ class TestReserveRequirements:
     def test_reserve_to_dict(self):
         engine = MiCAComplianceEngine()
         result = engine.check_reserve(
-            "tok1", MiCATokenType.E_MONEY_TOKEN, 1.0,
+            "tok1",
+            MiCATokenType.E_MONEY_TOKEN,
+            1.0,
         )
         d = result.to_dict()
         assert d["compliant"] is True
@@ -189,6 +196,7 @@ class TestReserveRequirements:
 # ------------------------------------------------------------------
 # Overall Compliance Status
 # ------------------------------------------------------------------
+
 
 class TestComplianceStatus:
     def test_pending_when_not_classified(self):

@@ -3,8 +3,8 @@ Source policy: 23_compliance/policies/sot/sot_opencore_derivation_policy.rego
 Phase 3 stub — A02_A03_COMPLETION
 Phase 2 Tuple-Fix — AGENT_A9_TEST_EVIDENCE
 """
-from typing import Any, Dict, List, Tuple
 
+from typing import Any
 
 DENY_FINDING_CLASSES = {
     "forbidden_export",
@@ -13,7 +13,7 @@ DENY_FINDING_CLASSES = {
 }
 
 
-def validate_sot_opencore_derivation_policy(data: Dict[str, Any]) -> Tuple[bool, List[str]]:
+def validate_sot_opencore_derivation_policy(data: dict[str, Any]) -> tuple[bool, list[str]]:
     """
     Validates data against sot_opencore_derivation_policy.
     Derived from: 23_compliance/policies/sot/sot_opencore_derivation_policy.rego
@@ -21,7 +21,7 @@ def validate_sot_opencore_derivation_policy(data: Dict[str, Any]) -> Tuple[bool,
     Returns (True, []) if no deny conditions fire,
     otherwise (False, [violations]).
     """
-    violations: List[str] = []
+    violations: list[str] = []
 
     if not isinstance(data, dict):
         return (False, ["Input data is not a dict"])
@@ -30,7 +30,7 @@ def validate_sot_opencore_derivation_policy(data: Dict[str, Any]) -> Tuple[bool,
     if data.get("status") == "fail":
         violations.append("D-005: overall derivation status is 'fail'")
 
-    findings: List[Dict] = data.get("findings", [])
+    findings: list[dict] = data.get("findings", [])
 
     for finding in findings:
         if not isinstance(finding, dict):
@@ -41,14 +41,10 @@ def validate_sot_opencore_derivation_policy(data: Dict[str, Any]) -> Tuple[bool,
 
         # D-001, D-002, D-004
         if cls in DENY_FINDING_CLASSES:
-            violations.append(
-                f"Deny finding class '{cls}' in '{path}'"
-            )
+            violations.append(f"Deny finding class '{cls}' in '{path}'")
 
         # D-003: critical stale_derivative_binding
         if cls == "stale_derivative_binding" and finding.get("severity") == "critical":
-            violations.append(
-                f"D-003: critical stale_derivative_binding in '{path}'"
-            )
+            violations.append(f"D-003: critical stale_derivative_binding in '{path}'")
 
     return (len(violations) == 0, violations)

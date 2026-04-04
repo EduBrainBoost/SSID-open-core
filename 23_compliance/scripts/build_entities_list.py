@@ -2,12 +2,11 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import os
 import sys
-import hashlib
 from pathlib import Path
-from typing import Iterable, List, Optional, Tuple
 
 
 def _sha256_bytes(b: bytes) -> str:
@@ -23,7 +22,7 @@ def _repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
-def _resolve_source(repo_root: Path) -> Optional[Path]:
+def _resolve_source(repo_root: Path) -> Path | None:
     env = os.environ.get("SANCTIONS_SOURCE", "").strip()
     if env:
         p = Path(env)
@@ -44,7 +43,7 @@ def _resolve_source(repo_root: Path) -> Optional[Path]:
     return None
 
 
-def _resolve_output(repo_root: Path) -> Optional[Path]:
+def _resolve_output(repo_root: Path) -> Path | None:
     env = os.environ.get("SANCTIONS_OUTPUT", "").strip()
     if env:
         p = Path(env)
@@ -68,14 +67,14 @@ def _resolve_output(repo_root: Path) -> Optional[Path]:
     return None
 
 
-def _extract_entities_from_json(obj) -> List[str]:
+def _extract_entities_from_json(obj) -> list[str]:
     # accept: list[str] | list[dict{name|entity}] | dict{entities:[...]}
     if isinstance(obj, dict):
         obj = obj.get("entities", [])
     if not isinstance(obj, list):
         raise ValueError("JSON source must be a list or dict with 'entities' list")
 
-    out: List[str] = []
+    out: list[str] = []
     for item in obj:
         if isinstance(item, str):
             s = item.strip()
@@ -90,7 +89,7 @@ def _extract_entities_from_json(obj) -> List[str]:
     return out
 
 
-def _extract_entities(src: Path) -> Tuple[List[str], str]:
+def _extract_entities(src: Path) -> tuple[list[str], str]:
     b = src.read_bytes()
     src_hash = _sha256_bytes(b)
 
@@ -102,7 +101,7 @@ def _extract_entities(src: Path) -> Tuple[List[str], str]:
     if src.suffix.lower() == ".csv":
         text = b.decode("utf-8", errors="strict")
         r = csv.reader(text.splitlines())
-        ents: List[str] = []
+        ents: list[str] = []
         for row in r:
             if not row:
                 continue
@@ -123,7 +122,7 @@ def _extract_entities(src: Path) -> Tuple[List[str], str]:
     raise ValueError(f"Unsupported source format: {src.suffix}")
 
 
-def _write_output(out_path: Path, entities: List[str], source_path: str, source_sha: str) -> None:
+def _write_output(out_path: Path, entities: list[str], source_path: str, source_sha: str) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     # stable, deterministic list
@@ -168,7 +167,9 @@ def main() -> int:
         return 2
 
     if not outp:
-        _warn("no output path (no existing entities_list.json). Skipping write. Set SANCTIONS_OUTPUT or SANCTIONS_ALLOW_CREATE_OUTPUT=1.")
+        _warn(
+            "no output path (no existing entities_list.json). Skipping write. Set SANCTIONS_OUTPUT or SANCTIONS_ALLOW_CREATE_OUTPUT=1."
+        )
         return 0
 
     _write_output(outp, entities, str(src), src_sha)

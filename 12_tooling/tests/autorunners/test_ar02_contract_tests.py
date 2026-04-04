@@ -2,7 +2,6 @@ import json
 import subprocess
 import tempfile
 from pathlib import Path
-import pytest
 
 SCRIPT = Path(__file__).parent.parent.parent.parent / "24_meta_orchestration" / "scripts" / "sot_contract_check.py"
 SSID_ROOT = Path(__file__).parent.parent.parent.parent
@@ -13,14 +12,24 @@ SOT_OUT_2 = TMPDIR / "sot_check_test2.json"
 
 
 def test_sot_rules_loaded():
-    r = subprocess.run([
-        "python", str(SCRIPT),
-        "--rules", str(SSID_ROOT / "16_codex/contracts/sot/sot_contract.yaml"),
-        "--repo-scan", str(SSID_ROOT / "24_meta_orchestration/registry/generated/repo_scan.json"),
-        "--out", str(SOT_OUT_1),
-        "--generate-scan-if-missing", "true",
-        "--repo-root", str(SSID_ROOT),
-    ], capture_output=True, text=True)
+    r = subprocess.run(
+        [
+            "python",
+            str(SCRIPT),
+            "--rules",
+            str(SSID_ROOT / "16_codex/contracts/sot/sot_contract.yaml"),
+            "--repo-scan",
+            str(SSID_ROOT / "24_meta_orchestration/registry/generated/repo_scan.json"),
+            "--out",
+            str(SOT_OUT_1),
+            "--generate-scan-if-missing",
+            "true",
+            "--repo-root",
+            str(SSID_ROOT),
+        ],
+        capture_output=True,
+        text=True,
+    )
     # Only check schema — does it run and produce output
     assert r.returncode in (0, 1), r.stderr
     result = json.loads(SOT_OUT_1.read_text())
@@ -36,21 +45,38 @@ def test_sot_agent_001_dispatcher_exists():
 def test_sot_rules_all_36_checked():
     # Ensure output from first test exists; if not, generate it
     if not SOT_OUT_1.exists():
-        subprocess.run([
-            "python", str(SCRIPT),
-            "--rules", str(SSID_ROOT / "16_codex/contracts/sot/sot_contract.yaml"),
-            "--repo-scan", str(SSID_ROOT / "24_meta_orchestration/registry/generated/repo_scan.json"),
-            "--out", str(SOT_OUT_1),
-            "--generate-scan-if-missing", "true",
-            "--repo-root", str(SSID_ROOT),
-        ], check=False)
+        subprocess.run(
+            [
+                "python",
+                str(SCRIPT),
+                "--rules",
+                str(SSID_ROOT / "16_codex/contracts/sot/sot_contract.yaml"),
+                "--repo-scan",
+                str(SSID_ROOT / "24_meta_orchestration/registry/generated/repo_scan.json"),
+                "--out",
+                str(SOT_OUT_1),
+                "--generate-scan-if-missing",
+                "true",
+                "--repo-root",
+                str(SSID_ROOT),
+            ],
+            check=False,
+        )
 
-    r = subprocess.run([
-        "python", str(SCRIPT),
-        "--rules", str(SSID_ROOT / "16_codex/contracts/sot/sot_contract.yaml"),
-        "--repo-scan", str(SOT_OUT_1),
-        "--out", str(SOT_OUT_2),
-    ], capture_output=True, text=True)
+    r = subprocess.run(
+        [
+            "python",
+            str(SCRIPT),
+            "--rules",
+            str(SSID_ROOT / "16_codex/contracts/sot/sot_contract.yaml"),
+            "--repo-scan",
+            str(SOT_OUT_1),
+            "--out",
+            str(SOT_OUT_2),
+        ],
+        capture_output=True,
+        text=True,
+    )
     assert r.returncode in (0, 1), r.stderr
     result = json.loads(SOT_OUT_2.read_text())
     assert result["total_rules"] >= 36

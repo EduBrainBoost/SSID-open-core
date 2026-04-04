@@ -12,20 +12,22 @@ from ems.schemas.sot_promotion import (
     ExecutionGatewayActionResponse,
     ExecutionGatewayBlockersResponse,
     ExecutionGatewayEvaluationResponse,
+    ExecutionGatewayLiveStatusResponse,
     ExecutionGatewayRequest,
     ExecutionGatewayRunItem,
     ExecutionGatewayRunListResponse,
-    ExecutionGatewayLiveStatusResponse,
     FreezeEvaluateRequest,
     FreezeEvaluateResponse,
     FreezeStateResponse,
     FreezeStateUpdateRequest,
     OperatorApprovalListResponse,
-    PromotionExecutionHistoryItem,
-    PromotionExecutionHistoryListResponse,
     PromotionExecuteRequest,
     PromotionExecuteResponse,
+    PromotionExecutionHistoryItem,
+    PromotionExecutionHistoryListResponse,
     PromotionTimelineResponse,
+    RollbackEvaluateRequest,
+    RollbackEvaluateResponse,
     RollbackProposalCreateRequest,
     RollbackProposalCreateResponse,
     RollbackProposalDecisionRequest,
@@ -34,8 +36,6 @@ from ems.schemas.sot_promotion import (
     RollbackProposalListResponse,
     RollbackRecoveryExecuteRequest,
     RollbackRecoveryExecuteResponse,
-    RollbackEvaluateRequest,
-    RollbackEvaluateResponse,
 )
 from ems.services.execution_gateway import (
     abort_execution_run,
@@ -62,13 +62,6 @@ from ems.services.sot_promotion_execution_service import (
     list_execution_history,
     validate_rollback_guard,
 )
-from ems.services.sot_rollback_proposal_service import (
-    decide_rollback_proposal,
-    evaluate_and_build_rollback_proposal,
-    get_rollback_proposal,
-    list_rollback_proposals,
-)
-from ems.services.sot_rollback_recovery_service import execute_guarded_recovery_handoff
 from ems.services.sot_promotion_service import (
     RegistryConsistencyError,
     approve_candidate,
@@ -78,7 +71,13 @@ from ems.services.sot_promotion_service import (
     load_active_baseline_state,
     reject_candidate,
 )
-
+from ems.services.sot_rollback_proposal_service import (
+    decide_rollback_proposal,
+    evaluate_and_build_rollback_proposal,
+    get_rollback_proposal,
+    list_rollback_proposals,
+)
+from ems.services.sot_rollback_recovery_service import execute_guarded_recovery_handoff
 
 router = APIRouter(prefix="/api/sot/promotion", tags=["sot-promotion"])
 
@@ -412,9 +411,7 @@ def get_execution_runs_route(
     _: Identity = Depends(get_current_identity),
 ) -> ExecutionGatewayRunListResponse:
     try:
-        return ExecutionGatewayRunListResponse.model_validate(
-            {"items": list_gateway_runs(_repo_root(request))}
-        )
+        return ExecutionGatewayRunListResponse.model_validate({"items": list_gateway_runs(_repo_root(request))})
     except Exception as exc:
         raise _map_error(exc) from exc
 
@@ -437,9 +434,7 @@ def get_execution_live_status_route(
     _: Identity = Depends(get_current_identity),
 ) -> ExecutionGatewayLiveStatusResponse:
     try:
-        return ExecutionGatewayLiveStatusResponse.model_validate(
-            get_execution_live_status(_repo_root(request))
-        )
+        return ExecutionGatewayLiveStatusResponse.model_validate(get_execution_live_status(_repo_root(request)))
     except Exception as exc:
         raise _map_error(exc) from exc
 
@@ -450,9 +445,7 @@ def get_execution_blockers_route(
     _: Identity = Depends(get_current_identity),
 ) -> ExecutionGatewayBlockersResponse:
     try:
-        return ExecutionGatewayBlockersResponse.model_validate(
-            get_execution_blockers(_repo_root(request))
-        )
+        return ExecutionGatewayBlockersResponse.model_validate(get_execution_blockers(_repo_root(request)))
     except Exception as exc:
         raise _map_error(exc) from exc
 
@@ -490,9 +483,7 @@ def get_rollback_proposals(
     _: Identity = Depends(get_current_identity),
 ) -> RollbackProposalListResponse:
     try:
-        return RollbackProposalListResponse(
-            items=list_rollback_proposals(_repo_root(request), status_filter)
-        )
+        return RollbackProposalListResponse(items=list_rollback_proposals(_repo_root(request), status_filter))
     except Exception as exc:
         raise _map_error(exc) from exc
 
@@ -504,9 +495,7 @@ def get_rollback_proposal_detail(
     _: Identity = Depends(get_current_identity),
 ) -> RollbackProposalDetailResponse:
     try:
-        return RollbackProposalDetailResponse.model_validate(
-            get_rollback_proposal(_repo_root(request), proposal_id)
-        )
+        return RollbackProposalDetailResponse.model_validate(get_rollback_proposal(_repo_root(request), proposal_id))
     except Exception as exc:
         raise _map_error(exc) from exc
 

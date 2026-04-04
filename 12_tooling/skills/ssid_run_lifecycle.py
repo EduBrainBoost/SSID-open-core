@@ -4,8 +4,6 @@ Manages and validates the lifecycle of agent runs:
 PENDING -> RUNNING -> COMPLETED | FAILED | TIMEOUT
 """
 
-from typing import Dict, Optional
-
 from ._evidence import make_evidence, result
 
 SKILL_ID = "ssid-run-lifecycle"
@@ -21,7 +19,7 @@ VALID_TRANSITIONS = {
 }
 
 
-def execute(context: Dict) -> Dict:
+def execute(context: dict) -> dict:
     """Validate or perform a run state transition.
 
     context must contain:

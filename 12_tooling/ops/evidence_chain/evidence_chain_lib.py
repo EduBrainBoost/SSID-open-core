@@ -5,13 +5,14 @@ and generates missing artifacts for PR merges only (additive, idempotent).
 
 All backfill artifacts are marked origin=constructed (retroactive, no agent claims).
 """
+
 from __future__ import annotations
 
 import json
 import re
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -22,7 +23,9 @@ import report_bus as rb
 def git_first_parent_commits(repo: Path, limit: int = 200) -> list[dict[str, Any]]:
     raw = subprocess.check_output(
         ["git", "log", "--first-parent", f"-n{limit}", "--pretty=format:%H|%cI|%s"],
-        cwd=str(repo), text=True, errors="replace",
+        cwd=str(repo),
+        text=True,
+        errors="replace",
     ).strip()
     if not raw:
         return []
@@ -39,7 +42,7 @@ def git_first_parent_commits(repo: Path, limit: int = 200) -> list[dict[str, Any
 def _normalize_date(date_str: str) -> str:
     try:
         d = datetime.fromisoformat(date_str)
-        return d.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return d.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     except (ValueError, TypeError):
         return date_str
 
@@ -48,7 +51,10 @@ def git_diff_stat(repo: Path, sha: str) -> str:
     try:
         return subprocess.check_output(
             ["git", "diff", f"{sha}~1..{sha}", "--stat"],
-            cwd=str(repo), text=True, errors="replace", timeout=30,
+            cwd=str(repo),
+            text=True,
+            errors="replace",
+            timeout=30,
         )
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return ""
@@ -57,9 +63,10 @@ def git_diff_stat(repo: Path, sha: str) -> str:
 def git_show_header(repo: Path, sha: str) -> str:
     try:
         return subprocess.check_output(
-            ["git", "show", "-s",
-             "--format=commit %H%nAuthor: %an <%ae>%nDate: %cI%nSubject: %s%n%nParents: %P", sha],
-            cwd=str(repo), text=True, errors="replace",
+            ["git", "show", "-s", "--format=commit %H%nAuthor: %an <%ae>%nDate: %cI%nSubject: %s%n%nParents: %P", sha],
+            cwd=str(repo),
+            text=True,
+            errors="replace",
         )
     except subprocess.CalledProcessError:
         return ""
@@ -160,8 +167,15 @@ def scan(repo: Path, limit: int = 200, pr_only: bool = False) -> dict[str, Any]:
             continue
         has_run = sha in existing_runs or sha7 in existing_runs
         has_event = sha in existing_events or sha7 in existing_events
-        entry = {"merge_sha": sha, "commit_date_utc": c["commit_date_utc"], "subject": c["subject"],
-                 "pr_number": pr, "task_id": task, "has_agent_run": has_run, "has_report_event": has_event}
+        entry = {
+            "merge_sha": sha,
+            "commit_date_utc": c["commit_date_utc"],
+            "subject": c["subject"],
+            "pr_number": pr,
+            "task_id": task,
+            "has_agent_run": has_run,
+            "has_report_event": has_event,
+        }
         entries.append(entry)
         if not has_run:
             missing_runs.append(entry)
@@ -177,10 +191,11 @@ def scan(repo: Path, limit: int = 200, pr_only: bool = False) -> dict[str, Any]:
     }
 
 
-def backfill_pr_merges(repo: Path, scan_result: dict[str, Any], write: bool = False,
-                       now_utc: str | None = None) -> dict[str, Any]:
+def backfill_pr_merges(
+    repo: Path, scan_result: dict[str, Any], write: bool = False, now_utc: str | None = None
+) -> dict[str, Any]:
     if now_utc is None:
-        now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        now_utc = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     agent_runs_base = repo / "02_audit_logging" / "agent_runs"
     events_dir = repo / "24_meta_orchestration" / "report_bus" / "events"
     created_runs: list[str] = []
@@ -196,26 +211,44 @@ def backfill_pr_merges(repo: Path, scan_result: dict[str, Any], write: bool = Fa
         if not entry["has_agent_run"]:
             if write:
                 run_dir.mkdir(parents=True, exist_ok=True)
-                manifest = {"backfill_date_utc": now_utc, "commit_date_utc": entry["commit_date_utc"],
-                            "merge_sha": sha, "origin": "constructed", "pr_number": pr, "repo": "SSID",
-                            "run_id": run_id, "subject": entry["subject"], "task_id": task}
+                manifest = {
+                    "backfill_date_utc": now_utc,
+                    "commit_date_utc": entry["commit_date_utc"],
+                    "merge_sha": sha,
+                    "origin": "constructed",
+                    "pr_number": pr,
+                    "repo": "SSID",
+                    "run_id": run_id,
+                    "subject": entry["subject"],
+                    "task_id": task,
+                }
                 (run_dir / "run_manifest.json").write_text(
-                    json.dumps(manifest, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
+                    json.dumps(manifest, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8"
+                )
                 (run_dir / "diff_stat.txt").write_text(git_diff_stat(repo, sha), encoding="utf-8")
                 (run_dir / "git_show.txt").write_text(git_show_header(repo, sha), encoding="utf-8")
-                attestation = (f"# Attestation: {run_id}\n\nRetroactively generated by evidence_chain backfill.\n\n"
-                               f"- **Origin**: constructed (no agent execution claim)\n"
-                               f"- **Source**: git commit `{sha}` (PR #{pr})\n"
-                               f"- **Backfill date**: {now_utc}\n"
-                               f"- **Original commit date**: {entry['commit_date_utc']}\n")
+                attestation = (
+                    f"# Attestation: {run_id}\n\nRetroactively generated by evidence_chain backfill.\n\n"
+                    f"- **Origin**: constructed (no agent execution claim)\n"
+                    f"- **Source**: git commit `{sha}` (PR #{pr})\n"
+                    f"- **Backfill date**: {now_utc}\n"
+                    f"- **Original commit date**: {entry['commit_date_utc']}\n"
+                )
                 (run_dir / "attestation.md").write_text(attestation, encoding="utf-8")
             created_runs.append(str(run_dir.relative_to(repo)))
             entry["has_agent_run"] = True
         if not entry["has_report_event"]:
             event = rb.make_event(
-                event_type="merge_recorded", repo="SSID", sha=sha, merge_sha=sha,
-                pr_number=pr, task_id=task, origin="constructed", severity="info",
-                summary=entry["subject"][:200], observed_utc=entry["commit_date_utc"],
+                event_type="merge_recorded",
+                repo="SSID",
+                sha=sha,
+                merge_sha=sha,
+                pr_number=pr,
+                task_id=task,
+                origin="constructed",
+                severity="info",
+                summary=entry["subject"][:200],
+                observed_utc=entry["commit_date_utc"],
                 refs={"agent_run": f"02_audit_logging/agent_runs/{run_id}/run_manifest.json"},
                 payload={"backfill": True, "backfill_date_utc": now_utc},
             )
@@ -224,17 +257,32 @@ def backfill_pr_merges(repo: Path, scan_result: dict[str, Any], write: bool = Fa
             created_events.append(event["event_id"][:16])
             entry["has_report_event"] = True
         if task is None:
-            gaps.append({"merge_sha": sha[:7], "pr_number": pr, "reason": "task_id unresolved",
-                         "subject": entry["subject"][:80]})
-    return {"created_agent_runs": created_runs, "created_events": created_events,
-            "unresolved_gaps": gaps, "write_mode": write}
+            gaps.append(
+                {
+                    "merge_sha": sha[:7],
+                    "pr_number": pr,
+                    "reason": "task_id unresolved",
+                    "subject": entry["subject"][:80],
+                }
+            )
+    return {
+        "created_agent_runs": created_runs,
+        "created_events": created_events,
+        "unresolved_gaps": gaps,
+        "write_mode": write,
+    }
 
 
 def build_execution_index(repo: Path, scan_result: dict[str, Any], now_utc: str | None = None) -> dict[str, Any]:
     if now_utc is None:
-        now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    return {"version": "2.0", "repo": "SSID", "generated_utc": now_utc,
-            "scope": "pr_merges_only", "entries": scan_result["entries"]}
+        now_utc = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return {
+        "version": "2.0",
+        "repo": "SSID",
+        "generated_utc": now_utc,
+        "scope": "pr_merges_only",
+        "entries": scan_result["entries"],
+    }
 
 
 def write_execution_index(repo: Path, index: dict[str, Any]) -> str:
@@ -247,6 +295,8 @@ def write_execution_index(repo: Path, index: dict[str, Any]) -> str:
 def write_gap_report(repo: Path, backfill_result: dict[str, Any]) -> str:
     out = repo / "02_audit_logging" / "reports" / "EVIDENCE_CHAIN_GAPS_MERGES_V1.json"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(backfill_result["unresolved_gaps"], indent=2, ensure_ascii=False, sort_keys=True) + "\n",
-                   encoding="utf-8")
+    out.write_text(
+        json.dumps(backfill_result["unresolved_gaps"], indent=2, ensure_ascii=False, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return str(out.relative_to(repo))

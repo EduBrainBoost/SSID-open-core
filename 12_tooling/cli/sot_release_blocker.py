@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Fail-closed release blocker for active baseline state."""
+
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -36,7 +37,7 @@ ACTIVE_STATE_REQUIRED_FIELDS = (
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _json_sha256(payload: Any) -> str:
@@ -67,37 +68,105 @@ def load_active_baseline_state(path: Path) -> dict | None:
 
 def validate_active_baseline_state(state: dict | None) -> list[dict[str, str]]:
     if state is None:
-        return [_finding("active_baseline_state_missing", "deny", DEFAULT_ACTIVE_STATE_REL, "active baseline state is missing or unreadable")]
+        return [
+            _finding(
+                "active_baseline_state_missing",
+                "deny",
+                DEFAULT_ACTIVE_STATE_REL,
+                "active baseline state is missing or unreadable",
+            )
+        ]
     findings: list[dict[str, str]] = []
     missing = [field for field in ACTIVE_STATE_REQUIRED_FIELDS if field not in state]
     if missing:
-        findings.append(_finding("active_baseline_state_invalid", "deny", DEFAULT_ACTIVE_STATE_REL, f"active baseline state missing required fields: {missing}"))
+        findings.append(
+            _finding(
+                "active_baseline_state_invalid",
+                "deny",
+                DEFAULT_ACTIVE_STATE_REL,
+                f"active baseline state missing required fields: {missing}",
+            )
+        )
     expected_hash = _json_sha256({k: v for k, v in state.items() if k != "evidence_hash"})
     if state.get("evidence_hash") != expected_hash:
-        findings.append(_finding("active_baseline_state_invalid", "deny", DEFAULT_ACTIVE_STATE_REL, "active baseline state evidence_hash is invalid"))
+        findings.append(
+            _finding(
+                "active_baseline_state_invalid",
+                "deny",
+                DEFAULT_ACTIVE_STATE_REL,
+                "active baseline state evidence_hash is invalid",
+            )
+        )
     return findings
 
 
 def validate_release_readiness(repo_root: Path, state: dict | None, snapshot: dict | None) -> list[dict[str, str]]:
     findings: list[dict[str, str]] = []
     if state is None:
-        return [_finding("release_readiness_not_proven", "deny", str(repo_root), "release readiness cannot be proven without active baseline state")]
+        return [
+            _finding(
+                "release_readiness_not_proven",
+                "deny",
+                str(repo_root),
+                "release readiness cannot be proven without active baseline state",
+            )
+        ]
     if not state.get("source_approval_id"):
-        findings.append(_finding("approval_binding_missing", "deny", "source_approval_id", "source_approval_id is required to prove approval binding"))
+        findings.append(
+            _finding(
+                "approval_binding_missing",
+                "deny",
+                "source_approval_id",
+                "source_approval_id is required to prove approval binding",
+            )
+        )
     if not state.get("source_convergence_report") or not state.get("source_convergence_evidence_hash"):
-        findings.append(_finding("convergence_binding_missing", "deny", "source_convergence_report", "convergence report path and evidence hash are required to prove convergence binding"))
+        findings.append(
+            _finding(
+                "convergence_binding_missing",
+                "deny",
+                "source_convergence_report",
+                "convergence report path and evidence hash are required to prove convergence binding",
+            )
+        )
     if snapshot is None:
-        findings.append(_finding("release_readiness_not_proven", "deny", DEFAULT_BASELINE_REL, "baseline snapshot missing or unreadable"))
+        findings.append(
+            _finding(
+                "release_readiness_not_proven", "deny", DEFAULT_BASELINE_REL, "baseline snapshot missing or unreadable"
+            )
+        )
         return findings
     snapshot_sha = _snapshot_sha(snapshot)
     if state.get("baseline_snapshot_sha256") != snapshot_sha:
-        findings.append(_finding("release_readiness_not_proven", "deny", "baseline_snapshot_sha256", "active state snapshot hash does not match the current baseline snapshot"))
+        findings.append(
+            _finding(
+                "release_readiness_not_proven",
+                "deny",
+                "baseline_snapshot_sha256",
+                "active state snapshot hash does not match the current baseline snapshot",
+            )
+        )
     if state.get("active_baseline_version") != snapshot.get("baseline_version"):
-        findings.append(_finding("release_readiness_not_proven", "deny", "active_baseline_version", "active baseline version does not match the current baseline snapshot version"))
+        findings.append(
+            _finding(
+                "release_readiness_not_proven",
+                "deny",
+                "active_baseline_version",
+                "active baseline version does not match the current baseline snapshot version",
+            )
+        )
     if state.get("consistency_status") != "CONSISTENT":
-        findings.append(_finding("release_readiness_not_proven", "deny", "consistency_status", "consistency_status must be CONSISTENT"))
+        findings.append(
+            _finding(
+                "release_readiness_not_proven", "deny", "consistency_status", "consistency_status must be CONSISTENT"
+            )
+        )
     if state.get("decision") != "approve":
-        findings.append(_finding("release_readiness_not_proven", "deny", "decision", "decision must be approve for release readiness"))
+        findings.append(
+            _finding(
+                "release_readiness_not_proven", "deny", "decision", "decision must be approve for release readiness"
+            )
+        )
     return findings
 
 
@@ -125,7 +194,9 @@ def emit_release_block_report(report: dict[str, Any], output_dir: Path) -> tuple
     ]
     if report["findings"]:
         for index, finding in enumerate(report["findings"], start=1):
-            lines.append(f"| {index} | `{finding['finding_code']}` | {finding['severity']} | `{finding['path']}` | {finding['detail']} |")
+            lines.append(
+                f"| {index} | `{finding['finding_code']}` | {finding['severity']} | `{finding['path']}` | {finding['detail']} |"
+            )
     else:
         lines.append("| 1 | `none` | info | `-` | No findings |")
     md_path.write_text("\n".join(lines), encoding="utf-8")
@@ -159,7 +230,14 @@ def run(args: argparse.Namespace) -> int:
     findings.extend(validate_release_readiness(repo_root, state, snapshot))
     decision = "FAIL" if any(item["severity"] == "deny" for item in findings) else "PASS"
     if decision == "FAIL":
-        findings.append(_finding("release_block_fail_closed", "deny", str(repo_root), "release blocker failed closed because release readiness could not be proven"))
+        findings.append(
+            _finding(
+                "release_block_fail_closed",
+                "deny",
+                str(repo_root),
+                "release blocker failed closed because release readiness could not be proven",
+            )
+        )
 
     report = {
         "audit_type": "sot_release_blocker",

@@ -16,6 +16,7 @@ all 5 layers and flags: CONVERGED, DRIFT, MISSING, DUPLICATE.
 Usage:
     python sot_convergence_scanner.py --report <output_path.json>
 """
+
 from __future__ import annotations
 
 import argparse
@@ -24,7 +25,7 @@ import os
 import re
 import sys
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Rule-ID pattern: SOT_AGENT_NNN or SOT_NNN or RULE-NNN
@@ -144,11 +145,13 @@ def main(argv: list[str] | None = None) -> int:
         counts = scan_manifestation(repo, mdef)
         presence[mdef["name"]] = counts
         all_rule_ids.update(counts.keys())
-        scan_meta.append({
-            "name": mdef["name"],
-            "label": mdef["label"],
-            "rules_found": len(counts),
-        })
+        scan_meta.append(
+            {
+                "name": mdef["name"],
+                "label": mdef["label"],
+                "rules_found": len(counts),
+            }
+        )
 
     # Evaluate convergence per rule
     rules_report: list[dict] = []
@@ -159,15 +162,17 @@ def main(argv: list[str] | None = None) -> int:
         status_summary[status] += 1
         present_in = [l for l in layer_names if rid in presence[l]]
         missing_from = [l for l in layer_names if rid not in presence[l]]
-        rules_report.append({
-            "rule_id": rid,
-            "convergence_status": status,
-            "present_in": present_in,
-            "missing_from": missing_from,
-        })
+        rules_report.append(
+            {
+                "rule_id": rid,
+                "convergence_status": status,
+                "present_in": present_in,
+                "missing_from": missing_from,
+            }
+        )
 
     report = {
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "generated_at_utc": datetime.now(UTC).isoformat(),
         "repo_root": str(repo),
         "manifestation_layers": scan_meta,
         "total_unique_rules": len(all_rule_ids),

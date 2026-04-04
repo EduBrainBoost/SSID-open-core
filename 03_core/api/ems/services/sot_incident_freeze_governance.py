@@ -1,12 +1,11 @@
 import hashlib
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from ems.services.sot_promotion_service import load_active_baseline_state
-
 
 FREEZE_LEVELS = {"none", "watch", "soft_freeze", "hard_freeze", "emergency_stop"}
 OPERATION_TYPES = {"promotion_execute", "rollback_evaluate", "rollback_execute"}
@@ -50,7 +49,7 @@ def _finding(finding_code: str, severity: str, path: str, detail: str) -> dict[s
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _json_sha256(payload: dict[str, Any]) -> str:
@@ -68,9 +67,7 @@ def _freeze_state_path(repo_root: Path) -> Path:
 
 
 def _freeze_decisions_path(repo_root: Path) -> Path:
-    return (
-        repo_root / "24_meta_orchestration" / "registry" / "sot_incident_freeze_decisions.jsonl"
-    )
+    return repo_root / "24_meta_orchestration" / "registry" / "sot_incident_freeze_decisions.jsonl"
 
 
 def _release_block_report_path(repo_root: Path) -> Path:
@@ -332,23 +329,12 @@ def evaluate_recovery_freeze_gate(
     override_result: dict[str, Any] | None = None
 
     if operation_type == "rollback_evaluate":
-        if level == "watch":
-            decision = "WARN"
-        elif level == "emergency_stop":
+        if level == "watch" or level == "emergency_stop":
             decision = "WARN"
     else:
         if level == "watch":
             decision = "WARN"
-        elif level == "hard_freeze":
-            override_result = evaluate_emergency_recovery_override(
-                repo_root,
-                proposal_id=proposal_id,
-                reason=reason,
-                target_baseline_version=target_baseline_version or "",
-            )
-            allowed = override_result["allowed"]
-            decision = "PASS" if allowed else "FAIL"
-        elif level == "emergency_stop":
+        elif level == "hard_freeze" or level == "emergency_stop":
             override_result = evaluate_emergency_recovery_override(
                 repo_root,
                 proposal_id=proposal_id,

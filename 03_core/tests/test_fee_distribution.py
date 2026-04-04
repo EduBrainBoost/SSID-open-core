@@ -4,6 +4,7 @@ The current file is a SoT placeholder (not valid Python).  All tests that
 require actual module logic are skipped automatically via the shared
 load_module fixture.  Path-existence and validity tests always run.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -100,19 +101,20 @@ class TestFeeDistributionEngineInterface:
         """Module should expose the expected fee engine symbols."""
         symbols = dir(self.mod)
         expected_any = {
-            "distribute_fees", "calculate_fee", "FeeDistributor", "distribute",
-            "FeeDistributionEngine", "DistributionResult", "FeeParticipant",
+            "distribute_fees",
+            "calculate_fee",
+            "FeeDistributor",
+            "distribute",
+            "FeeDistributionEngine",
+            "DistributionResult",
+            "FeeParticipant",
         }
-        assert expected_any & set(symbols), (
-            f"fee_distribution_engine exposes none of {expected_any}. Got: {symbols}"
-        )
+        assert expected_any & set(symbols), f"fee_distribution_engine exposes none of {expected_any}. Got: {symbols}"
 
     def test_no_placeholder_text_in_real_module(self):
         """Source must not contain placeholder markers."""
         content = ENGINE_PATH.read_text(encoding="utf-8")
-        assert "AUTO-GENERATED PLACEHOLDER" not in content, (
-            "fee_distribution_engine.py still contains placeholder text"
-        )
+        assert "AUTO-GENERATED PLACEHOLDER" not in content, "fee_distribution_engine.py still contains placeholder text"
 
     def test_module_docstring_present(self):
         """Module must have a module-level docstring."""
@@ -121,6 +123,7 @@ class TestFeeDistributionEngineInterface:
     def test_calculate_returns_distribution_result(self):
         """FeeDistributionEngine.calculate must return a DistributionResult."""
         from decimal import Decimal
+
         engine = self.mod.FeeDistributionEngine()
         result = engine.calculate(Decimal("250"))
         assert isinstance(result, self.mod.DistributionResult)
@@ -129,6 +132,7 @@ class TestFeeDistributionEngineInterface:
     def test_standard_tier_allocation_sum(self):
         """Allocations plus remainder must equal gross amount."""
         from decimal import Decimal
+
         engine = self.mod.FeeDistributionEngine()
         result = engine.calculate(Decimal("500"))
         total = sum(a.amount for a in result.allocations) + result.remainder
@@ -137,6 +141,7 @@ class TestFeeDistributionEngineInterface:
     def test_all_four_stakeholder_roles_present(self):
         """Each distribution must include all four stakeholder roles."""
         from decimal import Decimal
+
         engine = self.mod.FeeDistributionEngine()
         result = engine.calculate(Decimal("1000"))
         roles = {a.role for a in result.allocations}
@@ -146,6 +151,7 @@ class TestFeeDistributionEngineInterface:
     def test_tier_selection_micro(self):
         """Amounts under 100 must use the micro tier."""
         from decimal import Decimal
+
         engine = self.mod.FeeDistributionEngine()
         result = engine.calculate(Decimal("50"))
         assert all(a.tier_name == "micro" for a in result.allocations)
@@ -153,6 +159,7 @@ class TestFeeDistributionEngineInterface:
     def test_tier_selection_standard(self):
         """Amounts 100-9999 must use the standard tier."""
         from decimal import Decimal
+
         engine = self.mod.FeeDistributionEngine()
         result = engine.calculate(Decimal("5000"))
         assert all(a.tier_name == "standard" for a in result.allocations)
@@ -160,6 +167,7 @@ class TestFeeDistributionEngineInterface:
     def test_tier_selection_enterprise(self):
         """Amounts >= 10000 must use the enterprise tier."""
         from decimal import Decimal
+
         engine = self.mod.FeeDistributionEngine()
         result = engine.calculate(Decimal("10000"))
         assert all(a.tier_name == "enterprise" for a in result.allocations)
@@ -167,6 +175,7 @@ class TestFeeDistributionEngineInterface:
     def test_evidence_hash_is_sha256(self):
         """Evidence hash must be a valid SHA-256 hex digest (64 chars)."""
         from decimal import Decimal
+
         engine = self.mod.FeeDistributionEngine()
         result = engine.calculate(Decimal("100"))
         assert len(result.evidence_hash) == 64
@@ -175,6 +184,7 @@ class TestFeeDistributionEngineInterface:
     def test_negative_amount_rejected(self):
         """Negative gross amounts must raise ValueError."""
         from decimal import Decimal
+
         engine = self.mod.FeeDistributionEngine()
         with pytest.raises(ValueError):
             engine.calculate(Decimal("-10"))
@@ -182,6 +192,7 @@ class TestFeeDistributionEngineInterface:
     def test_custom_tier_rules(self):
         """Engine must accept custom tier rules."""
         from decimal import Decimal
+
         custom_tier = self.mod.TierRule(
             name="custom",
             threshold_min=Decimal("0"),
@@ -195,8 +206,5 @@ class TestFeeDistributionEngineInterface:
         )
         engine = self.mod.FeeDistributionEngine(tiers=[custom_tier])
         result = engine.calculate(Decimal("1000"))
-        platform_alloc = next(
-            a for a in result.allocations
-            if a.role == self.mod.StakeholderRole.PLATFORM
-        )
+        platform_alloc = next(a for a in result.allocations if a.role == self.mod.StakeholderRole.PLATFORM)
         assert platform_alloc.amount == Decimal("500.00")

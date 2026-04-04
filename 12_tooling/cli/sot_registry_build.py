@@ -4,12 +4,13 @@ SoT Registry Builder — generates sot_registry.json from strict allowlist.
 Deterministic: hash-only (SHA256), fixed artifact set, sorted output.
 Default: READ-ONLY (print only). Use --write to persist.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -49,11 +50,13 @@ def build_registry() -> dict:
         if h is None:
             missing.append(entry["path"])
         else:
-            artifacts.append({
-                "name": entry["name"],
-                "path": entry["path"],
-                "hash_sha256": h,
-            })
+            artifacts.append(
+                {
+                    "name": entry["name"],
+                    "path": entry["path"],
+                    "hash_sha256": h,
+                }
+            )
 
     if missing:
         for m in missing:
@@ -63,7 +66,7 @@ def build_registry() -> dict:
 
     return {
         "schema_version": "1.0.0",
-        "generated_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "roots": {
             "sot_artifacts": sorted(artifacts, key=lambda a: a["name"]),
         },
@@ -72,6 +75,7 @@ def build_registry() -> dict:
 
 def main() -> int:
     import argparse
+
     parser = argparse.ArgumentParser(description="SoT Registry Builder (strict allowlist, hash-only)")
     parser.add_argument("--write", action="store_true", help="Write sot_registry.json (default: read-only)")
     parser.add_argument("--verify", action="store_true", help="Verify existing registry matches current hashes")

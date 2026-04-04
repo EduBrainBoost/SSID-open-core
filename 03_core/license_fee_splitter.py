@@ -8,20 +8,21 @@ distribution reports.
 Registry import path (orchestrator):
     03_core.license_fee_splitter
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from decimal import Decimal, ROUND_HALF_UP
-from enum import Enum
-from typing import Dict, List, Optional, Sequence
-
+from dataclasses import dataclass
+from decimal import ROUND_HALF_UP, Decimal
+from enum import StrEnum
 
 # ---------------------------------------------------------------------------
 # Domain types
 # ---------------------------------------------------------------------------
 
-class LicenseType(str, Enum):
+
+class LicenseType(StrEnum):
     """Canonical license types in the SSID licensing model."""
+
     BASIC = "basic"
     STANDARD = "standard"
     COMMERCIAL = "commercial"
@@ -29,8 +30,9 @@ class LicenseType(str, Enum):
     RESEARCH = "research"
 
 
-class SplitRecipient(str, Enum):
+class SplitRecipient(StrEnum):
     """Recipients in a license fee split."""
+
     PLATFORM = "platform"
     CREATOR = "creator"
     VALIDATOR = "validator"
@@ -49,6 +51,7 @@ class SplitRatios:
 
     All fractions must sum to exactly 1.0.
     """
+
     platform: float
     creator: float
     validator: float
@@ -61,11 +64,9 @@ class SplitRatios:
                 raise ValueError(f"{attr} ratio must be in [0, 1], got {val}")
         total = self.platform + self.creator + self.validator + self.reserve
         if abs(total - 1.0) > 1e-9:
-            raise ValueError(
-                f"SplitRatios must sum to 1.0, got {total:.10f}"
-            )
+            raise ValueError(f"SplitRatios must sum to 1.0, got {total:.10f}")
 
-    def as_dict(self) -> Dict[SplitRecipient, float]:
+    def as_dict(self) -> dict[SplitRecipient, float]:
         """Return ratios as a mapping from SplitRecipient to fraction."""
         return {
             SplitRecipient.PLATFORM: self.platform,
@@ -86,11 +87,12 @@ class SplitResult:
         residual: Unallocated remainder due to rounding (typically near-zero).
         ratios_used: The split ratios applied.
     """
+
     total_amount: Decimal
     license_type: LicenseType
-    allocations: Dict[SplitRecipient, Decimal]
+    allocations: dict[SplitRecipient, Decimal]
     residual: Decimal = Decimal("0")
-    ratios_used: Optional[SplitRatios] = None
+    ratios_used: SplitRatios | None = None
 
 
 @dataclass
@@ -106,6 +108,7 @@ class DistributionReportEntry:
         total_to_reserve: Total allocated to reserve.
         split_count: Number of split operations included.
     """
+
     license_type: LicenseType
     total_collected: Decimal
     total_to_platform: Decimal
@@ -119,28 +122,19 @@ class DistributionReportEntry:
 # Default split ratios per license type
 # ---------------------------------------------------------------------------
 
-DEFAULT_SPLIT_RATIOS: Dict[LicenseType, SplitRatios] = {
-    LicenseType.BASIC: SplitRatios(
-        platform=0.50, creator=0.35, validator=0.10, reserve=0.05
-    ),
-    LicenseType.STANDARD: SplitRatios(
-        platform=0.40, creator=0.40, validator=0.15, reserve=0.05
-    ),
-    LicenseType.COMMERCIAL: SplitRatios(
-        platform=0.30, creator=0.45, validator=0.20, reserve=0.05
-    ),
-    LicenseType.ENTERPRISE: SplitRatios(
-        platform=0.25, creator=0.50, validator=0.20, reserve=0.05
-    ),
-    LicenseType.RESEARCH: SplitRatios(
-        platform=0.20, creator=0.55, validator=0.20, reserve=0.05
-    ),
+DEFAULT_SPLIT_RATIOS: dict[LicenseType, SplitRatios] = {
+    LicenseType.BASIC: SplitRatios(platform=0.50, creator=0.35, validator=0.10, reserve=0.05),
+    LicenseType.STANDARD: SplitRatios(platform=0.40, creator=0.40, validator=0.15, reserve=0.05),
+    LicenseType.COMMERCIAL: SplitRatios(platform=0.30, creator=0.45, validator=0.20, reserve=0.05),
+    LicenseType.ENTERPRISE: SplitRatios(platform=0.25, creator=0.50, validator=0.20, reserve=0.05),
+    LicenseType.RESEARCH: SplitRatios(platform=0.20, creator=0.55, validator=0.20, reserve=0.05),
 }
 
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
+
 
 class LicenseFeeSplitter:
     """Splits license fees between platform, creators, validators, and reserve.
@@ -169,7 +163,7 @@ class LicenseFeeSplitter:
 
     def __init__(
         self,
-        ratios: Optional[Dict[LicenseType, SplitRatios]] = None,
+        ratios: dict[LicenseType, SplitRatios] | None = None,
     ) -> None:
         """Initialise the splitter.
 
@@ -177,14 +171,12 @@ class LicenseFeeSplitter:
             ratios: Optional override for per-license-type split ratios.
                 Missing license types fall back to ``DEFAULT_SPLIT_RATIOS``.
         """
-        self._ratios: Dict[LicenseType, SplitRatios] = dict(DEFAULT_SPLIT_RATIOS)
+        self._ratios: dict[LicenseType, SplitRatios] = dict(DEFAULT_SPLIT_RATIOS)
         if ratios:
             self._ratios.update(ratios)
 
         # Ledger: license_type → list of SplitResult
-        self._ledger: Dict[LicenseType, List[SplitResult]] = {
-            lt: [] for lt in LicenseType
-        }
+        self._ledger: dict[LicenseType, list[SplitResult]] = {lt: [] for lt in LicenseType}
 
     # ------------------------------------------------------------------
     # Public API
@@ -213,19 +205,15 @@ class LicenseFeeSplitter:
 
         ratios = self._ratios.get(license_type)
         if ratios is None:
-            raise ValueError(
-                f"No split ratios configured for license type '{license_type}'"
-            )
+            raise ValueError(f"No split ratios configured for license type '{license_type}'")
 
         quantize_unit = Decimal("0.000001")
         ratio_map = ratios.as_dict()
-        allocations: Dict[SplitRecipient, Decimal] = {}
+        allocations: dict[SplitRecipient, Decimal] = {}
         allocated = Decimal("0")
 
         for recipient, fraction in ratio_map.items():
-            share = (amount * Decimal(str(fraction))).quantize(
-                quantize_unit, rounding=ROUND_HALF_UP
-            )
+            share = (amount * Decimal(str(fraction))).quantize(quantize_unit, rounding=ROUND_HALF_UP)
             allocations[recipient] = share
             allocated += share
 
@@ -254,11 +242,11 @@ class LicenseFeeSplitter:
         """
         self._ratios[license_type] = ratios
 
-    def get_ratios(self, license_type: LicenseType) -> Optional[SplitRatios]:
+    def get_ratios(self, license_type: LicenseType) -> SplitRatios | None:
         """Return the currently configured ratios for *license_type*, or None."""
         return self._ratios.get(license_type)
 
-    def get_distribution_report(self) -> List[DistributionReportEntry]:
+    def get_distribution_report(self) -> list[DistributionReportEntry]:
         """Return a cumulative distribution report for all recorded splits.
 
         Returns:
@@ -266,29 +254,17 @@ class LicenseFeeSplitter:
             that has at least one recorded split. Results are sorted by
             license type value.
         """
-        report: List[DistributionReportEntry] = []
+        report: list[DistributionReportEntry] = []
 
         for license_type, splits in self._ledger.items():
             if not splits:
                 continue
 
             total_collected = sum(s.total_amount for s in splits)
-            total_platform = sum(
-                s.allocations.get(SplitRecipient.PLATFORM, Decimal("0"))
-                for s in splits
-            )
-            total_creator = sum(
-                s.allocations.get(SplitRecipient.CREATOR, Decimal("0"))
-                for s in splits
-            )
-            total_validator = sum(
-                s.allocations.get(SplitRecipient.VALIDATOR, Decimal("0"))
-                for s in splits
-            )
-            total_reserve = sum(
-                s.allocations.get(SplitRecipient.RESERVE, Decimal("0"))
-                for s in splits
-            )
+            total_platform = sum(s.allocations.get(SplitRecipient.PLATFORM, Decimal("0")) for s in splits)
+            total_creator = sum(s.allocations.get(SplitRecipient.CREATOR, Decimal("0")) for s in splits)
+            total_validator = sum(s.allocations.get(SplitRecipient.VALIDATOR, Decimal("0")) for s in splits)
+            total_reserve = sum(s.allocations.get(SplitRecipient.RESERVE, Decimal("0")) for s in splits)
 
             report.append(
                 DistributionReportEntry(

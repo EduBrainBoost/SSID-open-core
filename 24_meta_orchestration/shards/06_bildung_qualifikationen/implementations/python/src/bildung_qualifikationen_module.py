@@ -1,7 +1,8 @@
 """Orchestration coordinator for education and qualification records in 24_meta_orchestration/06_bildung_qualifikationen."""
+
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 class OrchestrationCoordinator:
@@ -13,15 +14,13 @@ class OrchestrationCoordinator:
 
     def dispatch(self, task_id: str, target_root: str, payload: dict) -> dict:
         """Dispatch task to target root (non-custodial, hash evidence)."""
-        payload_hash = hashlib.sha256(
-            json.dumps(payload, sort_keys=True).encode()
-        ).hexdigest()
+        payload_hash = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
         task = {
             "task_id": task_id,
             "target_root": target_root,
             "payload_hash": payload_hash,
             "status": "dispatched",
-            "dispatched_at": datetime.now(timezone.utc).isoformat(),
+            "dispatched_at": datetime.now(UTC).isoformat(),
         }
         self.task_registry[task_id] = task
         return task
@@ -34,7 +33,7 @@ class OrchestrationCoordinator:
         return {
             "task_id": task_id,
             "status": task["status"],
-            "monitored_at": datetime.now(timezone.utc).isoformat(),
+            "monitored_at": datetime.now(UTC).isoformat(),
         }
 
     def collect_evidence(self) -> dict:
@@ -44,5 +43,5 @@ class OrchestrationCoordinator:
         return {
             "total_tasks": len(self.task_registry),
             "evidence_hash": evidence_hash,
-            "collected_at": datetime.now(timezone.utc).isoformat(),
+            "collected_at": datetime.now(UTC).isoformat(),
         }

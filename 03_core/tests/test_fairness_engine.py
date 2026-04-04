@@ -4,6 +4,7 @@
 Covers demographic parity, equal opportunity, disparate impact,
 verdict logic, and hash-only evidence generation.
 """
+
 from __future__ import annotations
 
 import sys
@@ -19,13 +20,12 @@ from fairness_engine import (
     FairnessReport,
     FairnessVerdict,
     GroupOutcome,
-    MetricResult,
 )
-
 
 # -----------------------------------------------------------------------
 # Fixtures
 # -----------------------------------------------------------------------
+
 
 @pytest.fixture
 def engine() -> FairnessEngine:
@@ -54,6 +54,7 @@ def unfair_groups() -> list:
 # GroupOutcome tests
 # -----------------------------------------------------------------------
 
+
 class TestGroupOutcome:
     def test_positive_rate(self) -> None:
         g = GroupOutcome("h", total=200, positive=100, negative=100)
@@ -68,17 +69,17 @@ class TestGroupOutcome:
 # Fair scenario
 # -----------------------------------------------------------------------
 
+
 class TestFairScenario:
     def test_all_metrics_pass(self, engine: FairnessEngine, fair_groups: list) -> None:
         report = engine.evaluate("model_abc", fair_groups)
         assert report.verdict == FairnessVerdict.PASS
         assert all(m.passed for m in report.metric_results)
 
-    def test_demographic_parity_value(
-        self, engine: FairnessEngine, fair_groups: list
-    ) -> None:
+    def test_demographic_parity_value(self, engine: FairnessEngine, fair_groups: list) -> None:
         report = engine.evaluate(
-            "model_abc", fair_groups,
+            "model_abc",
+            fair_groups,
             metrics=[FairnessMetric.DEMOGRAPHIC_PARITY],
         )
         dp = report.metric_results[0]
@@ -86,11 +87,10 @@ class TestFairScenario:
         assert dp.value == pytest.approx(0.02, abs=0.001)
         assert dp.passed is True
 
-    def test_disparate_impact_above_threshold(
-        self, engine: FairnessEngine, fair_groups: list
-    ) -> None:
+    def test_disparate_impact_above_threshold(self, engine: FairnessEngine, fair_groups: list) -> None:
         report = engine.evaluate(
-            "model_abc", fair_groups,
+            "model_abc",
+            fair_groups,
             metrics=[FairnessMetric.DISPARATE_IMPACT],
         )
         di = report.metric_results[0]
@@ -102,18 +102,16 @@ class TestFairScenario:
 # Unfair scenario
 # -----------------------------------------------------------------------
 
+
 class TestUnfairScenario:
-    def test_verdict_fail(
-        self, engine: FairnessEngine, unfair_groups: list
-    ) -> None:
+    def test_verdict_fail(self, engine: FairnessEngine, unfair_groups: list) -> None:
         report = engine.evaluate("biased_model", unfair_groups)
         assert report.verdict in (FairnessVerdict.FAIL, FairnessVerdict.WARN)
 
-    def test_demographic_parity_fails(
-        self, engine: FairnessEngine, unfair_groups: list
-    ) -> None:
+    def test_demographic_parity_fails(self, engine: FairnessEngine, unfair_groups: list) -> None:
         report = engine.evaluate(
-            "biased_model", unfair_groups,
+            "biased_model",
+            unfair_groups,
             metrics=[FairnessMetric.DEMOGRAPHIC_PARITY],
         )
         dp = report.metric_results[0]
@@ -121,11 +119,10 @@ class TestUnfairScenario:
         # 0.9 - 0.5 = 0.4 >> 0.10 threshold
         assert dp.value == pytest.approx(0.4, abs=0.01)
 
-    def test_disparate_impact_fails(
-        self, engine: FairnessEngine, unfair_groups: list
-    ) -> None:
+    def test_disparate_impact_fails(self, engine: FairnessEngine, unfair_groups: list) -> None:
         report = engine.evaluate(
-            "biased_model", unfair_groups,
+            "biased_model",
+            unfair_groups,
             metrics=[FairnessMetric.DISPARATE_IMPACT],
         )
         di = report.metric_results[0]
@@ -137,6 +134,7 @@ class TestUnfairScenario:
 # -----------------------------------------------------------------------
 # Edge cases
 # -----------------------------------------------------------------------
+
 
 class TestEdgeCases:
     def test_fewer_than_2_groups_raises(self, engine: FairnessEngine) -> None:
@@ -153,21 +151,19 @@ class TestEdgeCases:
         assert isinstance(report, FairnessReport)
 
     def test_custom_thresholds(self) -> None:
-        strict_engine = FairnessEngine(
-            thresholds={FairnessMetric.DEMOGRAPHIC_PARITY: 0.01}
-        )
+        strict_engine = FairnessEngine(thresholds={FairnessMetric.DEMOGRAPHIC_PARITY: 0.01})
         groups = [
             GroupOutcome("a", 100, 80, 20),
             GroupOutcome("b", 100, 78, 22),
         ]
-        report = strict_engine.evaluate("strict", groups,
-                                         metrics=[FairnessMetric.DEMOGRAPHIC_PARITY])
+        report = strict_engine.evaluate("strict", groups, metrics=[FairnessMetric.DEMOGRAPHIC_PARITY])
         assert report.metric_results[0].passed is False  # 0.02 > 0.01
 
 
 # -----------------------------------------------------------------------
 # Evidence
 # -----------------------------------------------------------------------
+
 
 class TestEvidence:
     def test_evidence_hash_sha256(self, engine: FairnessEngine, fair_groups: list) -> None:
@@ -187,6 +183,7 @@ class TestEvidence:
 # Verdict logic
 # -----------------------------------------------------------------------
 
+
 class TestVerdictLogic:
     def test_disparate_impact_fail_forces_fail(self) -> None:
         """If disparate impact fails, overall verdict must be FAIL."""
@@ -194,7 +191,7 @@ class TestVerdictLogic:
             thresholds={
                 FairnessMetric.DEMOGRAPHIC_PARITY: 1.0,  # very lenient
                 FairnessMetric.EQUAL_OPPORTUNITY: 1.0,
-                FairnessMetric.DISPARATE_IMPACT: 0.99,   # very strict
+                FairnessMetric.DISPARATE_IMPACT: 0.99,  # very strict
             }
         )
         groups = [
@@ -209,8 +206,8 @@ class TestVerdictLogic:
         engine = FairnessEngine(
             thresholds={
                 FairnessMetric.DEMOGRAPHIC_PARITY: 0.001,  # strict
-                FairnessMetric.EQUAL_OPPORTUNITY: 1.0,      # lenient
-                FairnessMetric.DISPARATE_IMPACT: 0.01,      # lenient
+                FairnessMetric.EQUAL_OPPORTUNITY: 1.0,  # lenient
+                FairnessMetric.DISPARATE_IMPACT: 0.01,  # lenient
             }
         )
         groups = [

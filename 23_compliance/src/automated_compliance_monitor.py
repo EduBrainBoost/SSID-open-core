@@ -16,10 +16,10 @@ import hashlib
 import logging
 import os
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
-from enum import Enum
+from datetime import UTC, datetime, timedelta
+from enum import StrEnum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
@@ -29,17 +29,13 @@ logger = logging.getLogger(__name__)
 # Constants
 # ---------------------------------------------------------------------------
 
-FRAMEWORKS_DIR_DEFAULT = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)), "frameworks"
-)
-EVIDENCE_DIR_DEFAULT = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)), "evidence"
-)
+FRAMEWORKS_DIR_DEFAULT = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frameworks")
+EVIDENCE_DIR_DEFAULT = os.path.join(os.path.dirname(os.path.dirname(__file__)), "evidence")
 
 SUPPORTED_FRAMEWORKS = ("mica", "eidas", "gdpr", "fatf", "amld6")
 
 
-class Severity(str, Enum):
+class Severity(StrEnum):
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -47,14 +43,14 @@ class Severity(str, Enum):
     INFO = "info"
 
 
-class FindingStatus(str, Enum):
+class FindingStatus(StrEnum):
     OPEN = "open"
     REMEDIATED = "remediated"
     ACCEPTED_RISK = "accepted_risk"
     FALSE_POSITIVE = "false_positive"
 
 
-class ControlStatus(str, Enum):
+class ControlStatus(StrEnum):
     IMPLEMENTED = "implemented"
     PARTIAL = "partial"
     NOT_IMPLEMENTED = "not_implemented"
@@ -77,12 +73,10 @@ class ComplianceFinding:
     status: FindingStatus
     severity: Severity
     description: str
-    evidence_ref: Optional[str] = None
-    remediation: Optional[str] = None
-    detected_at: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
-    due_date: Optional[str] = None
+    evidence_ref: str | None = None
+    remediation: str | None = None
+    detected_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
+    due_date: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -106,7 +100,7 @@ class MonitoringResult:
 
     run_id: str
     started_at: str
-    completed_at: Optional[str] = None
+    completed_at: str | None = None
     frameworks_checked: list[str] = field(default_factory=list)
     total_controls: int = 0
     controls_passing: int = 0
@@ -153,7 +147,7 @@ class AutomatedComplianceMonitor:
         self,
         frameworks_dir: str = FRAMEWORKS_DIR_DEFAULT,
         evidence_dir: str = EVIDENCE_DIR_DEFAULT,
-        config_path: Optional[str] = None,
+        config_path: str | None = None,
     ) -> None:
         self.frameworks_dir = Path(frameworks_dir)
         self.evidence_dir = Path(evidence_dir)
@@ -168,7 +162,7 @@ class AutomatedComplianceMonitor:
     def _load_config(self, path: str) -> None:
         config_file = Path(path)
         if config_file.exists():
-            with open(config_file, "r", encoding="utf-8") as fh:
+            with open(config_file, encoding="utf-8") as fh:
                 self._config = yaml.safe_load(fh) or {}
             logger.info("Loaded compliance monitor config from %s", path)
         else:
@@ -194,7 +188,7 @@ class AutomatedComplianceMonitor:
 
         controls: list[dict] = []
         for yaml_file in sorted(fw_dir.glob("*.yaml")):
-            with open(yaml_file, "r", encoding="utf-8") as fh:
+            with open(yaml_file, encoding="utf-8") as fh:
                 data = yaml.safe_load(fh)
             if not data:
                 continue
@@ -213,9 +207,7 @@ class AutomatedComplianceMonitor:
 
         return controls
 
-    def load_all_frameworks(
-        self, frameworks: Optional[list[str]] = None
-    ) -> dict[str, list[dict]]:
+    def load_all_frameworks(self, frameworks: list[str] | None = None) -> dict[str, list[dict]]:
         """Load controls for the requested (or all supported) frameworks."""
         targets = frameworks or list(SUPPORTED_FRAMEWORKS)
         self._framework_data = {}
@@ -230,9 +222,7 @@ class AutomatedComplianceMonitor:
 
     # -- evidence checking --------------------------------------------------
 
-    def _find_evidence_for_control(
-        self, framework: str, control_id: str
-    ) -> Optional[str]:
+    def _find_evidence_for_control(self, framework: str, control_id: str) -> str | None:
         """
         Look for an evidence file matching the control in the evidence
         directory tree. Returns the evidence file path if found, else None.
@@ -253,22 +243,16 @@ class AutomatedComplianceMonitor:
                     return str(candidate)
         return None
 
-    def _check_evidence_freshness(
-        self, evidence_path: str, max_age_days: int = 90
-    ) -> bool:
+    def _check_evidence_freshness(self, evidence_path: str, max_age_days: int = 90) -> bool:
         """Return True if evidence file was modified within max_age_days."""
         try:
             mtime = os.path.getmtime(evidence_path)
-            age = datetime.now(timezone.utc) - datetime.fromtimestamp(
-                mtime, tz=timezone.utc
-            )
+            age = datetime.now(UTC) - datetime.fromtimestamp(mtime, tz=UTC)
             return age <= timedelta(days=max_age_days)
         except OSError:
             return False
 
-    def _evaluate_control(
-        self, framework: str, control: dict
-    ) -> tuple[ControlStatus, Optional[str]]:
+    def _evaluate_control(self, framework: str, control: dict) -> tuple[ControlStatus, str | None]:
         """
         Evaluate a single control against available evidence.
 
@@ -289,7 +273,7 @@ class AutomatedComplianceMonitor:
 
     @staticmethod
     def _generate_finding_id(framework: str, control_id: str) -> str:
-        seed = f"{framework}:{control_id}:{datetime.now(timezone.utc).date()}"
+        seed = f"{framework}:{control_id}:{datetime.now(UTC).date()}"
         return "CF-" + hashlib.sha256(seed.encode()).hexdigest()[:12].upper()
 
     def _severity_for_control(self, control: dict) -> Severity:
@@ -308,7 +292,7 @@ class AutomatedComplianceMonitor:
         framework: str,
         control: dict,
         status: ControlStatus,
-        evidence_path: Optional[str],
+        evidence_path: str | None,
     ) -> ComplianceFinding:
         control_id = control.get("control_id", control.get("id", "UNKNOWN"))
         title = control.get("title", control.get("description", control_id))
@@ -319,18 +303,10 @@ class AutomatedComplianceMonitor:
                 f"Control {control_id} ({title}) has no evidence artefact. "
                 f"Framework '{framework}' requires implementation."
             )
-            remediation = (
-                f"Implement control {control_id} and provide evidence "
-                f"in 23_compliance/evidence/{framework}/"
-            )
+            remediation = f"Implement control {control_id} and provide evidence in 23_compliance/evidence/{framework}/"
         elif status == ControlStatus.PARTIAL:
-            description = (
-                f"Control {control_id} ({title}) has stale evidence "
-                f"(older than 90 days). Review required."
-            )
-            remediation = (
-                f"Update evidence for {control_id} and re-verify implementation."
-            )
+            description = f"Control {control_id} ({title}) has stale evidence (older than 90 days). Review required."
+            remediation = f"Update evidence for {control_id} and re-verify implementation."
         else:
             description = f"Control {control_id} ({title}) status: {status.value}"
             remediation = None
@@ -349,9 +325,7 @@ class AutomatedComplianceMonitor:
 
     # -- main run -----------------------------------------------------------
 
-    def run(
-        self, frameworks: Optional[list[str]] = None
-    ) -> MonitoringResult:
+    def run(self, frameworks: list[str] | None = None) -> MonitoringResult:
         """
         Execute a full monitoring cycle.
 
@@ -360,13 +334,10 @@ class AutomatedComplianceMonitor:
         3. Generate findings for non-compliant controls.
         4. Return aggregated :class:`MonitoringResult`.
         """
-        run_id = (
-            "MON-"
-            + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        )
+        run_id = "MON-" + datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         result = MonitoringResult(
             run_id=run_id,
-            started_at=datetime.now(timezone.utc).isoformat(),
+            started_at=datetime.now(UTC).isoformat(),
         )
 
         self.load_all_frameworks(frameworks)
@@ -381,18 +352,14 @@ class AutomatedComplianceMonitor:
                     result.controls_passing += 1
                 elif status == ControlStatus.PARTIAL:
                     result.controls_partial += 1
-                    finding = self._create_finding(
-                        fw_name, control, status, evidence_path
-                    )
+                    finding = self._create_finding(fw_name, control, status, evidence_path)
                     result.findings.append(finding)
                 elif status == ControlStatus.NOT_IMPLEMENTED:
                     result.controls_failing += 1
-                    finding = self._create_finding(
-                        fw_name, control, status, evidence_path
-                    )
+                    finding = self._create_finding(fw_name, control, status, evidence_path)
                     result.findings.append(finding)
 
-        result.completed_at = datetime.now(timezone.utc).isoformat()
+        result.completed_at = datetime.now(UTC).isoformat()
         logger.info(
             "Monitoring run %s complete: %d controls, %d passing, %d findings",
             run_id,

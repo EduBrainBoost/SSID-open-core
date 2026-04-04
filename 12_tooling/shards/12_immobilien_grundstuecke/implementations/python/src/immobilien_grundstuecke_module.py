@@ -1,7 +1,8 @@
 """Tool execution and configuration management - Immobilien & Grundstuecke domain module."""
+
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 class ToolRunner:
@@ -51,4 +52,4 @@ class ToolRunner:
 
     @staticmethod
     def _now() -> str:
-        return datetime.now(timezone.utc).isoformat()
+        return datetime.now(UTC).isoformat()

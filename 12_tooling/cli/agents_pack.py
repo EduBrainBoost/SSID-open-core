@@ -54,9 +54,7 @@ def verify(agents_dir: Path | None = None) -> bool:
         actual_hash = _hash_file(fpath)
         if actual_hash != entry["sha256"]:
             errors.append(
-                f"MISMATCH: {entry['filename']} "
-                f"expected={entry['sha256'][:12]}... "
-                f"actual={actual_hash[:12]}..."
+                f"MISMATCH: {entry['filename']} expected={entry['sha256'][:12]}... actual={actual_hash[:12]}..."
             )
 
     if errors:

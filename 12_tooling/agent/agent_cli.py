@@ -26,8 +26,15 @@ LITELLM_URL = os.environ.get("SSID_LITELLM_URL", "http://localhost:4000/v1/chat/
 DENY_GLOBS = [".git/**", "**/.env", "**/secrets/**"]
 
 SHELL_WHITELIST = [
-    "ls", "cat", "grep", "find", "python", "pip",
-    "git status", "git diff", "git log",
+    "ls",
+    "cat",
+    "grep",
+    "find",
+    "python",
+    "pip",
+    "git status",
+    "git diff",
+    "git log",
 ]
 
 HTTP_WHITELIST = [
@@ -37,13 +44,29 @@ HTTP_WHITELIST = [
 ]
 
 VALID_ROOTS = [
-    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-    "05_documentation", "06_data_pipeline", "07_governance_legal",
-    "08_identity_score", "09_meta_identity", "10_interoperability",
-    "11_test_simulation", "12_tooling", "13_ui_layer",
-    "14_zero_time_auth", "15_infra", "16_codex", "17_observability",
-    "18_data_layer", "19_adapters", "20_foundation",
-    "21_post_quantum_crypto", "22_datasets", "23_compliance",
+    "01_ai_layer",
+    "02_audit_logging",
+    "03_core",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "12_tooling",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "16_codex",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
+    "23_compliance",
     "24_meta_orchestration",
 ]
 
@@ -66,6 +89,7 @@ def _resolve_path(raw: str) -> pathlib.Path:
 
     # Deny-glob check (simple fnmatch)
     import fnmatch
+
     rel_str = rel.as_posix()
     for g in DENY_GLOBS:
         if fnmatch.fnmatch(rel_str, g):
@@ -81,14 +105,12 @@ def _resolve_path(raw: str) -> pathlib.Path:
 
 def _is_cmd_whitelisted(cmd: str) -> bool:
     cmd_stripped = cmd.strip()
-    for allowed in SHELL_WHITELIST:
-        if cmd_stripped == allowed or cmd_stripped.startswith(allowed + " "):
-            return True
-    return False
+    return any(cmd_stripped == allowed or cmd_stripped.startswith(allowed + " ") for allowed in SHELL_WHITELIST)
 
 
 def _is_domain_whitelisted(url: str) -> bool:
     from urllib.parse import urlparse
+
     parsed = urlparse(url)
     host = parsed.hostname or ""
     return host in HTTP_WHITELIST
@@ -139,8 +161,13 @@ def cmd_sh(args):
         sys.exit(f"ERROR: command not whitelisted: {cmd}")
 
     result = subprocess.run(
-        cmd, shell=True, capture_output=True, text=True,
-        cwd=str(REPO_ROOT), encoding="utf-8", errors="ignore",
+        cmd,
+        shell=True,
+        capture_output=True,
+        text=True,
+        cwd=str(REPO_ROOT),
+        encoding="utf-8",
+        errors="ignore",
     )
     if result.stdout:
         print(result.stdout, end="")
@@ -169,10 +196,13 @@ def cmd_llm(args):
     # Try LiteLLM first
     try:
         import json
-        payload = json.dumps({
-            "model": model,
-            "messages": [{"role": "user", "content": prompt}],
-        }).encode()
+
+        payload = json.dumps(
+            {
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+        ).encode()
         req = urllib.request.Request(
             LITELLM_URL,
             data=payload,
@@ -190,7 +220,9 @@ def cmd_llm(args):
     try:
         result = subprocess.run(
             ["ollama", "run", model, prompt],
-            capture_output=True, encoding="utf-8", errors="ignore",
+            capture_output=True,
+            encoding="utf-8",
+            errors="ignore",
             timeout=120,
         )
         if result.returncode == 0:

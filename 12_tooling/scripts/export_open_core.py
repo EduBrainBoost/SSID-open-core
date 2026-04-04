@@ -12,6 +12,7 @@ SoT v4.1.0 | ROOT-24-LOCK | Classification: Tooling
 Usage:
     python export_open_core.py --target /path/to/output [--dry-run]
 """
+
 from __future__ import annotations
 
 import argparse

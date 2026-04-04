@@ -11,17 +11,34 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT_24 = [
-    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-    "05_documentation", "06_data_pipeline", "07_governance_legal",
-    "08_identity_score", "09_meta_identity", "10_interoperability",
-    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
-    "15_infra", "16_codex", "17_observability", "18_data_layer",
-    "19_adapters", "20_foundation", "21_post_quantum_crypto", "22_datasets",
-    "23_compliance", "24_meta_orchestration",
+    "01_ai_layer",
+    "02_audit_logging",
+    "03_core",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "12_tooling",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "16_codex",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
+    "23_compliance",
+    "24_meta_orchestration",
 ]
 
 ENFORCED_POLICIES = [
@@ -41,15 +58,17 @@ def _check(args: argparse.Namespace) -> int:
 
     # ROOT-24-LOCK check
     if scope not in ROOT_24 and scope != "all":
-        violations.append({
-            "policy": "ROOT-24-LOCK",
-            "detail": f"Scope '{scope}' is not a canonical root",
-            "severity": "error",
-        })
+        violations.append(
+            {
+                "policy": "ROOT-24-LOCK",
+                "detail": f"Scope '{scope}' is not a canonical root",
+                "severity": "error",
+            }
+        )
 
     output = {
         "command": "policy.check",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "scope": scope,
         "policies_checked": ENFORCED_POLICIES,
         "violations": violations,
@@ -67,13 +86,14 @@ def _validate(args: argparse.Namespace) -> int:
     checks = {
         "exists": file_path.exists(),
         "root_24_compliant": any(r in str(file_path) for r in ROOT_24),
-        "not_repo_root_file": "/" in str(file_path.relative_to(file_path.anchor) if file_path.is_absolute() else file_path),
+        "not_repo_root_file": "/"
+        in str(file_path.relative_to(file_path.anchor) if file_path.is_absolute() else file_path),
     }
     violations = [k for k, v in checks.items() if not v]
 
     output = {
         "command": "policy.validate",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "file": str(file_path),
         "checks": checks,
         "violations": violations,
@@ -87,7 +107,7 @@ def _status(args: argparse.Namespace) -> int:
     """Report policy worker status."""
     output = {
         "command": "policy.status",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "enforced_policies": ENFORCED_POLICIES,
         "policy_count": len(ENFORCED_POLICIES),
         "canonical_roots": len(ROOT_24),
@@ -125,7 +145,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         error = {
             "command": f"policy.{args.action}",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "error": str(exc),
             "status": "failed",
         }

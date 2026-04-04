@@ -5,6 +5,7 @@ stability_gate.py - Objective "ready" check for PR branches.
 Fixed gate sequence, stop-on-first-failure.
 Output: PASS/FAIL + concrete findings. No scores.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -12,7 +13,7 @@ import hashlib
 import json
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -23,7 +24,7 @@ REQUIRED_MODULE_COUNT = 24
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
 def _run_cmd(cmd: list[str], label: str) -> subprocess.CompletedProcess[str]:
@@ -99,9 +100,7 @@ def gate_sot_verify() -> tuple[bool, str]:
     """Gate 3: SoT Validator --verify-all must exist and pass."""
     if not SOT_VALIDATOR.exists():
         return False, f"sot_validator.py not found at {SOT_VALIDATOR}"
-    proc = _run_cmd(
-        [sys.executable, str(SOT_VALIDATOR), "--verify-all"], "SoT Verify"
-    )
+    proc = _run_cmd([sys.executable, str(SOT_VALIDATOR), "--verify-all"], "SoT Verify")
     if proc.returncode != 0:
         detail = proc.stdout.strip() or proc.stderr.strip()
         return False, f"SoT Verify failed (exit={proc.returncode}): {detail}"
@@ -151,8 +150,7 @@ def write_evidence(results: list[tuple[str, bool, str]], overall: bool) -> str |
             "overall": "PASS" if overall else "FAIL",
             "timestamp_utc": utc_stamp,
             "checks": [
-                {"name": name, "result": "PASS" if ok else "FAIL", "detail": detail}
-                for name, ok, detail in results
+                {"name": name, "result": "PASS" if ok else "FAIL", "detail": detail} for name, ok, detail in results
             ],
         }
         evidence_path = evidence_dir / "evidence.json"

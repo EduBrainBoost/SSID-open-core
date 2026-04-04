@@ -4,13 +4,16 @@ Validates 7-Säulen fee distribution sums to exactly 2.00%.
 Checks policy YAML against SoT expected values.
 Exits 0 (PASS) or 1 (FAIL_POLICY).
 """
+
 import argparse
 import json
 import sys
+from datetime import UTC
 from pathlib import Path
 
 try:
     import yaml
+
     HAS_YAML = True
 except ImportError:
     HAS_YAML = False
@@ -70,22 +73,22 @@ def main() -> None:
 
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(result, indent=2))
-    print(
-        f"Fee policy audit: status={result['status']}, "
-        f"sum={result['total_percent']}% (expected {EXPECTED_TOTAL}%)"
-    )
+    print(f"Fee policy audit: status={result['status']}, sum={result['total_percent']}% (expected {EXPECTED_TOTAL}%)")
 
     if args.ems_url:
         try:
-            import sys as _sys
             import os as _os
-            _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), '..', '..', '12_tooling'))
+            import sys as _sys
+
+            _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), "..", "..", "12_tooling"))
+            from datetime import datetime as _dt
+
             from ssid_autorunner.ems_reporter import post_result
-            from datetime import datetime as _dt, timezone as _tz
+
             post_result(
                 ems_url=args.ems_url,
                 ar_id="AR-10",
-                run_id=args.run_id or f"CI-AR-10-{_dt.now(_tz.utc).strftime('%Y%m%dT%H%M%S')}",
+                run_id=args.run_id or f"CI-AR-10-{_dt.now(UTC).strftime('%Y%m%dT%H%M%S')}",
                 result=result,
                 commit_sha=args.commit_sha,
             )

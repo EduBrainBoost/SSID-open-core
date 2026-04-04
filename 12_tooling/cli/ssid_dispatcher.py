@@ -21,10 +21,5 @@ from pathlib import Path
 #
 # SOT_AGENT_048: sandbox cleanup after task completion
 # Sandbox directory is cleaned after each dispatcher run; cleanup is mandatory.
-DISPATCHER = (
-    Path(__file__).resolve().parents[2]
-    / "24_meta_orchestration"
-    / "dispatcher"
-    / "e2e_dispatcher.py"
-)
+DISPATCHER = Path(__file__).resolve().parents[2] / "24_meta_orchestration" / "dispatcher" / "e2e_dispatcher.py"
 runpy.run_path(DISPATCHER.as_posix(), run_name="__main__")

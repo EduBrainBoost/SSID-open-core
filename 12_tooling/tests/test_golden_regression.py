@@ -9,16 +9,16 @@ are mocked. The convergence/derivation policy evaluation is tested directly.
 
 No scores -- PASS/FAIL + findings only.
 """
+
 from __future__ import annotations
 
 import copy
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
-
 from cli.run_sot_convergence import (
     EXIT_DENY,
     EXIT_SUCCESS,
@@ -50,19 +50,20 @@ FIXTURE_NAMES = [
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _load_fixture(name: str) -> Dict[str, Any]:
+
+def _load_fixture(name: str) -> dict[str, Any]:
     """Load a golden fixture JSON file by name."""
     path = FIXTURES_DIR / f"{name}.json"
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _load_expected(name: str) -> Dict[str, Any]:
+def _load_expected(name: str) -> dict[str, Any]:
     """Load expected output JSON for a golden fixture."""
     path = EXPECTED_DIR / f"{name}.expected.json"
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _run_engine(fixture: Dict[str, Any]) -> Dict[str, Any]:
+def _run_engine(fixture: dict[str, Any]) -> dict[str, Any]:
     """Run the convergence engine on a fixture and return a deterministic report.
 
     Uses fixed timestamps and UUIDs to ensure byte-stable output.
@@ -80,18 +81,23 @@ def _run_engine(fixture: Dict[str, Any]) -> Dict[str, Any]:
     # Sort findings deterministically for stable output
     findings_sorted = sorted(
         findings,
-        key=lambda f: (f.get("source", ""), f.get("id", ""), f.get("class", ""),
-                        f.get("severity", ""), f.get("path", "")),
+        key=lambda f: (
+            f.get("source", ""),
+            f.get("id", ""),
+            f.get("class", ""),
+            f.get("severity", ""),
+            f.get("path", ""),
+        ),
     )
 
     # Build severity counts
-    severity_counts: Dict[str, int] = {}
+    severity_counts: dict[str, int] = {}
     for f in findings_sorted:
         sev = f.get("severity", "info")
         severity_counts[sev] = severity_counts.get(sev, 0) + 1
 
     # Build class counts
-    class_counts: Dict[str, int] = {}
+    class_counts: dict[str, int] = {}
     for f in findings_sorted:
         cls = f.get("class", "unknown")
         class_counts[cls] = class_counts.get(cls, 0) + 1
@@ -101,8 +107,7 @@ def _run_engine(fixture: Dict[str, Any]) -> Dict[str, Any]:
         "fixture_name": fixture.get("description", ""),
         "decision": decision,
         "exit_code": exit_code,
-        "exit_label": {EXIT_SUCCESS: "success", EXIT_WARN: "warn",
-                       EXIT_DENY: "deny"}.get(exit_code, "unknown"),
+        "exit_label": {EXIT_SUCCESS: "success", EXIT_WARN: "warn", EXIT_DENY: "deny"}.get(exit_code, "unknown"),
         "total_findings": len(findings_sorted),
         "max_severity": _max_sev(findings_sorted),
         "severity_counts": severity_counts,
@@ -112,7 +117,7 @@ def _run_engine(fixture: Dict[str, Any]) -> Dict[str, Any]:
     return output
 
 
-def _strip_volatile_fields(findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _strip_volatile_fields(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Remove timestamp and evidence_hash fields that vary between runs.
 
     Keeps all structural/content fields for regression comparison.
@@ -141,6 +146,7 @@ def _canonical_json(data: Any) -> str:
 # Fixture loading tests
 # ---------------------------------------------------------------------------
 
+
 class TestFixtureIntegrity:
     """Verify fixture files are well-formed and contain required fields."""
 
@@ -166,6 +172,7 @@ class TestFixtureIntegrity:
 # ---------------------------------------------------------------------------
 # Golden regression tests
 # ---------------------------------------------------------------------------
+
 
 class TestGoldenRegression:
     """Compare engine output against golden expected outputs byte-for-byte."""
@@ -208,8 +215,7 @@ class TestGoldenRegression:
         assert result["decision"] == "fail"
         assert result["exit_code"] == EXIT_DENY
         assert any(f["class"] == "policy_deny" for f in result["findings"])
-        assert any("forbidden" in f["details"].lower() for f in result["findings"]
-                    if f["class"] == "policy_deny")
+        assert any("forbidden" in f["details"].lower() for f in result["findings"] if f["class"] == "policy_deny")
         assert _canonical_json(result) == _canonical_json(expected)
 
     def test_contract_hash_mismatch_golden(self):
@@ -220,8 +226,7 @@ class TestGoldenRegression:
 
         assert result["decision"] == "fail"
         assert result["exit_code"] == EXIT_DENY
-        assert any("contract_hash_mismatch" in f["details"]
-                    for f in result["findings"] if f["class"] == "policy_deny")
+        assert any("contract_hash_mismatch" in f["details"] for f in result["findings"] if f["class"] == "policy_deny")
         assert _canonical_json(result) == _canonical_json(expected)
 
     def test_missing_artifact_golden(self):
@@ -256,15 +261,14 @@ class TestGoldenRegression:
         results = [_run_engine(copy.deepcopy(fixture)) for _ in range(5)]
         baseline = _canonical_json(results[0])
         for i, r in enumerate(results[1:], 1):
-            assert _canonical_json(r) == baseline, (
-                f"Ordering diverged on run {i+1}"
-            )
+            assert _canonical_json(r) == baseline, f"Ordering diverged on run {i + 1}"
         assert _canonical_json(results[0]) == _canonical_json(expected)
 
 
 # ---------------------------------------------------------------------------
 # Byte stability / determinism tests
 # ---------------------------------------------------------------------------
+
 
 class TestByteStability:
     """Verify that identical inputs always produce byte-identical outputs."""
@@ -279,9 +283,7 @@ class TestByteStability:
         json_a = _canonical_json(result_a)
         json_b = _canonical_json(result_b)
 
-        assert json_a == json_b, (
-            f"Byte stability violation for '{name}': outputs differ across runs"
-        )
+        assert json_a == json_b, f"Byte stability violation for '{name}': outputs differ across runs"
 
     @pytest.mark.parametrize("name", FIXTURE_NAMES)
     def test_hash_stability(self, name: str):
@@ -293,9 +295,7 @@ class TestByteStability:
         hash_a = hashlib.sha256(_canonical_json(result_a).encode("utf-8")).hexdigest()
         hash_b = hashlib.sha256(_canonical_json(result_b).encode("utf-8")).hexdigest()
 
-        assert hash_a == hash_b, (
-            f"Hash stability violation for '{name}': {hash_a} != {hash_b}"
-        )
+        assert hash_a == hash_b, f"Hash stability violation for '{name}': {hash_a} != {hash_b}"
 
     @pytest.mark.parametrize("name", FIXTURE_NAMES)
     def test_sort_order_stability(self, name: str):
@@ -309,14 +309,13 @@ class TestByteStability:
             baseline_ids = [f["id"] for f in runs[0]["findings"]]
             for i, r in enumerate(runs[1:], 1):
                 run_ids = [f["id"] for f in r["findings"]]
-                assert run_ids == baseline_ids, (
-                    f"Sort order diverged on run {i+1} for '{name}'"
-                )
+                assert run_ids == baseline_ids, f"Sort order diverged on run {i + 1} for '{name}'"
 
 
 # ---------------------------------------------------------------------------
 # Determinism proof
 # ---------------------------------------------------------------------------
+
 
 class TestDeterminismProof:
     """Run each fixture twice and assert byte-identical output as proof of determinism."""
@@ -332,10 +331,7 @@ class TestDeterminismProof:
         bytes_1 = _canonical_json(output_1).encode("utf-8")
         bytes_2 = _canonical_json(output_2).encode("utf-8")
 
-        assert bytes_1 == bytes_2, (
-            f"Determinism proof FAILED for '{name}': "
-            f"outputs are not byte-identical across runs"
-        )
+        assert bytes_1 == bytes_2, f"Determinism proof FAILED for '{name}': outputs are not byte-identical across runs"
 
         # Also verify SHA-256 match as secondary proof
         sha_1 = hashlib.sha256(bytes_1).hexdigest()
@@ -346,6 +342,7 @@ class TestDeterminismProof:
 # ---------------------------------------------------------------------------
 # Expected output generator (run with --update-golden flag or standalone)
 # ---------------------------------------------------------------------------
+
 
 def generate_expected_outputs():
     """Generate/update all expected output files from current engine behavior.
@@ -358,9 +355,7 @@ def generate_expected_outputs():
         fixture = _load_fixture(name)
         output = _run_engine(fixture)
         out_path = EXPECTED_DIR / f"{name}.expected.json"
-        out_path.write_text(
-            _canonical_json(output) + "\n", encoding="utf-8"
-        )
+        out_path.write_text(_canonical_json(output) + "\n", encoding="utf-8")
         print(f"  Written: {out_path}")
     print(f"Generated {len(FIXTURE_NAMES)} expected output files.")
 

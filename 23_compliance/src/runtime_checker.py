@@ -11,7 +11,7 @@ import re
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 
 class Severity(Enum):
@@ -30,7 +30,7 @@ class ComplianceFinding:
     evidence_hash: str = ""  # SHA-256 of the raw evidence
     timestamp: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         d = {
             "severity": self.severity.value,
             "category": self.category,
@@ -45,6 +45,7 @@ class ComplianceFinding:
 # Sanctions Screener (hash-based, no raw PII)
 # ======================================================================
 
+
 class SanctionsScreener:
     """Hash-based sanctions screening.
 
@@ -53,8 +54,8 @@ class SanctionsScreener:
     comparing against the set — **no raw PII is ever stored or logged**.
     """
 
-    def __init__(self, sanctioned_hashes: Optional[Set[str]] = None) -> None:
-        self._hashes: Set[str] = set(sanctioned_hashes or [])
+    def __init__(self, sanctioned_hashes: set[str] | None = None) -> None:
+        self._hashes: set[str] = set(sanctioned_hashes or [])
 
     @staticmethod
     def hash_entity(identifier: str) -> str:
@@ -97,7 +98,7 @@ class SanctionsScreener:
 
 # Patterns intentionally kept simple; real deployments should use
 # validated libraries.  Order matters: more specific first.
-_PII_PATTERNS: List[Dict[str, Any]] = [
+_PII_PATTERNS: list[dict[str, Any]] = [
     {
         "name": "email",
         "regex": re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}"),
@@ -126,15 +127,15 @@ class PIIDetector:
 
     def __init__(
         self,
-        extra_patterns: Optional[List[Dict[str, Any]]] = None,
+        extra_patterns: list[dict[str, Any]] | None = None,
     ) -> None:
         self._patterns = list(_PII_PATTERNS)
         if extra_patterns:
             self._patterns.extend(extra_patterns)
 
-    def scan(self, text: str) -> List[ComplianceFinding]:
+    def scan(self, text: str) -> list[ComplianceFinding]:
         """Scan *text* for PII patterns.  Returns one finding per match."""
-        findings: List[ComplianceFinding] = []
+        findings: list[ComplianceFinding] = []
         for pat in self._patterns:
             for match in pat["regex"].finditer(text):
                 raw = match.group(0)
@@ -161,7 +162,7 @@ class PIIDetector:
 # Secret Scanner
 # ======================================================================
 
-_SECRET_PATTERNS: List[Dict[str, Any]] = [
+_SECRET_PATTERNS: list[dict[str, Any]] = [
     {
         "name": "aws_key",
         "regex": re.compile(r"AKIA[0-9A-Z]{16}"),
@@ -185,8 +186,8 @@ class SecretScanner:
     def __init__(self) -> None:
         self._patterns = list(_SECRET_PATTERNS)
 
-    def scan(self, text: str) -> List[ComplianceFinding]:
-        findings: List[ComplianceFinding] = []
+    def scan(self, text: str) -> list[ComplianceFinding]:
+        findings: list[ComplianceFinding] = []
         for pat in self._patterns:
             for match in pat["regex"].finditer(text):
                 raw = match.group(0)
@@ -206,6 +207,7 @@ class SecretScanner:
 # Unified Compliance Checker
 # ======================================================================
 
+
 class ComplianceChecker:
     """Unified runtime compliance checker.
 
@@ -216,21 +218,21 @@ class ComplianceChecker:
 
     def __init__(
         self,
-        sanctions_screener: Optional[SanctionsScreener] = None,
-        pii_detector: Optional[PIIDetector] = None,
-        secret_scanner: Optional[SecretScanner] = None,
+        sanctions_screener: SanctionsScreener | None = None,
+        pii_detector: PIIDetector | None = None,
+        secret_scanner: SecretScanner | None = None,
     ) -> None:
         self.sanctions = sanctions_screener or SanctionsScreener()
         self.pii = pii_detector or PIIDetector()
         self.secrets = secret_scanner or SecretScanner()
 
-    def check_entity(self, identifier: str) -> List[ComplianceFinding]:
+    def check_entity(self, identifier: str) -> list[ComplianceFinding]:
         """Screen a single entity identifier (sanctions only)."""
         return [self.sanctions.screen(identifier)]
 
-    def check_text(self, text: str) -> List[ComplianceFinding]:
+    def check_text(self, text: str) -> list[ComplianceFinding]:
         """Scan free-text for PII and secrets."""
-        findings: List[ComplianceFinding] = []
+        findings: list[ComplianceFinding] = []
         findings.extend(self.pii.scan(text))
         findings.extend(self.secrets.scan(text))
         return findings
@@ -239,13 +241,13 @@ class ComplianceChecker:
         self,
         identifier: str,
         text: str,
-    ) -> List[ComplianceFinding]:
+    ) -> list[ComplianceFinding]:
         """Run all checks and return combined findings."""
-        findings: List[ComplianceFinding] = []
+        findings: list[ComplianceFinding] = []
         findings.extend(self.check_entity(identifier))
         findings.extend(self.check_text(text))
         return findings
 
-    def has_block(self, findings: List[ComplianceFinding]) -> bool:
+    def has_block(self, findings: list[ComplianceFinding]) -> bool:
         """Return ``True`` if any finding is BLOCK severity."""
         return any(f.severity is Severity.BLOCK for f in findings)

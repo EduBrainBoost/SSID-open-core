@@ -10,12 +10,11 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional
-
 
 # ---------------------------------------------------------------------------
 # Health states (deterministic FSM)
 # ---------------------------------------------------------------------------
+
 
 class HealthState(Enum):
     HEALTHY = "HEALTHY"
@@ -28,20 +27,22 @@ class HealthState(Enum):
 # Agent state tracking
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class AgentState:
     """Tracked state for a single agent."""
+
     agent_id: str
     last_heartbeat: float = 0.0  # UTC epoch seconds
     last_output_time: float = 0.0
     error_count: int = 0
     consecutive_errors: int = 0
-    recent_errors: List[str] = field(default_factory=list)
+    recent_errors: list[str] = field(default_factory=list)
     state: HealthState = HealthState.HEALTHY
 
     # Thresholds (seconds)
-    stale_threshold: float = 300.0   # 5 min
-    dead_threshold: float = 900.0    # 15 min
+    stale_threshold: float = 300.0  # 5 min
+    dead_threshold: float = 900.0  # 15 min
     degraded_error_count: int = 3
     max_recent_errors: int = 50
 
@@ -50,6 +51,7 @@ class AgentState:
 # Health Monitor
 # ---------------------------------------------------------------------------
 
+
 class AgentHealthMonitor:
     """
     Monitors agent health via heartbeats and error tracking.
@@ -57,7 +59,7 @@ class AgentHealthMonitor:
     """
 
     def __init__(self) -> None:
-        self._agents: Dict[str, AgentState] = {}
+        self._agents: dict[str, AgentState] = {}
 
     def register_agent(
         self,
@@ -100,7 +102,7 @@ class AgentHealthMonitor:
         state.consecutive_errors += 1
         state.recent_errors.append(error_signature)
         if len(state.recent_errors) > state.max_recent_errors:
-            state.recent_errors = state.recent_errors[-state.max_recent_errors:]
+            state.recent_errors = state.recent_errors[-state.max_recent_errors :]
 
     def check_agent_health(self, agent_id: str) -> HealthState:
         """
@@ -143,7 +145,7 @@ class AgentHealthMonitor:
         idle = time.time() - state.last_output_time
         return idle > max_idle_seconds
 
-    def detect_loop(self, agent_id: str, error_signatures: List[str]) -> bool:
+    def detect_loop(self, agent_id: str, error_signatures: list[str]) -> bool:
         """
         Detect if agent is in an error loop: the same error signatures
         repeat consecutively in recent_errors.
@@ -167,11 +169,11 @@ class AgentHealthMonitor:
             return False
 
         # Check if pattern appears at least twice consecutively at the tail
-        tail = recent[-(pattern_len * 2):]
+        tail = recent[-(pattern_len * 2) :]
         first_occurrence = tail[:pattern_len]
         second_occurrence = tail[pattern_len:]
 
         return first_occurrence == error_signatures and second_occurrence == error_signatures
 
-    def get_state(self, agent_id: str) -> Optional[AgentState]:
+    def get_state(self, agent_id: str) -> AgentState | None:
         return self._agents.get(agent_id)

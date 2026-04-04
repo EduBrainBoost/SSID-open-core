@@ -9,6 +9,7 @@ Verifies:
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -23,17 +24,19 @@ import pytest
 # Make parent security package importable
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from security.sbom_generator import (
-    _check_secrets,
-    _parse_requirements,
-    generate_cyclonedx_sbom,
-    scan_root,
-)
+from datetime import UTC
+
 from security.dependency_scanner import (
     ScanReport,
     VulnerabilityFinding,
     _classify_severity,
     scan_components,
+)
+from security.sbom_generator import (
+    _check_secrets,
+    _parse_requirements,
+    generate_cyclonedx_sbom,
+    scan_root,
 )
 from security.signature_verifier import (
     ALLOWED_HASH_ALGORITHMS,
@@ -52,10 +55,10 @@ from security.supply_chain_validator import (
     validate_sbom_integrity,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def tmp_requirements(tmp_path: Path) -> Path:
@@ -122,6 +125,7 @@ def valid_provenance() -> dict[str, Any]:
 # ============================================================
 # sbom_generator tests
 # ============================================================
+
 
 class TestSbomGenerator:
     def test_parse_requirements_basic(self, tmp_requirements: Path) -> None:
@@ -193,9 +197,7 @@ class TestSbomGenerator:
         root = tmp_path / "test_root"
         root.mkdir()
         # Same package listed twice
-        (root / "requirements.txt").write_text(
-            "boto3==1.34.0\nboto3==1.34.0\n", encoding="utf-8"
-        )
+        (root / "requirements.txt").write_text("boto3==1.34.0\nboto3==1.34.0\n", encoding="utf-8")
         components = scan_root(root)
         boto3 = [c for c in components if c["name"] == "boto3"]
         assert len(boto3) == 1
@@ -204,6 +206,7 @@ class TestSbomGenerator:
 # ============================================================
 # dependency_scanner tests
 # ============================================================
+
 
 class TestDependencyScanner:
     def test_classify_severity_cvss_critical(self) -> None:
@@ -271,6 +274,7 @@ class TestDependencyScanner:
 # signature_verifier tests
 # ============================================================
 
+
 class TestSignatureVerifier:
     def test_compute_hash_sha256(self) -> None:
         result = compute_hash(b"hello", "sha256")
@@ -320,9 +324,7 @@ class TestSignatureVerifier:
         sig = hmac_sign(b"payload", b"secret")
         assert hmac_verify(b"payload", sig, b"wrongsecret") is False
 
-    def test_verify_sealed_evidence_pass(
-        self, minimal_sealed_record: dict[str, Any]
-    ) -> None:
+    def test_verify_sealed_evidence_pass(self, minimal_sealed_record: dict[str, Any]) -> None:
         report = verify_sealed_evidence(minimal_sealed_record, hmac_secret=b"test-secret-key")
         assert report.overall_pass is True
 
@@ -333,27 +335,21 @@ class TestSignatureVerifier:
         checks_by_name = {r.check: r for r in report.results}
         assert not checks_by_name["required_fields"].passed
 
-    def test_verify_sealed_evidence_forbidden_algorithm(
-        self, minimal_sealed_record: dict[str, Any]
-    ) -> None:
+    def test_verify_sealed_evidence_forbidden_algorithm(self, minimal_sealed_record: dict[str, Any]) -> None:
         record = dict(minimal_sealed_record)
         record["algorithm"] = "md5"
         report = verify_sealed_evidence(record)
         checks_by_name = {r.check: r for r in report.results}
         assert not checks_by_name["hash_algorithm"].passed
 
-    def test_verify_sealed_evidence_short_signature(
-        self, minimal_sealed_record: dict[str, Any]
-    ) -> None:
+    def test_verify_sealed_evidence_short_signature(self, minimal_sealed_record: dict[str, Any]) -> None:
         record = dict(minimal_sealed_record)
         record["signature"] = "ab12"  # Too short
         report = verify_sealed_evidence(record)
         checks_by_name = {r.check: r for r in report.results}
         assert not checks_by_name["signature_length"].passed
 
-    def test_verify_sealed_evidence_hash_mismatch(
-        self, minimal_sealed_record: dict[str, Any]
-    ) -> None:
+    def test_verify_sealed_evidence_hash_mismatch(self, minimal_sealed_record: dict[str, Any]) -> None:
         record = dict(minimal_sealed_record)
         record["hash"] = "0" * 64  # Wrong hash
         report = verify_sealed_evidence(record)
@@ -373,6 +369,7 @@ class TestSignatureVerifier:
 # ============================================================
 # supply_chain_validator tests
 # ============================================================
+
 
 class TestSupplyChainValidator:
     def test_validate_provenance_valid(self, valid_provenance: dict[str, Any]) -> None:
@@ -407,6 +404,7 @@ class TestSupplyChainValidator:
 
     def test_validate_sbom_integrity_with_correct_hash(self, minimal_sbom: Path) -> None:
         import hashlib as _h
+
         expected = _h.sha256(minimal_sbom.read_bytes()).hexdigest()
         report = validate_sbom_integrity(minimal_sbom, expected_sha256=expected)
         assert report.overall_pass is True
@@ -453,9 +451,9 @@ class TestSupplyChainValidator:
         artifact_hash = hashlib.sha256(b"fake wheel content").hexdigest()
 
         manifest = tmp_path / "manifest.json"
-        manifest.write_text(json.dumps({
-            "artifacts": [{"path": "dist/app.whl", "sha256": artifact_hash}]
-        }), encoding="utf-8")
+        manifest.write_text(
+            json.dumps({"artifacts": [{"path": "dist/app.whl", "sha256": artifact_hash}]}), encoding="utf-8"
+        )
 
         report = validate_artifact_manifest(manifest)
         assert report.overall_pass is True
@@ -466,26 +464,25 @@ class TestSupplyChainValidator:
         artifact.write_bytes(b"real content")
 
         manifest = tmp_path / "manifest.json"
-        manifest.write_text(json.dumps({
-            "artifacts": [{"path": "dist/app.whl", "sha256": "0" * 64}]
-        }), encoding="utf-8")
+        manifest.write_text(json.dumps({"artifacts": [{"path": "dist/app.whl", "sha256": "0" * 64}]}), encoding="utf-8")
 
         report = validate_artifact_manifest(manifest)
         assert report.overall_pass is False
 
     def test_validate_artifact_manifest_missing_artifact(self, tmp_path: Path) -> None:
         manifest = tmp_path / "manifest.json"
-        manifest.write_text(json.dumps({
-            "artifacts": [{"path": "dist/missing.whl", "sha256": "ab" * 32}]
-        }), encoding="utf-8")
+        manifest.write_text(
+            json.dumps({"artifacts": [{"path": "dist/missing.whl", "sha256": "ab" * 32}]}), encoding="utf-8"
+        )
 
         report = validate_artifact_manifest(manifest)
         assert report.overall_pass is False
 
     def test_validation_report_add_method(self) -> None:
-        from datetime import datetime, timezone
+        from datetime import datetime
+
         report = ValidationReport(
-            validated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            validated_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             subject="test",
             overall_pass=True,
         )
@@ -495,9 +492,10 @@ class TestSupplyChainValidator:
         assert len(report.checks) == 2
 
     def test_validation_report_to_dict(self) -> None:
-        from datetime import datetime, timezone
+        from datetime import datetime
+
         report = ValidationReport(
-            validated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            validated_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             subject="sbom",
             overall_pass=True,
         )

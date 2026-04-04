@@ -1,7 +1,8 @@
 """Codex module for Unternehmen und Gewerbe — Knowledge Indexer."""
+
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 class KnowledgeIndexer:
@@ -16,7 +17,7 @@ class KnowledgeIndexer:
         record = {
             "entry_id_hash": hashlib.sha256(entry_id.encode()).hexdigest(),
             "content_hash": content_hash,
-            "indexed_at": datetime.now(timezone.utc).isoformat(),
+            "indexed_at": datetime.now(UTC).isoformat(),
             "domain": "unternehmen_gewerbe",
             "non_custodial": True,
         }
@@ -36,6 +37,6 @@ class KnowledgeIndexer:
             "schema_hash": schema_hash,
             "data_hash": data_hash,
             "valid": isinstance(data, dict),
-            "validated_at": datetime.now(timezone.utc).isoformat(),
+            "validated_at": datetime.now(UTC).isoformat(),
             "non_custodial": True,
         }

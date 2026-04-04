@@ -4,9 +4,11 @@ Located here to avoid duplication; 08_identity_score has its own
 test_identity_score_engine.py for the identity-score logic. This file
 targets the reward_handler specifically.
 """
+
 from __future__ import annotations
 
 import importlib.util
+from datetime import UTC
 from pathlib import Path
 
 import pytest
@@ -30,6 +32,7 @@ def _load(path: Path):
     assert spec and spec.loader
     mod = importlib.util.module_from_spec(spec)
     import sys as _sys
+
     _sys.modules[path.stem] = mod  # required on Python 3.14+ for @dataclass
     spec.loader.exec_module(mod)  # type: ignore[union-attr]
     return mod
@@ -86,9 +89,7 @@ class TestRewardHandlerInterface:
     def test_exposes_reward_symbol(self):
         symbols = set(dir(self.mod))
         candidates = {"RewardHandler", "handle_reward", "process_reward", "award", "grant_reward"}
-        assert candidates & symbols, (
-            f"reward_handler exposes none of {candidates}. Found: {symbols}"
-        )
+        assert candidates & symbols, f"reward_handler exposes none of {candidates}. Found: {symbols}"
 
     def test_no_placeholder_text(self):
         content = HANDLER_PATH.read_text(encoding="utf-8")
@@ -99,6 +100,7 @@ class TestRewardHandlerInterface:
 
     def test_basic_reward_calculation(self):
         from decimal import Decimal
+
         handler = self.mod.RewardHandler()
         result = handler.calculate_reward(
             actor_identifier="user-001",
@@ -113,6 +115,7 @@ class TestRewardHandlerInterface:
 
     def test_trust_multiplier_scales_reward(self):
         from decimal import Decimal
+
         handler = self.mod.RewardHandler()
         result = handler.calculate_reward(
             actor_identifier="user-002",
@@ -124,6 +127,7 @@ class TestRewardHandlerInterface:
 
     def test_unverified_trust_reduces_reward(self):
         from decimal import Decimal
+
         handler = self.mod.RewardHandler()
         result = handler.calculate_reward(
             actor_identifier="user-003",
@@ -144,9 +148,10 @@ class TestRewardHandlerInterface:
         assert len(result.actor_hash) == 64
 
     def test_cooldown_prevents_rapid_same_action(self):
-        from datetime import datetime, timezone, timedelta
+        from datetime import datetime, timedelta
+
         handler = self.mod.RewardHandler()
-        t0 = datetime(2026, 3, 29, 12, 0, 0, tzinfo=timezone.utc)
+        t0 = datetime(2026, 3, 29, 12, 0, 0, tzinfo=UTC)
         r1 = handler.calculate_reward(
             actor_identifier="user-cd",
             action=self.mod.VerificationAction.EMAIL_VERIFY,
@@ -162,10 +167,12 @@ class TestRewardHandlerInterface:
         )
         assert r2.status == self.mod.RewardStatus.COOLDOWN
         from decimal import Decimal
+
         assert r2.final_amount == Decimal("0.00")
 
     def test_hourly_rate_limit(self):
-        from datetime import datetime, timezone, timedelta
+        from datetime import datetime, timedelta
+
         config = self.mod.AntiGamingConfig(
             max_actions_per_hour=3,
             max_actions_per_day=50,
@@ -173,7 +180,7 @@ class TestRewardHandlerInterface:
             burst_threshold=100,
         )
         handler = self.mod.RewardHandler(anti_gaming=config)
-        t0 = datetime(2026, 3, 29, 12, 0, 0, tzinfo=timezone.utc)
+        t0 = datetime(2026, 3, 29, 12, 0, 0, tzinfo=UTC)
         actions = list(self.mod.VerificationAction)
         for i in range(3):
             r = handler.calculate_reward(
@@ -202,9 +209,10 @@ class TestRewardHandlerInterface:
         assert all(c in "0123456789abcdef" for c in result.evidence_hash)
 
     def test_get_actor_stats(self):
-        from datetime import datetime, timezone
+        from datetime import datetime
+
         handler = self.mod.RewardHandler()
-        t0 = datetime(2026, 3, 29, 12, 0, 0, tzinfo=timezone.utc)
+        t0 = datetime(2026, 3, 29, 12, 0, 0, tzinfo=UTC)
         handler.calculate_reward(
             actor_identifier="user-stats",
             action=self.mod.VerificationAction.EMAIL_VERIFY,
@@ -216,9 +224,10 @@ class TestRewardHandlerInterface:
         assert stats["actions_last_day"] == 1
 
     def test_reset_actor_clears_log(self):
-        from datetime import datetime, timezone
+        from datetime import datetime
+
         handler = self.mod.RewardHandler()
-        t0 = datetime(2026, 3, 29, 12, 0, 0, tzinfo=timezone.utc)
+        t0 = datetime(2026, 3, 29, 12, 0, 0, tzinfo=UTC)
         handler.calculate_reward(
             actor_identifier="user-reset",
             action=self.mod.VerificationAction.EMAIL_VERIFY,

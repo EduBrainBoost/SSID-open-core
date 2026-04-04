@@ -3,31 +3,28 @@ SSIDCTL v2 Runner — L0 Controller, Smoke/Dry-Run execution, Evidence pipeline.
 
 Entry point for `e2e_dispatcher.py run-profile`.
 """
+
 from __future__ import annotations
 
 import datetime as dt
 import hashlib
 import json
-import os
-import subprocess
 import uuid
-from pathlib import Path
-from typing import Any, Dict, List, Optional
 
-from .loader import AgentDef, RegistryBundle, load_bundle
-from .resolver import ResolutionResult, get_activation_order, resolve_profile
+# --- G03 FIX: Canonical SoT Validator for CI/Hook parity ---
+from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
+
 from .enforcement import (
-    EnforcementResult,
     LockState,
     acquire_lock,
     check_root24_lock,
     enforce_all_agents,
     release_lock,
 )
+from .loader import AgentDef, RegistryBundle, load_bundle
+from .resolver import ResolutionResult, get_activation_order, resolve_profile
 from .state_machine import RunContext, RunState
-
-# --- G03 FIX: Canonical SoT Validator for CI/Hook parity ---
-from importlib.util import spec_from_file_location, module_from_spec
 
 _SOT_CORE_REL = "03_core/validators/sot/sot_validator_core.py"
 
@@ -43,16 +40,13 @@ def _load_sot_validator_core(repo_root: Path):
     mod = module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
 # --- END G03 FIX ---
 
 
 def _utc_now() -> str:
-    return (
-        dt.datetime.now(dt.timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _sha256_file(path: Path) -> str:
@@ -69,12 +63,12 @@ class SSIDCTLRunner:
     def __init__(self, repo_root: Path, dry_run: bool = False):
         self.repo_root = repo_root.resolve()
         self.dry_run = dry_run
-        self.bundle: Optional[RegistryBundle] = None
-        self.resolution: Optional[ResolutionResult] = None
-        self.ctx: Optional[RunContext] = None
-        self.locks: List[LockState] = []
-        self.evidence_dir: Optional[Path] = None
-        self.log_lines: List[str] = []
+        self.bundle: RegistryBundle | None = None
+        self.resolution: ResolutionResult | None = None
+        self.ctx: RunContext | None = None
+        self.locks: list[LockState] = []
+        self.evidence_dir: Path | None = None
+        self.log_lines: list[str] = []
 
     def _log(self, event: str, detail: str = "") -> None:
         entry = {"ts_utc": _utc_now(), "event": event}
@@ -84,7 +78,7 @@ class SSIDCTLRunner:
 
     def run(self, profile_id: str) -> int:
         """Execute the full v2 runtime pipeline. Returns exit code."""
-        run_id = f"ssidctl_v2_{profile_id}_{dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')}_{uuid.uuid4().hex[:8]}"
+        run_id = f"ssidctl_v2_{profile_id}_{dt.datetime.now(dt.UTC).strftime('%Y%m%dT%H%M%SZ')}_{uuid.uuid4().hex[:8]}"
         self.ctx = RunContext(
             run_id=run_id,
             profile_id=profile_id,
@@ -202,9 +196,7 @@ class SSIDCTLRunner:
             return 2
 
         # AGENTS_RESOLVED -> SANDBOX_READY
-        self.evidence_dir = (
-            self.repo_root / "02_audit_logging" / "evidence" / "ssidctl_v2_runs" / ctx.run_id
-        )
+        self.evidence_dir = self.repo_root / "02_audit_logging" / "evidence" / "ssidctl_v2_runs" / ctx.run_id
         self.evidence_dir.mkdir(parents=True, exist_ok=True)
         if not ctx.transition(RunState.SANDBOX_READY, "evidence dir ready"):
             ctx.force_terminal(RunState.FAILED, "invalid transition to SANDBOX_READY")
@@ -276,10 +268,10 @@ class SSIDCTLRunner:
         print(f"  agents: {len(self.resolution.resolved_agents)}")
         print(f"  dry_run: {ctx.dry_run}")
         print(f"  state: {ctx.state.value}")
-        print(f"  exit_code: 0")
+        print("  exit_code: 0")
         return 0
 
-    def _execute_smoke(self, agents: List[AgentDef]) -> bool:
+    def _execute_smoke(self, agents: list[AgentDef]) -> bool:
         """Execute a deterministic local smoke-run. No external providers."""
         self._log("SMOKE_START", f"agents={len(agents)}")
 
@@ -296,9 +288,7 @@ class SSIDCTLRunner:
             }
             if self.evidence_dir:
                 result_file = self.evidence_dir / f"agent_{agent.agent_id.replace('.', '_')}.json"
-                result_file.write_text(
-                    json.dumps(agent_result, indent=2), encoding="utf-8"
-                )
+                result_file.write_text(json.dumps(agent_result, indent=2), encoding="utf-8")
             self._log("AGENT_DONE", f"{agent.agent_id} smoke_pass")
 
         self._log("SMOKE_DONE", f"all {len(agents)} agents passed")

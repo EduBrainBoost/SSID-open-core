@@ -4,11 +4,10 @@ Root: 12_tooling | Shard: 01_identitaet_personen
 
 CLI for DID operations, VC management, score queries, and system status.
 """
+
 import hashlib
-import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 
 @dataclass
@@ -16,7 +15,7 @@ class CLICommand:
     name: str
     args: dict
     executed_at: str
-    result: Optional[dict] = None
+    result: dict | None = None
     success: bool = False
 
 
@@ -33,7 +32,7 @@ class SSIDCLI:
         cmd = CLICommand(
             name=command,
             args=kwargs,
-            executed_at=datetime.now(timezone.utc).isoformat(),
+            executed_at=datetime.now(UTC).isoformat(),
         )
 
         handler = self._get_handler(command)
@@ -64,9 +63,7 @@ class SSIDCLI:
 
     def _cmd_did_create(self, **kwargs) -> dict:
         key_type = kwargs.get("key_type", "EC-P256")
-        did_hash = hashlib.sha256(
-            f"create:{key_type}:{datetime.now(timezone.utc).isoformat()}".encode()
-        ).hexdigest()[:32]
+        did_hash = hashlib.sha256(f"create:{key_type}:{datetime.now(UTC).isoformat()}".encode()).hexdigest()[:32]
         return {"did": f"did:ssid:{did_hash}", "key_type": key_type, "status": "created"}
 
     def _cmd_did_resolve(self, **kwargs) -> dict:
@@ -83,7 +80,7 @@ class SSIDCLI:
             "shards_per_root": 16,
             "implementations": 21,
             "tests_passing": True,
-            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            "timestamp_utc": datetime.now(UTC).isoformat(),
         }
 
     def _cmd_score_query(self, **kwargs) -> dict:

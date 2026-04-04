@@ -13,14 +13,14 @@ Exit codes:
   0 = PASS or WARN
   2 = FAIL
 """
+
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
 import re
-import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -50,12 +50,7 @@ RULE_ID_PATTERN = re.compile(r"SOT_AGENT_\d{3}")
 # Helpers
 # -----------------------------------------------------------------------
 def _utc_now_iso() -> str:
-    return (
-        datetime.now(timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _json_sha256(obj: Any) -> str:
@@ -81,7 +76,7 @@ def _extract_version(artifact_id: str, path: Path) -> str | None:
             m = re.search(r'(?:VERSION|__version__)\s*=\s*["\']([^"\']+)["\']', text)
             if m:
                 return m.group(1)
-            m = re.search(r'#.*\bv(\d+\.\d+(?:\.\d+)?)\b', text)
+            m = re.search(r"#.*\bv(\d+\.\d+(?:\.\d+)?)\b", text)
             if m:
                 return m.group(1)
     except Exception:
@@ -222,12 +217,14 @@ def compare_workspace_to_baseline(
             detail_parts.append(f"missing={sorted(missing)}")
         if extra:
             detail_parts.append(f"extra={sorted(extra)}")
-        result.add(Finding(
-            "artifact_scope_mismatch",
-            "deny",
-            "baseline",
-            f"baseline artifact scope differs from expected: {', '.join(detail_parts)}",
-        ))
+        result.add(
+            Finding(
+                "artifact_scope_mismatch",
+                "deny",
+                "baseline",
+                f"baseline artifact scope differs from expected: {', '.join(detail_parts)}",
+            )
+        )
 
     for bl_artifact in baseline["artifacts"]:
         artifact_id = bl_artifact.get("artifact_id", "?")
@@ -239,55 +236,61 @@ def compare_workspace_to_baseline(
         if not full_path.exists():
             # File missing — treat as changed (hash mismatch)
             if bl_hash is not None:
-                changed_artifacts.append({
-                    "artifact_id": artifact_id,
-                    "path": rel_path,
-                    "baseline_sha256": bl_hash,
-                    "current_sha256": None,
-                    "baseline_rule_count": bl_rule_count,
-                    "current_rule_count": None,
-                })
-                result.add(Finding(
-                    "baseline_hash_mismatch",
-                    "deny",
-                    rel_path,
-                    f"artifact '{artifact_id}' missing on disk (was in baseline)",
-                ))
+                changed_artifacts.append(
+                    {
+                        "artifact_id": artifact_id,
+                        "path": rel_path,
+                        "baseline_sha256": bl_hash,
+                        "current_sha256": None,
+                        "baseline_rule_count": bl_rule_count,
+                        "current_rule_count": None,
+                    }
+                )
+                result.add(
+                    Finding(
+                        "baseline_hash_mismatch",
+                        "deny",
+                        rel_path,
+                        f"artifact '{artifact_id}' missing on disk (was in baseline)",
+                    )
+                )
             continue
 
         current_hash = sha256_file(full_path)
         current_rule_count = _extract_rule_count(artifact_id, full_path)
 
         if bl_hash is not None and current_hash != bl_hash:
-            changed_artifacts.append({
-                "artifact_id": artifact_id,
-                "path": rel_path,
-                "baseline_sha256": bl_hash,
-                "current_sha256": current_hash,
-                "baseline_rule_count": bl_rule_count,
-                "current_rule_count": current_rule_count,
-            })
-            result.add(Finding(
-                "baseline_hash_mismatch",
-                "deny",
-                rel_path,
-                f"artifact '{artifact_id}' hash differs from baseline: "
-                f"baseline={bl_hash[:16]}..., current={current_hash[:16]}...",
-            ))
-
-            # Check rule count drift
-            if (
-                bl_rule_count is not None
-                and current_rule_count is not None
-                and bl_rule_count != current_rule_count
-            ):
-                result.add(Finding(
-                    "baseline_rule_count_drift",
+            changed_artifacts.append(
+                {
+                    "artifact_id": artifact_id,
+                    "path": rel_path,
+                    "baseline_sha256": bl_hash,
+                    "current_sha256": current_hash,
+                    "baseline_rule_count": bl_rule_count,
+                    "current_rule_count": current_rule_count,
+                }
+            )
+            result.add(
+                Finding(
+                    "baseline_hash_mismatch",
                     "deny",
                     rel_path,
-                    f"artifact '{artifact_id}' rule count changed: "
-                    f"baseline={bl_rule_count}, current={current_rule_count}",
-                ))
+                    f"artifact '{artifact_id}' hash differs from baseline: "
+                    f"baseline={bl_hash[:16]}..., current={current_hash[:16]}...",
+                )
+            )
+
+            # Check rule count drift
+            if bl_rule_count is not None and current_rule_count is not None and bl_rule_count != current_rule_count:
+                result.add(
+                    Finding(
+                        "baseline_rule_count_drift",
+                        "deny",
+                        rel_path,
+                        f"artifact '{artifact_id}' rule count changed: "
+                        f"baseline={bl_rule_count}, current={current_rule_count}",
+                    )
+                )
 
     return result, changed_artifacts
 
@@ -306,23 +309,27 @@ def evaluate_baseline_gate(
 
     # Rule 1: No baseline
     if baseline is None:
-        result.add(Finding(
-            "baseline_missing",
-            "deny",
-            DEFAULT_BASELINE_REL,
-            "no baseline snapshot found — cannot evaluate drift",
-        ))
+        result.add(
+            Finding(
+                "baseline_missing",
+                "deny",
+                DEFAULT_BASELINE_REL,
+                "no baseline snapshot found — cannot evaluate drift",
+            )
+        )
         return "FAIL"
 
     # Rule 2: Invalid baseline schema (already validated in load, but double-check)
     required = {"snapshot_id", "created_at_utc", "artifacts", "evidence_hash"}
     if not required.issubset(baseline.keys()) or not isinstance(baseline["artifacts"], list):
-        result.add(Finding(
-            "baseline_schema_invalid",
-            "deny",
-            DEFAULT_BASELINE_REL,
-            "baseline snapshot has invalid schema",
-        ))
+        result.add(
+            Finding(
+                "baseline_schema_invalid",
+                "deny",
+                DEFAULT_BASELINE_REL,
+                "baseline snapshot has invalid schema",
+            )
+        )
         return "FAIL"
 
     # Rule 8: No changes detected
@@ -334,12 +341,14 @@ def evaluate_baseline_gate(
     # Rule 3: Changes detected but no intent
     if intent is None:
         for cid in sorted(changed_ids):
-            result.add(Finding(
-                "intent_missing_for_canonical_change",
-                "deny",
-                DEFAULT_INTENT_REL,
-                f"artifact '{cid}' changed but no change intent file provided",
-            ))
+            result.add(
+                Finding(
+                    "intent_missing_for_canonical_change",
+                    "deny",
+                    DEFAULT_INTENT_REL,
+                    f"artifact '{cid}' changed but no change intent file provided",
+                )
+            )
         return "FAIL"
 
     # Rule 7: Metadata/report/registry refresh intents → WARN
@@ -353,22 +362,26 @@ def evaluate_baseline_gate(
     undeclared = changed_ids - declared_ids
     if undeclared:
         for uid in sorted(undeclared):
-            result.add(Finding(
-                "undeclared_baseline_drift",
-                "deny",
-                DEFAULT_INTENT_REL,
-                f"artifact '{uid}' changed but not declared in intent affected_artifacts",
-            ))
+            result.add(
+                Finding(
+                    "undeclared_baseline_drift",
+                    "deny",
+                    DEFAULT_INTENT_REL,
+                    f"artifact '{uid}' changed but not declared in intent affected_artifacts",
+                )
+            )
 
     not_actually_changed = declared_ids - changed_ids
     if not_actually_changed:
         for nid in sorted(not_actually_changed):
-            result.add(Finding(
-                "declared_change_not_fully_propagated",
-                "deny",
-                DEFAULT_INTENT_REL,
-                f"artifact '{nid}' declared in intent but not actually changed in workspace",
-            ))
+            result.add(
+                Finding(
+                    "declared_change_not_fully_propagated",
+                    "deny",
+                    DEFAULT_INTENT_REL,
+                    f"artifact '{nid}' declared in intent but not actually changed in workspace",
+                )
+            )
 
     if undeclared or not_actually_changed:
         return "FAIL"
@@ -382,13 +395,15 @@ def evaluate_baseline_gate(
             if bl_rc is not None and cur_rc is not None:
                 actual_delta = cur_rc - bl_rc
                 if actual_delta != expected_delta:
-                    result.add(Finding(
-                        "unexpected_rule_count_delta",
-                        "deny",
-                        ca.get("path", "?"),
-                        f"artifact '{ca['artifact_id']}' rule count delta: "
-                        f"expected={expected_delta}, actual={actual_delta}",
-                    ))
+                    result.add(
+                        Finding(
+                            "unexpected_rule_count_delta",
+                            "deny",
+                            ca.get("path", "?"),
+                            f"artifact '{ca['artifact_id']}' rule count delta: "
+                            f"expected={expected_delta}, actual={actual_delta}",
+                        )
+                    )
                     return "FAIL"
 
     # Rule 6: Everything changed and declared, but baseline not refreshed
@@ -396,13 +411,14 @@ def evaluate_baseline_gate(
     # and changes are declared and propagated, the baseline itself is stale.
     current_snapshot = build_baseline_snapshot(repo)
     if current_snapshot["evidence_hash"] != baseline.get("evidence_hash"):
-        result.add(Finding(
-            "stale_baseline_after_declared_change",
-            "deny",
-            DEFAULT_BASELINE_REL,
-            "changes are declared and propagated but baseline snapshot is stale — "
-            "run --create-baseline to refresh",
-        ))
+        result.add(
+            Finding(
+                "stale_baseline_after_declared_change",
+                "deny",
+                DEFAULT_BASELINE_REL,
+                "changes are declared and propagated but baseline snapshot is stale — run --create-baseline to refresh",
+            )
+        )
         return "FAIL"
 
     # Rule 9: Fully declared + fully propagated
@@ -428,14 +444,14 @@ def emit_reports(report: dict, output_dir: Path) -> None:
     md_lines: list[str] = []
 
     decision = report.get("decision", "UNKNOWN")
-    md_lines.append(f"# SoT Baseline Gate Report")
+    md_lines.append("# SoT Baseline Gate Report")
     md_lines.append("")
 
     # Summary
     md_lines.append("## Summary")
     md_lines.append("")
-    md_lines.append(f"| Field | Value |")
-    md_lines.append(f"|-------|-------|")
+    md_lines.append("| Field | Value |")
+    md_lines.append("|-------|-------|")
     md_lines.append(f"| Decision | **{decision}** |")
     md_lines.append(f"| Timestamp | {report.get('timestamp_utc', 'N/A')} |")
     md_lines.append(f"| Repo | `{report.get('repo', 'N/A')}` |")
@@ -456,10 +472,7 @@ def emit_reports(report: dict, output_dir: Path) -> None:
             bl_h = ca.get("baseline_sha256", "N/A") or "N/A"
             cur_h = ca.get("current_sha256", "N/A") or "N/A"
             md_lines.append(
-                f"| {ca.get('artifact_id', '?')} "
-                f"| `{ca.get('path', '?')}` "
-                f"| `{bl_h[:16]}...` "
-                f"| `{cur_h[:16]}...` |"
+                f"| {ca.get('artifact_id', '?')} | `{ca.get('path', '?')}` | `{bl_h[:16]}...` | `{cur_h[:16]}...` |"
             )
     else:
         md_lines.append("No artifacts changed relative to baseline.")
@@ -499,11 +512,7 @@ def emit_reports(report: dict, output_dir: Path) -> None:
         for i, f in enumerate(findings, 1):
             sev = f.get("severity", "?").upper()
             md_lines.append(
-                f"| {i} "
-                f"| {sev} "
-                f"| `{f.get('class', '?')}` "
-                f"| `{f.get('path', '?')}` "
-                f"| {f.get('detail', '')} |"
+                f"| {i} | {sev} | `{f.get('class', '?')}` | `{f.get('path', '?')}` | {f.get('detail', '')} |"
             )
     else:
         md_lines.append("No findings.")
@@ -551,9 +560,7 @@ def build_report_dict(
         }
 
     expected_artifacts = sorted(SOT_ARTIFACTS.keys())
-    actual_artifacts = sorted(
-        {a.get("artifact_id", "?") for a in (baseline.get("artifacts", []) if baseline else [])}
-    )
+    actual_artifacts = sorted({a.get("artifact_id", "?") for a in (baseline.get("artifacts", []) if baseline else [])})
 
     findings_dicts = [f.to_dict() for f in result.findings]
     evidence_hash = _json_sha256(findings_dicts)
@@ -671,14 +678,19 @@ def main() -> int:
             return EXIT_FAIL
 
         if args.json:
-            print(json.dumps({
-                "valid": True,
-                "path": str(baseline_path),
-                "snapshot_id": baseline.get("snapshot_id"),
-                "artifact_count": baseline.get("artifact_count"),
-                "created_at_utc": baseline.get("created_at_utc"),
-                "evidence_hash": baseline.get("evidence_hash"),
-            }, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "valid": True,
+                        "path": str(baseline_path),
+                        "snapshot_id": baseline.get("snapshot_id"),
+                        "artifact_count": baseline.get("artifact_count"),
+                        "created_at_utc": baseline.get("created_at_utc"),
+                        "evidence_hash": baseline.get("evidence_hash"),
+                    },
+                    indent=2,
+                )
+            )
         else:
             print(f"PASS: baseline is valid at {baseline_path}")
             print(f"  Snapshot ID:    {baseline.get('snapshot_id')}")
@@ -715,8 +727,7 @@ def main() -> int:
             print(md_path.read_text(encoding="utf-8"))
     else:
         print(f"SoT Baseline Gate: {decision}")
-        print(f"  Findings: {report['finding_count']} "
-              f"(deny={report['deny_count']}, warn={report['warn_count']})")
+        print(f"  Findings: {report['finding_count']} (deny={report['deny_count']}, warn={report['warn_count']})")
         print(f"  Changed:  {len(changed_artifacts)} artifact(s)")
         print(f"  Evidence: {report['evidence_hash'][:16]}...")
         if result.findings:

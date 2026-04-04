@@ -1,1 +1,1 @@
-AUTO-GENERATED PLACEHOLDER (SoT path reference).
+# AUTO-GENERATED PLACEHOLDER (SoT path reference).

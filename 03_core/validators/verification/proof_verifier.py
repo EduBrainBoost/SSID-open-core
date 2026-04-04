@@ -14,9 +14,8 @@ Cross-references:
 from __future__ import annotations
 
 import hashlib
-import os
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -68,10 +67,7 @@ class ProofResult:
 
     def __post_init__(self) -> None:
         if self.raw_pii_present:
-            raise ValueError(
-                "SSID COMPLIANCE VIOLATION: raw_pii_present must be False. "
-                "SSID must never store PII."
-            )
+            raise ValueError("SSID COMPLIANCE VIOLATION: raw_pii_present must be False. SSID must never store PII.")
 
 
 @dataclass
@@ -106,9 +102,7 @@ class ProviderRegistryLoader:
     def __init__(self, registry_path: str | Path | None = None) -> None:
         if registry_path is None:
             # Default: relative to repo root
-            registry_path = Path(__file__).resolve().parents[3] / (
-                "19_adapters/providers/provider_registry.yaml"
-            )
+            registry_path = Path(__file__).resolve().parents[3] / ("19_adapters/providers/provider_registry.yaml")
         self._path = Path(registry_path)
         self._providers: dict[str, ProviderCapability] = {}
         self._architecture: dict[str, Any] = {}
@@ -117,11 +111,9 @@ class ProviderRegistryLoader:
     def load(self) -> None:
         """Load and parse the registry YAML."""
         if not self._path.exists():
-            raise FileNotFoundError(
-                f"Provider registry not found: {self._path}"
-            )
+            raise FileNotFoundError(f"Provider registry not found: {self._path}")
 
-        with open(self._path, "r", encoding="utf-8") as fh:
+        with open(self._path, encoding="utf-8") as fh:
             data = yaml.safe_load(fh)
 
         self._architecture = data.get("architecture", {})
@@ -136,15 +128,9 @@ class ProviderRegistryLoader:
                 user_pays_directly=entry["user_pays_directly"],
                 proof_type=entry["proof_type"],
                 verification_method=entry["verification_method"],
-                supports_revocation_check=entry.get(
-                    "supports_revocation_check", False
-                ),
-                supports_expiry_check=entry.get(
-                    "supports_expiry_check", False
-                ),
-                supports_country_restrictions=entry.get(
-                    "supports_country_restrictions", False
-                ),
+                supports_revocation_check=entry.get("supports_revocation_check", False),
+                supports_expiry_check=entry.get("supports_expiry_check", False),
+                supports_country_restrictions=entry.get("supports_country_restrictions", False),
                 proof_only_mode=entry.get("proof_only_mode", False),
                 pii_handling=entry.get("pii_handling", "unknown"),
                 status=entry.get("status", "unknown"),
@@ -182,11 +168,7 @@ class ProviderRegistryLoader:
         """Return only providers where user_pays_directly is True."""
         if not self._loaded:
             self.load()
-        return [
-            p
-            for p in self._providers.values()
-            if p.user_pays_directly is True
-        ]
+        return [p for p in self._providers.values() if p.user_pays_directly is True]
 
 
 class JurisdictionChecker:
@@ -209,11 +191,9 @@ class JurisdictionChecker:
     def load(self) -> None:
         """Load the jurisdiction blacklist."""
         if not self._path.exists():
-            raise FileNotFoundError(
-                f"Jurisdiction blacklist not found: {self._path}"
-            )
+            raise FileNotFoundError(f"Jurisdiction blacklist not found: {self._path}")
 
-        with open(self._path, "r", encoding="utf-8") as fh:
+        with open(self._path, encoding="utf-8") as fh:
             data = yaml.safe_load(fh)
 
         for entry in data.get("blacklisted", []):
@@ -338,7 +318,7 @@ class ProofVerifier:
             )
 
         # 5. Expiry check
-        if expires_at is not None and expires_at < datetime.now(timezone.utc):
+        if expires_at is not None and expires_at < datetime.now(UTC):
             return self._build_result(
                 proof_id=proof_id,
                 provider_id=provider_id,
@@ -370,7 +350,7 @@ class ProofVerifier:
         """Return True if the proof is still valid (not expired)."""
         if expires_at is None:
             return True
-        return expires_at >= datetime.now(timezone.utc)
+        return expires_at >= datetime.now(UTC)
 
     def check_country_eligibility(self, country_code: str) -> bool:
         """Return True if the country is not banned."""
@@ -388,13 +368,8 @@ class ProofVerifier:
         verification_status: VerificationStatus,
     ) -> ProofResult:
         """Build a ProofResult with computed evidence hash."""
-        evidence_payload = (
-            f"{proof_id}:{provider_id}:{subject_hash}:"
-            f"{proof_type}:{verification_status.value}"
-        )
-        evidence_hash = hashlib.sha256(
-            evidence_payload.encode("utf-8")
-        ).hexdigest()
+        evidence_payload = f"{proof_id}:{provider_id}:{subject_hash}:{proof_type}:{verification_status.value}"
+        evidence_hash = hashlib.sha256(evidence_payload.encode("utf-8")).hexdigest()
 
         return ProofResult(
             proof_id=proof_id,

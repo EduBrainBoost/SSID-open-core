@@ -8,7 +8,6 @@ stdlib-only, fail-closed, non-custodial.
 import hashlib
 import hmac
 import json
-from typing import Dict, Optional
 
 try:
     from . import vc_status
@@ -19,6 +18,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _compute_signature(credential: dict, signing_key_hex: str) -> str:
     """Recompute HMAC signature for a credential payload."""
@@ -33,6 +33,7 @@ def _compute_signature(credential: dict, signing_key_hex: str) -> str:
 # ---------------------------------------------------------------------------
 # Verification
 # ---------------------------------------------------------------------------
+
 
 def verify_credential(
     vc_envelope: dict,
@@ -94,7 +95,7 @@ def verify_presentation(
     vc_envelope: dict,
     signing_key_hex: str,
     *,
-    disclosed_fields: Optional[list] = None,
+    disclosed_fields: list | None = None,
 ) -> dict:
     """
     Verify a Verifiable Presentation (selective disclosure).

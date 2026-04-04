@@ -11,27 +11,34 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import time
-from datetime import datetime, timezone
-from pathlib import Path
+from datetime import UTC, datetime
 
 
 def _health_check(args: argparse.Namespace) -> int:
     """Check health of all registered workers."""
     workers = [
-        "supervisor", "dispatch", "build", "test", "browser",
-        "policy", "audit", "registry", "provider", "release", "repair",
+        "supervisor",
+        "dispatch",
+        "build",
+        "test",
+        "browser",
+        "policy",
+        "audit",
+        "registry",
+        "provider",
+        "release",
+        "repair",
     ]
     results = {}
     for w in workers:
         results[w] = {
             "status": "reachable",
-            "last_heartbeat": datetime.now(timezone.utc).isoformat(),
+            "last_heartbeat": datetime.now(UTC).isoformat(),
         }
 
     output = {
         "command": "supervisor.health",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "workers_checked": len(workers),
         "results": results,
         "overall": "healthy",
@@ -44,7 +51,7 @@ def _status(args: argparse.Namespace) -> int:
     """Report supervisor status including uptime and worker count."""
     output = {
         "command": "supervisor.status",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "supervisor_pid": None,
         "uptime_seconds": 0,
         "registered_workers": 11,
@@ -63,7 +70,7 @@ def _dispatch(args: argparse.Namespace) -> int:
 
     output = {
         "command": "supervisor.dispatch",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "task_id": task_id,
         "routed_to": worker,
         "dispatch_status": "queued",
@@ -100,7 +107,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         error = {
             "command": f"supervisor.{args.action}",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "error": str(exc),
             "status": "failed",
         }

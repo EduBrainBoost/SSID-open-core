@@ -11,14 +11,13 @@ import hashlib
 import json
 import os
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
-
 
 # ---------------------------------------------------------------------------
 # Takeover states (deterministic FSM)
 # ---------------------------------------------------------------------------
+
 
 class TakeoverState(Enum):
     PROPOSED = "PROPOSED"
@@ -41,9 +40,11 @@ class TakeoverReason(Enum):
 # Takeover event
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TakeoverEvent:
     """Immutable record of a takeover action."""
+
     event_id: str
     source_agent: str  # agent initiating takeover (watchdog)
     target_agent: str  # agent being taken over
@@ -62,6 +63,7 @@ class TakeoverEvent:
 # ---------------------------------------------------------------------------
 # Takeover Manager
 # ---------------------------------------------------------------------------
+
 
 class TakeoverManager:
     """
@@ -118,10 +120,7 @@ class TakeoverManager:
         Fail-closed: wrong state -> raises.
         """
         if event.state != TakeoverState.PROPOSED:
-            raise ValueError(
-                f"FAIL-CLOSED: Cannot execute takeover in state {event.state.value}, "
-                f"expected PROPOSED"
-            )
+            raise ValueError(f"FAIL-CLOSED: Cannot execute takeover in state {event.state.value}, expected PROPOSED")
 
         event.state = TakeoverState.EXECUTING
 
@@ -166,13 +165,11 @@ class TakeoverManager:
 
         # Write evidence file
         os.makedirs(self._evidence_dir, exist_ok=True)
-        evidence_path = os.path.join(
-            self._evidence_dir, f"{event.event_id}.json"
-        )
+        evidence_path = os.path.join(self._evidence_dir, f"{event.event_id}.json")
         with open(evidence_path, "w", encoding="utf-8") as f:
             json.dump(evidence, f, indent=2, ensure_ascii=False)
 
         return evidence
 
-    def get_event(self, event_id: str) -> Optional[TakeoverEvent]:
+    def get_event(self, event_id: str) -> TakeoverEvent | None:
         return self._events.get(event_id)

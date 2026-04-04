@@ -3,6 +3,7 @@
 Covers path invariants, source validity, and the core_engine re-export hub
 (src/core_engine.py) which is always valid Python and immediately testable.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -93,12 +94,9 @@ class TestCoreEngineReexportHub:
         assert p.name == "subscription_revenue_distributor.py"
 
     def test_all_paths_under_core_root(self):
-        for attr in ("FAIRNESS_ENGINE_PATH", "FEE_DISTRIBUTION_ENGINE_PATH",
-                     "SUBSCRIPTION_REVENUE_DISTRIBUTOR_PATH"):
+        for attr in ("FAIRNESS_ENGINE_PATH", "FEE_DISTRIBUTION_ENGINE_PATH", "SUBSCRIPTION_REVENUE_DISTRIBUTOR_PATH"):
             path = getattr(self.mod, attr)
-            assert self.mod.CORE_ROOT in path.parents, (
-                f"{attr} ({path}) is not under CORE_ROOT ({self.mod.CORE_ROOT})"
-            )
+            assert self.mod.CORE_ROOT in path.parents, f"{attr} ({path}) is not under CORE_ROOT ({self.mod.CORE_ROOT})"
 
     def test_dunder_all_contents(self):
         expected = {
@@ -125,13 +123,16 @@ class TestRevenueDistributorInterface:
     def test_exposes_distributor_symbol(self):
         symbols = set(dir(self.mod))
         candidates = {
-            "RevenueDistributor", "distribute_revenue", "distribute", "calculate_share",
-            "SubscriptionRevenueDistributor", "RevenueDistributionEngine",
-            "DEFAULT_RETENTION_RATES", "distribute_subscription_revenue",
+            "RevenueDistributor",
+            "distribute_revenue",
+            "distribute",
+            "calculate_share",
+            "SubscriptionRevenueDistributor",
+            "RevenueDistributionEngine",
+            "DEFAULT_RETENTION_RATES",
+            "distribute_subscription_revenue",
         }
-        assert candidates & symbols, (
-            f"subscription_revenue_distributor exposes none of {candidates}. Got: {symbols}"
-        )
+        assert candidates & symbols, f"subscription_revenue_distributor exposes none of {candidates}. Got: {symbols}"
 
     def test_no_placeholder_text(self):
         content = DISTRIBUTOR_PATH.read_text(encoding="utf-8")
@@ -145,6 +146,7 @@ class TestRevenueDistributorInterface:
 
     def test_monthly_settlement_allocates_to_all_roots(self):
         from decimal import Decimal
+
         dist = self.mod.SubscriptionRevenueDistributor()
         result = dist.calculate_settlement(
             gross_revenue=Decimal("12000"),
@@ -157,6 +159,7 @@ class TestRevenueDistributorInterface:
 
     def test_settlement_amounts_sum_to_gross(self):
         from decimal import Decimal
+
         dist = self.mod.SubscriptionRevenueDistributor()
         result = dist.calculate_settlement(
             gross_revenue=Decimal("24000"),
@@ -168,12 +171,14 @@ class TestRevenueDistributorInterface:
 
     def test_core_root_gets_12_percent(self):
         from decimal import Decimal
+
         dist = self.mod.SubscriptionRevenueDistributor()
         ratios = dist.get_ratios()
         assert ratios["03_core"] == Decimal("0.12")
 
     def test_settlement_evidence_hash_valid(self):
         from decimal import Decimal
+
         dist = self.mod.SubscriptionRevenueDistributor()
         result = dist.calculate_settlement(
             gross_revenue=Decimal("5000"),
@@ -185,6 +190,7 @@ class TestRevenueDistributorInterface:
 
     def test_negative_revenue_raises_value_error(self):
         from decimal import Decimal
+
         dist = self.mod.SubscriptionRevenueDistributor()
         with pytest.raises(ValueError, match="non-negative"):
             dist.calculate_settlement(
@@ -195,6 +201,7 @@ class TestRevenueDistributorInterface:
 
     def test_zero_revenue_yields_zero_allocations(self):
         from decimal import Decimal
+
         dist = self.mod.SubscriptionRevenueDistributor()
         result = dist.calculate_settlement(
             gross_revenue=Decimal("0"),
@@ -205,6 +212,7 @@ class TestRevenueDistributorInterface:
 
     def test_custom_ratios_accepted(self):
         from decimal import Decimal
+
         custom = {root: Decimal("1") / 24 for root in self.mod.ROOT_24_NAMES}
         # Adjust to sum exactly to 1
         remainder_fix = Decimal("1") - sum(custom.values())

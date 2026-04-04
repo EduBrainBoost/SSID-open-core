@@ -10,10 +10,9 @@ Detection strategies:
   - Duplicate DID document references across roots
   - Identical identity score inputs mapped to different DIDs
 """
+
 from __future__ import annotations
 
-import hashlib
-import json
 import logging
 import re
 import sys
@@ -119,29 +118,32 @@ def detect_duplicates(
                 roots_involved.add(parts[0])
 
         if len(roots_involved) > 1:
-            findings.append({
-                "type": "cross_root_hash_duplicate",
-                "hash": h,
-                "roots": sorted(roots_involved),
-                "locations": locations,
-                "severity": "high",
-            })
+            findings.append(
+                {
+                    "type": "cross_root_hash_duplicate",
+                    "hash": h,
+                    "roots": sorted(roots_involved),
+                    "locations": locations,
+                    "severity": "high",
+                }
+            )
 
     for did, locations in did_locations.items():
         if len(locations) > 3:
-            findings.append({
-                "type": "excessive_did_reference",
-                "did": did,
-                "count": len(locations),
-                "locations": locations[:10],
-                "severity": "medium",
-            })
+            findings.append(
+                {
+                    "type": "excessive_did_reference",
+                    "did": did,
+                    "count": len(locations),
+                    "locations": locations[:10],
+                    "severity": "medium",
+                }
+            )
 
     return findings
 
 
-def validate(identity_data: list[dict[str, Any]] | None = None,
-             root: Path | None = None) -> dict[str, Any]:
+def validate(identity_data: list[dict[str, Any]] | None = None, root: Path | None = None) -> dict[str, Any]:
     """Run duplicate identity hash validation.
 
     Args:
@@ -162,12 +164,14 @@ def validate(identity_data: list[dict[str, Any]] | None = None,
                 seen[h].append(idx)
         for h, indices in seen.items():
             if len(indices) > 1:
-                findings.append({
-                    "type": "duplicate_identity_hash",
-                    "hash": h,
-                    "indices": indices,
-                    "severity": "critical",
-                })
+                findings.append(
+                    {
+                        "type": "duplicate_identity_hash",
+                        "hash": h,
+                        "indices": indices,
+                        "severity": "critical",
+                    }
+                )
         return {
             "status": "FAIL" if findings else "PASS",
             "check": "detect_duplicate_identity_hashes",

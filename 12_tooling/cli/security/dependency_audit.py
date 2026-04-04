@@ -3,6 +3,7 @@
 
 Checks for known vulnerabilities in Python dependencies.
 """
+
 import json
 import subprocess
 import sys
@@ -44,13 +45,15 @@ def check_vulnerabilities(packages: dict[str, str]) -> list[dict[str, Any]]:
         installed_version = packages[pkg_name]
         for pattern, cve, description in vuln_specs:
             if _version_matches_pattern(installed_version, pattern):
-                findings.append({
-                    "package": pkg_name,
-                    "installed_version": installed_version,
-                    "cve": cve,
-                    "description": description,
-                    "severity": "CRITICAL" if "Critical" in description else "HIGH",
-                })
+                findings.append(
+                    {
+                        "package": pkg_name,
+                        "installed_version": installed_version,
+                        "cve": cve,
+                        "description": description,
+                        "severity": "CRITICAL" if "Critical" in description else "HIGH",
+                    }
+                )
 
     return findings
 
@@ -114,7 +117,7 @@ def main():
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output_file.write_text(json.dumps(results, indent=2))
 
-    print(f"Dependency audit complete:")
+    print("Dependency audit complete:")
     print(f"  Total packages: {results['total_packages']}")
     print(f"  Vulnerabilities found: {results['vulnerabilities_found']}")
 

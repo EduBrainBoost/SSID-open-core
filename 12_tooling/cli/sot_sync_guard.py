@@ -18,14 +18,14 @@ Exit codes:
   1 = WARN   — advisory warnings only
   2 = FAIL   — hard consistency violations (hash drift, broken refs)
 """
+
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -37,11 +37,13 @@ if _cli_dir not in sys.path:
     sys.path.insert(0, _cli_dir)
 
 from cross_artifact_reference_audit import (  # noqa: E402
+    SOT_ARTIFACTS,
     AuditResult,
     Finding,
-    SOT_ARTIFACTS,
-    run_audit as run_xref_audit,
     sha256_file,
+)
+from cross_artifact_reference_audit import (
+    run_audit as run_xref_audit,
 )
 
 EXIT_PASS = 0
@@ -58,8 +60,8 @@ SYNC_TARGETS: dict[str, list[str]] = {
     "validator_cli": ["validator_core"],
     "tests": ["contract", "validator_core"],
     "moscow_report": ["contract"],
-    "sot_registry": [],       # hash check only
-    "workflow": [],            # target existence check only
+    "sot_registry": [],  # hash check only
+    "workflow": [],  # target existence check only
     "diff_alert": ["sot_registry"],
 }
 
@@ -186,18 +188,22 @@ def check_hash_drift(
         actual_hash = sha256_file(full_path)
         if actual_hash != stored_hash:
             if not registry_also_changed:
-                result.add(Finding(
-                    "hash_drift_unresolved",
-                    "deny",
-                    rel_path,
-                    f"artifact '{key}' changed but sot_registry.json hash not updated",
-                ))
-            hash_updates.append({
-                "name": reg_name,
-                "path": rel_path,
-                "current_hash": stored_hash,
-                "actual_hash": actual_hash,
-            })
+                result.add(
+                    Finding(
+                        "hash_drift_unresolved",
+                        "deny",
+                        rel_path,
+                        f"artifact '{key}' changed but sot_registry.json hash not updated",
+                    )
+                )
+            hash_updates.append(
+                {
+                    "name": reg_name,
+                    "path": rel_path,
+                    "current_hash": stored_hash,
+                    "actual_hash": actual_hash,
+                }
+            )
 
     return hash_updates
 
@@ -213,13 +219,13 @@ def build_sync_plan(
     """Build a sync plan describing what needs updating."""
     sync_actions: list[dict[str, str]] = []
     for target_key in sorted(affected_keys):
-        action_desc = _SYNC_ACTION_DESCRIPTIONS.get(
-            target_key, f"verify consistency with changed artifacts"
+        action_desc = _SYNC_ACTION_DESCRIPTIONS.get(target_key, "verify consistency with changed artifacts")
+        sync_actions.append(
+            {
+                "target": target_key,
+                "action": action_desc,
+            }
         )
-        sync_actions.append({
-            "target": target_key,
-            "action": action_desc,
-        })
 
     return {
         "changed_artifacts": sorted(changed_keys),
@@ -239,12 +245,7 @@ def generate_report(
     affected_keys: set[str],
     sync_plan: dict[str, Any] | None,
 ) -> dict[str, Any]:
-    ts = (
-        datetime.now(timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    ts = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     report: dict[str, Any] = {
         "audit_type": "sot_sync_guard",
         "timestamp_utc": ts,
@@ -277,8 +278,9 @@ def generate_markdown_report(
     lines.append("")
     lines.append(f"- **Overall**: {report['overall']}")
     lines.append(f"- **Timestamp**: {report['timestamp_utc']}")
-    lines.append(f"- **Findings**: {report['finding_count']} "
-                 f"(deny={report['deny_count']}, warn={report['warn_count']})")
+    lines.append(
+        f"- **Findings**: {report['finding_count']} (deny={report['deny_count']}, warn={report['warn_count']})"
+    )
     lines.append(f"- **Evidence Hash**: `{report['evidence_hash'][:16]}...`")
     lines.append("")
 
@@ -424,7 +426,7 @@ def parse_args() -> argparse.Namespace:
         "--changed",
         default=None,
         help="comma-separated list of changed file paths (relative to repo); "
-             "if omitted, detect via git diff --name-only HEAD~1",
+        "if omitted, detect via git diff --name-only HEAD~1",
     )
     parser.add_argument(
         "--json",
@@ -488,8 +490,7 @@ def main() -> int:
         print(f"SoT Sync Guard: {combined.overall}")
         print(f"  Changed:  {sorted(changed_keys) if changed_keys else '(none detected)'}")
         print(f"  Affected: {sorted(affected_keys) if affected_keys else '(none)'}")
-        print(f"  Findings: {len(combined.findings)} "
-              f"(deny={report['deny_count']}, warn={report['warn_count']})")
+        print(f"  Findings: {len(combined.findings)} (deny={report['deny_count']}, warn={report['warn_count']})")
         print(f"  Evidence Hash: {report['evidence_hash'][:16]}...")
         if combined.findings:
             print()

@@ -5,7 +5,7 @@ and SHA-256 hashes are well-formed.
 """
 
 import re
-from typing import Any, Dict, List
+from typing import Any
 
 from ._evidence import make_evidence, result
 
@@ -15,7 +15,7 @@ REQUIRED_FIELDS = {"timestamp", "agent_id", "operation", "file_affected", "sha25
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 
 
-def _validate_record(record: Dict[str, Any]) -> List[str]:
+def _validate_record(record: dict[str, Any]) -> list[str]:
     """Return list of violation messages for a single evidence record."""
     violations = []
     for field in REQUIRED_FIELDS:
@@ -33,7 +33,7 @@ def _validate_record(record: Dict[str, Any]) -> List[str]:
     return violations
 
 
-def execute(context: Dict) -> Dict:
+def execute(context: dict) -> dict:
     """Validate evidence records for completeness.
 
     context must contain:
@@ -49,7 +49,7 @@ def execute(context: Dict) -> Dict:
         return result("FAIL", ev, "evidence_records must be a list")
 
     total = len(records)
-    all_violations: List[Dict] = []
+    all_violations: list[dict] = []
 
     for idx, rec in enumerate(records):
         v = _validate_record(rec)

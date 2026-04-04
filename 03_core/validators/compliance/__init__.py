@@ -7,12 +7,12 @@ Provides runtime enforcers for:
 """
 
 from .gdpr_enforcer import (
+    LAWFUL_BASES,
+    REQUIRED_SUBJECT_RIGHTS,
     GDPREnforcementResult,
     GDPREnforcer,
     GDPRViolation,
     GDPRViolationType,
-    LAWFUL_BASES,
-    REQUIRED_SUBJECT_RIGHTS,
 )
 from .non_custodial_enforcer import (
     EnforcementResult,
@@ -21,11 +21,11 @@ from .non_custodial_enforcer import (
     ViolationType,
 )
 from .psd2_boundary_enforcer import (
+    VALID_UTILITY_PURPOSES,
     PSD2BoundaryEnforcer,
     PSD2EnforcementResult,
     PSD2Violation,
     PSD2ViolationType,
-    VALID_UTILITY_PURPOSES,
 )
 
 __all__ = [

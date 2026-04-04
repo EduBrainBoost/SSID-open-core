@@ -1,15 +1,15 @@
 """Tests for ems_reporter — fire-and-forget HTTP reporter."""
+
 import importlib.util
-import json
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from ssid_autorunner.ems_reporter import post_result, EMSReporterResult
+import contextlib
+
+from ssid_autorunner.ems_reporter import EMSReporterResult, post_result
 
 SSID_ROOT = Path(__file__).parent.parent.parent.parent
 
@@ -54,9 +54,8 @@ def test_ems_unavailable_does_not_raise():
 
 def test_timeout_does_not_raise():
     """Timeout → sent=False, no exception."""
-    import socket
 
-    with patch("urllib.request.urlopen", side_effect=socket.timeout("timed out")):
+    with patch("urllib.request.urlopen", side_effect=TimeoutError("timed out")):
         result = post_result(
             ems_url="http://localhost:8000",
             ar_id="AR-01",
@@ -103,20 +102,28 @@ def test_pii_scan_with_ems_url_calls_post_result(tmp_path):
     )
     mod = importlib.util.module_from_spec(spec)
 
-    with patch("sys.argv", [
-        "pii_regex_scan.py",
-        "--files", str(clean),
-        "--out", str(out),
-        "--ems-url", "http://localhost:8000",
-        "--run-id", "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "--commit-sha", "a" * 40,
-    ]):
-        with patch.object(sys.modules["ssid_autorunner.ems_reporter"], "post_result", side_effect=fake_post):
-            spec.loader.exec_module(mod)
-            try:
-                mod.main()
-            except SystemExit:
-                pass
+    with (
+        patch(
+            "sys.argv",
+            [
+                "pii_regex_scan.py",
+                "--files",
+                str(clean),
+                "--out",
+                str(out),
+                "--ems-url",
+                "http://localhost:8000",
+                "--run-id",
+                "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                "--commit-sha",
+                "a" * 40,
+            ],
+        ),
+        patch.object(sys.modules["ssid_autorunner.ems_reporter"], "post_result", side_effect=fake_post),
+    ):
+        spec.loader.exec_module(mod)
+        with contextlib.suppress(SystemExit):
+            mod.main()
 
     assert len(posted) == 1, "post_result must be called exactly once"
     assert posted[0]["ar_id"] == "AR-01"

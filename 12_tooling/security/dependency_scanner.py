@@ -14,6 +14,7 @@ Usage:
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import argparse
@@ -21,15 +22,15 @@ import json
 import sys
 import urllib.error
 import urllib.request
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-
 
 # ---------------------------------------------------------------------------
 # Data types
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class VulnerabilityFinding:
@@ -37,9 +38,9 @@ class VulnerabilityFinding:
 
     package_name: str
     package_version: str
-    ecosystem: str          # "pypi" | "npm"
-    vuln_id: str            # CVE or advisory ID
-    severity: str           # "critical" | "high" | "medium" | "low" | "unknown"
+    ecosystem: str  # "pypi" | "npm"
+    vuln_id: str  # CVE or advisory ID
+    severity: str  # "critical" | "high" | "medium" | "low" | "unknown"
     cvss_score: float | None
     summary: str
     advisory_url: str
@@ -66,6 +67,7 @@ class ScanReport:
 # PyPI advisory check
 # ---------------------------------------------------------------------------
 
+
 def _check_pypi_package(name: str, version: str, timeout: int = 10) -> list[VulnerabilityFinding]:
     """Query PyPI JSON API for vulnerability metadata.
 
@@ -85,7 +87,7 @@ def _check_pypi_package(name: str, version: str, timeout: int = 10) -> list[Vuln
             vuln_id = aliases[0] if aliases else v.get("id", "UNKNOWN")
             details: str = v.get("details", "") or v.get("summary", "No summary available")
             link: str = v.get("link", f"https://pypi.org/pypi/{name}")
-            fixed: list[str] = v.get("fixed_in", [])
+            v.get("fixed_in", [])
 
             # Attempt to extract a CVSS score from the summary text
             cvss: float | None = None
@@ -95,16 +97,18 @@ def _check_pypi_package(name: str, version: str, timeout: int = 10) -> list[Vuln
                     severity = "unknown"
                     break
 
-            findings.append(VulnerabilityFinding(
-                package_name=name,
-                package_version=version,
-                ecosystem="pypi",
-                vuln_id=vuln_id,
-                severity=severity,
-                cvss_score=cvss,
-                summary=details[:200],
-                advisory_url=link,
-            ))
+            findings.append(
+                VulnerabilityFinding(
+                    package_name=name,
+                    package_version=version,
+                    ecosystem="pypi",
+                    vuln_id=vuln_id,
+                    severity=severity,
+                    cvss_score=cvss,
+                    summary=details[:200],
+                    advisory_url=link,
+                )
+            )
 
     except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError):
         pass  # Network unavailable or package not found — skip silently
@@ -115,6 +119,7 @@ def _check_pypi_package(name: str, version: str, timeout: int = 10) -> list[Vuln
 # ---------------------------------------------------------------------------
 # npm advisory check
 # ---------------------------------------------------------------------------
+
 
 def _check_npm_packages(
     components: list[dict[str, str]],
@@ -131,16 +136,15 @@ def _check_npm_packages(
 
     # Build a minimal npm audit payload
     requires = {c["name"]: c["version"] for c in npm_components}
-    dependencies = {
-        c["name"]: {"version": c["version"]}
-        for c in npm_components
-    }
-    payload = json.dumps({
-        "name": "ssid-audit",
-        "version": "0.0.0",
-        "requires": requires,
-        "dependencies": dependencies,
-    }).encode("utf-8")
+    dependencies = {c["name"]: {"version": c["version"]} for c in npm_components}
+    payload = json.dumps(
+        {
+            "name": "ssid-audit",
+            "version": "0.0.0",
+            "requires": requires,
+            "dependencies": dependencies,
+        }
+    ).encode("utf-8")
 
     findings: list[VulnerabilityFinding] = []
     errors: list[str] = []
@@ -161,16 +165,20 @@ def _check_npm_packages(
         advisories: dict = data.get("advisories", {})
         for adv_id, adv in advisories.items():
             name = adv.get("module_name", "unknown")
-            findings.append(VulnerabilityFinding(
-                package_name=name,
-                package_version=adv.get("findings", [{}])[0].get("version", "unknown") if adv.get("findings") else "unknown",
-                ecosystem="npm",
-                vuln_id=adv.get("cves", [adv_id])[0] if adv.get("cves") else str(adv_id),
-                severity=adv.get("severity", "unknown"),
-                cvss_score=adv.get("cvss", {}).get("score"),
-                summary=(adv.get("overview", "") or "")[:200],
-                advisory_url=adv.get("url", f"https://www.npmjs.com/advisories/{adv_id}"),
-            ))
+            findings.append(
+                VulnerabilityFinding(
+                    package_name=name,
+                    package_version=adv.get("findings", [{}])[0].get("version", "unknown")
+                    if adv.get("findings")
+                    else "unknown",
+                    ecosystem="npm",
+                    vuln_id=adv.get("cves", [adv_id])[0] if adv.get("cves") else str(adv_id),
+                    severity=adv.get("severity", "unknown"),
+                    cvss_score=adv.get("cvss", {}).get("score"),
+                    summary=(adv.get("overview", "") or "")[:200],
+                    advisory_url=adv.get("url", f"https://www.npmjs.com/advisories/{adv_id}"),
+                )
+            )
 
     except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError) as exc:
         errors.append(f"npm audit unavailable: {exc}")
@@ -181,6 +189,7 @@ def _check_npm_packages(
 # ---------------------------------------------------------------------------
 # Severity classification
 # ---------------------------------------------------------------------------
+
 
 def _classify_severity(cvss: float | None, raw: str) -> str:
     """Map CVSS score or raw severity string to canonical severity."""
@@ -201,6 +210,7 @@ def _classify_severity(cvss: float | None, raw: str) -> str:
 # ---------------------------------------------------------------------------
 # Main scanner
 # ---------------------------------------------------------------------------
+
 
 def scan_components(
     components: list[dict[str, str]],
@@ -230,7 +240,8 @@ def scan_components(
 
         npm_components = [
             {"name": c["name"], "version": c["version"], "ecosystem": "npm"}
-            for c in components if c.get("purl", "").startswith("pkg:npm/")
+            for c in components
+            if c.get("purl", "").startswith("pkg:npm/")
         ]
         npm_findings, npm_errors = _check_npm_packages(npm_components, timeout=timeout + 5)
         findings.extend(npm_findings)
@@ -245,7 +256,7 @@ def scan_components(
         counts[f.severity] = counts.get(f.severity, 0) + 1
 
     return ScanReport(
-        scanned_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        scanned_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         total_packages=len(components),
         total_vulnerabilities=len(findings),
         critical=counts["critical"],
@@ -279,19 +290,19 @@ def scan_sbom_file(sbom_path: Path, online: bool = True, timeout: int = 10) -> S
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def main(argv: list[str] | None = None) -> int:
     """Entry point."""
     parser = argparse.ArgumentParser(description="SSID Dependency Vulnerability Scanner")
-    parser.add_argument("--sbom", type=Path, default=None,
-                        help="CycloneDX SBOM JSON file to scan (default: scan pip freeze)")
-    parser.add_argument("--output", "-o", type=Path, default=None,
-                        help="Write JSON report to this path")
-    parser.add_argument("--offline", action="store_true",
-                        help="Skip all network calls (offline mode)")
-    parser.add_argument("--timeout", type=int, default=10,
-                        help="HTTP request timeout in seconds (default: 10)")
-    parser.add_argument("--fail-on-critical", action="store_true",
-                        help="Exit non-zero if critical vulnerabilities are found")
+    parser.add_argument(
+        "--sbom", type=Path, default=None, help="CycloneDX SBOM JSON file to scan (default: scan pip freeze)"
+    )
+    parser.add_argument("--output", "-o", type=Path, default=None, help="Write JSON report to this path")
+    parser.add_argument("--offline", action="store_true", help="Skip all network calls (offline mode)")
+    parser.add_argument("--timeout", type=int, default=10, help="HTTP request timeout in seconds (default: 10)")
+    parser.add_argument(
+        "--fail-on-critical", action="store_true", help="Exit non-zero if critical vulnerabilities are found"
+    )
     args = parser.parse_args(argv)
 
     if args.sbom:
@@ -300,19 +311,25 @@ def main(argv: list[str] | None = None) -> int:
         # Quick scan of runtime environment via pip freeze
         import re as _re
         import subprocess as _sp
+
         result = _sp.run(
             [sys.executable, "-m", "pip", "freeze", "--local"],
-            capture_output=True, text=True, check=False,
+            capture_output=True,
+            text=True,
+            check=False,
         )
         components = []
         for line in result.stdout.splitlines():
             m = _re.match(r"^([A-Za-z0-9_.-]+)==([^\s;#]+)", line.strip())
             if m:
                 name, ver = m.group(1).lower(), m.group(2)
-                components.append({
-                    "name": name, "version": ver,
-                    "purl": f"pkg:pypi/{name}@{ver}",
-                })
+                components.append(
+                    {
+                        "name": name,
+                        "version": ver,
+                        "purl": f"pkg:pypi/{name}@{ver}",
+                    }
+                )
         report = scan_components(components, online=not args.offline, timeout=args.timeout)
 
     report_dict = asdict(report)

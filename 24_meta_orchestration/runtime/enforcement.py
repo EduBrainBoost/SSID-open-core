@@ -1,15 +1,13 @@
 """
 SSIDCTL v2 Lock / Path / Policy Enforcement.
 """
+
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
 
 from .loader import AgentDef
-
 
 CANONICAL_MARKERS = ("Documents\\Github", "Documents/Github")
 
@@ -17,7 +15,7 @@ CANONICAL_MARKERS = ("Documents\\Github", "Documents/Github")
 @dataclass
 class EnforcementResult:
     passed: bool
-    violations: List[str]
+    violations: list[str]
 
 
 def check_canonical_write(agent: AgentDef) -> EnforcementResult:
@@ -37,15 +35,11 @@ def check_forbidden_paths(agent: AgentDef, target_path: str) -> EnforcementResul
     for fp in agent.forbidden_paths:
         fp_norm = fp.replace("\\", "/").rstrip("/*")
         if fp_norm and fp_norm in norm:
-            violations.append(
-                f"{agent.agent_id}: path '{target_path}' matches forbidden '{fp}'"
-            )
+            violations.append(f"{agent.agent_id}: path '{target_path}' matches forbidden '{fp}'")
     # Always block canonical zone
     for marker in CANONICAL_MARKERS:
         if marker.replace("\\", "/") in norm:
-            violations.append(
-                f"{agent.agent_id}: path '{target_path}' is in canonical zone"
-            )
+            violations.append(f"{agent.agent_id}: path '{target_path}' is in canonical zone")
     if violations:
         return EnforcementResult(passed=False, violations=violations)
     return EnforcementResult(passed=True, violations=[])
@@ -73,13 +67,30 @@ def check_allowed_paths(agent: AgentDef, target_path: str) -> EnforcementResult:
 def check_root24_lock(repo_root: Path) -> EnforcementResult:
     """Verify ROOT-24-LOCK: exactly 24 canonical roots exist."""
     expected = {
-        "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-        "05_documentation", "06_data_pipeline", "07_governance_legal",
-        "08_identity_score", "09_meta_identity", "10_interoperability",
-        "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
-        "15_infra", "16_codex", "17_observability", "18_data_layer",
-        "19_adapters", "20_foundation", "21_post_quantum_crypto",
-        "22_datasets", "23_compliance", "24_meta_orchestration",
+        "01_ai_layer",
+        "02_audit_logging",
+        "03_core",
+        "04_deployment",
+        "05_documentation",
+        "06_data_pipeline",
+        "07_governance_legal",
+        "08_identity_score",
+        "09_meta_identity",
+        "10_interoperability",
+        "11_test_simulation",
+        "12_tooling",
+        "13_ui_layer",
+        "14_zero_time_auth",
+        "15_infra",
+        "16_codex",
+        "17_observability",
+        "18_data_layer",
+        "19_adapters",
+        "20_foundation",
+        "21_post_quantum_crypto",
+        "22_datasets",
+        "23_compliance",
+        "24_meta_orchestration",
     }
     actual = set()
     violations = []
@@ -97,7 +108,7 @@ def check_root24_lock(repo_root: Path) -> EnforcementResult:
     return EnforcementResult(passed=not violations, violations=violations)
 
 
-def enforce_all_agents(agents: List[AgentDef]) -> EnforcementResult:
+def enforce_all_agents(agents: list[AgentDef]) -> EnforcementResult:
     """Run baseline enforcement checks across all resolved agents."""
     all_violations = []
     for agent in agents:
@@ -113,7 +124,7 @@ def enforce_all_agents(agents: List[AgentDef]) -> EnforcementResult:
 class LockState:
     locked: bool = False
     lock_holder: str = ""
-    lock_path: Optional[Path] = None
+    lock_path: Path | None = None
 
 
 def acquire_lock(lock_dir: Path, agent_id: str) -> LockState:

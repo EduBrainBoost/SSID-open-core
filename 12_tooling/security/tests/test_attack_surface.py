@@ -13,6 +13,7 @@ Covers:
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import json
@@ -27,18 +28,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from security.attack_surface_mapper import (
     AttackSurfaceMapper,
     AttackSurfaceReport,
-    EndpointEntry,
-    PortEntry,
-    DependencyEntry,
+    _dep_risk,
     _endpoint_risk,
     _port_risk,
-    _dep_risk,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _py(path: Path, content: str) -> Path:
     path.write_text(content, encoding="utf-8")
@@ -54,6 +52,7 @@ def _json(path: Path, data: dict) -> Path:
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def mapper() -> AttackSurfaceMapper:
     return AttackSurfaceMapper()
@@ -64,19 +63,22 @@ def fastapi_root(tmp_path: Path) -> Path:
     """A root directory with FastAPI endpoint definitions."""
     root = tmp_path / "03_core"
     root.mkdir()
-    _py(root / "api.py", (
-        'from fastapi import FastAPI\n'
-        'app = FastAPI()\n'
-        '\n'
-        '@app.get("/health")\n'
-        'def health(): pass\n'
-        '\n'
-        '@app.post("/auth/token")\n'
-        'def token(): pass\n'
-        '\n'
-        '@app.delete("/admin/user")\n'
-        'def delete_user(): pass\n'
-    ))
+    _py(
+        root / "api.py",
+        (
+            "from fastapi import FastAPI\n"
+            "app = FastAPI()\n"
+            "\n"
+            '@app.get("/health")\n'
+            "def health(): pass\n"
+            "\n"
+            '@app.post("/auth/token")\n'
+            "def token(): pass\n"
+            "\n"
+            '@app.delete("/admin/user")\n'
+            "def delete_user(): pass\n"
+        ),
+    )
     return root
 
 
@@ -85,13 +87,16 @@ def grpc_root(tmp_path: Path) -> Path:
     """A root directory with a gRPC .proto file."""
     root = tmp_path / "10_interoperability"
     root.mkdir()
-    _py(root / "identity.proto", (
-        'syntax = "proto3";\n'
-        'service IdentityService {\n'
-        '  rpc ResolveIdentity (IdentityRequest) returns (IdentityResponse);\n'
-        '  rpc VerifyCredential (CredentialRequest) returns (VerificationResult);\n'
-        '}\n'
-    ))
+    _py(
+        root / "identity.proto",
+        (
+            'syntax = "proto3";\n'
+            "service IdentityService {\n"
+            "  rpc ResolveIdentity (IdentityRequest) returns (IdentityResponse);\n"
+            "  rpc VerifyCredential (CredentialRequest) returns (VerificationResult);\n"
+            "}\n"
+        ),
+    )
     return root
 
 
@@ -101,27 +106,29 @@ def deps_root(tmp_path: Path) -> Path:
     root = tmp_path / "18_data_layer"
     root.mkdir()
     (root / "requirements.txt").write_text(
-        "cryptography==41.0.5\n"
-        "requests==2.31.0\n"
-        "boto3==1.34.0\n",
+        "cryptography==41.0.5\nrequests==2.31.0\nboto3==1.34.0\n",
         encoding="utf-8",
     )
-    _json(root / "package.json", {
-        "name": "ssid-ui",
-        "dependencies": {
-            "axios": "^1.6.0",
-            "react": "^18.2.0",
+    _json(
+        root / "package.json",
+        {
+            "name": "ssid-ui",
+            "dependencies": {
+                "axios": "^1.6.0",
+                "react": "^18.2.0",
+            },
+            "devDependencies": {
+                "typescript": "^5.0.0",
+            },
         },
-        "devDependencies": {
-            "typescript": "^5.0.0",
-        },
-    })
+    )
     return root
 
 
 # ===========================================================================
 # Tests — Risk classification helpers
 # ===========================================================================
+
 
 class TestRiskHelpers:
     def test_endpoint_risk_auth_path_is_critical(self) -> None:
@@ -171,39 +178,30 @@ class TestRiskHelpers:
 # Tests — map_endpoints()
 # ===========================================================================
 
+
 class TestMapEndpoints:
-    def test_fastapi_routes_detected(
-        self, mapper: AttackSurfaceMapper, fastapi_root: Path
-    ) -> None:
+    def test_fastapi_routes_detected(self, mapper: AttackSurfaceMapper, fastapi_root: Path) -> None:
         entries = mapper.map_endpoints(fastapi_root)
         paths = [e.path for e in entries]
         assert any("/health" in p for p in paths)
         assert any("/auth/token" in p for p in paths)
 
-    def test_admin_endpoint_risk_is_critical(
-        self, mapper: AttackSurfaceMapper, fastapi_root: Path
-    ) -> None:
+    def test_admin_endpoint_risk_is_critical(self, mapper: AttackSurfaceMapper, fastapi_root: Path) -> None:
         mapper.map_endpoints(fastapi_root)
         critical = [e for e in mapper._endpoints if e.risk_level == "critical"]
         assert len(critical) >= 1
 
-    def test_grpc_rpc_methods_detected(
-        self, mapper: AttackSurfaceMapper, grpc_root: Path
-    ) -> None:
+    def test_grpc_rpc_methods_detected(self, mapper: AttackSurfaceMapper, grpc_root: Path) -> None:
         entries = mapper.map_endpoints(grpc_root)
         methods = [e.method for e in entries]
         assert "rpc" in methods
 
-    def test_nonexistent_dir_returns_empty(
-        self, mapper: AttackSurfaceMapper, tmp_path: Path
-    ) -> None:
+    def test_nonexistent_dir_returns_empty(self, mapper: AttackSurfaceMapper, tmp_path: Path) -> None:
         result = mapper.map_endpoints(tmp_path / "nonexistent")
         assert result == []
         assert len(mapper._errors) >= 1
 
-    def test_binary_files_are_skipped(
-        self, mapper: AttackSurfaceMapper, tmp_path: Path
-    ) -> None:
+    def test_binary_files_are_skipped(self, mapper: AttackSurfaceMapper, tmp_path: Path) -> None:
         root = tmp_path / "root"
         root.mkdir()
         (root / "compiled.pyc").write_bytes(b'@app.get("/secret")')
@@ -215,47 +213,36 @@ class TestMapEndpoints:
 # Tests — map_dependencies()
 # ===========================================================================
 
+
 class TestMapDependencies:
-    def test_python_deps_detected(
-        self, mapper: AttackSurfaceMapper, deps_root: Path
-    ) -> None:
+    def test_python_deps_detected(self, mapper: AttackSurfaceMapper, deps_root: Path) -> None:
         entries = mapper.map_dependencies(deps_root)
         names = [e.name for e in entries]
         assert "cryptography" in names
         assert "requests" in names
 
-    def test_npm_deps_detected(
-        self, mapper: AttackSurfaceMapper, deps_root: Path
-    ) -> None:
+    def test_npm_deps_detected(self, mapper: AttackSurfaceMapper, deps_root: Path) -> None:
         entries = mapper.map_dependencies(deps_root)
         names = [e.name for e in entries]
         assert "axios" in names
 
-    def test_dep_ecosystems_correct(
-        self, mapper: AttackSurfaceMapper, deps_root: Path
-    ) -> None:
+    def test_dep_ecosystems_correct(self, mapper: AttackSurfaceMapper, deps_root: Path) -> None:
         mapper.map_dependencies(deps_root)
-        py_deps  = [e for e in mapper._dependencies if e.ecosystem == "pypi"]
+        py_deps = [e for e in mapper._dependencies if e.ecosystem == "pypi"]
         npm_deps = [e for e in mapper._dependencies if e.ecosystem == "npm"]
         assert len(py_deps) >= 1
         assert len(npm_deps) >= 1
 
-    def test_high_risk_crypto_dep_flagged(
-        self, mapper: AttackSurfaceMapper, deps_root: Path
-    ) -> None:
+    def test_high_risk_crypto_dep_flagged(self, mapper: AttackSurfaceMapper, deps_root: Path) -> None:
         mapper.map_dependencies(deps_root)
         crypto = [e for e in mapper._dependencies if e.name == "cryptography"]
         assert len(crypto) >= 1
         assert crypto[0].risk_level == "high"
 
-    def test_no_duplicate_deps(
-        self, mapper: AttackSurfaceMapper, tmp_path: Path
-    ) -> None:
+    def test_no_duplicate_deps(self, mapper: AttackSurfaceMapper, tmp_path: Path) -> None:
         root = tmp_path / "root"
         root.mkdir()
-        (root / "requirements.txt").write_text(
-            "flask==3.0.0\nflask==3.0.0\n", encoding="utf-8"
-        )
+        (root / "requirements.txt").write_text("flask==3.0.0\nflask==3.0.0\n", encoding="utf-8")
         mapper.map_dependencies(root)
         flask = [e for e in mapper._dependencies if e.name == "flask"]
         assert len(flask) == 1
@@ -265,10 +252,9 @@ class TestMapDependencies:
 # Tests — generate_report()
 # ===========================================================================
 
+
 class TestGenerateReport:
-    def test_report_type(
-        self, mapper: AttackSurfaceMapper, fastapi_root: Path
-    ) -> None:
+    def test_report_type(self, mapper: AttackSurfaceMapper, fastapi_root: Path) -> None:
         mapper.map_endpoints(fastapi_root)
         report = mapper.generate_report()
         assert isinstance(report, AttackSurfaceReport)
@@ -282,17 +268,13 @@ class TestGenerateReport:
         assert report.total_endpoints == len(mapper._endpoints)
         assert report.total_dependencies == len(mapper._dependencies)
 
-    def test_report_critical_count(
-        self, mapper: AttackSurfaceMapper, fastapi_root: Path
-    ) -> None:
+    def test_report_critical_count(self, mapper: AttackSurfaceMapper, fastapi_root: Path) -> None:
         mapper.map_endpoints(fastapi_root)
         report = mapper.generate_report()
         # /admin and /auth/token endpoints should produce critical findings
         assert report.critical_count >= 1
 
-    def test_report_to_dict_serialisable(
-        self, mapper: AttackSurfaceMapper, fastapi_root: Path
-    ) -> None:
+    def test_report_to_dict_serialisable(self, mapper: AttackSurfaceMapper, fastapi_root: Path) -> None:
         mapper.map_endpoints(fastapi_root)
         report = mapper.generate_report()
         d = report.to_dict()
@@ -301,9 +283,7 @@ class TestGenerateReport:
         serialised = json.dumps(d)
         assert "generated_at" in serialised
 
-    def test_reset_clears_all_state(
-        self, mapper: AttackSurfaceMapper, fastapi_root: Path
-    ) -> None:
+    def test_reset_clears_all_state(self, mapper: AttackSurfaceMapper, fastapi_root: Path) -> None:
         mapper.map_endpoints(fastapi_root)
         assert len(mapper._endpoints) >= 1
         mapper.reset()

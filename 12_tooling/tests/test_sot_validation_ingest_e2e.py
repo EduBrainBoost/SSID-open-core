@@ -7,18 +7,37 @@ Tests cover the full chain:
 All external dependencies (HTTP, filesystem, subprocess) are mocked.
 No scores -- PASS/FAIL + findings only.
 """
+
 from __future__ import annotations
 
-import copy
 import hashlib
 import json
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, patch, mock_open
+from typing import Any
+from unittest.mock import MagicMock, patch
 
 import pytest
+from cli.ems_publish_findings import (
+    _build_payload,
+    _post_event,
+    _sha256,
+    _validate_report,
+)
+from cli.ems_publish_findings import (
+    main as ems_publish_main,
+)
+from cli.report_aggregator import (
+    build_json_report as agg_build_json_report,
+)
+from cli.report_aggregator import (
+    compute_evidence_sha256,
+    compute_stats,
+    decide_status,
+    load_findings,
+    write_audit_event,
+)
 
 # ---------------------------------------------------------------------------
 # Import pipeline internals under test
@@ -27,43 +46,22 @@ from cli.run_sot_convergence import (
     EXIT_DENY,
     EXIT_SUCCESS,
     EXIT_WARN,
-    EXIT_SYSTEM_ERROR,
     _collect,
     _decide,
-    _eval_convergence,
-    _eval_derivation,
     _json_report,
     _max_sev,
-    _normalize,
     _run_identity,
-    _sha256_str,
     _step_policy,
 )
-from cli.report_aggregator import (
-    build_json_report as agg_build_json_report,
-    compute_evidence_sha256,
-    compute_stats,
-    decide_status,
-    load_findings,
-    write_audit_event,
-    REQUIRED_KEYS,
-)
-from cli.ems_publish_findings import (
-    _build_payload,
-    _validate_report,
-    _validate_event_payload,
-    _post_event,
-    _sha256,
-    main as ems_publish_main,
-)
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _clean_scan(status: str = "PASS", drift: List[Dict[str, Any]] | None = None,
-                missing: List[str] | None = None) -> Dict[str, Any]:
+
+def _clean_scan(
+    status: str = "PASS", drift: list[dict[str, Any]] | None = None, missing: list[str] | None = None
+) -> dict[str, Any]:
     """Build a minimal scanner result dict."""
     return {
         "status": status,
@@ -74,8 +72,7 @@ def _clean_scan(status: str = "PASS", drift: List[Dict[str, Any]] | None = None,
     }
 
 
-def _clean_sync(status: str = "pass",
-                findings: List[Dict[str, Any]] | None = None) -> Dict[str, Any]:
+def _clean_sync(status: str = "pass", findings: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     """Build a minimal opencore-sync result dict."""
     return {
         "status": status,
@@ -84,27 +81,36 @@ def _clean_sync(status: str = "pass",
     }
 
 
-def _make_finding(finding_id: str, cls: str = "content_drift",
-                  severity: str = "warn", source: str = "scanner",
-                  path: str = "03_core/README.md",
-                  details: str = "test finding",
-                  repo: str = "SSID") -> Dict[str, Any]:
+def _make_finding(
+    finding_id: str,
+    cls: str = "content_drift",
+    severity: str = "warn",
+    source: str = "scanner",
+    path: str = "03_core/README.md",
+    details: str = "test finding",
+    repo: str = "SSID",
+) -> dict[str, Any]:
     """Build a single normalized finding with all required keys."""
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    raw = {"id": finding_id, "class": cls, "severity": severity,
-           "source": source, "path": path, "details": details,
-           "timestamp": ts, "repo": repo}
-    raw["evidence_hash"] = hashlib.sha256(
-        json.dumps(raw, sort_keys=True).encode("utf-8")
-    ).hexdigest()
+    ts = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    raw = {
+        "id": finding_id,
+        "class": cls,
+        "severity": severity,
+        "source": source,
+        "path": path,
+        "details": details,
+        "timestamp": ts,
+        "repo": repo,
+    }
+    raw["evidence_hash"] = hashlib.sha256(json.dumps(raw, sort_keys=True).encode("utf-8")).hexdigest()
     return raw
 
 
-def _make_convergence_report(findings: List[Dict[str, Any]],
-                             decision: str = "pass",
-                             exit_code: int = EXIT_SUCCESS) -> Dict[str, Any]:
+def _make_convergence_report(
+    findings: list[dict[str, Any]], decision: str = "pass", exit_code: int = EXIT_SUCCESS
+) -> dict[str, Any]:
     """Build a minimal convergence report matching _json_report output."""
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    ts = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     rid = {
         "run_id": "test-run-001",
         "timestamp_utc": ts,
@@ -122,8 +128,7 @@ def _make_convergence_report(findings: List[Dict[str, Any]],
         "generated_at_utc": ts,
         "pipeline_steps": ["scan", "manifest", "opencore_sync", "policy_check", "report"],
         "exit_code": exit_code,
-        "exit_label": {EXIT_SUCCESS: "success", EXIT_WARN: "warn",
-                       EXIT_DENY: "deny"}.get(exit_code, "unknown"),
+        "exit_label": {EXIT_SUCCESS: "success", EXIT_WARN: "warn", EXIT_DENY: "deny"}.get(exit_code, "unknown"),
         "decision": decision,
         "summary": {
             "total_findings": len(findings),
@@ -135,19 +140,22 @@ def _make_convergence_report(findings: List[Dict[str, Any]],
     }
 
 
-def _valid_ems_event_payload(run_id: str = "20260310T120000Z",
-                             status: str = "pass") -> Dict[str, Any]:
+def _valid_ems_event_payload(run_id: str = "20260310T120000Z", status: str = "pass") -> dict[str, Any]:
     """Build a fully schema-conformant EMS sot_validation event payload."""
     return {
         "event_type": "sot_validation",
-        "ts": datetime.now(timezone.utc).isoformat(),
+        "ts": datetime.now(UTC).isoformat(),
         "run_id": run_id,
         "source": "run_sot_convergence",
         "repo": "SSID",
         "severity": "info",
         "status": status,
         "summary": {
-            "total": 0, "deny": 0, "warn": 0, "info": 0, "decision": "pass",
+            "total": 0,
+            "deny": 0,
+            "warn": 0,
+            "info": 0,
+            "decision": "pass",
         },
         "findings": [],
         "artifacts": ["sot_convergence_report.json"],
@@ -168,15 +176,14 @@ def tmp_repos(tmp_path: Path):
     derivative.mkdir()
     contract = canonical / "16_codex" / "contracts" / "sot"
     contract.mkdir(parents=True)
-    (contract / "sot_contract.yaml").write_text(
-        "version: '4.1.0'\nrules: []\n", encoding="utf-8"
-    )
+    (contract / "sot_contract.yaml").write_text("version: '4.1.0'\nrules: []\n", encoding="utf-8")
     return canonical, derivative
 
 
 # ===================================================================
 # 1. test_convergence_to_ingest_chain
 # ===================================================================
+
 
 @patch("cli.run_sot_convergence._git_head", return_value="abc123")
 def test_convergence_to_ingest_chain(_mock_git, tmp_repos):
@@ -195,8 +202,7 @@ def test_convergence_to_ingest_chain(_mock_git, tmp_repos):
     findings = _collect(scan, sync, policy)
     decision, exit_code = _decide(findings)
 
-    rid = _run_identity(canonical, derivative, findings, decision,
-                        json.dumps(findings, sort_keys=True))
+    rid = _run_identity(canonical, derivative, findings, decision, json.dumps(findings, sort_keys=True))
     report = _json_report(scan, "{}", sync, findings, decision, exit_code, rid)
 
     # Step 2: Validate the report is acceptable to ems_publish_findings
@@ -205,8 +211,7 @@ def test_convergence_to_ingest_chain(_mock_git, tmp_repos):
 
     # Step 3: Build the EMS event payload
     report_raw = json.dumps(report, sort_keys=True).encode("utf-8")
-    payload = _build_payload(report, report_raw, "abc123", _sha256(report_raw),
-                             run_identity=rid)
+    payload = _build_payload(report, report_raw, "abc123", _sha256(report_raw), run_identity=rid)
 
     # Step 4: Verify payload has all EMS-expected fields
     assert payload["event_type"] == "sot_validation"
@@ -237,8 +242,7 @@ def test_convergence_to_ingest_chain(_mock_git, tmp_repos):
     mock_resp.__enter__ = MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = MagicMock(return_value=False)
 
-    with patch("cli.ems_publish_findings.urllib.request.urlopen",
-               return_value=mock_resp) as mock_urlopen:
+    with patch("cli.ems_publish_findings.urllib.request.urlopen", return_value=mock_resp) as mock_urlopen:
         result = _post_event("http://localhost:8000/events/sot_validation", payload)
         assert result is True, "POST should succeed with 201 response"
         mock_urlopen.assert_called_once()
@@ -247,6 +251,7 @@ def test_convergence_to_ingest_chain(_mock_git, tmp_repos):
 # ===================================================================
 # 2. test_schema_validation_rejects_invalid
 # ===================================================================
+
 
 def test_schema_validation_rejects_invalid():
     """Produce invalid payload (missing required fields) -> schema validation
@@ -260,27 +265,30 @@ def test_schema_validation_rejects_invalid():
 
     report_errs = _validate_report(invalid_report)
     assert len(report_errs) > 0, "Validation must reject report missing 'findings'"
-    assert any("findings" in e.lower() for e in report_errs), \
-        "Error must reference missing 'findings' field"
+    assert any("findings" in e.lower() for e in report_errs), "Error must reference missing 'findings' field"
 
     # Test via CLI main() with a malformed report file
     with tempfile.TemporaryDirectory() as tmpdir:
         report_path = Path(tmpdir) / "bad_report.json"
         report_path.write_text(json.dumps(invalid_report), encoding="utf-8")
 
-        exit_code = ems_publish_main([
-            "--report", str(report_path),
-            "--commit-id", "abc123",
-            "--dry-run",
-        ])
+        exit_code = ems_publish_main(
+            [
+                "--report",
+                str(report_path),
+                "--commit-id",
+                "abc123",
+                "--dry-run",
+            ]
+        )
         # main() returns 1 for report validation failure
-        assert exit_code == 1, \
-            f"Expected exit code 1 for invalid report, got {exit_code}"
+        assert exit_code == 1, f"Expected exit code 1 for invalid report, got {exit_code}"
 
 
 # ===================================================================
 # 3. test_duplicate_run_id_handling
 # ===================================================================
+
 
 def test_duplicate_run_id_handling():
     """POST same run_id twice -> second gets 409 -> publisher handles gracefully.
@@ -298,13 +306,13 @@ def test_duplicate_run_id_handling():
     mock_resp_201.__enter__ = MagicMock(return_value=mock_resp_201)
     mock_resp_201.__exit__ = MagicMock(return_value=False)
 
-    with patch("cli.ems_publish_findings.urllib.request.urlopen",
-               return_value=mock_resp_201):
+    with patch("cli.ems_publish_findings.urllib.request.urlopen", return_value=mock_resp_201):
         result_first = _post_event("http://localhost:8000/events/sot_validation", payload)
         assert result_first is True, "First POST should succeed"
 
     # Second POST: 409 Conflict via HTTPError
     import urllib.error
+
     http_409 = urllib.error.HTTPError(
         url="http://localhost:8000/events/sot_validation",
         code=409,
@@ -313,20 +321,19 @@ def test_duplicate_run_id_handling():
         fp=None,
     )
 
-    with patch("cli.ems_publish_findings.urllib.request.urlopen",
-               side_effect=http_409):
-        with patch("cli.ems_publish_findings.time.sleep"):  # skip retry waits
-            result_second = _post_event(
-                "http://localhost:8000/events/sot_validation", payload, retries=1
-            )
-            # _post_event returns False on HTTP errors but does not raise
-            assert result_second is False, \
-                "Second POST with 409 should return False (graceful handling)"
+    with (
+        patch("cli.ems_publish_findings.urllib.request.urlopen", side_effect=http_409),
+        patch("cli.ems_publish_findings.time.sleep"),
+    ):  # skip retry waits
+        result_second = _post_event("http://localhost:8000/events/sot_validation", payload, retries=1)
+        # _post_event returns False on HTTP errors but does not raise
+        assert result_second is False, "Second POST with 409 should return False (graceful handling)"
 
 
 # ===================================================================
 # 4. test_read_api_returns_stored_event
 # ===================================================================
+
 
 def test_read_api_returns_stored_event():
     """Mock GET /api/admin/sot-validations/{run_id} -> verify response structure
@@ -352,7 +359,7 @@ def test_read_api_returns_stored_event():
         "summary": payload["summary"],
         "report_sha256": payload["report_sha256"],
         "findings_preview": payload["findings_preview"],
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
     }
 
     # Mock GET response
@@ -362,8 +369,9 @@ def test_read_api_returns_stored_event():
     mock_resp.__enter__ = MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = MagicMock(return_value=False)
 
-    with patch("urllib.request.urlopen", return_value=mock_resp) as mock_get:
+    with patch("urllib.request.urlopen", return_value=mock_resp):
         import urllib.request
+
         req = urllib.request.Request(
             f"http://localhost:8000/api/admin/sot-validations/{run_id}",
             method="GET",
@@ -385,6 +393,7 @@ def test_read_api_returns_stored_event():
 # 5. test_audit_log_entry_created
 # ===================================================================
 
+
 def test_audit_log_entry_created():
     """After successful ingest -> verify audit_log.jsonl has entry with hash chain.
 
@@ -397,20 +406,26 @@ def test_audit_log_entry_created():
 
         # Create findings with evidence hashes
         findings = [
-            _make_finding("SCN-0001", cls="content_drift", severity="warn",
-                          path="03_core/README.md", details="content changed"),
-            _make_finding("SCN-0002", cls="content_drift", severity="info",
-                          path="12_tooling/module.yaml", details="minor update"),
+            _make_finding(
+                "SCN-0001", cls="content_drift", severity="warn", path="03_core/README.md", details="content changed"
+            ),
+            _make_finding(
+                "SCN-0002", cls="content_drift", severity="info", path="12_tooling/module.yaml", details="minor update"
+            ),
         ]
 
         stats = compute_stats(findings)
         status = decide_status(stats)
-        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        ts = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         evidence_sha = compute_evidence_sha256(findings)
 
         # Build report and compute its hash
         report_payload = agg_build_json_report(
-            "RUN_TEST_001", findings, stats, status, ts,
+            "RUN_TEST_001",
+            findings,
+            stats,
+            status,
+            ts,
             evidence_sha256=evidence_sha,
         )
         report_bytes = json.dumps(report_payload, indent=2).encode("utf-8")
@@ -418,8 +433,13 @@ def test_audit_log_entry_created():
 
         # Write audit event
         audit_path = write_audit_event(
-            output_dir, "RUN_TEST_001", ts, status, stats,
-            report_hash, evidence_sha,
+            output_dir,
+            "RUN_TEST_001",
+            ts,
+            status,
+            stats,
+            report_hash,
+            evidence_sha,
         )
 
         # Verify audit file exists and has correct structure
@@ -433,8 +453,9 @@ def test_audit_log_entry_created():
 
         # Verify hash chain: evidence_sha256 is derived from finding hashes
         recomputed_evidence = compute_evidence_sha256(findings)
-        assert audit_data["evidence_sha256"] == recomputed_evidence, \
+        assert audit_data["evidence_sha256"] == recomputed_evidence, (
             "Evidence hash in audit must match recomputed hash from findings"
+        )
 
         # Verify summary counters match
         assert audit_data["findings_summary"]["total"] == len(findings)
@@ -446,6 +467,7 @@ def test_audit_log_entry_created():
 # ===================================================================
 # 6. test_full_pipeline_report_aggregation
 # ===================================================================
+
 
 def test_full_pipeline_report_aggregation():
     """Multiple findings files -> aggregator merges -> validates against schema
@@ -463,39 +485,53 @@ def test_full_pipeline_report_aggregation():
 
         # Create multiple findings files
         scanner_findings = [
-            _make_finding("SCN-0001", cls="content_drift", severity="warn",
-                          source="scanner", path="03_core/README.md",
-                          details="hash mismatch"),
-            _make_finding("SCN-0002", cls="content_drift", severity="info",
-                          source="scanner", path="12_tooling/config.yaml",
-                          details="minor update"),
+            _make_finding(
+                "SCN-0001",
+                cls="content_drift",
+                severity="warn",
+                source="scanner",
+                path="03_core/README.md",
+                details="hash mismatch",
+            ),
+            _make_finding(
+                "SCN-0002",
+                cls="content_drift",
+                severity="info",
+                source="scanner",
+                path="12_tooling/config.yaml",
+                details="minor update",
+            ),
         ]
-        (input_dir / "scanner.findings.json").write_text(
-            json.dumps(scanner_findings, indent=2), encoding="utf-8"
-        )
+        (input_dir / "scanner.findings.json").write_text(json.dumps(scanner_findings, indent=2), encoding="utf-8")
 
         sync_findings = [
-            _make_finding("SYNC-0001", cls="content_drift", severity="deny",
-                          source="opencore_sync", path="docs/overview.md",
-                          details="forbidden export detected", repo="SSID-open-core"),
+            _make_finding(
+                "SYNC-0001",
+                cls="content_drift",
+                severity="deny",
+                source="opencore_sync",
+                path="docs/overview.md",
+                details="forbidden export detected",
+                repo="SSID-open-core",
+            ),
         ]
-        (input_dir / "sync.findings.json").write_text(
-            json.dumps(sync_findings, indent=2), encoding="utf-8"
-        )
+        (input_dir / "sync.findings.json").write_text(json.dumps(sync_findings, indent=2), encoding="utf-8")
 
         policy_findings = [
-            _make_finding("POL-0001", cls="content_drift", severity="warn",
-                          source="policy_engine", path="05_governance/gaps.md",
-                          details="enforcement gap"),
+            _make_finding(
+                "POL-0001",
+                cls="content_drift",
+                severity="warn",
+                source="policy_engine",
+                path="05_governance/gaps.md",
+                details="enforcement gap",
+            ),
         ]
-        (input_dir / "policy.findings.json").write_text(
-            json.dumps(policy_findings, indent=2), encoding="utf-8"
-        )
+        (input_dir / "policy.findings.json").write_text(json.dumps(policy_findings, indent=2), encoding="utf-8")
 
         # Step 1: Load and merge findings
         all_findings = load_findings(input_dir)
-        assert len(all_findings) == 4, \
-            f"Expected 4 findings from 3 files, got {len(all_findings)}"
+        assert len(all_findings) == 4, f"Expected 4 findings from 3 files, got {len(all_findings)}"
 
         # Step 2: Compute stats and decision
         stats = compute_stats(all_findings)
@@ -508,10 +544,14 @@ def test_full_pipeline_report_aggregation():
         assert status == "FAIL", "Must be FAIL when deny findings exist"
 
         # Step 3: Build report
-        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        ts = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         evidence_sha = compute_evidence_sha256(all_findings)
         report = agg_build_json_report(
-            "RUN_AGG_001", all_findings, stats, status, ts,
+            "RUN_AGG_001",
+            all_findings,
+            stats,
+            status,
+            ts,
             evidence_sha256=evidence_sha,
         )
 
@@ -530,8 +570,7 @@ def test_full_pipeline_report_aggregation():
         assert payload["summary"]["deny_count"] == 1
         assert payload["summary"]["warn_count"] == 2
         assert payload["summary"]["info_count"] == 1
-        assert payload["summary"]["decision"] == "deny", \
-            "Payload decision must be 'deny' when deny findings exist"
+        assert payload["summary"]["decision"] == "deny", "Payload decision must be 'deny' when deny findings exist"
 
         # Step 7: Findings preview contains up to 10 items
         assert len(payload["findings_preview"]) == 4
@@ -539,7 +578,11 @@ def test_full_pipeline_report_aggregation():
 
         # Step 8: Write audit event and verify chain
         audit_path = write_audit_event(
-            output_dir, "RUN_AGG_001", ts, status, stats,
+            output_dir,
+            "RUN_AGG_001",
+            ts,
+            status,
+            stats,
             _sha256(report_raw).encode("utf-8").hex()[:64],
             evidence_sha,
         )

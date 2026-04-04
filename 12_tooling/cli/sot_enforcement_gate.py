@@ -4,16 +4,16 @@ SoT Runtime Enforcement Gate — unified enforcement flow.
 Combines sot_validator_core.py + sot_contract.yaml + sot_policy.rego (optional).
 Produces: JSON report, MD report, registry event, PASS/FAIL exit code.
 """
+
 from __future__ import annotations
 
 import argparse
 import hashlib
 import importlib.util
 import json
-import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CORE_PATH = REPO_ROOT / "03_core" / "validators" / "sot" / "sot_validator_core.py"
@@ -32,13 +32,14 @@ def _load_core():
     return mod
 
 
-def _load_contract(repo_root: Path) -> Dict[str, Any]:
+def _load_contract(repo_root: Path) -> dict[str, Any]:
     """Load sot_contract.yaml and return parsed dict."""
     contract_path = repo_root / "16_codex" / "contracts" / "sot" / "sot_contract.yaml"
     if not contract_path.is_file():
         return {"version": "unknown", "rule_count": 0}
     try:
         import yaml
+
         return yaml.safe_load(contract_path.read_text(encoding="utf-8"))
     except ImportError:
         text = contract_path.read_text(encoding="utf-8")
@@ -53,7 +54,7 @@ def _load_contract(repo_root: Path) -> Dict[str, Any]:
         return {"version": version, "rule_count": rule_count}
 
 
-def _check_policy_rego(repo_root: Path) -> Dict[str, Any]:
+def _check_policy_rego(repo_root: Path) -> dict[str, Any]:
     """Check that sot_policy.rego exists and is non-empty."""
     policy_path = repo_root / "23_compliance" / "policies" / "sot" / "sot_policy.rego"
     rel = "23_compliance/policies/sot/sot_policy.rego"
@@ -74,9 +75,9 @@ def _file_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def run_enforcement(repo_root: Path) -> Dict[str, Any]:
+def run_enforcement(repo_root: Path) -> dict[str, Any]:
     """Run the full enforcement gate and return structured report."""
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    ts = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # 1. Load and run validator core
     mod = _load_core()
@@ -127,15 +128,14 @@ def run_enforcement(repo_root: Path) -> Dict[str, Any]:
         "passed_rules": [r["rule_id"] for r in passed_rules],
         "evidence": {
             "artifacts_hashed": [
-                {"path": p, "sha256": _file_hash(repo_root / p)}
-                for p in mod.SoTValidatorCore.CANONICAL_SOT_ARTIFACTS
+                {"path": p, "sha256": _file_hash(repo_root / p)} for p in mod.SoTValidatorCore.CANONICAL_SOT_ARTIFACTS
             ],
         },
     }
     return report
 
 
-def _report_to_md(report: Dict[str, Any]) -> str:
+def _report_to_md(report: dict[str, Any]) -> str:
     """Render enforcement report as markdown."""
     lines = [
         "# SoT Runtime Enforcement Report\n",
@@ -160,7 +160,7 @@ def _report_to_md(report: Dict[str, Any]) -> str:
     return "".join(lines)
 
 
-def _write_registry_event(report: Dict[str, Any], repo_root: Path) -> Path:
+def _write_registry_event(report: dict[str, Any], repo_root: Path) -> Path:
     """Write registry event for this enforcement run."""
     event = {
         "event_type": "sot_enforcement_gate",
@@ -186,19 +186,24 @@ def main() -> int:
         description="SoT Runtime Enforcement Gate — unified PASS/FAIL check",
     )
     parser.add_argument(
-        "--repo-root", type=str, default=str(REPO_ROOT),
+        "--repo-root",
+        type=str,
+        default=str(REPO_ROOT),
         help="Path to SSID repo root (default: auto-detect)",
     )
     parser.add_argument(
-        "--write-reports", action="store_true",
+        "--write-reports",
+        action="store_true",
         help="Write JSON + MD reports to 02_audit_logging/reports/",
     )
     parser.add_argument(
-        "--write-registry", action="store_true",
+        "--write-registry",
+        action="store_true",
         help="Write registry event to 24_meta_orchestration/registry/",
     )
     parser.add_argument(
-        "--json-only", action="store_true",
+        "--json-only",
+        action="store_true",
         help="Output JSON report to stdout (for piping)",
     )
     args = parser.parse_args()
@@ -225,8 +230,9 @@ def main() -> int:
         print(f"REGISTRY: {event_path.relative_to(repo_root)}")
 
     # Always print summary
-    print(f"SOT_ENFORCEMENT: {report['status']} "
-          f"({report['summary']['passed']}/{report['summary']['total_rules']} passed)")
+    print(
+        f"SOT_ENFORCEMENT: {report['status']} ({report['summary']['passed']}/{report['summary']['total_rules']} passed)"
+    )
 
     if report["violations"]:
         for v in report["violations"]:

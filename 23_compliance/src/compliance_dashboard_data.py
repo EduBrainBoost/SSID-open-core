@@ -14,13 +14,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from .automated_compliance_monitor import (
     AutomatedComplianceMonitor,
     ComplianceFinding,
-    ControlStatus,
     FindingStatus,
     MonitoringResult,
     Severity,
@@ -47,16 +46,14 @@ class FrameworkStatus:
     open_findings: int = 0
     critical_findings: int = 0
     overdue_reviews: int = 0
-    last_checked: Optional[str] = None
+    last_checked: str | None = None
 
     @property
     def coverage_percent(self) -> float:
         applicable = self.total_controls - self.not_applicable
         if applicable == 0:
             return 100.0
-        return round(
-            (self.implemented + self.partial * 0.5) / applicable * 100, 2
-        )
+        return round((self.implemented + self.partial * 0.5) / applicable * 100, 2)
 
     @property
     def full_coverage_percent(self) -> float:
@@ -98,9 +95,7 @@ class FrameworkStatus:
 class CoverageReport:
     """Cross-framework coverage report."""
 
-    generated_at: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    generated_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     overall_coverage: float = 0.0
     overall_full_coverage: float = 0.0
     total_controls_all: int = 0
@@ -157,15 +152,15 @@ class ComplianceDashboardData:
 
     def __init__(self, monitor: AutomatedComplianceMonitor) -> None:
         self._monitor = monitor
-        self._latest_result: Optional[MonitoringResult] = None
+        self._latest_result: MonitoringResult | None = None
 
-    def refresh(self, frameworks: Optional[list[str]] = None) -> MonitoringResult:
+    def refresh(self, frameworks: list[str] | None = None) -> MonitoringResult:
         """Run the monitor and cache the result."""
         self._latest_result = self._monitor.run(frameworks)
         return self._latest_result
 
     @property
-    def latest_result(self) -> Optional[MonitoringResult]:
+    def latest_result(self) -> MonitoringResult | None:
         return self._latest_result
 
     # -- framework-level aggregation ----------------------------------------
@@ -174,28 +169,13 @@ class ComplianceDashboardData:
         self, framework: str, findings: list[ComplianceFinding], controls: list[dict]
     ) -> FrameworkStatus:
         fw_findings = [f for f in findings if f.framework == framework]
-        not_impl = sum(
-            1
-            for f in fw_findings
-            if "no evidence" in f.description.lower()
-        )
-        partial = sum(
-            1
-            for f in fw_findings
-            if "stale evidence" in f.description.lower()
-        )
+        not_impl = sum(1 for f in fw_findings if "no evidence" in f.description.lower())
+        partial = sum(1 for f in fw_findings if "stale evidence" in f.description.lower())
         total = len(controls)
         implemented = total - not_impl - partial
 
-        critical = sum(
-            1 for f in fw_findings if f.severity == Severity.CRITICAL
-        )
-        overdue = sum(
-            1
-            for f in fw_findings
-            if f.due_date
-            and f.due_date < datetime.now(timezone.utc).isoformat()
-        )
+        critical = sum(1 for f in fw_findings if f.severity == Severity.CRITICAL)
+        overdue = sum(1 for f in fw_findings if f.due_date and f.due_date < datetime.now(UTC).isoformat())
 
         return FrameworkStatus(
             framework=framework,
@@ -206,14 +186,12 @@ class ComplianceDashboardData:
             open_findings=len(fw_findings),
             critical_findings=critical,
             overdue_reviews=overdue,
-            last_checked=datetime.now(timezone.utc).isoformat(),
+            last_checked=datetime.now(UTC).isoformat(),
         )
 
     # -- gap identification -------------------------------------------------
 
-    def _identify_gaps(
-        self, findings: list[ComplianceFinding]
-    ) -> list[dict[str, Any]]:
+    def _identify_gaps(self, findings: list[ComplianceFinding]) -> list[dict[str, Any]]:
         """Identify the most critical compliance gaps."""
         gaps = []
         severity_order = {
@@ -243,11 +221,9 @@ class ComplianceDashboardData:
                 )
         return gaps
 
-    def _identify_overdue(
-        self, findings: list[ComplianceFinding]
-    ) -> list[dict[str, Any]]:
+    def _identify_overdue(self, findings: list[ComplianceFinding]) -> list[dict[str, Any]]:
         """Find findings that are past their due date."""
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         overdue = []
         for f in findings:
             if f.due_date and f.due_date < now and f.status == FindingStatus.OPEN:
@@ -264,9 +240,7 @@ class ComplianceDashboardData:
 
     # -- report generation --------------------------------------------------
 
-    def generate_coverage_report(
-        self, frameworks: Optional[list[str]] = None
-    ) -> CoverageReport:
+    def generate_coverage_report(self, frameworks: list[str] | None = None) -> CoverageReport:
         """
         Generate a comprehensive coverage report.
 
@@ -281,36 +255,22 @@ class ComplianceDashboardData:
         report = CoverageReport()
         report.total_controls_all = result.total_controls
         report.total_findings = len(result.findings)
-        report.critical_findings = sum(
-            1 for f in result.findings if f.severity == Severity.CRITICAL
-        )
+        report.critical_findings = sum(1 for f in result.findings if f.severity == Severity.CRITICAL)
 
         # Build per-framework status
         fw_data = self._monitor._framework_data
         for fw_name in result.frameworks_checked:
             controls = fw_data.get(fw_name, [])
-            status = self._build_framework_status(
-                fw_name, result.findings, controls
-            )
+            status = self._build_framework_status(fw_name, result.findings, controls)
             report.frameworks.append(status)
 
         # Compute overall coverage
         if report.frameworks:
-            weighted_sum = sum(
-                fs.coverage_percent * fs.total_controls
-                for fs in report.frameworks
-            )
+            weighted_sum = sum(fs.coverage_percent * fs.total_controls for fs in report.frameworks)
             total = sum(fs.total_controls for fs in report.frameworks)
-            report.overall_coverage = (
-                round(weighted_sum / total, 2) if total > 0 else 0.0
-            )
-            weighted_full = sum(
-                fs.full_coverage_percent * fs.total_controls
-                for fs in report.frameworks
-            )
-            report.overall_full_coverage = (
-                round(weighted_full / total, 2) if total > 0 else 0.0
-            )
+            report.overall_coverage = round(weighted_sum / total, 2) if total > 0 else 0.0
+            weighted_full = sum(fs.full_coverage_percent * fs.total_controls for fs in report.frameworks)
+            report.overall_full_coverage = round(weighted_full / total, 2) if total > 0 else 0.0
 
         report.gaps = self._identify_gaps(result.findings)
         report.overdue_items = self._identify_overdue(result.findings)

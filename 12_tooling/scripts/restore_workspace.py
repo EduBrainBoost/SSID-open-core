@@ -11,7 +11,7 @@ import hashlib
 import json
 import pathlib
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 def compute_sha256(filepath: pathlib.Path) -> str:
@@ -28,13 +28,11 @@ def load_snapshot(snapshot_path: str) -> dict:
     path = pathlib.Path(snapshot_path)
     if not path.is_file():
         raise FileNotFoundError(f"Snapshot not found: {snapshot_path}")
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
-def verify_workspace_against_snapshot(
-    workspace_path: str, snapshot_path: str
-) -> dict:
+def verify_workspace_against_snapshot(workspace_path: str, snapshot_path: str) -> dict:
     """Verify current workspace state against a snapshot.
 
     Returns dict with verification results:
@@ -46,14 +44,11 @@ def verify_workspace_against_snapshot(
     workspace = pathlib.Path(workspace_path).resolve()
     snapshot = load_snapshot(snapshot_path)
 
-    snapshot_files = {
-        entry["path"]: entry["sha256"]
-        for entry in snapshot.get("manifest", [])
-    }
+    snapshot_files = {entry["path"]: entry["sha256"] for entry in snapshot.get("manifest", [])}
 
     result = {
         "snapshot_id": snapshot.get("snapshot_id"),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "matched": [],
         "modified": [],
         "missing": [],
@@ -78,11 +73,13 @@ def verify_workspace_against_snapshot(
         if actual_hash == expected_hash:
             result["matched"].append(rel_path)
         else:
-            result["modified"].append({
-                "path": rel_path,
-                "expected": expected_hash,
-                "actual": actual_hash,
-            })
+            result["modified"].append(
+                {
+                    "path": rel_path,
+                    "expected": expected_hash,
+                    "actual": actual_hash,
+                }
+            )
 
     # Detect added files (simple scan, not recursive full)
     # Note: full scan would be expensive; skip for Wave 0
@@ -92,9 +89,7 @@ def verify_workspace_against_snapshot(
         "matched": len(result["matched"]),
         "modified": len(result["modified"]),
         "missing": len(result["missing"]),
-        "integrity_pct": round(
-            len(result["matched"]) / max(len(snapshot_files), 1) * 100, 1
-        ),
+        "integrity_pct": round(len(result["matched"]) / max(len(snapshot_files), 1) * 100, 1),
     }
 
     return result
@@ -138,10 +133,12 @@ def restore_from_snapshot(
         target_file = workspace / rel_path
 
         if not source_file.is_file():
-            plan["skipped"].append({
-                "path": rel_path,
-                "reason": "not_in_source",
-            })
+            plan["skipped"].append(
+                {
+                    "path": rel_path,
+                    "reason": "not_in_source",
+                }
+            )
             continue
 
         action = {
@@ -154,6 +151,7 @@ def restore_from_snapshot(
             try:
                 target_file.parent.mkdir(parents=True, exist_ok=True)
                 import shutil
+
                 shutil.copy2(str(source_file), str(target_file))
                 action["status"] = "restored"
             except Exception as e:
@@ -174,9 +172,7 @@ def restore_from_snapshot(
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Verify or restore SSID workspace from snapshot"
-    )
+    parser = argparse.ArgumentParser(description="Verify or restore SSID workspace from snapshot")
     subparsers = parser.add_subparsers(dest="command")
 
     # Verify subcommand
@@ -189,8 +185,7 @@ def main():
     restore_parser.add_argument("workspace", help="Target workspace path")
     restore_parser.add_argument("snapshot", help="Snapshot JSON file path")
     restore_parser.add_argument("source", help="Source directory to copy from")
-    restore_parser.add_argument("--execute", action="store_true",
-                                help="Actually execute restore (default: dry-run)")
+    restore_parser.add_argument("--execute", action="store_true", help="Actually execute restore (default: dry-run)")
 
     args = parser.parse_args()
 
@@ -199,7 +194,9 @@ def main():
         print(json.dumps(result["summary"], indent=2))
     elif args.command == "restore":
         result = restore_from_snapshot(
-            args.workspace, args.snapshot, args.source,
+            args.workspace,
+            args.snapshot,
+            args.source,
             dry_run=not args.execute,
         )
         print(json.dumps(result["summary"], indent=2))

@@ -4,16 +4,18 @@ Scan files for PII using regex patterns from pii_patterns.yaml.
 Outputs findings per file in JSON format.
 Exits 0 if no PII found (PASS); exits 1 if PII found (FAIL_POLICY).
 """
+
 import argparse
 import hashlib
 import json
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 try:
     import yaml
+
     HAS_YAML = True
 except ImportError:
     HAS_YAML = False
@@ -31,10 +33,7 @@ def load_patterns(patterns_path: Path) -> tuple[list[dict], list[dict]]:
 
 def is_excluded(match_str: str, line: str, exclusions: list[dict]) -> bool:
     """Return True if this match should be excluded as false positive."""
-    for excl in exclusions:
-        if re.search(excl["pattern"], match_str) or re.search(excl["pattern"], line):
-            return True
-    return False
+    return any(re.search(excl["pattern"], match_str) or re.search(excl["pattern"], line) for excl in exclusions)
 
 
 def scan_file(
@@ -70,14 +69,16 @@ def scan_file(
                 match_str = match.group(0)
                 if is_excluded(match_str, line, exclusions):
                     continue
-                findings.append({
-                    "pattern_id": pid,
-                    "severity": severity,
-                    "line": line_no,
-                    "match_length": len(match_str),
-                    # Never store the actual PII value — only length + position
-                    "col_start": match.start(),
-                })
+                findings.append(
+                    {
+                        "pattern_id": pid,
+                        "severity": severity,
+                        "line": line_no,
+                        "match_length": len(match_str),
+                        # Never store the actual PII value — only length + position
+                        "col_start": match.start(),
+                    }
+                )
 
     result_status = "PASS" if not findings else "FAIL_POLICY"
     return {
@@ -139,28 +140,29 @@ def main() -> None:
         "status": overall_status,
         "total_files_scanned": len(files),
         "total_findings": total_findings,
-        "ts": datetime.now(timezone.utc).isoformat(),
+        "ts": datetime.now(UTC).isoformat(),
         "files": results,
     }
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(output, indent=2))
-    print(
-        f"PII scan: {len(files)} files, {total_findings} findings, status={overall_status}"
-    )
+    print(f"PII scan: {len(files)} files, {total_findings} findings, status={overall_status}")
 
     if args.ems_url:
         try:
-            import sys as _sys
             import os as _os
-            _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), '..', '..', '12_tooling'))
+            import sys as _sys
+
+            _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), "..", "..", "12_tooling"))
+            from datetime import datetime as _dt
+
             from ssid_autorunner.ems_reporter import post_result
-            from datetime import datetime as _dt, timezone as _tz
+
             post_result(
                 ems_url=args.ems_url,
                 ar_id="AR-01",
-                run_id=args.run_id or f"CI-AR-01-{_dt.now(_tz.utc).strftime('%Y%m%dT%H%M%S')}",
+                run_id=args.run_id or f"CI-AR-01-{_dt.now(UTC).strftime('%Y%m%dT%H%M%S')}",
                 result=output,
                 commit_sha=args.commit_sha,
             )

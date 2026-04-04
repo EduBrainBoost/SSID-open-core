@@ -11,6 +11,7 @@ Overfitting indicators:
   - YAML files with only placeholder content
   - Extremely high test-pass ratios with zero logic coverage
 """
+
 from __future__ import annotations
 
 import ast
@@ -48,11 +49,13 @@ def detect_placeholder_files(root: Path) -> list[dict]:
 
         for marker in PLACEHOLDER_MARKERS:
             if content == marker or content.startswith(marker):
-                findings.append({
-                    "file": str(py_file.relative_to(root)),
-                    "type": "placeholder_file",
-                    "marker": marker,
-                })
+                findings.append(
+                    {
+                        "file": str(py_file.relative_to(root)),
+                        "type": "placeholder_file",
+                        "marker": marker,
+                    }
+                )
                 break
 
     for yaml_file in root.rglob("*.yaml"):
@@ -65,11 +68,13 @@ def detect_placeholder_files(root: Path) -> list[dict]:
 
         for marker in PLACEHOLDER_MARKERS:
             if content == marker or content.startswith(marker):
-                findings.append({
-                    "file": str(yaml_file.relative_to(root)),
-                    "type": "placeholder_yaml",
-                    "marker": marker,
-                })
+                findings.append(
+                    {
+                        "file": str(yaml_file.relative_to(root)),
+                        "type": "placeholder_yaml",
+                        "marker": marker,
+                    }
+                )
                 break
 
     return findings
@@ -90,9 +95,9 @@ def detect_trivial_tests(root: Path) -> list[dict]:
             continue
 
         functions = [
-            node for node in ast.walk(tree)
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-            and node.name.startswith("test_")
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_")
         ]
 
         if not functions:
@@ -103,24 +108,25 @@ def detect_trivial_tests(root: Path) -> list[dict]:
             body = func.body
             if len(body) == 1:
                 stmt = body[0]
-                if isinstance(stmt, ast.Pass):
-                    trivial_count += 1
-                elif isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Constant):
-                    trivial_count += 1
-                elif (
-                    isinstance(stmt, ast.Assert)
-                    and isinstance(stmt.test, ast.Constant)
-                    and stmt.test.value is True
+                if (
+                    isinstance(stmt, ast.Pass)
+                    or isinstance(stmt, ast.Expr)
+                    and isinstance(stmt.value, ast.Constant)
+                    or (
+                        isinstance(stmt, ast.Assert) and isinstance(stmt.test, ast.Constant) and stmt.test.value is True
+                    )
                 ):
                     trivial_count += 1
 
         if trivial_count > 0 and trivial_count == len(functions):
-            findings.append({
-                "file": str(test_file.relative_to(root)),
-                "type": "trivial_test_only",
-                "trivial_count": trivial_count,
-                "total_tests": len(functions),
-            })
+            findings.append(
+                {
+                    "file": str(test_file.relative_to(root)),
+                    "type": "trivial_test_only",
+                    "trivial_count": trivial_count,
+                    "total_tests": len(functions),
+                }
+            )
 
     return findings
 

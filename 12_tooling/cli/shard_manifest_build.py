@@ -6,15 +6,14 @@ Default: dry-run (no --apply = read-only). Use --apply to persist.
 
 Output: <root>/shards/<shard>/manifest.yaml (next to chart.yaml)
 """
+
 from __future__ import annotations
 
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-
-import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _lib.shards import (
@@ -33,10 +32,7 @@ def discover_contracts(shard_dir: Path) -> list[str]:
     contracts_dir = shard_dir / "contracts"
     if not contracts_dir.is_dir():
         return []
-    return sorted(
-        p.relative_to(shard_dir).as_posix()
-        for p in contracts_dir.glob("*.schema.json")
-    )
+    return sorted(p.relative_to(shard_dir).as_posix() for p in contracts_dir.glob("*.schema.json"))
 
 
 def discover_conformance(shard_dir: Path) -> list[str]:
@@ -44,10 +40,7 @@ def discover_conformance(shard_dir: Path) -> list[str]:
     conf_dir = shard_dir / "conformance" / "fixtures"
     if not conf_dir.is_dir():
         return []
-    return sorted(
-        p.relative_to(shard_dir).as_posix()
-        for p in conf_dir.glob("*.json")
-    )
+    return sorted(p.relative_to(shard_dir).as_posix() for p in conf_dir.glob("*.json"))
 
 
 def derive_policies(chart: dict) -> list[dict]:
@@ -62,7 +55,7 @@ def generate_manifest(shard_dir: Path, root_name: str, chart: dict) -> dict:
         "shard_id": shard_dir.name,
         "root_id": root_name,
         "version": chart.get("version", "0.1.0"),
-        "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "implementation_stack": "generated",
         "contracts": discover_contracts(shard_dir),
         "conformance": discover_conformance(shard_dir),
@@ -111,9 +104,7 @@ def process_root(root_path: Path, apply: bool) -> dict:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Shard Manifest Builder (parametric, additiv-only, no-overwrite)"
-    )
+    parser = argparse.ArgumentParser(description="Shard Manifest Builder (parametric, additiv-only, no-overwrite)")
     parser.add_argument("--root", type=str, help="Process single root (e.g. 03_core)")
     parser.add_argument("--all", action="store_true", dest="all_roots", help="Process all 24 roots")
     parser.add_argument("--apply", action="store_true", help="Write manifests (default: dry-run)")

@@ -10,6 +10,7 @@ Usage:
   python 12_tooling/cli/release_pipeline.py rollback --manifest release.json
   python 12_tooling/cli/release_pipeline.py verify --manifest release.json
 """
+
 from __future__ import annotations
 
 import argparse
@@ -17,9 +18,9 @@ import hashlib
 import json
 import sys
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any
 from uuid import uuid4
 
 # ---------------------------------------------------------------------------
@@ -48,7 +49,7 @@ DEFAULT_MANIFEST_DIR = "04_deployment/releases"
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _sha256_bytes(data: bytes) -> str:
@@ -80,12 +81,12 @@ class ReleaseManifest:
     version: str
     sha: str
     timestamp: str
-    artifacts: List[str] = field(default_factory=list)
-    evidence_hashes: List[str] = field(default_factory=list)
+    artifacts: list[str] = field(default_factory=list)
+    evidence_hashes: list[str] = field(default_factory=list)
     sbom_ref: str = ""
     status: str = "draft"
     release_id: str = ""
-    promotion_history: List[dict] = field(default_factory=list)
+    promotion_history: list[dict] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if not self.release_id:
@@ -110,7 +111,7 @@ class ReleaseManifest:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, d: dict) -> "ReleaseManifest":
+    def from_dict(cls, d: dict) -> ReleaseManifest:
         return cls(**{k: v for k, v in d.items() if k in cls.__dataclass_fields__})
 
 
@@ -122,7 +123,7 @@ class PromotionGate:
     description: str
     required: bool = True
 
-    def check(self, manifest: ReleaseManifest, context: dict | None = None) -> "GateResult":
+    def check(self, manifest: ReleaseManifest, context: dict | None = None) -> GateResult:
         raise NotImplementedError("Subclasses must implement check()")
 
 
@@ -148,7 +149,7 @@ class PromotionResult:
     from_env: str
     to_env: str
     manifest_version: str
-    gate_results: List[dict] = field(default_factory=list)
+    gate_results: list[dict] = field(default_factory=list)
     evidence_hash: str = ""
     timestamp: str = ""
     detail: str = ""
@@ -246,7 +247,8 @@ class NoPiiGate(PromotionGate):
 # Default gate set
 # ---------------------------------------------------------------------------
 
-def default_gates() -> List[PromotionGate]:
+
+def default_gates() -> list[PromotionGate]:
     """Return the standard promotion gate set."""
     return [
         TestsGreenGate(),
@@ -267,14 +269,14 @@ class ReleasePipeline:
     def __init__(
         self,
         repo_root: Path | None = None,
-        gates: List[PromotionGate] | None = None,
+        gates: list[PromotionGate] | None = None,
     ) -> None:
         self.repo_root = Path(repo_root) if repo_root else REPO_ROOT
         self.gates = gates if gates is not None else default_gates()
 
     # -- create ---------------------------------------------------------------
 
-    def create_release(self, version: str, sha: str, artifacts: List[str] | None = None) -> ReleaseManifest:
+    def create_release(self, version: str, sha: str, artifacts: list[str] | None = None) -> ReleaseManifest:
         """Create a new release manifest in draft status."""
         manifest = ReleaseManifest(
             version=version,
@@ -299,9 +301,9 @@ class ReleasePipeline:
         self,
         manifest: ReleaseManifest,
         context: dict | None = None,
-    ) -> List[GateResult]:
+    ) -> list[GateResult]:
         """Run all promotion gates and return results."""
-        results: List[GateResult] = []
+        results: list[GateResult] = []
         for gate in self.gates:
             result = gate.check(manifest, context)
             results.append(result)
@@ -344,8 +346,7 @@ class ReleasePipeline:
         gate_results = self.verify_promotion_gates(manifest, context)
         gate_dicts = [asdict(gr) for gr in gate_results]
 
-        all_passed = all(gr.passed for gr in gate_results if gr.gate_name in
-                         {g.name for g in self.gates if g.required})
+        all_passed = all(gr.passed for gr in gate_results if gr.gate_name in {g.name for g in self.gates if g.required})
 
         if not all_passed:
             failed = [gr.gate_name for gr in gate_results if not gr.passed]
@@ -368,15 +369,17 @@ class ReleasePipeline:
         }
         manifest.promotion_history.append(promotion_entry)
 
-        evidence_hash = _json_sha256({
-            "action": "promote",
-            "release_id": manifest.release_id,
-            "version": manifest.version,
-            "from_env": from_env,
-            "to_env": to_env,
-            "gate_results": gate_dicts,
-            "timestamp": promotion_entry["timestamp"],
-        })
+        evidence_hash = _json_sha256(
+            {
+                "action": "promote",
+                "release_id": manifest.release_id,
+                "version": manifest.version,
+                "from_env": from_env,
+                "to_env": to_env,
+                "gate_results": gate_dicts,
+                "timestamp": promotion_entry["timestamp"],
+            }
+        )
         manifest.evidence_hashes.append(evidence_hash)
 
         return PromotionResult(
@@ -403,14 +406,16 @@ class ReleasePipeline:
         }
         manifest.promotion_history.append(rollback_entry)
 
-        evidence_hash = _json_sha256({
-            "action": "rollback",
-            "release_id": manifest.release_id,
-            "version": manifest.version,
-            "previous_status": previous_status,
-            "reason": reason,
-            "timestamp": rollback_entry["timestamp"],
-        })
+        evidence_hash = _json_sha256(
+            {
+                "action": "rollback",
+                "release_id": manifest.release_id,
+                "version": manifest.version,
+                "previous_status": previous_status,
+                "reason": reason,
+                "timestamp": rollback_entry["timestamp"],
+            }
+        )
         manifest.evidence_hashes.append(evidence_hash)
 
         return RollbackRecord(

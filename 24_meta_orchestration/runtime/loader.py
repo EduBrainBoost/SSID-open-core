@@ -2,15 +2,17 @@
 SSIDCTL v2 Registry Loader — loads registry, profiles, legacy mapping.
 Supports YAML (canonical) with JSON fallback.
 """
+
 from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
     import yaml
+
     _HAS_YAML = True
 except ImportError:
     _HAS_YAML = False
@@ -21,18 +23,18 @@ class AgentDef:
     agent_id: str
     status: str
     level: str
-    repo_scope: List[str]
-    root_scope: List[str]
-    shard_scope: List[str]
+    repo_scope: list[str]
+    root_scope: list[str]
+    shard_scope: list[str]
     purpose: str
-    skills: List[str]
-    allowed_paths: List[str]
-    forbidden_paths: List[str]
-    inputs: List[str]
-    outputs: List[str]
+    skills: list[str]
+    allowed_paths: list[str]
+    forbidden_paths: list[str]
+    inputs: list[str]
+    outputs: list[str]
     done_criteria: str
-    activation_conditions: List[str]
-    depends_on: List[str]
+    activation_conditions: list[str]
+    depends_on: list[str]
     writes_allowed: bool
     can_touch_canonical: bool
     risk_class: str
@@ -46,11 +48,11 @@ class ProfileDef:
     profile_id: str
     description: str
     activation_rule: str
-    agents: List[str]
+    agents: list[str]
     gate_condition: str
     use_case: str
-    phase_a_agents: List[str] = field(default_factory=list)
-    phase_b_agents: List[str] = field(default_factory=list)
+    phase_a_agents: list[str] = field(default_factory=list)
+    phase_b_agents: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -58,7 +60,7 @@ class LegacyMapping:
     legacy_id: str
     legacy_file: str
     retained_as_legacy: bool
-    mapped_to: List[str]
+    mapped_to: list[str]
     replacement_strategy: str
     migration_note: str
 
@@ -67,11 +69,11 @@ class LegacyMapping:
 class RegistryBundle:
     schema_version: str
     total_agents: int
-    layer_counts: Dict[str, int]
-    global_rules: Dict[str, Any]
-    agents: Dict[str, AgentDef]
-    profiles: Dict[str, ProfileDef]
-    legacy_mappings: List[LegacyMapping]
+    layer_counts: dict[str, int]
+    global_rules: dict[str, Any]
+    agents: dict[str, AgentDef]
+    profiles: dict[str, ProfileDef]
+    legacy_mappings: list[LegacyMapping]
 
 
 def _parse_agent(data: dict) -> AgentDef:
@@ -152,7 +154,7 @@ def load_registry(registry_path: Path) -> tuple:
     return raw, agents
 
 
-def load_profiles(profiles_path: Path) -> Dict[str, ProfileDef]:
+def load_profiles(profiles_path: Path) -> dict[str, ProfileDef]:
     raw = _load_file(profiles_path)
     profiles = {}
     for p in raw.get("profiles", []):
@@ -161,7 +163,7 @@ def load_profiles(profiles_path: Path) -> Dict[str, ProfileDef]:
     return profiles
 
 
-def load_legacy_mapping(mapping_path: Path) -> List[LegacyMapping]:
+def load_legacy_mapping(mapping_path: Path) -> list[LegacyMapping]:
     raw = _load_file(mapping_path)
     return [_parse_legacy(m) for m in raw.get("mappings", [])]
 

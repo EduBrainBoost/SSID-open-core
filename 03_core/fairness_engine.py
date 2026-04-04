@@ -8,19 +8,21 @@ infrastructure. All audit evidence is hash-only -- no PII is stored or logged.
 SoT v4.1.0 | ROOT-24-LOCK | Module: 03_core
 Evidence strategy: hash_manifest_only
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import uuid
+from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Dict, List, Optional, Sequence
 
 
 class FairnessMetric(Enum):
     """Supported fairness evaluation metrics."""
+
     DEMOGRAPHIC_PARITY = "demographic_parity"
     EQUAL_OPPORTUNITY = "equal_opportunity"
     DISPARATE_IMPACT = "disparate_impact"
@@ -28,6 +30,7 @@ class FairnessMetric(Enum):
 
 class FairnessVerdict(Enum):
     """Overall verdict of a fairness evaluation."""
+
     PASS = "pass"
     WARN = "warn"
     FAIL = "fail"
@@ -43,6 +46,7 @@ class GroupOutcome:
         positive: Number receiving a positive outcome.
         negative: Number receiving a negative outcome.
     """
+
     group_id: str
     total: int
     positive: int
@@ -59,6 +63,7 @@ class GroupOutcome:
 @dataclass(frozen=True)
 class MetricResult:
     """Result of evaluating a single fairness metric."""
+
     metric: FairnessMetric
     value: float
     threshold: float
@@ -72,6 +77,7 @@ class FairnessReport:
 
     Contains metric results and a hash-only evidence digest.
     """
+
     report_id: str
     timestamp: str
     model_id: str
@@ -94,15 +100,15 @@ class FairnessEngine:
     """
 
     # Default thresholds (can be overridden)
-    DEFAULT_THRESHOLDS: Dict[FairnessMetric, float] = {
-        FairnessMetric.DEMOGRAPHIC_PARITY: 0.10,   # max allowed diff
-        FairnessMetric.EQUAL_OPPORTUNITY: 0.10,     # max allowed diff
-        FairnessMetric.DISPARATE_IMPACT: 0.80,      # min ratio (4/5 rule)
+    DEFAULT_THRESHOLDS: dict[FairnessMetric, float] = {
+        FairnessMetric.DEMOGRAPHIC_PARITY: 0.10,  # max allowed diff
+        FairnessMetric.EQUAL_OPPORTUNITY: 0.10,  # max allowed diff
+        FairnessMetric.DISPARATE_IMPACT: 0.80,  # min ratio (4/5 rule)
     }
 
     def __init__(
         self,
-        thresholds: Optional[Dict[FairnessMetric, float]] = None,
+        thresholds: dict[FairnessMetric, float] | None = None,
     ) -> None:
         self._thresholds = dict(self.DEFAULT_THRESHOLDS)
         if thresholds:
@@ -116,7 +122,7 @@ class FairnessEngine:
         self,
         model_id: str,
         group_outcomes: Sequence[GroupOutcome],
-        metrics: Optional[List[FairnessMetric]] = None,
+        metrics: list[FairnessMetric] | None = None,
     ) -> FairnessReport:
         """Run fairness evaluation on *group_outcomes*.
 
@@ -137,14 +143,14 @@ class FairnessEngine:
         if metrics is None:
             metrics = list(FairnessMetric)
 
-        results: List[MetricResult] = []
+        results: list[MetricResult] = []
         for metric in metrics:
             result = self._evaluate_metric(metric, group_outcomes)
             results.append(result)
 
         verdict = self._compute_verdict(results)
         report_id = uuid.uuid4().hex[:16]
-        ts = datetime.now(timezone.utc).isoformat()
+        ts = datetime.now(UTC).isoformat()
 
         evidence_hash = self._hash_evidence(report_id, ts, model_id, results, verdict)
 
@@ -161,9 +167,7 @@ class FairnessEngine:
     # Metric implementations
     # ------------------------------------------------------------------
 
-    def _evaluate_metric(
-        self, metric: FairnessMetric, groups: Sequence[GroupOutcome]
-    ) -> MetricResult:
+    def _evaluate_metric(self, metric: FairnessMetric, groups: Sequence[GroupOutcome]) -> MetricResult:
         dispatch = {
             FairnessMetric.DEMOGRAPHIC_PARITY: self._demographic_parity,
             FairnessMetric.EQUAL_OPPORTUNITY: self._equal_opportunity,
@@ -182,10 +186,7 @@ class FairnessEngine:
             value=round(diff, 6),
             threshold=threshold,
             passed=passed,
-            detail=(
-                f"Max positive-rate spread: {diff:.4f} "
-                f"(threshold: {threshold})"
-            ),
+            detail=(f"Max positive-rate spread: {diff:.4f} (threshold: {threshold})"),
         )
 
     def _equal_opportunity(self, groups: Sequence[GroupOutcome]) -> MetricResult:
@@ -203,19 +204,13 @@ class FairnessEngine:
             value=round(diff, 6),
             threshold=threshold,
             passed=passed,
-            detail=(
-                f"Equal-opportunity spread: {diff:.4f} "
-                f"(threshold: {threshold})"
-            ),
+            detail=(f"Equal-opportunity spread: {diff:.4f} (threshold: {threshold})"),
         )
 
     def _disparate_impact(self, groups: Sequence[GroupOutcome]) -> MetricResult:
         """Ratio of the lowest positive rate to the highest (4/5 rule)."""
         rates = [g.positive_rate for g in groups if g.total > 0]
-        if not rates or max(rates) == 0:
-            ratio = 0.0
-        else:
-            ratio = min(rates) / max(rates)
+        ratio = 0.0 if not rates or max(rates) == 0 else min(rates) / max(rates)
         threshold = self._thresholds[FairnessMetric.DISPARATE_IMPACT]
         passed = ratio >= threshold
         return MetricResult(
@@ -223,10 +218,7 @@ class FairnessEngine:
             value=round(ratio, 6),
             threshold=threshold,
             passed=passed,
-            detail=(
-                f"Disparate impact ratio: {ratio:.4f} "
-                f"(threshold: {threshold})"
-            ),
+            detail=(f"Disparate impact ratio: {ratio:.4f} (threshold: {threshold})"),
         )
 
     # ------------------------------------------------------------------
@@ -234,7 +226,7 @@ class FairnessEngine:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _compute_verdict(results: List[MetricResult]) -> FairnessVerdict:
+    def _compute_verdict(results: list[MetricResult]) -> FairnessVerdict:
         if all(r.passed for r in results):
             return FairnessVerdict.PASS
         failed = [r for r in results if not r.passed]
@@ -251,7 +243,7 @@ class FairnessEngine:
         report_id: str,
         ts: str,
         model_id: str,
-        results: List[MetricResult],
+        results: list[MetricResult],
         verdict: FairnessVerdict,
     ) -> str:
         payload = {

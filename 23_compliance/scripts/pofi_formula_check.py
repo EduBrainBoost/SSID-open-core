@@ -4,6 +4,7 @@ Validates the POFI formula: pofi_score = log(activity+1) / log(rewards+10)
 Tests the formula against known SoT reference values.
 Exits 0 (PASS) or 1 (FAIL_QA).
 """
+
 import argparse
 import json
 import math
@@ -12,6 +13,7 @@ from pathlib import Path
 
 try:
     import yaml
+
     HAS_YAML = True
 except ImportError:
     HAS_YAML = False
@@ -19,10 +21,10 @@ except ImportError:
 # SoT reference test vectors: (activity, rewards) -> expected score (rounded to 6dp)
 REFERENCE_VECTORS = [
     # (activity, rewards, expected_score_approx)
-    (0, 0, 0.0),          # zero activity: log(1)/log(10) = 0/1 = 0.0
-    (9, 0, 1.0),          # activity=9: log(10)/log(10) = 1.0 exactly
+    (0, 0, 0.0),  # zero activity: log(1)/log(10) = 0/1 = 0.0
+    (9, 0, 1.0),  # activity=9: log(10)/log(10) = 1.0 exactly
     (99, 0, 1.0 * math.log(100) / math.log(10)),  # log(100)/log(10) = 2.0 — > 1 cap check
-    (0, 90, 0.0),         # zero activity always gives 0
+    (0, 90, 0.0),  # zero activity always gives 0
 ]
 
 TOLERANCE = 1e-9
@@ -47,17 +49,18 @@ def validate_formula(policy: dict) -> dict:
         ok = is_non_negative and zero_check
         if not ok:
             all_pass = False
-        results.append({
-            "activity": activity,
-            "rewards": rewards,
-            "computed_score": round(computed, 9),
-            "ok": ok,
-        })
+        results.append(
+            {
+                "activity": activity,
+                "rewards": rewards,
+                "computed_score": round(computed, 9),
+                "ok": ok,
+            }
+        )
 
     # Verify monotonicity: higher activity (same rewards) → higher score
     scores_increasing = [compute_pofi(a, 0) for a in [0, 1, 9, 99, 999]]
-    monotone = all(scores_increasing[i] <= scores_increasing[i + 1]
-                   for i in range(len(scores_increasing) - 1))
+    monotone = all(scores_increasing[i] <= scores_increasing[i + 1] for i in range(len(scores_increasing) - 1))
     if not monotone:
         all_pass = False
 

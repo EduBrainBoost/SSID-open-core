@@ -7,21 +7,23 @@ entry point for reward events in the SSID network.
 Registry import path (orchestrator):
     03_core.src.reward_handler
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from decimal import Decimal, ROUND_HALF_UP
-from enum import Enum
-from typing import Dict, List, Optional, Sequence
 import datetime
-
+from collections.abc import Sequence
+from dataclasses import dataclass
+from decimal import ROUND_HALF_UP, Decimal
+from enum import StrEnum
 
 # ---------------------------------------------------------------------------
 # Domain types
 # ---------------------------------------------------------------------------
 
-class RewardAction(str, Enum):
+
+class RewardAction(StrEnum):
     """Canonical reward-eligible actions in the SSID network."""
+
     IDENTITY_VERIFICATION = "identity_verification"
     DATA_PROVISION = "data_provision"
     GOVERNANCE_VOTE = "governance_vote"
@@ -42,22 +44,21 @@ class RewardEvent:
         quantity: Quantity of the action (e.g., number of verifications).
         timestamp: UTC timestamp of the event.
     """
+
     event_id: str
     participant_id: str
     action: RewardAction
     quality_score: float
     quantity: int = 1
-    timestamp: Optional[datetime.datetime] = None
+    timestamp: datetime.datetime | None = None
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.quality_score <= 1.0:
-            raise ValueError(
-                f"quality_score must be in [0, 1], got {self.quality_score}"
-            )
+            raise ValueError(f"quality_score must be in [0, 1], got {self.quality_score}")
         if self.quantity < 1:
             raise ValueError(f"quantity must be >= 1, got {self.quantity}")
         if self.timestamp is None:
-            self.timestamp = datetime.datetime.now(datetime.timezone.utc)
+            self.timestamp = datetime.datetime.now(datetime.UTC)
 
 
 @dataclass
@@ -72,6 +73,7 @@ class RewardAllocation:
         quality_multiplier: Applied quality multiplier.
         final_reward: Actual reward credited.
     """
+
     event_id: str
     participant_id: str
     action: RewardAction
@@ -89,15 +91,16 @@ class RewardBatchResult:
         total_rewarded: Sum of all final_reward values.
         participant_totals: Per-participant cumulative reward.
     """
-    allocations: List[RewardAllocation]
+
+    allocations: list[RewardAllocation]
     total_rewarded: Decimal
-    participant_totals: Dict[str, Decimal]
+    participant_totals: dict[str, Decimal]
 
 
 # ---------------------------------------------------------------------------
 # Default reward schedule (base reward per action unit)
 # ---------------------------------------------------------------------------
-DEFAULT_REWARD_SCHEDULE: Dict[RewardAction, Decimal] = {
+DEFAULT_REWARD_SCHEDULE: dict[RewardAction, Decimal] = {
     RewardAction.IDENTITY_VERIFICATION: Decimal("1.00"),
     RewardAction.DATA_PROVISION: Decimal("0.50"),
     RewardAction.GOVERNANCE_VOTE: Decimal("0.25"),
@@ -110,6 +113,7 @@ DEFAULT_REWARD_SCHEDULE: Dict[RewardAction, Decimal] = {
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
+
 
 class RewardHandler:
     """Calculates and aggregates rewards for SSID network participants.
@@ -131,7 +135,7 @@ class RewardHandler:
 
     def __init__(
         self,
-        reward_schedule: Optional[Dict[RewardAction, Decimal]] = None,
+        reward_schedule: dict[RewardAction, Decimal] | None = None,
     ) -> None:
         """Initialise the handler.
 
@@ -139,9 +143,7 @@ class RewardHandler:
             reward_schedule: Optional override for per-action base rewards.
                 Falls back to ``DEFAULT_REWARD_SCHEDULE``.
         """
-        self._schedule = (
-            reward_schedule if reward_schedule is not None else DEFAULT_REWARD_SCHEDULE
-        )
+        self._schedule = reward_schedule if reward_schedule is not None else DEFAULT_REWARD_SCHEDULE
 
     # ------------------------------------------------------------------
     # Public API
@@ -159,9 +161,7 @@ class RewardHandler:
         base = self._schedule.get(event.action, Decimal("0"))
         multiplier = Decimal(str(event.quality_score))
         quantity = Decimal(str(event.quantity))
-        final = (base * quantity * multiplier).quantize(
-            Decimal("0.000001"), rounding=ROUND_HALF_UP
-        )
+        final = (base * quantity * multiplier).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
         return RewardAllocation(
             event_id=event.event_id,
             participant_id=event.participant_id,
@@ -180,13 +180,12 @@ class RewardHandler:
         Returns:
             A ``RewardBatchResult`` with per-event allocations and totals.
         """
-        allocations: List[RewardAllocation] = [self.calculate(e) for e in events]
-        participant_totals: Dict[str, Decimal] = {}
+        allocations: list[RewardAllocation] = [self.calculate(e) for e in events]
+        participant_totals: dict[str, Decimal] = {}
         total = Decimal("0")
         for alloc in allocations:
             participant_totals[alloc.participant_id] = (
-                participant_totals.get(alloc.participant_id, Decimal("0"))
-                + alloc.final_reward
+                participant_totals.get(alloc.participant_id, Decimal("0")) + alloc.final_reward
             )
             total += alloc.final_reward
 

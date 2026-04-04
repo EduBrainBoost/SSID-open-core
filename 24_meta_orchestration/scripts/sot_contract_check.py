@@ -2,11 +2,14 @@
 """
 AR-02: SOT Contract Check against sot_contract.yaml (SOT_AGENT_001-036)
 """
+
 import argparse
+import contextlib
 import json
 import subprocess
 import sys
 from pathlib import Path
+
 import yaml
 
 
@@ -36,12 +39,19 @@ def load_or_generate_scan(scan_path: Path, repo_root: Path) -> dict:
             pass
     generator = repo_root / "24_meta_orchestration/scripts/generate_repo_scan.py"
     if generator.exists():
-        subprocess.run([
-            "python", str(generator),
-            "--repo-root", str(repo_root),
-            "--commit-sha", "0" * 40,
-            "--out", str(scan_path),
-        ], check=True)
+        subprocess.run(
+            [
+                "python",
+                str(generator),
+                "--repo-root",
+                str(repo_root),
+                "--commit-sha",
+                "0" * 40,
+                "--out",
+                str(scan_path),
+            ],
+            check=True,
+        )
         return json.loads(scan_path.read_text())
     return {}
 
@@ -107,67 +117,27 @@ def check_rule(rule: dict, scan: dict, repo_root: Path) -> dict:
         result["details"] = str(repo_root / "01_ai_layer")
 
     # SOT_AGENT_009-011: Root 02 Audit Logging checks
-    elif num == 9:
-        result["passed"] = (repo_root / "02_audit_logging").exists()
-        result["details"] = str(repo_root / "02_audit_logging")
-
-    elif num == 10:
-        result["passed"] = (repo_root / "02_audit_logging").exists()
-        result["details"] = str(repo_root / "02_audit_logging")
-
-    elif num == 11:
+    elif num == 9 or num == 10 or num == 11:
         result["passed"] = (repo_root / "02_audit_logging").exists()
         result["details"] = str(repo_root / "02_audit_logging")
 
     # SOT_AGENT_012-014: Root 03 Core checks
-    elif num == 12:
-        result["passed"] = (repo_root / "03_core").exists()
-        result["details"] = str(repo_root / "03_core")
-
-    elif num == 13:
-        result["passed"] = (repo_root / "03_core").exists()
-        result["details"] = str(repo_root / "03_core")
-
-    elif num == 14:
+    elif num == 12 or num == 13 or num == 14:
         result["passed"] = (repo_root / "03_core").exists()
         result["details"] = str(repo_root / "03_core")
 
     # SOT_AGENT_015-017: Root 04 Deployment checks
-    elif num == 15:
-        result["passed"] = (repo_root / "04_deployment").exists()
-        result["details"] = str(repo_root / "04_deployment")
-
-    elif num == 16:
-        result["passed"] = (repo_root / "04_deployment").exists()
-        result["details"] = str(repo_root / "04_deployment")
-
-    elif num == 17:
+    elif num == 15 or num == 16 or num == 17:
         result["passed"] = (repo_root / "04_deployment").exists()
         result["details"] = str(repo_root / "04_deployment")
 
     # SOT_AGENT_018-020: Root 05 Documentation checks
-    elif num == 18:
-        result["passed"] = (repo_root / "05_documentation").exists()
-        result["details"] = str(repo_root / "05_documentation")
-
-    elif num == 19:
-        result["passed"] = (repo_root / "05_documentation").exists()
-        result["details"] = str(repo_root / "05_documentation")
-
-    elif num == 20:
+    elif num == 18 or num == 19 or num == 20:
         result["passed"] = (repo_root / "05_documentation").exists()
         result["details"] = str(repo_root / "05_documentation")
 
     # SOT_AGENT_021-023: Root 06 Data Pipeline checks
-    elif num == 21:
-        result["passed"] = (repo_root / "06_data_pipeline").exists()
-        result["details"] = str(repo_root / "06_data_pipeline")
-
-    elif num == 22:
-        result["passed"] = (repo_root / "06_data_pipeline").exists()
-        result["details"] = str(repo_root / "06_data_pipeline")
-
-    elif num == 23:
+    elif num == 21 or num == 22 or num == 23:
         result["passed"] = (repo_root / "06_data_pipeline").exists()
         result["details"] = str(repo_root / "06_data_pipeline")
 
@@ -258,10 +228,8 @@ def run_checks(rules_path: Path, scan_path: Path, repo_root: Path) -> dict:
     if scan_path and scan_path.exists():
         content = scan_path.read_text().strip()
         if content:
-            try:
+            with contextlib.suppress(json.JSONDecodeError):
                 scan = json.loads(content)
-            except json.JSONDecodeError:
-                pass
 
     results = [check_rule(r, scan, repo_root) for r in rules]
     failed = [r for r in results if not r["passed"]]

@@ -1,14 +1,18 @@
-﻿"""
+"""
 cron_sha256_manifest.py - T-021 Evidence SHA256 Manifest Writer
 Writes SHA256 manifest for cron job outputs to WORM storage.
 """
-import json, hashlib, sys
-from datetime import datetime, timezone
+
+import hashlib
+import json
+import sys
+from datetime import UTC, datetime
 from pathlib import Path
+
 
 def write_manifest(job_id: str, output_files: list, repo_root: str = ".") -> dict:
     root = Path(repo_root)
-    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    ts = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     worm_dir = root / "02_audit_logging" / "storage" / "worm" / job_id / ts
     worm_dir.mkdir(parents=True, exist_ok=True)
 
@@ -28,6 +32,7 @@ def write_manifest(job_id: str, output_files: list, repo_root: str = ".") -> dic
         f.write(json.dumps({"ts": ts, "job": job_id, "manifest": str(manifest_path)}) + "\n")
 
     return manifest
+
 
 if __name__ == "__main__":
     job = sys.argv[1] if len(sys.argv) > 1 else "unknown"

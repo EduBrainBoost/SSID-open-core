@@ -7,6 +7,7 @@ Never logs or prints secret values.
 
 Exit code 0 on PASS, 1 on FAIL.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -15,7 +16,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 try:
     from web3 import Web3
@@ -30,19 +31,8 @@ __all__ = ["verify", "TEST_HASH"]
 # ---------------------------------------------------------------------------
 
 REPO_ROOT: Path = Path(__file__).resolve().parents[4]
-CONTRACTS_DIR: Path = (
-    REPO_ROOT
-    / "12_tooling"
-    / "testnet_mvp"
-    / "01_hash_only_proof_registry"
-    / "contracts"
-)
-AUDIT_DIR: Path = (
-    REPO_ROOT
-    / "02_audit_logging"
-    / "agent_runs"
-    / "PH3_IMPL_SCRIPTS_002"
-)
+CONTRACTS_DIR: Path = REPO_ROOT / "12_tooling" / "testnet_mvp" / "01_hash_only_proof_registry" / "contracts"
+AUDIT_DIR: Path = REPO_ROOT / "02_audit_logging" / "agent_runs" / "PH3_IMPL_SCRIPTS_002"
 ABI_PATH: Path = CONTRACTS_DIR / "proof_registry_abi.json"
 
 # Deterministic timeout for all RPC calls (seconds).
@@ -57,14 +47,14 @@ TEST_HASH: bytes = hashlib.sha256(b"ssid-testnet-verify").digest()
 # ---------------------------------------------------------------------------
 
 
-def _read_env() -> Tuple[str, str, int, str]:
+def _read_env() -> tuple[str, str, int, str]:
     """Read required environment variables. Exits on missing values."""
-    contract_address: Optional[str] = os.environ.get("CONTRACT_ADDRESS")
-    rpc_url: Optional[str] = os.environ.get("RPC_URL")
-    chain_id_str: Optional[str] = os.environ.get("CHAIN_ID")
-    private_key: Optional[str] = os.environ.get("PRIVATE_KEY")
+    contract_address: str | None = os.environ.get("CONTRACT_ADDRESS")
+    rpc_url: str | None = os.environ.get("RPC_URL")
+    chain_id_str: str | None = os.environ.get("CHAIN_ID")
+    private_key: str | None = os.environ.get("PRIVATE_KEY")
 
-    missing: List[str] = []
+    missing: list[str] = []
     if not contract_address:
         missing.append("CONTRACT_ADDRESS")
     if not rpc_url:
@@ -94,7 +84,7 @@ def _read_env() -> Tuple[str, str, int, str]:
 
 def _load_abi() -> list:
     """Load the contract ABI from the contracts directory."""
-    with open(ABI_PATH, "r", encoding="utf-8") as f:
+    with open(ABI_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -108,7 +98,7 @@ def verify(
     rpc_url: str,
     chain_id: int,
     private_key: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Run the verification flow against a deployed ProofRegistry.
 
     Steps:
@@ -144,10 +134,10 @@ def verify(
         abi=abi,
     )
 
-    tx_hashes: List[str] = []
+    tx_hashes: list[str] = []
 
     # Step 1: hasProof should be false.
-    print(f"Step 1: Checking hasProof for test hash ...")
+    print("Step 1: Checking hasProof for test hash ...")
     has_before: bool = contract.functions.hasProof(TEST_HASH).call()
     if has_before:
         print("WARN: Test hash already exists on-chain. Reporting PASS (idempotent).")
@@ -163,7 +153,7 @@ def verify(
     # Step 2: addProof.
     print("Step 2: Sending addProof transaction ...")
     nonce: int = w3.eth.get_transaction_count(caller_address)
-    tx: Dict[str, Any] = contract.functions.addProof(TEST_HASH).build_transaction(
+    tx: dict[str, Any] = contract.functions.addProof(TEST_HASH).build_transaction(
         {
             "chainId": chain_id,
             "from": caller_address,
@@ -216,7 +206,7 @@ def verify(
     }
 
 
-def _write_verify_report(data: Dict[str, Any]) -> Path:
+def _write_verify_report(data: dict[str, Any]) -> Path:
     """Write verify_report.json to the audit logging directory."""
     os.makedirs(AUDIT_DIR, exist_ok=True)
     output_path: Path = AUDIT_DIR / "verify_report.json"

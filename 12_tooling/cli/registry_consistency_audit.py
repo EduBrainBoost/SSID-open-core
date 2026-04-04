@@ -17,13 +17,13 @@ Exit codes:
   1 = WARN   — advisory warnings only
   2 = FAIL   — hard consistency violations
 """
+
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -34,13 +34,30 @@ EXIT_WARN = 1
 EXIT_FAIL = 2
 
 ROOTS_24 = [
-    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-    "05_documentation", "06_data_pipeline", "07_governance_legal",
-    "08_identity_score", "09_meta_identity", "10_interoperability",
-    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
-    "15_infra", "16_codex", "17_observability", "18_data_layer",
-    "19_adapters", "20_foundation", "21_post_quantum_crypto",
-    "22_datasets", "23_compliance", "24_meta_orchestration",
+    "01_ai_layer",
+    "02_audit_logging",
+    "03_core",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "12_tooling",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "16_codex",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
+    "23_compliance",
+    "24_meta_orchestration",
 ]
 
 MODULE_YAML_REQUIRED = {"module_id", "version", "status", "classification"}
@@ -143,30 +160,36 @@ def check_repo_to_registry(
     for root_name in ROOTS_24:
         root_dir = repo / root_name
         if not root_dir.is_dir():
-            result.add(Finding(
-                "registry_missing",
-                "deny",
-                root_name,
-                f"expected root directory '{root_name}' does not exist on disk",
-            ))
+            result.add(
+                Finding(
+                    "registry_missing",
+                    "deny",
+                    root_name,
+                    f"expected root directory '{root_name}' does not exist on disk",
+                )
+            )
             continue
 
         if root_name not in manifest_modules:
-            result.add(Finding(
-                "registry_missing",
-                "deny",
-                root_name,
-                f"module '{root_name}' exists on disk but has no entry in registry_manifest.yaml",
-            ))
+            result.add(
+                Finding(
+                    "registry_missing",
+                    "deny",
+                    root_name,
+                    f"module '{root_name}' exists on disk but has no entry in registry_manifest.yaml",
+                )
+            )
 
         module_yaml = root_dir / "module.yaml"
         if not module_yaml.exists():
-            result.add(Finding(
-                "registry_missing",
-                "deny",
-                f"{root_name}/module.yaml",
-                f"module.yaml missing for root '{root_name}'",
-            ))
+            result.add(
+                Finding(
+                    "registry_missing",
+                    "deny",
+                    f"{root_name}/module.yaml",
+                    f"module.yaml missing for root '{root_name}'",
+                )
+            )
 
 
 # -----------------------------------------------------------------------
@@ -180,12 +203,14 @@ def check_registry_to_repo(
     for module_id, entry in manifest_modules.items():
         root_dir = repo / module_id
         if not root_dir.is_dir():
-            result.add(Finding(
-                "registry_orphan",
-                "deny",
-                module_id,
-                f"registry entry for '{module_id}' but directory does not exist",
-            ))
+            result.add(
+                Finding(
+                    "registry_orphan",
+                    "deny",
+                    module_id,
+                    f"registry entry for '{module_id}' but directory does not exist",
+                )
+            )
             continue
 
         artifact_refs = entry.get("artifact_refs", {})
@@ -193,12 +218,14 @@ def check_registry_to_repo(
             for ref_name, ref_path in artifact_refs.items():
                 full_path = repo / ref_path
                 if not full_path.exists():
-                    result.add(Finding(
-                        "registry_reference_broken",
-                        "deny",
-                        ref_path,
-                        f"artifact_ref '{ref_name}' points to non-existent file",
-                    ))
+                    result.add(
+                        Finding(
+                            "registry_reference_broken",
+                            "deny",
+                            ref_path,
+                            f"artifact_ref '{ref_name}' points to non-existent file",
+                        )
+                    )
 
 
 # -----------------------------------------------------------------------
@@ -214,23 +241,27 @@ def check_duplicates(
     for module_id, entry in manifest_modules.items():
         mid = entry.get("module_id", module_id)
         if mid in seen_ids:
-            result.add(Finding(
-                "registry_duplicate",
-                "deny",
-                module_id,
-                f"duplicate module_id '{mid}' (also in '{seen_ids[mid]}')",
-            ))
+            result.add(
+                Finding(
+                    "registry_duplicate",
+                    "deny",
+                    module_id,
+                    f"duplicate module_id '{mid}' (also in '{seen_ids[mid]}')",
+                )
+            )
         else:
             seen_ids[mid] = module_id
 
         name = entry.get("name", "")
         if name and name in seen_names:
-            result.add(Finding(
-                "registry_duplicate",
-                "deny",
-                module_id,
-                f"duplicate module name '{name}' (also in '{seen_names[name]}')",
-            ))
+            result.add(
+                Finding(
+                    "registry_duplicate",
+                    "deny",
+                    module_id,
+                    f"duplicate module name '{name}' (also in '{seen_names[name]}')",
+                )
+            )
         elif name:
             seen_names[name] = module_id
 
@@ -241,12 +272,14 @@ def check_duplicates(
 
     for rule_id, modules in governance_rules.items():
         if len(modules) > 1:
-            result.add(Finding(
-                "registry_duplicate",
-                "warn",
-                rule_id,
-                f"governance_rule '{rule_id}' assigned to multiple modules: {modules}",
-            ))
+            result.add(
+                Finding(
+                    "registry_duplicate",
+                    "warn",
+                    rule_id,
+                    f"governance_rule '{rule_id}' assigned to multiple modules: {modules}",
+                )
+            )
 
 
 # -----------------------------------------------------------------------
@@ -265,59 +298,71 @@ def check_metadata(
         try:
             data = load_yaml(module_yaml_path)
         except Exception:
-            result.add(Finding(
-                "registry_metadata_invalid",
-                "deny",
-                f"{module_id}/module.yaml",
-                "module.yaml is not valid YAML",
-            ))
+            result.add(
+                Finding(
+                    "registry_metadata_invalid",
+                    "deny",
+                    f"{module_id}/module.yaml",
+                    "module.yaml is not valid YAML",
+                )
+            )
             continue
 
         if not isinstance(data, dict):
-            result.add(Finding(
-                "registry_metadata_invalid",
-                "deny",
-                f"{module_id}/module.yaml",
-                "module.yaml is not a YAML mapping",
-            ))
+            result.add(
+                Finding(
+                    "registry_metadata_invalid",
+                    "deny",
+                    f"{module_id}/module.yaml",
+                    "module.yaml is not a YAML mapping",
+                )
+            )
             continue
 
         missing = MODULE_YAML_REQUIRED - set(data.keys())
         if missing:
-            result.add(Finding(
-                "registry_metadata_invalid",
-                "deny",
-                f"{module_id}/module.yaml",
-                f"missing required fields: {sorted(missing)}",
-            ))
+            result.add(
+                Finding(
+                    "registry_metadata_invalid",
+                    "deny",
+                    f"{module_id}/module.yaml",
+                    f"missing required fields: {sorted(missing)}",
+                )
+            )
 
         status = data.get("status", "")
         if status and status not in VALID_STATUSES:
-            result.add(Finding(
-                "registry_metadata_invalid",
-                "deny",
-                f"{module_id}/module.yaml",
-                f"invalid status '{status}' (valid: {sorted(VALID_STATUSES)})",
-            ))
+            result.add(
+                Finding(
+                    "registry_metadata_invalid",
+                    "deny",
+                    f"{module_id}/module.yaml",
+                    f"invalid status '{status}' (valid: {sorted(VALID_STATUSES)})",
+                )
+            )
 
         disk_mid = data.get("module_id", "")
         if disk_mid and disk_mid != module_id:
-            result.add(Finding(
-                "registry_path_mismatch",
-                "deny",
-                f"{module_id}/module.yaml",
-                f"module_id in file is '{disk_mid}' but directory is '{module_id}'",
-            ))
+            result.add(
+                Finding(
+                    "registry_path_mismatch",
+                    "deny",
+                    f"{module_id}/module.yaml",
+                    f"module_id in file is '{disk_mid}' but directory is '{module_id}'",
+                )
+            )
 
         registry_version = entry.get("version", "")
         disk_version = data.get("version", "")
         if registry_version and disk_version and registry_version != disk_version:
-            result.add(Finding(
-                "registry_path_mismatch",
-                "warn",
-                f"{module_id}/module.yaml",
-                f"version mismatch: registry='{registry_version}', disk='{disk_version}'",
-            ))
+            result.add(
+                Finding(
+                    "registry_path_mismatch",
+                    "warn",
+                    f"{module_id}/module.yaml",
+                    f"version mismatch: registry='{registry_version}', disk='{disk_version}'",
+                )
+            )
 
 
 # -----------------------------------------------------------------------
@@ -329,23 +374,27 @@ def check_sot_registry_integrity(
 ) -> None:
     sot_path = repo / SOT_REGISTRY_PATH
     if not sot_path.exists():
-        result.add(Finding(
-            "registry_missing",
-            "deny",
-            SOT_REGISTRY_PATH,
-            "sot_registry.json does not exist",
-        ))
+        result.add(
+            Finding(
+                "registry_missing",
+                "deny",
+                SOT_REGISTRY_PATH,
+                "sot_registry.json does not exist",
+            )
+        )
         return
 
     try:
         sot = load_json(sot_path)
     except Exception:
-        result.add(Finding(
-            "registry_metadata_invalid",
-            "deny",
-            SOT_REGISTRY_PATH,
-            "sot_registry.json is not valid JSON",
-        ))
+        result.add(
+            Finding(
+                "registry_metadata_invalid",
+                "deny",
+                SOT_REGISTRY_PATH,
+                "sot_registry.json is not valid JSON",
+            )
+        )
         return
 
     artifacts = sot.get("roots", {}).get("sot_artifacts", [])
@@ -356,24 +405,28 @@ def check_sot_registry_integrity(
 
         full_path = repo / path
         if not full_path.exists():
-            result.add(Finding(
-                "registry_reference_broken",
-                "deny",
-                path,
-                f"sot_registry artifact '{name}' points to non-existent file",
-            ))
+            result.add(
+                Finding(
+                    "registry_reference_broken",
+                    "deny",
+                    path,
+                    f"sot_registry artifact '{name}' points to non-existent file",
+                )
+            )
             continue
 
         if expected_hash:
             actual_hash = sha256_file(full_path)
             if actual_hash != expected_hash:
-                result.add(Finding(
-                    "registry_reference_broken",
-                    "warn",
-                    path,
-                    f"sot_registry artifact '{name}' hash mismatch: "
-                    f"expected={expected_hash[:16]}..., actual={actual_hash[:16]}...",
-                ))
+                result.add(
+                    Finding(
+                        "registry_reference_broken",
+                        "warn",
+                        path,
+                        f"sot_registry artifact '{name}' hash mismatch: "
+                        f"expected={expected_hash[:16]}..., actual={actual_hash[:16]}...",
+                    )
+                )
 
 
 # -----------------------------------------------------------------------
@@ -384,33 +437,39 @@ def run_audit(repo: Path) -> AuditResult:
 
     manifest_path = repo / REGISTRY_MANIFEST_PATH
     if not manifest_path.exists():
-        result.add(Finding(
-            "registry_missing",
-            "deny",
-            REGISTRY_MANIFEST_PATH,
-            "registry_manifest.yaml does not exist",
-        ))
+        result.add(
+            Finding(
+                "registry_missing",
+                "deny",
+                REGISTRY_MANIFEST_PATH,
+                "registry_manifest.yaml does not exist",
+            )
+        )
         return result
 
     try:
         manifest_data = load_yaml(manifest_path)
     except Exception as exc:
-        result.add(Finding(
-            "registry_metadata_invalid",
-            "deny",
-            REGISTRY_MANIFEST_PATH,
-            f"cannot parse registry_manifest.yaml: {exc}",
-        ))
+        result.add(
+            Finding(
+                "registry_metadata_invalid",
+                "deny",
+                REGISTRY_MANIFEST_PATH,
+                f"cannot parse registry_manifest.yaml: {exc}",
+            )
+        )
         return result
 
     modules_list = manifest_data.get("modules", [])
     if not isinstance(modules_list, list):
-        result.add(Finding(
-            "registry_metadata_invalid",
-            "deny",
-            REGISTRY_MANIFEST_PATH,
-            "registry_manifest.yaml 'modules' is not a list",
-        ))
+        result.add(
+            Finding(
+                "registry_metadata_invalid",
+                "deny",
+                REGISTRY_MANIFEST_PATH,
+                "registry_manifest.yaml 'modules' is not a list",
+            )
+        )
         return result
 
     manifest_modules: dict[str, dict[str, Any]] = {}
@@ -418,12 +477,14 @@ def run_audit(repo: Path) -> AuditResult:
         if isinstance(entry, dict) and "module_id" in entry:
             mid = entry["module_id"]
             if mid in manifest_modules:
-                result.add(Finding(
-                    "registry_duplicate",
-                    "deny",
-                    mid,
-                    f"duplicate module_id '{mid}' in registry_manifest.yaml",
-                ))
+                result.add(
+                    Finding(
+                        "registry_duplicate",
+                        "deny",
+                        mid,
+                        f"duplicate module_id '{mid}' in registry_manifest.yaml",
+                    )
+                )
             manifest_modules[mid] = entry
 
     check_repo_to_registry(repo, manifest_modules, result)
@@ -436,12 +497,7 @@ def run_audit(repo: Path) -> AuditResult:
 
 
 def generate_report(result: AuditResult, repo: Path) -> dict[str, Any]:
-    ts = (
-        datetime.now(timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    ts = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     return {
         "audit_type": "registry_consistency",
         "timestamp_utc": ts,
@@ -490,8 +546,10 @@ def main() -> int:
         print(json.dumps(report, indent=2, ensure_ascii=False))
     else:
         print(f"Registry Consistency Audit: {result.overall}")
-        print(f"  Findings: {len(result.findings)} "
-              f"(deny={report['deny_count']}, warn={report['warn_count']}, info={report['info_count']})")
+        print(
+            f"  Findings: {len(result.findings)} "
+            f"(deny={report['deny_count']}, warn={report['warn_count']}, info={report['info_count']})"
+        )
         print(f"  Evidence Hash: {report['evidence_hash'][:16]}...")
         if result.findings:
             print()

@@ -3,33 +3,58 @@
 Erzeugt repo_scan.json als einzige valide OPA-Input-Quelle.
 SoT-Regel: master_v1.1.1 §7
 """
+
 import argparse
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 ROOTS_24 = [
-    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-    "05_documentation", "06_data_pipeline", "07_governance_legal",
-    "08_identity_score", "09_meta_identity", "10_interoperability",
-    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
-    "15_infra", "16_codex", "17_observability", "18_data_layer",
-    "19_adapters", "20_foundation", "21_post_quantum_crypto",
-    "22_datasets", "23_compliance", "24_meta_orchestration",
+    "01_ai_layer",
+    "02_audit_logging",
+    "03_core",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "12_tooling",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "16_codex",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
+    "23_compliance",
+    "24_meta_orchestration",
 ]
 SHARDS_16 = [
-    "01_identitaet_personen", "02_dokumente_nachweise",
-    "03_zugang_berechtigungen", "04_kommunikation_daten",
-    "05_gesundheit_medizin", "06_bildung_qualifikationen",
-    "07_familie_soziales", "08_mobilitaet_fahrzeuge",
-    "09_arbeit_karriere", "10_finanzen_banking",
-    "11_versicherungen_risiken", "12_immobilien_grundstuecke",
-    "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
-    "15_handel_transaktionen", "16_behoerden_verwaltung",
+    "01_identitaet_personen",
+    "02_dokumente_nachweise",
+    "03_zugang_berechtigungen",
+    "04_kommunikation_daten",
+    "05_gesundheit_medizin",
+    "06_bildung_qualifikationen",
+    "07_familie_soziales",
+    "08_mobilitaet_fahrzeuge",
+    "09_arbeit_karriere",
+    "10_finanzen_banking",
+    "11_versicherungen_risiken",
+    "12_immobilien_grundstuecke",
+    "13_unternehmen_gewerbe",
+    "14_vertraege_vereinbarungen",
+    "15_handel_transaktionen",
+    "16_behoerden_verwaltung",
 ]
-FORBIDDEN_EXTS = {".ipynb", ".parquet", ".sqlite", ".db",
-                  ".env", ".pem", ".key", ".p12", ".pfx"}
+FORBIDDEN_EXTS = {".ipynb", ".parquet", ".sqlite", ".db", ".env", ".pem", ".key", ".p12", ".pfx"}
 SKIP_DIRS = {".git", "node_modules", ".venv", ".pytest_cache", "__pycache__"}
 
 
@@ -64,13 +89,15 @@ def scan(repo_root: Path, commit_sha: str) -> dict:
                 forbidden_found.append(rel)
             if p.name == "chart.yaml" and "/shards/" in rel:
                 shard_counts[root_id] += 1
-            files.append({
-                "path": rel,
-                "ext": ext,
-                "size_bytes": p.stat().st_size,
-                "sha256": sha256_file(p),
-                "root": root_id,
-            })
+            files.append(
+                {
+                    "path": rel,
+                    "ext": ext,
+                    "size_bytes": p.stat().st_size,
+                    "sha256": sha256_file(p),
+                    "root": root_id,
+                }
+            )
 
     # Also scan files directly in repo_root (not under any known root)
     # for forbidden extension detection when repo_root itself is a tmp dir
@@ -86,13 +113,15 @@ def scan(repo_root: Path, commit_sha: str) -> dict:
             ext = p.suffix.lower()
             if ext in FORBIDDEN_EXTS:
                 forbidden_found.append(rel)
-            files.append({
-                "path": rel,
-                "ext": ext,
-                "size_bytes": p.stat().st_size,
-                "sha256": sha256_file(p),
-                "root": None,
-            })
+            files.append(
+                {
+                    "path": rel,
+                    "ext": ext,
+                    "size_bytes": p.stat().st_size,
+                    "sha256": sha256_file(p),
+                    "root": None,
+                }
+            )
 
     incident_plans = {}
     for root_id in ROOTS_24:
@@ -102,13 +131,10 @@ def scan(repo_root: Path, commit_sha: str) -> dict:
             "path": f"{root_id}/docs/incident_response_plan.md",
         }
 
-    roots = [
-        {"id": r, "path": r, "exists": (repo_root / r).exists()}
-        for r in ROOTS_24
-    ]
+    roots = [{"id": r, "path": r, "exists": (repo_root / r).exists()} for r in ROOTS_24]
 
     return {
-        "scan_ts": datetime.now(timezone.utc).isoformat(),
+        "scan_ts": datetime.now(UTC).isoformat(),
         "commit_sha": commit_sha,
         "repo": repo_root.name,
         "roots": roots,

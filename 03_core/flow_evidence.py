@@ -14,13 +14,14 @@ Schema (P4.2 Evidence Contract):
 
 EMS-compatible: every field is a str, list[dict], or dict[str, str].
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import uuid
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any
 
 _VERSION = "1.0.0"
@@ -65,7 +66,7 @@ class FlowEvidence:
         allow_or_deny: str,
         proof_hash: str | None = None,
         flow_id: str | None = None,
-    ) -> "FlowEvidence":
+    ) -> FlowEvidence:
         input_hash = _sha256(inputs)
         output_hash = _sha256(outputs)
         determinism_hash = _sha256(input_hash + output_hash)
@@ -77,7 +78,7 @@ class FlowEvidence:
             policy_decisions=policy_decisions,
             allow_or_deny=allow_or_deny,
             proof_hash=proof_hash,
-            timestamp_utc=datetime.now(timezone.utc).isoformat(),
+            timestamp_utc=datetime.now(UTC).isoformat(),
             module_versions=MODULE_VERSIONS,
             determinism_hash=determinism_hash,
         )

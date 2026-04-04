@@ -7,10 +7,9 @@ and reported severity. stdlib-only, no mainnet actions.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
 import uuid
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 
 # --- Canonical incident types ---------------------------------------------------
 
@@ -30,14 +29,14 @@ INCIDENT_TYPES: set[str] = {
 # classification is fully deterministic and auditable.
 
 _BASE_SEVERITY: dict[str, int] = {
-    "service_down":                  1,
-    "evidence_persistence_failure":  1,
-    "provider_failure":              2,
-    "login_failure":                 2,
-    "session_break":                 2,
-    "queue_stuck":                   3,
-    "stale_lock":                    3,
-    "config_drift":                  4,
+    "service_down": 1,
+    "evidence_persistence_failure": 1,
+    "provider_failure": 2,
+    "login_failure": 2,
+    "session_break": 2,
+    "queue_stuck": 3,
+    "stale_lock": 3,
+    "config_drift": 4,
 }
 
 VALID_SEVERITIES: set[str] = {"critical", "high", "medium", "low"}
@@ -45,13 +44,14 @@ VALID_SEVERITIES: set[str] = {"critical", "high", "medium", "low"}
 # Severity modifier: reported severity can shift the base by at most +/-1
 _SEVERITY_MODIFIER: dict[str, int] = {
     "critical": -1,
-    "high":      0,
-    "medium":    1,
-    "low":       1,
+    "high": 0,
+    "medium": 1,
+    "low": 1,
 }
 
 
 # --- Data model -----------------------------------------------------------------
+
 
 @dataclass
 class Incident:
@@ -60,24 +60,23 @@ class Incident:
     incident_id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
     incident_type: str = ""
     reported_severity: str = ""
-    sev_level: int = 1          # 1-4
-    sev_label: str = "SEV-1"    # human-readable
-    timestamp: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
-    description: Optional[str] = None
+    sev_level: int = 1  # 1-4
+    sev_label: str = "SEV-1"  # human-readable
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
+    description: str | None = None
     containment_status: str = "pending"
-    diagnosis: Optional[str] = None
-    repair_action: Optional[str] = None
+    diagnosis: str | None = None
+    repair_action: str | None = None
     verified: bool = False
 
 
 # --- Public API -----------------------------------------------------------------
 
+
 def classify(
     incident_type: str,
     severity: str,
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> Incident:
     """Classify an incident deterministically into SEV-1..SEV-4.
 

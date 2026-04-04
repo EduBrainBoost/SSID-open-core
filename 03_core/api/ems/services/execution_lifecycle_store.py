@@ -1,7 +1,7 @@
 import hashlib
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +11,7 @@ def _runs_path(repo_root: Path) -> Path:
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _json_sha256(payload: dict[str, Any]) -> str:
@@ -41,9 +41,7 @@ def append_execution_run_record(repo_root: Path, payload: dict[str, Any]) -> dic
     record = dict(payload)
     record.setdefault("run_id", f"RUN-{uuid.uuid4().hex[:12].upper()}")
     record.setdefault("created_at_utc", _utc_now_iso())
-    record["evidence_hash"] = _json_sha256(
-        {key: value for key, value in record.items() if key != "evidence_hash"}
-    )
+    record["evidence_hash"] = _json_sha256({key: value for key, value in record.items() if key != "evidence_hash"})
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(record, sort_keys=True, ensure_ascii=False) + "\n")

@@ -1,12 +1,12 @@
 """
 SSIDCTL v2 Runtime State Machine — deterministic state transitions.
 """
+
 from __future__ import annotations
 
 import datetime as dt
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional
 
 
 class RunState(Enum):
@@ -53,12 +53,7 @@ VALID_TRANSITIONS = {
 
 
 def _utc_now() -> str:
-    return (
-        dt.datetime.now(dt.timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 @dataclass
@@ -74,9 +69,9 @@ class RunContext:
     run_id: str
     profile_id: str
     state: RunState = RunState.REGISTERED
-    transitions: List[StateTransition] = field(default_factory=list)
+    transitions: list[StateTransition] = field(default_factory=list)
     started_at: str = field(default_factory=_utc_now)
-    ended_at: Optional[str] = None
+    ended_at: str | None = None
     exit_code: int = -1
     dry_run: bool = False
 

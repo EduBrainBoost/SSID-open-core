@@ -8,6 +8,7 @@ Hard rules enforced:
 - No fake pass: every PASS test checks actual result field
 - No stub: FAIL tests verify exit code AND status field
 """
+
 import hashlib
 import json
 import subprocess
@@ -36,6 +37,7 @@ AR10_DAO = SSID_ROOT / "23_compliance" / "scripts" / "dao_params_check.py"
 # AR-01 PII Scanner
 # ---------------------------------------------------------------------------
 
+
 class TestAR01Integration:
     def test_real_repo_python_files_pass(self, tmp_path):
         """Real SSID Python files in 12_tooling/ssid_autorunner/ must pass PII scan."""
@@ -44,11 +46,11 @@ class TestAR01Integration:
         assert py_files, "Expected Python files in ssid_autorunner/"
         out = tmp_path / "pii.json"
         r = subprocess.run(
-            ["python", str(AR01_SCAN),
-             "--files"] + [str(f) for f in py_files] + [
-             "--patterns", str(AR01_PATTERNS),
-             "--out", str(out)],
-            capture_output=True, text=True
+            ["python", str(AR01_SCAN), "--files"]
+            + [str(f) for f in py_files]
+            + ["--patterns", str(AR01_PATTERNS), "--out", str(out)],
+            capture_output=True,
+            text=True,
         )
         assert r.returncode == 0, f"Real SSID code failed PII scan: {r.stdout}"
         data = json.loads(out.read_text())
@@ -62,11 +64,9 @@ class TestAR01Integration:
         dirty.write_text('BANK_ACCOUNT = "DE89370400440532013000"\n')
         out = tmp_path / "pii.json"
         r = subprocess.run(
-            ["python", str(AR01_SCAN),
-             "--files", str(dirty),
-             "--patterns", str(AR01_PATTERNS),
-             "--out", str(out)],
-            capture_output=True, text=True
+            ["python", str(AR01_SCAN), "--files", str(dirty), "--patterns", str(AR01_PATTERNS), "--out", str(out)],
+            capture_output=True,
+            text=True,
         )
         assert r.returncode == 1, "IBAN in code must FAIL (DENY path)"
         data = json.loads(out.read_text())
@@ -79,20 +79,18 @@ class TestAR01Integration:
         dirty.write_text('ADMIN_MAIL = "admin.secret@corp-internal.de"\n')
         out = tmp_path / "pii.json"
         subprocess.run(
-            ["python", str(AR01_SCAN),
-             "--files", str(dirty),
-             "--patterns", str(AR01_PATTERNS),
-             "--out", str(out)],
-            capture_output=True, text=True
+            ["python", str(AR01_SCAN), "--files", str(dirty), "--patterns", str(AR01_PATTERNS), "--out", str(out)],
+            capture_output=True,
+            text=True,
         )
         content = out.read_text()
-        assert "admin.secret@corp-internal.de" not in content, \
-            "PII value must never appear in scan output"
+        assert "admin.secret@corp-internal.de" not in content, "PII value must never appear in scan output"
 
 
 # ---------------------------------------------------------------------------
 # AR-03 Evidence Anchoring
 # ---------------------------------------------------------------------------
+
 
 class TestAR03Integration:
     def test_real_agent_runs_collection(self, tmp_path):
@@ -101,11 +99,18 @@ class TestAR03Integration:
         state = tmp_path / "anchor_state.json"
         out = tmp_path / "unanchored.json"
         r = subprocess.run(
-            ["python", str(AR03_COLLECT),
-             "--since-last-anchor", str(state),
-             "--agent-runs-dir", str(real_runs),
-             "--out", str(out)],
-            capture_output=True, text=True
+            [
+                "python",
+                str(AR03_COLLECT),
+                "--since-last-anchor",
+                str(state),
+                "--agent-runs-dir",
+                str(real_runs),
+                "--out",
+                str(out),
+            ],
+            capture_output=True,
+            text=True,
         )
         assert r.returncode == 0, r.stderr
         data = json.loads(out.read_text())
@@ -120,10 +125,7 @@ class TestAR03Integration:
         empty_input.write_text(json.dumps({"total_unanchored": 0, "entries": []}))
         out = tmp_path / "merkle.json"
         r = subprocess.run(
-            ["python", str(AR03_MERKLE),
-             "--input", str(empty_input),
-             "--out", str(out)],
-            capture_output=True, text=True
+            ["python", str(AR03_MERKLE), "--input", str(empty_input), "--out", str(out)], capture_output=True, text=True
         )
         assert r.returncode == 0, r.stderr
         data = json.loads(out.read_text())
@@ -145,30 +147,35 @@ class TestAR03Integration:
 
         out = tmp_path / "result.json"
         subprocess.run(
-            ["python", str(AR03_COLLECT),
-             "--since-last-anchor", str(state),
-             "--agent-runs-dir", str(agent_runs),
-             "--out", str(out)],
-            check=True
+            [
+                "python",
+                str(AR03_COLLECT),
+                "--since-last-anchor",
+                str(state),
+                "--agent-runs-dir",
+                str(agent_runs),
+                "--out",
+                str(out),
+            ],
+            check=True,
         )
         data = json.loads(out.read_text())
-        assert data["total_unanchored"] == 0, \
-            "Already-anchored files must be blocked (DENY duplicate)"
+        assert data["total_unanchored"] == 0, "Already-anchored files must be blocked (DENY duplicate)"
 
 
 # ---------------------------------------------------------------------------
 # AR-04 DORA Incident Plan Gate
 # ---------------------------------------------------------------------------
 
+
 class TestAR04Integration:
     def test_real_24_roots_checked(self, tmp_path):
         """Real SSID repo: all 24 roots are checked. Some may fail — schema must hold."""
         out = tmp_path / "dora.json"
         r = subprocess.run(
-            ["python", str(AR04_CHECK),
-             "--repo-root", str(SSID_ROOT),
-             "--out", str(out)],
-            capture_output=True, text=True
+            ["python", str(AR04_CHECK), "--repo-root", str(SSID_ROOT), "--out", str(out)],
+            capture_output=True,
+            text=True,
         )
         # exit 0 (all compliant) or 1 (some missing) — both valid real outcomes
         assert r.returncode in (0, 1), r.stderr
@@ -183,25 +190,38 @@ class TestAR04Integration:
         root_dir = tmp_path / "01_ai_layer" / "docs"
         root_dir.mkdir(parents=True)
         # Only 2 sections — insufficient
-        (root_dir / "incident_response_plan.md").write_text(
-            "# IRP\n## Section 1 — Purpose\n"
-        )
+        (root_dir / "incident_response_plan.md").write_text("# IRP\n## Section 1 — Purpose\n")
         out_check = tmp_path / "check.json"
         subprocess.run(
-            ["python", str(AR04_CHECK),
-             "--repo-root", str(tmp_path),
-             "--roots", "01_ai_layer",
-             "--out", str(out_check)],
-            capture_output=True, text=True
+            [
+                "python",
+                str(AR04_CHECK),
+                "--repo-root",
+                str(tmp_path),
+                "--roots",
+                "01_ai_layer",
+                "--out",
+                str(out_check),
+            ],
+            capture_output=True,
+            text=True,
         )
         out_val = tmp_path / "val.json"
         r = subprocess.run(
-            ["python", str(AR04_VALIDATE),
-             "--results", str(out_check),
-             "--min-sections", "5",
-             "--repo-root", str(tmp_path),
-             "--out", str(out_val)],
-            capture_output=True, text=True
+            [
+                "python",
+                str(AR04_VALIDATE),
+                "--results",
+                str(out_check),
+                "--min-sections",
+                "5",
+                "--repo-root",
+                str(tmp_path),
+                "--out",
+                str(out_val),
+            ],
+            capture_output=True,
+            text=True,
         )
         assert r.returncode == 1, "Thin IRP must FAIL_POLICY (DENY path)"
         data = json.loads(out_val.read_text())
@@ -213,11 +233,9 @@ class TestAR04Integration:
         (tmp_path / "03_core").mkdir()
         out = tmp_path / "dora.json"
         r = subprocess.run(
-            ["python", str(AR04_CHECK),
-             "--repo-root", str(tmp_path),
-             "--roots", "03_core",
-             "--out", str(out)],
-            capture_output=True, text=True
+            ["python", str(AR04_CHECK), "--repo-root", str(tmp_path), "--roots", "03_core", "--out", str(out)],
+            capture_output=True,
+            text=True,
         )
         assert r.returncode == 1
         data = json.loads(out.read_text())
@@ -228,6 +246,7 @@ class TestAR04Integration:
 # ---------------------------------------------------------------------------
 # AR-06 Doc Generation
 # ---------------------------------------------------------------------------
+
 
 class TestAR06Integration:
     def test_real_module_yamls_render_correctly(self, tmp_path):
@@ -245,13 +264,22 @@ class TestAR06Integration:
         manifest = tmp_path / "manifest.json"
 
         r = subprocess.run(
-            ["python", str(AR06_GEN),
-             "--charts", str(chart_list),
-             "--template", str(AR06_TEMPLATE),
-             "--out-dir", str(out_dir),
-             "--out-manifest", str(manifest),
-             "--repo-root", str(SSID_ROOT)],
-            capture_output=True, text=True
+            [
+                "python",
+                str(AR06_GEN),
+                "--charts",
+                str(chart_list),
+                "--template",
+                str(AR06_TEMPLATE),
+                "--out-dir",
+                str(out_dir),
+                "--out-manifest",
+                str(manifest),
+                "--repo-root",
+                str(SSID_ROOT),
+            ],
+            capture_output=True,
+            text=True,
         )
         assert r.returncode == 0, r.stderr
         data = json.loads(manifest.read_text())
@@ -259,8 +287,7 @@ class TestAR06Integration:
         for entry in data["generated"]:
             doc = Path(entry["output"])
             assert doc.exists()
-            assert len(doc.read_text().strip()) > 50, \
-                f"Generated doc {doc} is too short (empty or near-empty)"
+            assert len(doc.read_text().strip()) > 50, f"Generated doc {doc} is too short (empty or near-empty)"
 
     def test_empty_charts_list_returns_pass_no_generate(self, tmp_path):
         """Empty charts list: PASS with 0 generated (not blocked, not errored)."""
@@ -268,13 +295,22 @@ class TestAR06Integration:
         chart_list.write_text("")
         manifest = tmp_path / "manifest.json"
         r = subprocess.run(
-            ["python", str(AR06_GEN),
-             "--charts", str(chart_list),
-             "--template", str(AR06_TEMPLATE),
-             "--out-dir", str(tmp_path / "gen"),
-             "--out-manifest", str(manifest),
-             "--repo-root", str(SSID_ROOT)],
-            capture_output=True, text=True
+            [
+                "python",
+                str(AR06_GEN),
+                "--charts",
+                str(chart_list),
+                "--template",
+                str(AR06_TEMPLATE),
+                "--out-dir",
+                str(tmp_path / "gen"),
+                "--out-manifest",
+                str(manifest),
+                "--repo-root",
+                str(SSID_ROOT),
+            ],
+            capture_output=True,
+            text=True,
         )
         assert r.returncode == 0
         data = json.loads(manifest.read_text())
@@ -287,13 +323,22 @@ class TestAR06Integration:
         chart_list.write_text("/nonexistent/path/chart.yaml\n")
         manifest = tmp_path / "manifest.json"
         r = subprocess.run(
-            ["python", str(AR06_GEN),
-             "--charts", str(chart_list),
-             "--template", str(AR06_TEMPLATE),
-             "--out-dir", str(tmp_path / "gen"),
-             "--out-manifest", str(manifest),
-             "--repo-root", str(SSID_ROOT)],
-            capture_output=True, text=True
+            [
+                "python",
+                str(AR06_GEN),
+                "--charts",
+                str(chart_list),
+                "--template",
+                str(AR06_TEMPLATE),
+                "--out-dir",
+                str(tmp_path / "gen"),
+                "--out-manifest",
+                str(manifest),
+                "--repo-root",
+                str(SSID_ROOT),
+            ],
+            capture_output=True,
+            text=True,
         )
         assert r.returncode == 0
 
@@ -302,16 +347,25 @@ class TestAR06Integration:
 # AR-09 Bias/Fairness Audit
 # ---------------------------------------------------------------------------
 
+
 class TestAR09Integration:
     def test_real_model_inventory_scans_ssid(self, tmp_path):
         """Real SSID model inventory scan returns valid schema."""
         out = tmp_path / "inventory.json"
         r = subprocess.run(
-            ["python", str(SSID_ROOT / "01_ai_layer" / "scripts" / "model_inventory.py"),
-             "--scan-dirs", "01_ai_layer", "08_identity_score",
-             "--repo-root", str(SSID_ROOT),
-             "--out", str(out)],
-            capture_output=True, text=True
+            [
+                "python",
+                str(SSID_ROOT / "01_ai_layer" / "scripts" / "model_inventory.py"),
+                "--scan-dirs",
+                "01_ai_layer",
+                "08_identity_score",
+                "--repo-root",
+                str(SSID_ROOT),
+                "--out",
+                str(out),
+            ],
+            capture_output=True,
+            text=True,
         )
         assert r.returncode == 0, r.stderr
         data = json.loads(out.read_text())
@@ -322,6 +376,7 @@ class TestAR09Integration:
     def test_demographic_parity_violation_triggers_fail(self, tmp_path):
         """Bias threshold exceeded → FAIL_POLICY (DENY path)."""
         import yaml
+
         # Craft a test suite with a parity diff > 0.05
         bad_suite = {
             "test_vectors": {
@@ -333,7 +388,7 @@ class TestAR09Integration:
             "thresholds": {
                 "demographic_parity_max_diff": 0.05,
                 "equal_opportunity_min": 0.95,
-            }
+            },
         }
         bad_yaml = tmp_path / "bad_suite.yaml"
         bad_yaml.write_text(yaml.dump(bad_suite))
@@ -341,12 +396,20 @@ class TestAR09Integration:
         inventory.write_text(json.dumps({"total_models": 1, "models": [], "scan_ts": ""}))
         out = tmp_path / "fairness.json"
         r = subprocess.run(
-            ["python", str(AR09_FAIRNESS),
-             "--models", str(inventory),
-             "--metrics", "demographic_parity",
-             "--test-dataset", str(bad_yaml),
-             "--out", str(out)],
-            capture_output=True, text=True
+            [
+                "python",
+                str(AR09_FAIRNESS),
+                "--models",
+                str(inventory),
+                "--metrics",
+                "demographic_parity",
+                "--test-dataset",
+                str(bad_yaml),
+                "--out",
+                str(out),
+            ],
+            capture_output=True,
+            text=True,
         )
         assert r.returncode == 1, "Bias violation must exit 1 (DENY path)"
         data = json.loads(out.read_text())
@@ -357,6 +420,7 @@ class TestAR09Integration:
     def test_equal_opportunity_violation_triggers_fail(self, tmp_path):
         """TPR below minimum triggers FAIL_POLICY."""
         import yaml
+
         bad_suite = {
             "test_vectors": {
                 "equal_opportunity": [
@@ -366,7 +430,7 @@ class TestAR09Integration:
             "thresholds": {
                 "demographic_parity_max_diff": 0.05,
                 "equal_opportunity_min": 0.95,
-            }
+            },
         }
         bad_yaml = tmp_path / "bad_eo.yaml"
         bad_yaml.write_text(yaml.dump(bad_suite))
@@ -374,12 +438,20 @@ class TestAR09Integration:
         inventory.write_text(json.dumps({"total_models": 1, "models": [], "scan_ts": ""}))
         out = tmp_path / "eo.json"
         r = subprocess.run(
-            ["python", str(AR09_FAIRNESS),
-             "--models", str(inventory),
-             "--metrics", "equal_opportunity",
-             "--test-dataset", str(bad_yaml),
-             "--out", str(out)],
-            capture_output=True, text=True
+            [
+                "python",
+                str(AR09_FAIRNESS),
+                "--models",
+                str(inventory),
+                "--metrics",
+                "equal_opportunity",
+                "--test-dataset",
+                str(bad_yaml),
+                "--out",
+                str(out),
+            ],
+            capture_output=True,
+            text=True,
         )
         assert r.returncode == 1
         data = json.loads(out.read_text())
@@ -391,16 +463,14 @@ class TestAR09Integration:
 # AR-10 Fee Distribution Audit
 # ---------------------------------------------------------------------------
 
+
 class TestAR10Integration:
     def test_real_fee_policy_passes(self, tmp_path):
         """Real fee_allocation_policy.yaml passes 7-Saeulen check."""
         real_policy = SSID_ROOT / "23_compliance" / "fee_allocation_policy.yaml"
         out = tmp_path / "fee.json"
         r = subprocess.run(
-            ["python", str(AR10_FEE),
-             "--policy", str(real_policy),
-             "--out", str(out)],
-            capture_output=True, text=True
+            ["python", str(AR10_FEE), "--policy", str(real_policy), "--out", str(out)], capture_output=True, text=True
         )
         assert r.returncode == 0, f"Real fee policy failed: {r.stdout}"
         data = json.loads(out.read_text())
@@ -413,10 +483,7 @@ class TestAR10Integration:
         real_policy = SSID_ROOT / "07_governance_legal" / "subscription_revenue_policy.yaml"
         out = tmp_path / "sub.json"
         r = subprocess.run(
-            ["python", str(AR10_SUB),
-             "--policy", str(real_policy),
-             "--out", str(out)],
-            capture_output=True, text=True
+            ["python", str(AR10_SUB), "--policy", str(real_policy), "--out", str(out)], capture_output=True, text=True
         )
         assert r.returncode == 0, r.stdout
         data = json.loads(out.read_text())
@@ -425,6 +492,7 @@ class TestAR10Integration:
     def test_policy_with_wrong_distribution_blocked(self, tmp_path):
         """Fee policy with wrong distribution model (not 50/30/10/10) is blocked."""
         import yaml
+
         bad_policy = {
             "distribution": {
                 "protocol_development": {"percent": 40, "label": "X"},
@@ -432,16 +500,13 @@ class TestAR10Integration:
                 "dao_governance": {"percent": 10, "label": "Z"},
                 "operational_reserve": {"percent": 10, "label": "W"},
             },
-            "sum_must_equal": 100
+            "sum_must_equal": 100,
         }
         p = tmp_path / "bad_sub.yaml"
         p.write_text(yaml.dump(bad_policy))
         out = tmp_path / "result.json"
         r = subprocess.run(
-            ["python", str(AR10_SUB),
-             "--policy", str(p),
-             "--out", str(out)],
-            capture_output=True, text=True
+            ["python", str(AR10_SUB), "--policy", str(p), "--out", str(out)], capture_output=True, text=True
         )
         assert r.returncode == 1, "Wrong distribution model must FAIL (DENY path)"
         data = json.loads(out.read_text())
@@ -453,19 +518,30 @@ class TestAR10Integration:
         real_policy = SSID_ROOT / "07_governance_legal" / "subscription_revenue_policy.yaml"
         # quorum of 5% is below min (10%)
         bad_params = tmp_path / "bad_params.json"
-        bad_params.write_text(json.dumps({
-            "min_quorum_percent": 5,       # below min=10
-            "min_vote_duration_hours": 72,
-            "max_proposal_fee_percent": 0.1,
-            "treasury_withdrawal_cap_percent": 5,
-        }))
+        bad_params.write_text(
+            json.dumps(
+                {
+                    "min_quorum_percent": 5,  # below min=10
+                    "min_vote_duration_hours": 72,
+                    "max_proposal_fee_percent": 0.1,
+                    "treasury_withdrawal_cap_percent": 5,
+                }
+            )
+        )
         out = tmp_path / "dao.json"
         r = subprocess.run(
-            ["python", str(AR10_DAO),
-             "--policy", str(real_policy),
-             "--actual-params", str(bad_params),
-             "--out", str(out)],
-            capture_output=True, text=True
+            [
+                "python",
+                str(AR10_DAO),
+                "--policy",
+                str(real_policy),
+                "--actual-params",
+                str(bad_params),
+                "--out",
+                str(out),
+            ],
+            capture_output=True,
+            text=True,
         )
         assert r.returncode == 1, "Out-of-range DAO param must FAIL_QA (DENY path)"
         data = json.loads(out.read_text())

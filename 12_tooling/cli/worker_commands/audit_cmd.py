@@ -12,7 +12,7 @@ import argparse
 import hashlib
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -20,7 +20,7 @@ def _generate(args: argparse.Namespace) -> int:
     """Generate audit evidence for a scope."""
     scope = args.scope
     agent_id = args.agent
-    timestamp = datetime.now(timezone.utc).isoformat()
+    timestamp = datetime.now(UTC).isoformat()
 
     evidence = {
         "schema_version": "1.0.0",
@@ -61,7 +61,7 @@ def _verify(args: argparse.Namespace) -> int:
     if not evidence_path.exists():
         error = {
             "command": "audit.verify",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "path": str(evidence_path),
             "exists": False,
             "status": "failed",
@@ -84,7 +84,7 @@ def _verify(args: argparse.Namespace) -> int:
 
     output = {
         "command": "audit.verify",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "path": str(evidence_path),
         "exists": True,
         "sha256": sha256,
@@ -101,7 +101,7 @@ def _status(args: argparse.Namespace) -> int:
     """Report audit worker status."""
     output = {
         "command": "audit.status",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "evidence_schema_version": "1.0.0",
         "supported_types": ["audit_run", "safe_fix", "session_log", "gate_result"],
         "hash_algorithm": "sha256",
@@ -140,7 +140,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         error = {
             "command": f"audit.{args.action}",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "error": str(exc),
             "status": "failed",
         }

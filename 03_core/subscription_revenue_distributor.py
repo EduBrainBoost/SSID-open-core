@@ -8,32 +8,49 @@ Produces hash-only evidence for compliance -- no PII, no fund custody.
 SoT v4.1.0 | ROOT-24-LOCK | Module: 03_core
 Evidence strategy: hash_manifest_only
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from decimal import Decimal, ROUND_HALF_UP
+from datetime import UTC, datetime
+from decimal import ROUND_HALF_UP, Decimal
 from enum import Enum
-from typing import Dict, List, Optional
-
 
 # Canonical ROOT-24-LOCK root names
-ROOT_24_NAMES: List[str] = [
-    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-    "05_documentation", "06_data_pipeline", "07_governance_legal",
-    "08_identity_score", "09_meta_identity", "10_interoperability",
-    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
-    "15_infra", "16_codex", "17_observability", "18_data_layer",
-    "19_adapters", "20_foundation", "21_post_quantum_crypto", "22_datasets",
-    "23_compliance", "24_meta_orchestration",
+ROOT_24_NAMES: list[str] = [
+    "01_ai_layer",
+    "02_audit_logging",
+    "03_core",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "12_tooling",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "16_codex",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
+    "23_compliance",
+    "24_meta_orchestration",
 ]
 
 
 class SettlementPeriod(Enum):
     """Supported settlement cadences."""
+
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
 
@@ -41,6 +58,7 @@ class SettlementPeriod(Enum):
 @dataclass(frozen=True)
 class RootAllocation:
     """Revenue allocation for a single SSID root."""
+
     root_name: str
     amount: Decimal
     ratio: Decimal
@@ -52,6 +70,7 @@ class SettlementCalculation:
 
     Non-custodial: describes *what* should happen, not executing transfers.
     """
+
     settlement_id: str
     timestamp: str
     period: SettlementPeriod
@@ -66,7 +85,8 @@ class SettlementCalculation:
 # Default split ratios across 24 roots
 # ---------------------------------------------------------------------------
 
-def _default_ratios() -> Dict[str, Decimal]:
+
+def _default_ratios() -> dict[str, Decimal]:
     """Generate a sensible default split across 24 roots.
 
     Weights:
@@ -80,7 +100,7 @@ def _default_ratios() -> Dict[str, Decimal]:
         * Remaining 17 roots : ~49% split evenly (~2.88% each)
     The total sums to exactly 1.00 via a balancing remainder on the last root.
     """
-    explicit: Dict[str, Decimal] = {
+    explicit: dict[str, Decimal] = {
         "03_core": Decimal("0.12"),
         "01_ai_layer": Decimal("0.08"),
         "08_identity_score": Decimal("0.08"),
@@ -91,16 +111,11 @@ def _default_ratios() -> Dict[str, Decimal]:
     }
     remaining_roots = [r for r in ROOT_24_NAMES if r not in explicit]
     remaining_total = Decimal("1") - sum(explicit.values())
-    per_root = (remaining_total / len(remaining_roots)).quantize(
-        Decimal("0.0001"), rounding=ROUND_HALF_UP
-    )
+    per_root = (remaining_total / len(remaining_roots)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
-    ratios: Dict[str, Decimal] = {}
+    ratios: dict[str, Decimal] = {}
     for root in ROOT_24_NAMES:
-        if root in explicit:
-            ratios[root] = explicit[root]
-        else:
-            ratios[root] = per_root
+        ratios[root] = explicit.get(root, per_root)
 
     # Adjust the very last remaining root to force total == 1
     total_so_far = sum(ratios.values())
@@ -126,7 +141,7 @@ class SubscriptionRevenueDistributor:
 
     def __init__(
         self,
-        ratios: Optional[Dict[str, Decimal]] = None,
+        ratios: dict[str, Decimal] | None = None,
     ) -> None:
         self._ratios = ratios if ratios is not None else _default_ratios()
         self._validate_ratios()
@@ -171,11 +186,16 @@ class SubscriptionRevenueDistributor:
 
         allocations, remainder = self._split(gross_revenue)
         settlement_id = uuid.uuid4().hex[:16]
-        ts = datetime.now(timezone.utc).isoformat()
+        ts = datetime.now(UTC).isoformat()
 
         evidence_hash = self._hash_evidence(
-            settlement_id, ts, period, period_label,
-            gross_revenue, allocations, remainder,
+            settlement_id,
+            ts,
+            period,
+            period_label,
+            gross_revenue,
+            allocations,
+            remainder,
         )
 
         return SettlementCalculation(
@@ -189,7 +209,7 @@ class SubscriptionRevenueDistributor:
             evidence_hash=evidence_hash,
         )
 
-    def get_ratios(self) -> Dict[str, Decimal]:
+    def get_ratios(self) -> dict[str, Decimal]:
         """Return a copy of the current root split ratios."""
         return dict(self._ratios)
 
@@ -199,7 +219,7 @@ class SubscriptionRevenueDistributor:
 
     def _split(self, gross: Decimal) -> tuple:
         """Return (allocations, remainder) with 2-decimal rounding."""
-        allocations: List[RootAllocation] = []
+        allocations: list[RootAllocation] = []
         allocated = Decimal("0")
 
         for root in ROOT_24_NAMES:
@@ -207,9 +227,7 @@ class SubscriptionRevenueDistributor:
             raw = gross * ratio
             rounded = raw.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
             allocated += rounded
-            allocations.append(
-                RootAllocation(root_name=root, amount=rounded, ratio=ratio)
-            )
+            allocations.append(RootAllocation(root_name=root, amount=rounded, ratio=ratio))
 
         remainder = gross - allocated
         return allocations, remainder
@@ -221,7 +239,7 @@ class SubscriptionRevenueDistributor:
         period: SettlementPeriod,
         period_label: str,
         gross: Decimal,
-        allocations: List[RootAllocation],
+        allocations: list[RootAllocation],
         remainder: Decimal,
     ) -> str:
         payload = {

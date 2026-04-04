@@ -4,34 +4,29 @@
 Tests verify manifest creation, promotion gates, promotion flow,
 rollback, and evidence integrity using in-memory fixtures.
 """
+
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import pytest
-import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CLI_DIR = REPO_ROOT / "12_tooling" / "cli"
 sys.path.insert(0, str(CLI_DIR))
 
 from release_pipeline import (
-    PROMOTION_ORDER,
     VALID_STATUSES,
     EvidenceCompleteGate,
-    GateResult,
     NoPiiGate,
-    PromotionGate,
-    PromotionResult,
-    ReleasePipeline,
     ReleaseManifest,
-    RollbackRecord,
+    ReleasePipeline,
     SecretScanCleanGate,
     TestsGreenGate,
     default_gates,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -346,6 +341,7 @@ class TestSerialization:
 class TestCLI:
     def test_create_stdout(self, capsys):
         from release_pipeline import main
+
         rc = main(["create", "--version", "1.0.0", "--sha", "deadbeef"])
         assert rc == 0
         out = capsys.readouterr().out
@@ -355,6 +351,7 @@ class TestCLI:
 
     def test_create_to_file(self, tmp_path):
         from release_pipeline import main
+
         out_path = tmp_path / "m.json"
         rc = main(["create", "--version", "2.0.0", "--sha", "aabbcc", "--output", str(out_path)])
         assert rc == 0
@@ -364,5 +361,6 @@ class TestCLI:
 
     def test_no_command_returns_fail(self):
         from release_pipeline import main
+
         rc = main([])
         assert rc != 0

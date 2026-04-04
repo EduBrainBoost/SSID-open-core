@@ -6,6 +6,7 @@ Validates that:
   - Spec files exist alongside ABIs.
   - fee_split_invariants.yaml parses correctly.
 """
+
 import json
 import pathlib
 import sys

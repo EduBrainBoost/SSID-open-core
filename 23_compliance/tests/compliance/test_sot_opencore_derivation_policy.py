@@ -2,9 +2,9 @@
 Source: 23_compliance/policies/sot/sot_opencore_derivation_policy.rego
 Phase 4 — A02_A03_COMPLETION
 """
+
 import os
 import sys
-import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../23_compliance/validators"))
 from validate_sot_opencore_derivation_policy import validate_sot_opencore_derivation_policy
@@ -43,7 +43,12 @@ def test_sot_opencore_derivation_fail_forbidden_export():
     data = {
         "status": "pass",
         "findings": [
-            {"class": "forbidden_export", "detail": "leaked private key", "path": "private/key.pem", "severity": "critical"}
+            {
+                "class": "forbidden_export",
+                "detail": "leaked private key",
+                "path": "private/key.pem",
+                "severity": "critical",
+            }
         ],
     }
     assert validate_sot_opencore_derivation_policy(data) is False
@@ -76,7 +81,12 @@ def test_sot_opencore_derivation_pass_noncritical_stale_binding():
     data = {
         "status": "pass",
         "findings": [
-            {"class": "stale_derivative_binding", "detail": "slightly outdated", "path": "public/a.py", "severity": "low"}
+            {
+                "class": "stale_derivative_binding",
+                "detail": "slightly outdated",
+                "path": "public/a.py",
+                "severity": "low",
+            }
         ],
     }
     assert validate_sot_opencore_derivation_policy(data) is True

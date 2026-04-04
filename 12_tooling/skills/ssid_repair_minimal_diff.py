@@ -5,14 +5,13 @@ are modified, no unrelated additions or deletions.
 """
 
 import hashlib
-from typing import Dict, List
 
 from ._evidence import make_evidence, result
 
 SKILL_ID = "ssid-repair-minimal-diff"
 
 
-def _compute_diff_stats(before_lines: List[str], after_lines: List[str]) -> Dict:
+def _compute_diff_stats(before_lines: list[str], after_lines: list[str]) -> dict:
     """Compute simple line-level diff statistics."""
     added = 0
     removed = 0
@@ -37,7 +36,7 @@ def _compute_diff_stats(before_lines: List[str], after_lines: List[str]) -> Dict
     return {"added": added, "removed": removed, "unchanged": unchanged}
 
 
-def execute(context: Dict) -> Dict:
+def execute(context: dict) -> dict:
     """Validate that a repair diff is minimal.
 
     context must contain:

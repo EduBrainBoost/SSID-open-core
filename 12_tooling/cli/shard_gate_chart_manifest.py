@@ -7,11 +7,11 @@ Usage:
     shard_gate_chart_manifest.py --root 03_core      # check one root, all 16 shards
     shard_gate_chart_manifest.py --root 03_core --pilot  # legacy: only shards 01+02
 """
+
 from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -32,10 +32,7 @@ def check_shard(shard_dir: Path) -> dict:
 
 def discover_roots() -> list[Path]:
     """Return all top-level root directories that contain a shards/ subdirectory."""
-    return sorted(
-        d for d in PROJECT_ROOT.iterdir()
-        if d.is_dir() and (d / "shards").is_dir()
-    )
+    return sorted(d for d in PROJECT_ROOT.iterdir() if d.is_dir() and (d / "shards").is_dir())
 
 
 def run_root(root_dir: Path, pilot: bool) -> tuple[list[dict], list[str]]:
@@ -107,10 +104,7 @@ def main() -> int:
 
     verdict = "FAIL" if all_failures else "PASS"
     roots_label = args.root if args.root else f"{len(roots)} roots"
-    print(
-        f"\n{verdict}: {len(all_results)} shards checked across {roots_label}, "
-        f"{len(all_failures)} failures"
-    )
+    print(f"\n{verdict}: {len(all_results)} shards checked across {roots_label}, {len(all_failures)} failures")
 
     if args.report:
         report = {
@@ -119,13 +113,9 @@ def main() -> int:
             "pilot": args.pilot and args.root is not None,
             "verdict": verdict,
             "violations": all_failures,
-            "checked": [
-                f"{r['root']}/shards/{r['shard']}" for r in all_results
-            ],
+            "checked": [f"{r['root']}/shards/{r['shard']}" for r in all_results],
         }
-        Path(args.report).write_text(
-            json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-        )
+        Path(args.report).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"REPORT: {args.report}")
 
     return 1 if all_failures else 0

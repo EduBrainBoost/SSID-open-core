@@ -17,10 +17,10 @@ Each test is runnable standalone (pytest 23_compliance/tests/test_compliance_map
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import re
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +32,7 @@ SSID_ROOT = Path(__file__).resolve().parents[2]
 
 # Import canonical roots from 03_core/constants.py (Single Source of Truth)
 import importlib.util as _ilu
+
 _spec = _ilu.spec_from_file_location("core_constants", SSID_ROOT / "03_core" / "constants.py")
 _mod = _ilu.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
@@ -69,6 +70,7 @@ def _collect_ssid_roots_from_list(entries: list[dict]) -> list[str]:
 # Test 1: All mapping YAML files are loadable (valid YAML)
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("yaml_path", MAPPING_FILES, ids=[p.name for p in MAPPING_FILES])
 def test_yaml_file_is_loadable(yaml_path: Path) -> None:
     """Each mapping YAML file must be parseable without errors."""
@@ -80,6 +82,7 @@ def test_yaml_file_is_loadable(yaml_path: Path) -> None:
 # ---------------------------------------------------------------------------
 # Test 2: Required top-level fields are present
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize("yaml_path", MAPPING_FILES, ids=[p.name for p in MAPPING_FILES])
 def test_required_top_level_fields(yaml_path: Path) -> None:
@@ -94,19 +97,19 @@ def test_required_top_level_fields(yaml_path: Path) -> None:
 # Test 3: final_authority references a canonical SSID root
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("yaml_path", MAPPING_FILES, ids=[p.name for p in MAPPING_FILES])
 def test_final_authority_is_canonical_root(yaml_path: Path) -> None:
     """The 'final_authority' must be one of the 24 canonical SSID roots."""
     data = _load_yaml(yaml_path)
     authority = data.get("final_authority", "")
-    assert authority in CANONICAL_ROOTS, (
-        f"{yaml_path.name}: final_authority '{authority}' is not a canonical SSID root"
-    )
+    assert authority in CANONICAL_ROOTS, f"{yaml_path.name}: final_authority '{authority}' is not a canonical SSID root"
 
 
 # ---------------------------------------------------------------------------
 # Test 4: framework_id format is valid
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize("yaml_path", MAPPING_FILES, ids=[p.name for p in MAPPING_FILES])
 def test_framework_id_format(yaml_path: Path) -> None:
@@ -122,6 +125,7 @@ def test_framework_id_format(yaml_path: Path) -> None:
 # Test 5: GDPR mapping has article entries
 # ---------------------------------------------------------------------------
 
+
 def test_gdpr_mapping_has_articles() -> None:
     """gdpr_mapping.yaml must contain at least one article entry."""
     gdpr_path = FRAMEWORKS_DIR / "gdpr" / "gdpr_mapping.yaml"
@@ -136,6 +140,7 @@ def test_gdpr_mapping_has_articles() -> None:
 # Test 6: GDPR controls have control_id and implementation_root
 # ---------------------------------------------------------------------------
 
+
 def test_gdpr_controls_have_required_fields() -> None:
     """Each GDPR control must have control_id and implementation_root."""
     controls_path = FRAMEWORKS_DIR / "gdpr" / "gdpr_controls.yaml"
@@ -146,14 +151,14 @@ def test_gdpr_controls_have_required_fields() -> None:
         assert "control_id" in ctrl, f"Control missing 'control_id': {ctrl}"
         assert "implementation_root" in ctrl, f"Control {ctrl.get('control_id')} missing 'implementation_root'"
         assert ctrl["implementation_root"] in CANONICAL_ROOTS, (
-            f"Control {ctrl['control_id']}: implementation_root '{ctrl['implementation_root']}' "
-            f"is not a canonical root"
+            f"Control {ctrl['control_id']}: implementation_root '{ctrl['implementation_root']}' is not a canonical root"
         )
 
 
 # ---------------------------------------------------------------------------
 # Test 7: ISO 27001 mapping has annex_a_mappings entries
 # ---------------------------------------------------------------------------
+
 
 def test_iso27001_has_annex_a_mappings() -> None:
     """iso27001_mapping.yaml must have at least one annex_a_mappings entry."""
@@ -169,6 +174,7 @@ def test_iso27001_has_annex_a_mappings() -> None:
 # Test 8: eIDAS mapping has identification_schemes
 # ---------------------------------------------------------------------------
 
+
 def test_eidas_has_identification_schemes() -> None:
     """eidas_mapping.yaml must have at least one identification_schemes entry."""
     eidas_path = FRAMEWORKS_DIR / "eidas" / "eidas_mapping.yaml"
@@ -182,6 +188,7 @@ def test_eidas_has_identification_schemes() -> None:
 # ---------------------------------------------------------------------------
 # Test 9: MiCA mapping has articles
 # ---------------------------------------------------------------------------
+
 
 def test_mica_has_articles() -> None:
     """mica_mapping.yaml must have at least one articles entry."""
@@ -197,6 +204,7 @@ def test_mica_has_articles() -> None:
 # Test 10: All ssid_roots references in GDPR articles point to canonical roots
 # ---------------------------------------------------------------------------
 
+
 def test_gdpr_ssid_roots_are_canonical() -> None:
     """All root references inside GDPR article ssid_roots must be canonical SSID roots."""
     gdpr_path = FRAMEWORKS_DIR / "gdpr" / "gdpr_mapping.yaml"
@@ -207,6 +215,4 @@ def test_gdpr_ssid_roots_are_canonical() -> None:
     assert len(referenced_roots) > 0, "GDPR mapping should reference at least one SSID root"
 
     invalid = [r for r in referenced_roots if r not in CANONICAL_ROOTS]
-    assert not invalid, (
-        f"GDPR mapping references non-canonical roots: {invalid}"
-    )
+    assert not invalid, f"GDPR mapping references non-canonical roots: {invalid}"

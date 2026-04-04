@@ -12,7 +12,7 @@ _identities: dict[str, dict] = {}
 
 @router.get("/")
 async def list_identities(limit: int = 50, offset: int = 0):
-    items = list(_identities.values())[offset:offset + limit]
+    items = list(_identities.values())[offset : offset + limit]
     return {"count": len(_identities), "items": items}
 
 

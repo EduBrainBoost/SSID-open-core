@@ -22,22 +22,21 @@ import platform
 import re
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-
 
 SCHEMA_VERSION = "1.0"
 GENERATOR = "ssid-sbom-export"
 
 # Secret patterns that MUST NOT appear in SBOM output.
 DENY_PATTERNS = [
-    re.compile(r"AKIA[0-9A-Z]{16}"),                    # AWS Access Key
-    re.compile(r"ghp_[a-zA-Z0-9]{36}"),                 # GitHub Personal Token
+    re.compile(r"AKIA[0-9A-Z]{16}"),  # AWS Access Key
+    re.compile(r"ghp_[a-zA-Z0-9]{36}"),  # GitHub Personal Token
     re.compile(r"-----BEGIN (RSA |EC )?PRIVATE KEY-----"),  # PEM Private Key
-    re.compile(r"sk-[a-zA-Z0-9]{48}"),                   # OpenAI API Key
-    re.compile(r"xox[bprs]-[a-zA-Z0-9\-]+"),            # Slack Token
-    re.compile(r"GOCSPX-[a-zA-Z0-9\-_]+"),              # Google OAuth Secret
-    re.compile(r"glpat-[a-zA-Z0-9\-_]{20,}"),           # GitLab Personal Token
+    re.compile(r"sk-[a-zA-Z0-9]{48}"),  # OpenAI API Key
+    re.compile(r"xox[bprs]-[a-zA-Z0-9\-]+"),  # Slack Token
+    re.compile(r"GOCSPX-[a-zA-Z0-9\-_]+"),  # Google OAuth Secret
+    re.compile(r"glpat-[a-zA-Z0-9\-_]{20,}"),  # GitLab Personal Token
 ]
 
 
@@ -66,11 +65,13 @@ def _parse_lockfile(path: Path) -> list[dict]:
         # Handle == and ~= and >= etc. — we only extract name==version
         match = re.match(r"^([A-Za-z0-9_.-]+)==([^\s;#]+)", line)
         if match:
-            packages.append({
-                "name": match.group(1).lower(),
-                "version": match.group(2),
-                "source": path.name,
-            })
+            packages.append(
+                {
+                    "name": match.group(1).lower(),
+                    "version": match.group(2),
+                    "source": path.name,
+                }
+            )
     return sorted(packages, key=lambda p: p["name"])
 
 
@@ -89,11 +90,13 @@ def _pip_freeze() -> list[dict]:
             continue
         match = re.match(r"^([A-Za-z0-9_.-]+)==([^\s;#]+)", line)
         if match:
-            packages.append({
-                "name": match.group(1).lower(),
-                "version": match.group(2),
-                "source": "pip_freeze",
-            })
+            packages.append(
+                {
+                    "name": match.group(1).lower(),
+                    "version": match.group(2),
+                    "source": "pip_freeze",
+                }
+            )
     return sorted(packages, key=lambda p: p["name"])
 
 
@@ -162,7 +165,7 @@ def generate_sbom(
     return {
         "schema_version": SCHEMA_VERSION,
         "generator": GENERATOR,
-        "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "timestamp": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "source": source,
         "input_sha256": input_sha,
         "environment": {
@@ -177,7 +180,8 @@ def generate_sbom(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="SSID Supply-Chain SBOM Export")
     parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         type=Path,
         required=True,
         help="Output path for sbom.json",

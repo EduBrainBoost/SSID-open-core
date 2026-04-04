@@ -9,6 +9,7 @@ Checks:
 
 Outputs a JSON evidence file to 23_compliance/evidence/ci_runs/.
 """
+
 import datetime
 import json
 import pathlib
@@ -28,7 +29,7 @@ CORE_ENGINES = [
 
 
 def main() -> int:
-    utc = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    utc = datetime.datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%SZ")
     findings = {"timestamp": utc, "engines": {}, "syntax_errors": []}
     exit_code = 0
 

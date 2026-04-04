@@ -6,6 +6,7 @@ Deterministic: hash-only (SHA256), stable sort by (root_id, shard_id).
 Output: 24_meta_orchestration/registry/shards_registry.json
 Exit codes: 0=success, 1=verify mismatch, 2=error
 """
+
 from __future__ import annotations
 
 import argparse
@@ -16,16 +17,20 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _lib.shards import find_roots, find_shards, parse_yaml, ROOTS_24
+from datetime import UTC
+
+from _lib.shards import find_roots, find_shards
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 REGISTRY_PATH = REPO_ROOT / "24_meta_orchestration" / "registry" / "shards_registry.json"
 
 # --- WAVE_06 canonical runtime consumption helpers ---
 
+
 def _load_consumption_policy():
     """Dynamically load CanonicalConsumptionPolicy if available."""
     import importlib.util
+
     module_path = REPO_ROOT / "03_core" / "validators" / "runtime" / "canonical_runtime_consumption.py"
     if not module_path.exists():
         return None
@@ -34,6 +39,7 @@ def _load_consumption_policy():
         return None
     mod = importlib.util.module_from_spec(spec)
     import sys as _sys
+
     _sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)
     return getattr(mod, "CanonicalConsumptionPolicy", None)
@@ -42,6 +48,7 @@ def _load_consumption_policy():
 def _load_bypass_detector():
     """Dynamically load RuntimeBypassDetector if available."""
     import importlib.util
+
     module_path = REPO_ROOT / "03_core" / "validators" / "runtime" / "runtime_bypass_detector.py"
     if not module_path.exists():
         return None
@@ -50,6 +57,7 @@ def _load_bypass_detector():
         return None
     mod = importlib.util.module_from_spec(spec)
     import sys as _sys
+
     _sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)
     return getattr(mod, "RuntimeBypassDetector", None)
@@ -94,6 +102,7 @@ def _scan_canonical_consumption(root_name: str, shard_name: str, policy, detecto
             pass
 
     return result
+
 
 PILOT_SHARDS: set[str] = {
     "03_core/01_identitaet_personen",
@@ -149,14 +158,10 @@ def scan_shard(root_name: str, shard_dir: Path, policy=None, detector=None) -> d
         "manifest_path": f"{root_name}/shards/{shard_name}/manifest.yaml",
         "contracts_index_path": ci_path if contracts_index.exists() else None,
         "conformance_index_path": (
-            f"{root_name}/shards/{shard_name}/conformance/index.yaml"
-            if conformance_index.exists()
-            else None
+            f"{root_name}/shards/{shard_name}/conformance/index.yaml" if conformance_index.exists() else None
         ),
         "evidence_index_path": (
-            f"{root_name}/shards/{shard_name}/evidence/index.yaml"
-            if evidence_index.exists()
-            else None
+            f"{root_name}/shards/{shard_name}/evidence/index.yaml" if evidence_index.exists() else None
         ),
         "sha256": {
             "chart": sha256_file(chart_path),
@@ -170,10 +175,12 @@ def scan_shard(root_name: str, shard_dir: Path, policy=None, detector=None) -> d
     }
 
     if contracts_index.exists():
-        entry["entrypoints"].append({
-            "kind": "contract_validate",
-            "target": ci_path,
-        })
+        entry["entrypoints"].append(
+            {
+                "kind": "contract_validate",
+                "target": ci_path,
+            }
+        )
 
     # WAVE_06: canonical runtime consumption fields
     consumption = _scan_canonical_consumption(root_name, shard_name, policy, detector)
@@ -184,8 +191,8 @@ def scan_shard(root_name: str, shard_dir: Path, policy=None, detector=None) -> d
 
 def build_registry(roots: list[Path], deterministic: bool) -> dict:
     # WAVE_06: load validators once for all shards
-    PolicyCls = _load_consumption_policy()
-    DetectorCls = _load_bypass_detector()
+    PolicyCls = _load_consumption_policy()  # noqa: N806
+    DetectorCls = _load_bypass_detector()  # noqa: N806
     policy = PolicyCls(REPO_ROOT) if PolicyCls else None
     detector = DetectorCls(REPO_ROOT) if DetectorCls else None
 
@@ -206,10 +213,9 @@ def build_registry(roots: list[Path], deterministic: bool) -> dict:
     }
 
     if not deterministic:
-        from datetime import datetime, timezone
-        registry["generated_at_utc"] = datetime.now(timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        )
+        from datetime import datetime
+
+        registry["generated_at_utc"] = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     return registry
 
@@ -221,9 +227,7 @@ def verify_registry(registry: dict) -> tuple[bool, list[str]]:
     existing = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
     diffs = []
 
-    existing_map = {
-        (s["root_id"], s["shard_id"]): s for s in existing.get("shards", [])
-    }
+    existing_map = {(s["root_id"], s["shard_id"]): s for s in existing.get("shards", [])}
     new_map = {(s["root_id"], s["shard_id"]): s for s in registry.get("shards", [])}
 
     for key in sorted(set(existing_map.keys()) | set(new_map.keys())):
@@ -236,33 +240,23 @@ def verify_registry(registry: dict) -> tuple[bool, list[str]]:
         old_h, new_h = existing_map[key].get("sha256", {}), new_map[key].get("sha256", {})
         for field in ["chart", "manifest", "contracts_index", "conformance_index", "evidence_index"]:
             if old_h.get(field) != new_h.get(field):
-                diffs.append(
-                    f"HASH MISMATCH: {key[0]}/{key[1]}.{field}: "
-                    f"{old_h.get(field)} -> {new_h.get(field)}"
-                )
+                diffs.append(f"HASH MISMATCH: {key[0]}/{key[1]}.{field}: {old_h.get(field)} -> {new_h.get(field)}")
         # WAVE_06: detect consumption status drift
         old_cs = existing_map[key].get("canonical_consumption_status")
         new_cs = new_map[key].get("canonical_consumption_status")
         if old_cs != new_cs:
-            diffs.append(
-                f"CONSUMPTION DRIFT: {key[0]}/{key[1]}: {old_cs} -> {new_cs}"
-            )
+            diffs.append(f"CONSUMPTION DRIFT: {key[0]}/{key[1]}: {old_cs} -> {new_cs}")
 
     # git_sha drift is expected after any commit (circular dependency);
     # report as INFO, not as integrity failure.
     if existing.get("git_sha") != registry.get("git_sha"):
-        print(
-            f"INFO: git_sha drift (expected): "
-            f"{existing.get('git_sha')[:12]}... -> {registry.get('git_sha')[:12]}..."
-        )
+        print(f"INFO: git_sha drift (expected): {existing.get('git_sha')[:12]}... -> {registry.get('git_sha')[:12]}...")
 
     return len(diffs) == 0, diffs
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Shards Registry Builder (hash-only, stable sort, deterministic)"
-    )
+    parser = argparse.ArgumentParser(description="Shards Registry Builder (hash-only, stable sort, deterministic)")
     parser.add_argument("--source", choices=["local-run", "ci-run"], default="local-run")
     parser.add_argument("--deterministic", action="store_true")
     parser.add_argument("--verify", action="store_true")

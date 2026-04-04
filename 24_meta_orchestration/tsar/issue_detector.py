@@ -3,9 +3,8 @@
 import importlib.util
 import os
 from pathlib import Path
-from typing import List, Optional
-from .tsar_engine import TSAREngine, DetectedIssue, IssueType, IssueSeverity, RemediationAction
 
+from .tsar_engine import DetectedIssue, IssueSeverity, IssueType, RemediationAction, TSAREngine
 
 # Import canonical roots from 03_core/constants.py (Single Source of Truth)
 _CONSTANTS_PATH = Path(__file__).resolve().parents[2] / "03_core" / "constants.py"
@@ -18,11 +17,11 @@ CANONICAL_ROOTS = _mod.CANONICAL_ROOTS_LIST  # list form for compatibility
 class IssueDetector:
     """Scans the SSID repo for structural, evidence, and registry anomalies."""
 
-    def __init__(self, repo_root: str, engine: Optional[TSAREngine] = None):
+    def __init__(self, repo_root: str, engine: TSAREngine | None = None):
         self.repo_root = repo_root
         self.engine = engine or TSAREngine()
 
-    def scan_structure(self) -> List[DetectedIssue]:
+    def scan_structure(self) -> list[DetectedIssue]:
         """Scan for ROOT-24-LOCK compliance.
 
         Checks that all 24 canonical roots exist and no unexpected
@@ -36,7 +35,7 @@ class IssueDetector:
                     actual_roots.append(entry)
         return self.engine.detect_structure_drift(CANONICAL_ROOTS, actual_roots)
 
-    def scan_evidence(self, required_evidence: Optional[List[str]] = None) -> List[DetectedIssue]:
+    def scan_evidence(self, required_evidence: list[str] | None = None) -> list[DetectedIssue]:
         """Scan for evidence chain completeness.
 
         Checks that all required evidence files exist in the evidence directory.
@@ -54,7 +53,7 @@ class IssueDetector:
 
         return self.engine.detect_evidence_gaps(required_evidence, existing)
 
-    def scan_registry(self) -> List[DetectedIssue]:
+    def scan_registry(self) -> list[DetectedIssue]:
         """Scan for registry consistency.
 
         Checks that expected registry files exist and are non-empty.
@@ -66,7 +65,7 @@ class IssueDetector:
         if not os.path.isdir(registry_dir):
             issues.append(
                 DetectedIssue(
-                    issue_id=f"TSAR-{len(self.engine.issues)+len(issues)+1:04d}",
+                    issue_id=f"TSAR-{len(self.engine.issues) + len(issues) + 1:04d}",
                     issue_type=IssueType.REGISTRY_INCONSISTENCY,
                     severity=IssueSeverity.HIGH,
                     description="Registry directory missing",
@@ -80,7 +79,7 @@ class IssueDetector:
                 if not os.path.exists(path):
                     issues.append(
                         DetectedIssue(
-                            issue_id=f"TSAR-{len(self.engine.issues)+len(issues)+1:04d}",
+                            issue_id=f"TSAR-{len(self.engine.issues) + len(issues) + 1:04d}",
                             issue_type=IssueType.REGISTRY_INCONSISTENCY,
                             severity=IssueSeverity.MEDIUM,
                             description=f"Registry entry missing: {expected}",

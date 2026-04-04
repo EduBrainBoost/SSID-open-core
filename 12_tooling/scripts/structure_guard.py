@@ -2,18 +2,22 @@
 # Dependencies: 12_tooling/tests/test_structure_guard.py
 #!/usr/bin/env python3
 from __future__ import annotations
+
 import logging
 import sys
 from pathlib import Path
+
 import yaml
 
 log = logging.getLogger(__name__)
 
 EXIT_CODE = 24
 
+
 def die(msg: str) -> None:
     print(f"STRUCTURE_GUARD_FAIL: {msg}")
     raise SystemExit(EXIT_CODE)
+
 
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[2]
@@ -62,6 +66,7 @@ def main() -> int:
 
     print("STRUCTURE_GUARD_PASS")
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

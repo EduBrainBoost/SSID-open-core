@@ -1,23 +1,24 @@
-import json
 import hashlib
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
+import json
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
+
 
 @dataclass
 class EvidenceEntry:
     check: str
     result: str
-    file_path: Optional[str] = None
-    sha256: Optional[str] = None
+    file_path: str | None = None
+    sha256: str | None = None
     findings: int = 0
-    details: Optional[dict] = None
+    details: dict | None = None
 
     def to_jsonl(self) -> str:
         d = asdict(self)
-        d["ts"] = datetime.now(timezone.utc).isoformat()
+        d["ts"] = datetime.now(UTC).isoformat()
         return json.dumps({k: v for k, v in d.items() if v is not None})
+
 
 class EvidenceWriter:
     def __init__(self, run_id: str, out_dir: Path):
@@ -32,19 +33,16 @@ class EvidenceWriter:
             f.write(entry.to_jsonl() + "\n")
         self._entry_count += 1
 
-    def finalize(self, status: str, autorunner_id: str,
-                 gates_passed: list = None, gates_failed: list = None) -> dict:
+    def finalize(self, status: str, autorunner_id: str, gates_passed: list = None, gates_failed: list = None) -> dict:
         evidence_sha = ""
         if self._evidence_path.exists():
-            evidence_sha = hashlib.sha256(
-                self._evidence_path.read_bytes()
-            ).hexdigest()
+            evidence_sha = hashlib.sha256(self._evidence_path.read_bytes()).hexdigest()
 
         manifest = {
             "run_id": self.run_id,
             "autorunner_id": autorunner_id,
             "status": status,
-            "ts_end": datetime.now(timezone.utc).isoformat(),
+            "ts_end": datetime.now(UTC).isoformat(),
             "gates_passed": gates_passed or [],
             "gates_failed": gates_failed or [],
             "sha256_of_evidence": evidence_sha,
@@ -60,7 +58,5 @@ class EvidenceWriter:
             )
         manifest_bytes = json.dumps(manifest, indent=2).encode()
         manifest_path.write_bytes(manifest_bytes)
-        (self.out_dir / "manifest.json.sha256").write_text(
-            hashlib.sha256(manifest_bytes).hexdigest()
-        )
+        (self.out_dir / "manifest.json.sha256").write_text(hashlib.sha256(manifest_bytes).hexdigest())
         return manifest

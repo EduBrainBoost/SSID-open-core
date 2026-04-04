@@ -12,8 +12,6 @@ sys.path.insert(
 
 from regulatory_matrix import (
     CoverageLevel,
-    DEFAULT_SSID_COVERAGE,
-    GapAnalysisResult,
     JurisdictionMapping,
     Region,
     RegulationDomain,
@@ -21,10 +19,10 @@ from regulatory_matrix import (
     RegulatoryRequirement,
 )
 
-
 # ------------------------------------------------------------------
 # RegulatoryRequirement
 # ------------------------------------------------------------------
+
 
 class TestRegulatoryRequirement:
     def test_to_dict(self):
@@ -41,8 +39,10 @@ class TestRegulatoryRequirement:
 
     def test_frozen(self):
         req = RegulatoryRequirement(
-            regulation_id="X", article="1",
-            description="d", domain=RegulationDomain.AML_KYC,
+            regulation_id="X",
+            article="1",
+            description="d",
+            domain=RegulationDomain.AML_KYC,
         )
         with pytest.raises(AttributeError):
             req.regulation_id = "Y"  # type: ignore[misc]
@@ -51,6 +51,7 @@ class TestRegulatoryRequirement:
 # ------------------------------------------------------------------
 # RegulatoryCoverageMatrix — Jurisdiction Management
 # ------------------------------------------------------------------
+
 
 class TestMatrixJurisdictions:
     def test_add_jurisdiction_eu(self):
@@ -100,10 +101,14 @@ class TestMatrixJurisdictions:
 
     def test_custom_requirements(self):
         matrix = RegulatoryCoverageMatrix()
-        custom = {RegulatoryRequirement(
-            "CUSTOM_REG", "Sec. 1", "Custom regulation",
-            RegulationDomain.CRYPTO_ASSETS,
-        )}
+        custom = {
+            RegulatoryRequirement(
+                "CUSTOM_REG",
+                "Sec. 1",
+                "Custom regulation",
+                RegulationDomain.CRYPTO_ASSETS,
+            )
+        }
         mapping = matrix.add_jurisdiction("XX", Region.EU, requirements=custom)
         assert len(mapping.requirements) == 1
 
@@ -117,6 +122,7 @@ class TestMatrixJurisdictions:
 # ------------------------------------------------------------------
 # Coverage Updates
 # ------------------------------------------------------------------
+
 
 class TestCoverageUpdates:
     def test_update_coverage(self):
@@ -137,6 +143,7 @@ class TestCoverageUpdates:
 # ------------------------------------------------------------------
 # Gap Analysis
 # ------------------------------------------------------------------
+
 
 class TestGapAnalysis:
     def test_analyse_gaps_eu(self):
@@ -179,10 +186,14 @@ class TestGapAnalysis:
 
     def test_gaps_with_all_coverage_full(self):
         # All requirements covered → no gaps
-        custom = {RegulatoryRequirement(
-            "TEST_REG", "Art. 1", "Test",
-            RegulationDomain.DATA_PROTECTION,
-        )}
+        custom = {
+            RegulatoryRequirement(
+                "TEST_REG",
+                "Art. 1",
+                "Test",
+                RegulationDomain.DATA_PROTECTION,
+            )
+        }
         coverage = {"TEST_REG": CoverageLevel.FULL}
         matrix = RegulatoryCoverageMatrix(coverage=coverage)
         matrix.add_jurisdiction("XX", Region.EU, requirements=custom)
@@ -191,10 +202,14 @@ class TestGapAnalysis:
         assert result.coverage_ratio == 1.0
 
     def test_gaps_with_missing_coverage(self):
-        custom = {RegulatoryRequirement(
-            "MISSING_REG", "Art. 1", "Not covered",
-            RegulationDomain.AML_KYC,
-        )}
+        custom = {
+            RegulatoryRequirement(
+                "MISSING_REG",
+                "Art. 1",
+                "Not covered",
+                RegulationDomain.AML_KYC,
+            )
+        }
         matrix = RegulatoryCoverageMatrix(coverage={})
         matrix.add_jurisdiction("XX", Region.EU, requirements=custom)
         result = matrix.analyse_gaps("XX")
@@ -205,6 +220,7 @@ class TestGapAnalysis:
 # ------------------------------------------------------------------
 # Summary & Regions with Gaps
 # ------------------------------------------------------------------
+
 
 class TestSummary:
     def test_coverage_summary(self):
@@ -232,11 +248,15 @@ class TestSummary:
 # JurisdictionMapping
 # ------------------------------------------------------------------
 
+
 class TestJurisdictionMapping:
     def test_gap_count(self):
         req = RegulatoryRequirement(
-            "GAP_REG", "Art. 1", "Gap",
-            RegulationDomain.AML_KYC, mandatory=True,
+            "GAP_REG",
+            "Art. 1",
+            "Gap",
+            RegulationDomain.AML_KYC,
+            mandatory=True,
         )
         mapping = JurisdictionMapping(
             jurisdiction="XX",
@@ -248,8 +268,11 @@ class TestJurisdictionMapping:
 
     def test_gap_count_zero(self):
         req = RegulatoryRequirement(
-            "FULL_REG", "Art. 1", "Full",
-            RegulationDomain.AML_KYC, mandatory=True,
+            "FULL_REG",
+            "Art. 1",
+            "Full",
+            RegulationDomain.AML_KYC,
+            mandatory=True,
         )
         mapping = JurisdictionMapping(
             jurisdiction="XX",
@@ -261,7 +284,9 @@ class TestJurisdictionMapping:
 
     def test_to_dict(self):
         req = RegulatoryRequirement(
-            "REG1", "Art. 1", "Desc",
+            "REG1",
+            "Art. 1",
+            "Desc",
             RegulationDomain.DATA_PROTECTION,
         )
         mapping = JurisdictionMapping(

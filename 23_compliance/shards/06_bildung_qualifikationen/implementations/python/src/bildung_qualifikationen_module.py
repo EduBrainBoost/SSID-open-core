@@ -1,7 +1,8 @@
 """Compliance checker for education and qualification records in 23_compliance/06_bildung_qualifikationen."""
+
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 class ComplianceChecker:
@@ -13,28 +14,24 @@ class ComplianceChecker:
 
     def check_regulation(self, regulation_id: str, context: dict) -> dict:
         """Check compliance against a specific regulation."""
-        context_hash = hashlib.sha256(
-            json.dumps(context, sort_keys=True).encode()
-        ).hexdigest()
+        context_hash = hashlib.sha256(json.dumps(context, sort_keys=True).encode()).hexdigest()
         result = {
             "regulation_id": regulation_id,
             "context_hash": context_hash,
             "compliant": True,
-            "checked_at": datetime.now(timezone.utc).isoformat(),
+            "checked_at": datetime.now(UTC).isoformat(),
         }
         self.evidence_log.append(result)
         return result
 
     def map_requirement(self, requirement: str, target_control: str) -> dict:
         """Map a compliance requirement to a control framework."""
-        mapping_hash = hashlib.sha256(
-            f"{requirement}:{target_control}".encode()
-        ).hexdigest()
+        mapping_hash = hashlib.sha256(f"{requirement}:{target_control}".encode()).hexdigest()
         return {
             "requirement": requirement,
             "control": target_control,
             "mapping_hash": mapping_hash,
-            "mapped_at": datetime.now(timezone.utc).isoformat(),
+            "mapped_at": datetime.now(UTC).isoformat(),
         }
 
     def emit_evidence(self) -> dict:
@@ -44,5 +41,5 @@ class ComplianceChecker:
         return {
             "total_checks": len(self.evidence_log),
             "evidence_hash": evidence_hash,
-            "emitted_at": datetime.now(timezone.utc).isoformat(),
+            "emitted_at": datetime.now(UTC).isoformat(),
         }

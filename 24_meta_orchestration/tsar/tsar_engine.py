@@ -2,11 +2,8 @@
 Detects structural/policy/runtime anomalies and triggers safe remediation."""
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import List, Optional
-import json
-import hashlib
 
 
 class IssueType(Enum):
@@ -38,9 +35,7 @@ class DetectedIssue:
     severity: IssueSeverity
     description: str
     affected_path: str
-    detected_at: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    detected_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     remediation: RemediationAction = RemediationAction.ALERT_ONLY
     resolved: bool = False
 
@@ -49,19 +44,17 @@ class TSAREngine:
     """Core TSAR engine for issue detection and safe remediation."""
 
     def __init__(self):
-        self.issues: List[DetectedIssue] = []
+        self.issues: list[DetectedIssue] = []
         self.guardrails = TSARGuardrails()
 
-    def detect_structure_drift(
-        self, expected_roots: List[str], actual_roots: List[str]
-    ) -> List[DetectedIssue]:
+    def detect_structure_drift(self, expected_roots: list[str], actual_roots: list[str]) -> list[DetectedIssue]:
         """Detect deviations from ROOT-24-LOCK."""
         issues = []
         for root in expected_roots:
             if root not in actual_roots:
                 issues.append(
                     DetectedIssue(
-                        issue_id=f"TSAR-{len(self.issues)+len(issues)+1:04d}",
+                        issue_id=f"TSAR-{len(self.issues) + len(issues) + 1:04d}",
                         issue_type=IssueType.STRUCTURE_DRIFT,
                         severity=IssueSeverity.CRITICAL,
                         description=f"Expected root '{root}' missing",
@@ -73,7 +66,7 @@ class TSAREngine:
             if root not in expected_roots:
                 issues.append(
                     DetectedIssue(
-                        issue_id=f"TSAR-{len(self.issues)+len(issues)+1:04d}",
+                        issue_id=f"TSAR-{len(self.issues) + len(issues) + 1:04d}",
                         issue_type=IssueType.STRUCTURE_DRIFT,
                         severity=IssueSeverity.HIGH,
                         description=f"Unexpected root '{root}' found",
@@ -84,16 +77,14 @@ class TSAREngine:
         self.issues.extend(issues)
         return issues
 
-    def detect_evidence_gaps(
-        self, required_evidence: List[str], existing_evidence: List[str]
-    ) -> List[DetectedIssue]:
+    def detect_evidence_gaps(self, required_evidence: list[str], existing_evidence: list[str]) -> list[DetectedIssue]:
         """Detect missing evidence entries."""
         issues = []
         for ev in required_evidence:
             if ev not in existing_evidence:
                 issues.append(
                     DetectedIssue(
-                        issue_id=f"TSAR-{len(self.issues)+len(issues)+1:04d}",
+                        issue_id=f"TSAR-{len(self.issues) + len(issues) + 1:04d}",
                         issue_type=IssueType.EVIDENCE_GAP,
                         severity=IssueSeverity.MEDIUM,
                         description=f"Evidence missing: {ev}",
@@ -114,16 +105,8 @@ class TSAREngine:
 
     def get_health_status(self) -> dict:
         """Return current system health status."""
-        critical = sum(
-            1
-            for i in self.issues
-            if i.severity == IssueSeverity.CRITICAL and not i.resolved
-        )
-        high = sum(
-            1
-            for i in self.issues
-            if i.severity == IssueSeverity.HIGH and not i.resolved
-        )
+        critical = sum(1 for i in self.issues if i.severity == IssueSeverity.CRITICAL and not i.resolved)
+        high = sum(1 for i in self.issues if i.severity == IssueSeverity.HIGH and not i.resolved)
         if critical > 0:
             status = "CRITICAL"
         elif high > 0:
@@ -135,7 +118,7 @@ class TSAREngine:
             "total_issues": len(self.issues),
             "unresolved_critical": critical,
             "unresolved_high": high,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
 
@@ -149,6 +132,4 @@ class TSARGuardrails:
         """Check if auto-fix is permitted for the given issue."""
         if issue.issue_type in self.NEVER_AUTO_FIX:
             return False
-        if issue.remediation == RemediationAction.APPROVAL_REQUIRED:
-            return False
-        return True
+        return issue.remediation != RemediationAction.APPROVAL_REQUIRED

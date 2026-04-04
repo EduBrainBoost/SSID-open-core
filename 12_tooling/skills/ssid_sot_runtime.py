@@ -4,7 +4,6 @@ Validates that SoT artifacts in 16_codex exist and are structurally valid.
 """
 
 import os
-from typing import Dict, List
 
 from ._evidence import make_evidence, result
 
@@ -17,7 +16,7 @@ SOT_REQUIRED_FILES = [
 ]
 
 
-def execute(context: Dict) -> Dict:
+def execute(context: dict) -> dict:
     """Validate SoT artifacts under 16_codex.
 
     context must contain:
@@ -36,8 +35,8 @@ def execute(context: Dict) -> Dict:
         return result("FAIL", ev, "16_codex directory does not exist")
 
     required = context.get("sot_files", SOT_REQUIRED_FILES)
-    missing: List[str] = []
-    found: List[str] = []
+    missing: list[str] = []
+    found: list[str] = []
 
     for f in required:
         fpath = os.path.join(codex_path, f)

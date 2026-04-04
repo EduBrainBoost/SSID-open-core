@@ -5,7 +5,7 @@ exists in skill_registry.yaml and vice-versa.
 """
 
 import os
-from typing import Any, Dict, Set
+from typing import Any
 
 from ._evidence import make_evidence, result
 
@@ -16,7 +16,8 @@ def _load_yaml_simple(path: str) -> Any:
     """Minimal YAML loader — tries PyYAML, falls back to basic parsing."""
     try:
         import yaml  # type: ignore
-        with open(path, "r", encoding="utf-8") as fh:
+
+        with open(path, encoding="utf-8") as fh:
             return yaml.safe_load(fh)
     except ImportError:
         pass
@@ -24,7 +25,7 @@ def _load_yaml_simple(path: str) -> Any:
     return None
 
 
-def execute(context: Dict) -> Dict:
+def execute(context: dict) -> dict:
     """Check registry <-> binding consistency.
 
     context must contain:
@@ -61,13 +62,13 @@ def execute(context: Dict) -> Dict:
         ev = make_evidence(SKILL_ID, "FAIL", {"reason": "PyYAML not available, cannot parse"})
         return result("FAIL", ev, "PyYAML required for registry discipline check")
 
-    registry_ids: Set[str] = set()
+    registry_ids: set[str] = set()
     for skill in reg_data.get("skills", []):
         sid = skill.get("skill_id", "")
         if sid:
             registry_ids.add(sid)
 
-    binding_ids: Set[str] = set()
+    binding_ids: set[str] = set()
     for binding in bind_data.get("bindings", []):
         for sid in binding.get("skills", []):
             binding_ids.add(sid)

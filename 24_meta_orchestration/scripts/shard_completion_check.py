@@ -3,27 +3,57 @@
 AR-05: Shard Completion Gate — 24x16=384 chart.yaml Matrix Check
 SoT rule: master §4 (Deterministic Architecture), ADR-0008
 """
+
 import argparse
 import json
 import sys
 from pathlib import Path
 
 ROOTS_24 = [
-    "01_ai_layer","02_audit_logging","03_core","04_deployment",
-    "05_documentation","06_data_pipeline","07_governance_legal","08_identity_score",
-    "09_meta_identity","10_interoperability","11_test_simulation","12_tooling",
-    "13_ui_layer","14_zero_time_auth","15_infra","16_codex",
-    "17_observability","18_data_layer","19_adapters","20_foundation",
-    "21_post_quantum_crypto","22_datasets","23_compliance","24_meta_orchestration",
+    "01_ai_layer",
+    "02_audit_logging",
+    "03_core",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "12_tooling",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "16_codex",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
+    "23_compliance",
+    "24_meta_orchestration",
 ]
 SHARDS_16 = [
-    "01_identitaet_personen","02_dokumente_nachweise","03_zugang_berechtigungen",
-    "04_kommunikation_daten","05_gesundheit_medizin","06_bildung_qualifikationen",
-    "07_familie_soziales","08_mobilitaet_fahrzeuge","09_arbeit_karriere",
-    "10_finanzen_banking","11_versicherungen_risiken","12_immobilien_grundstuecke",
-    "13_unternehmen_gewerbe","14_vertraege_vereinbarungen",
-    "15_handel_transaktionen","16_behoerden_verwaltung",
+    "01_identitaet_personen",
+    "02_dokumente_nachweise",
+    "03_zugang_berechtigungen",
+    "04_kommunikation_daten",
+    "05_gesundheit_medizin",
+    "06_bildung_qualifikationen",
+    "07_familie_soziales",
+    "08_mobilitaet_fahrzeuge",
+    "09_arbeit_karriere",
+    "10_finanzen_banking",
+    "11_versicherungen_risiken",
+    "12_immobilien_grundstuecke",
+    "13_unternehmen_gewerbe",
+    "14_vertraege_vereinbarungen",
+    "15_handel_transaktionen",
+    "16_behoerden_verwaltung",
 ]
+
 
 def check(repo_root: Path, num_roots: int, num_shards: int, previous_state: dict = None) -> dict:
     total_expected = num_roots * num_shards
@@ -70,6 +100,7 @@ def check(repo_root: Path, num_roots: int, num_shards: int, previous_state: dict
         "regression_detected": regression,
         "by_root": by_root,
     }
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

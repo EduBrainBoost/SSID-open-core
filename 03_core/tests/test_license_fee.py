@@ -1,11 +1,12 @@
 """Tests for license_fee_splitter."""
+
 from __future__ import annotations
 
+import sys
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
-import sys
-from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -14,15 +15,12 @@ from license_fee_splitter import (
     LicenseType,
     SplitRatios,
     SplitRecipient,
-    SplitResult,
-    DistributionReportEntry,
-    DEFAULT_SPLIT_RATIOS,
 )
-
 
 # ---------------------------------------------------------------------------
 # SplitRatios validation
 # ---------------------------------------------------------------------------
+
 
 class TestSplitRatios:
     def test_valid_ratios(self) -> None:
@@ -56,6 +54,7 @@ class TestSplitRatios:
 # LicenseFeeSplitter.split
 # ---------------------------------------------------------------------------
 
+
 class TestLicenseFeeSplitterSplit:
     def setup_method(self) -> None:
         self.splitter = LicenseFeeSplitter()
@@ -69,9 +68,7 @@ class TestLicenseFeeSplitterSplit:
         for lt in LicenseType:
             result = self.splitter.split(Decimal("200.00"), lt)
             total = sum(result.allocations.values()) + result.residual
-            assert abs(total - Decimal("200.00")) < Decimal("0.001"), (
-                f"Conservation failed for {lt}"
-            )
+            assert abs(total - Decimal("200.00")) < Decimal("0.001"), f"Conservation failed for {lt}"
 
     def test_all_recipients_present(self) -> None:
         result = self.splitter.split(Decimal("100.00"), LicenseType.COMMERCIAL)
@@ -92,10 +89,7 @@ class TestLicenseFeeSplitterSplit:
     def test_commercial_creator_share_larger_than_basic(self) -> None:
         basic_result = self.splitter.split(Decimal("100.00"), LicenseType.BASIC)
         commercial_result = self.splitter.split(Decimal("100.00"), LicenseType.COMMERCIAL)
-        assert (
-            commercial_result.allocations[SplitRecipient.CREATOR]
-            > basic_result.allocations[SplitRecipient.CREATOR]
-        )
+        assert commercial_result.allocations[SplitRecipient.CREATOR] > basic_result.allocations[SplitRecipient.CREATOR]
 
     def test_ratios_used_in_result(self) -> None:
         result = self.splitter.split(Decimal("100"), LicenseType.ENTERPRISE)
@@ -113,23 +107,20 @@ class TestLicenseFeeSplitterSplit:
 # configure_ratios
 # ---------------------------------------------------------------------------
 
+
 class TestConfigureRatios:
     def setup_method(self) -> None:
         self.splitter = LicenseFeeSplitter()
 
     def test_configure_changes_allocation(self) -> None:
-        new_ratios = SplitRatios(
-            platform=0.10, creator=0.70, validator=0.15, reserve=0.05
-        )
+        new_ratios = SplitRatios(platform=0.10, creator=0.70, validator=0.15, reserve=0.05)
         self.splitter.configure_ratios(LicenseType.BASIC, new_ratios)
         result = self.splitter.split(Decimal("100.00"), LicenseType.BASIC)
         # creator should now get 70
         assert abs(float(result.allocations[SplitRecipient.CREATOR]) - 70.0) < 0.01
 
     def test_get_ratios_returns_configured(self) -> None:
-        new_ratios = SplitRatios(
-            platform=0.25, creator=0.50, validator=0.20, reserve=0.05
-        )
+        new_ratios = SplitRatios(platform=0.25, creator=0.50, validator=0.20, reserve=0.05)
         self.splitter.configure_ratios(LicenseType.STANDARD, new_ratios)
         retrieved = self.splitter.get_ratios(LicenseType.STANDARD)
         assert retrieved == new_ratios
@@ -143,6 +134,7 @@ class TestConfigureRatios:
 # ---------------------------------------------------------------------------
 # get_distribution_report
 # ---------------------------------------------------------------------------
+
 
 class TestGetDistributionReport:
     def setup_method(self) -> None:
@@ -173,10 +165,7 @@ class TestGetDistributionReport:
         report = self.splitter.get_distribution_report()
         entry = next(e for e in report if e.license_type == LicenseType.STANDARD)
         total_allocated = (
-            entry.total_to_platform
-            + entry.total_to_creator
-            + entry.total_to_validator
-            + entry.total_to_reserve
+            entry.total_to_platform + entry.total_to_creator + entry.total_to_validator + entry.total_to_reserve
         )
         # Should be close to total_collected (residual may be minimal)
         assert abs(total_allocated - entry.total_collected) < Decimal("0.01")

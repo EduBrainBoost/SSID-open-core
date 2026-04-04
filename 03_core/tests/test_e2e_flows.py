@@ -8,13 +8,12 @@ Covers:
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import sys
 from decimal import Decimal
 from pathlib import Path
-
-import pytest
 
 # ---------------------------------------------------------------------------
 # Path setup — make all modules importable from their canonical locations
@@ -24,17 +23,13 @@ sys.path.insert(0, str(_REPO_ROOT / "03_core"))
 sys.path.insert(0, str(_REPO_ROOT / "08_identity_score"))
 sys.path.insert(0, str(_REPO_ROOT / "02_audit_logging"))
 
+from fairness_engine import FairnessConstraint, FairnessEngine
 from fee_distribution_engine import (
     FeeDistributionEngine,
     FeeParticipant,
     ParticipantRole,
 )
-from subscription_revenue_distributor import (
-    RevenueParticipant,
-    SubscriptionRevenueDistributor,
-    SubscriptionTier,
-)
-from fairness_engine import FairnessConstraint, FairnessEngine
+from fee_proof_engine import FeeProofEngine
 from governance_reward_engine import (
     GovernanceActivity,
     GovernanceActivityType,
@@ -51,12 +46,16 @@ from reward_handler import (
     RewardEvent,
     RewardHandler,
 )
-from fee_proof_engine import FeeProofEngine
-
+from subscription_revenue_distributor import (
+    RevenueParticipant,
+    SubscriptionRevenueDistributor,
+    SubscriptionTier,
+)
 
 # ===========================================================================
 # Flow 1: Subscription → Revenue Distribution → Fairness Audit
 # ===========================================================================
+
 
 class TestSubscriptionFairnessProofFlow:
     """Flow 1: SubscriptionRevenueDistributor → FairnessEngine → FeeProofEngine."""
@@ -77,9 +76,7 @@ class TestSubscriptionFairnessProofFlow:
         result = distributor.distribute(gross, participants, tier=SubscriptionTier.PROFESSIONAL)
 
         total_allocated = sum(result.allocations.values())
-        assert total_allocated <= gross, (
-            f"Total allocated {total_allocated} exceeds gross revenue {gross}"
-        )
+        assert total_allocated <= gross, f"Total allocated {total_allocated} exceeds gross revenue {gross}"
         assert len(result.allocations) == 3
         for pid, amount in result.allocations.items():
             assert amount > Decimal("0"), f"Provider {pid} got zero allocation"
@@ -106,7 +103,7 @@ class TestSubscriptionFairnessProofFlow:
         """Proof generated from distribution result must verify successfully."""
         distributor, participants = self._make_distributor_and_participants()
         gross = Decimal("1200.00")
-        result = distributor.distribute(gross, participants, tier=SubscriptionTier.PROFESSIONAL)
+        distributor.distribute(gross, participants, tier=SubscriptionTier.PROFESSIONAL)
 
         proof_engine = FeeProofEngine()
         inputs = {
@@ -151,6 +148,7 @@ class TestSubscriptionFairnessProofFlow:
 # ===========================================================================
 # Flow 2: License Fee → Split → Distribution → Proof
 # ===========================================================================
+
 
 class TestLicenseFeeDistributionProofFlow:
     """Flow 2: LicenseFeeSplitter → FeeDistributionEngine → FeeProofEngine → FairnessEngine."""
@@ -235,6 +233,7 @@ class TestLicenseFeeDistributionProofFlow:
 # Flow 3: Identity Score → Reward → Governance → Fairness
 # ===========================================================================
 
+
 class TestRewardGovernanceFairnessProofFlow:
     """Flow 3: RewardHandler → GovernanceRewardEngine → FairnessEngine → FeeProofEngine."""
 
@@ -249,17 +248,26 @@ class TestRewardGovernanceFairnessProofFlow:
 
     def _make_governance_participants(self):
         return [
-            GovernanceParticipant("alice", activities=[
-                GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
-                GovernanceActivity(GovernanceActivityType.PROPOSAL, weight=2.0),
-            ]),
-            GovernanceParticipant("bob", activities=[
-                GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
-                GovernanceActivity(GovernanceActivityType.REVIEW, weight=1.5),
-            ]),
-            GovernanceParticipant("carol", activities=[
-                GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
-            ]),
+            GovernanceParticipant(
+                "alice",
+                activities=[
+                    GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
+                    GovernanceActivity(GovernanceActivityType.PROPOSAL, weight=2.0),
+                ],
+            ),
+            GovernanceParticipant(
+                "bob",
+                activities=[
+                    GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
+                    GovernanceActivity(GovernanceActivityType.REVIEW, weight=1.5),
+                ],
+            ),
+            GovernanceParticipant(
+                "carol",
+                activities=[
+                    GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
+                ],
+            ),
         ]
 
     def test_reward_governance_flow_rewards_computed(self) -> None:
@@ -293,9 +301,7 @@ class TestRewardGovernanceFairnessProofFlow:
         gov_result = gov_engine.distribute(pool, participants)
 
         gov_total_out = sum(gov_result.allocations.values()) + gov_result.residual
-        assert abs(gov_total_out - pool) < Decimal("0.001"), (
-            f"Governance pool not conserved: {gov_total_out} != {pool}"
-        )
+        assert abs(gov_total_out - pool) < Decimal("0.001"), f"Governance pool not conserved: {gov_total_out} != {pool}"
 
     def test_reward_governance_flow_fairness_checked(self) -> None:
         """evaluate() returns FairnessReport with is_fair indicator set."""

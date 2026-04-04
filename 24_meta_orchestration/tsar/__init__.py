@@ -7,16 +7,16 @@ Provides self-healing capabilities for the SSID system:
 - Safe remediation with guardrails
 """
 
+from .health_api import HealthAPI
+from .issue_detector import CANONICAL_ROOTS, IssueDetector
 from .tsar_engine import (
+    DetectedIssue,
+    IssueSeverity,
+    IssueType,
+    RemediationAction,
     TSAREngine,
     TSARGuardrails,
-    DetectedIssue,
-    IssueType,
-    IssueSeverity,
-    RemediationAction,
 )
-from .health_api import HealthAPI
-from .issue_detector import IssueDetector, CANONICAL_ROOTS
 
 __all__ = [
     "TSAREngine",

@@ -1,7 +1,10 @@
 """Tests for EMS Orchestrator — Phase 10."""
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-from ems_orchestrator import EMSOrchestrator, TaskStatus, RunStatus
+
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+from ems_orchestrator import EMSOrchestrator, RunStatus, TaskStatus
 
 
 def test_task_lifecycle():
@@ -18,6 +21,7 @@ def test_task_lifecycle():
     assert task.evidence_hash is not None
     print("PASS: test_task_lifecycle")
 
+
 def test_emergency_stop():
     ems = EMSOrchestrator()
     task = ems.create_task("Risky Op", "test", "03_core", "01")
@@ -26,6 +30,7 @@ def test_emergency_stop():
     assert task.status == TaskStatus.CANCELLED
     assert result["action"] == "emergency_stop"
     print("PASS: test_emergency_stop")
+
 
 def test_run_ledger():
     ems = EMSOrchestrator()
@@ -37,6 +42,7 @@ def test_run_ledger():
     assert len(ledger) == 1
     assert ledger[0]["status"] == "success"
     print("PASS: test_run_ledger")
+
 
 if __name__ == "__main__":
     test_task_lifecycle()

@@ -2,9 +2,9 @@
 Source: 23_compliance/policies/interfederation/interfederation_claims_guard.rego
 Phase 4 — A02_A03_COMPLETION
 """
+
 import os
 import sys
-import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../23_compliance/validators"))
 from validate_interfederation_claims_guard import validate_interfederation_claims_guard
@@ -27,9 +27,7 @@ def test_interfederation_claims_guard_pass_clean_content():
 def test_interfederation_claims_guard_fail_claim_no_proof():
     """Test that forbidden claim without proof snapshot fails."""
     data = {
-        "documents": [
-            {"path": "docs/status.md", "content": "interfederation active between systems."}
-        ],
+        "documents": [{"path": "docs/status.md", "content": "interfederation active between systems."}],
     }
     assert validate_interfederation_claims_guard(data) is False
 
@@ -37,9 +35,7 @@ def test_interfederation_claims_guard_fail_claim_no_proof():
 def test_interfederation_claims_guard_pass_claim_with_proof():
     """Test that forbidden claim with valid proof snapshot passes."""
     data = {
-        "documents": [
-            {"path": "docs/status.md", "content": "interfederation active between systems."}
-        ],
+        "documents": [{"path": "docs/status.md", "content": "interfederation active between systems."}],
         "proof_snapshot": {
             "ssid_commit": "abc123",
             "opencore_commit": "def456",
@@ -52,9 +48,7 @@ def test_interfederation_claims_guard_pass_claim_with_proof():
 def test_interfederation_claims_guard_fail_score_claim():
     """Test that numeric interfederation score claim fails regardless of proof."""
     data = {
-        "documents": [
-            {"path": "docs/score.md", "content": "50% interfed compliance achieved."}
-        ],
+        "documents": [{"path": "docs/score.md", "content": "50% interfed compliance achieved."}],
     }
     assert validate_interfederation_claims_guard(data) is False
 

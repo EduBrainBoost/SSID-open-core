@@ -11,7 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 def _check(args: argparse.Namespace) -> int:
@@ -22,7 +22,7 @@ def _check(args: argparse.Namespace) -> int:
     # Stub: In real implementation uses Playwright with Google Chrome channel
     output = {
         "command": "browser.check",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "url": url,
         "timeout_ms": timeout,
         "browser": "Google Chrome",
@@ -35,6 +35,7 @@ def _check(args: argparse.Namespace) -> int:
     if args.live:
         try:
             from playwright.sync_api import sync_playwright
+
             with sync_playwright() as p:
                 browser = p.chromium.launch(channel="chrome", headless=True)
                 page = browser.new_page()
@@ -62,7 +63,7 @@ def _screenshot(args: argparse.Namespace) -> int:
     """Take a screenshot of a URL."""
     output = {
         "command": "browser.screenshot",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "url": args.url,
         "output_path": args.output,
         "status": "stub",
@@ -76,14 +77,15 @@ def _status(args: argparse.Namespace) -> int:
     """Report browser worker status."""
     output = {
         "command": "browser.status",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "playwright_installed": False,
         "chrome_available": False,
         "active_sessions": 0,
     }
 
     try:
-        import playwright
+        import playwright  # noqa: F401
+
         output["playwright_installed"] = True
     except ImportError:
         pass
@@ -123,7 +125,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         error = {
             "command": f"browser.{args.action}",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "error": str(exc),
             "status": "failed",
         }

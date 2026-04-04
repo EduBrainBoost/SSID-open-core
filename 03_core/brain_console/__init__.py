@@ -9,8 +9,8 @@ stdlib-only — no external dependencies.
 """
 
 from brain_console.context import BrainContext, BrainContextAssembler
-from brain_console.memory import MemoryManager, SessionMemory
 from brain_console.evidence import BrainEvidenceLogger, EvidenceEntry
+from brain_console.memory import MemoryManager, SessionMemory
 
 __all__ = [
     "BrainContextAssembler",

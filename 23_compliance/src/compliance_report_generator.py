@@ -14,20 +14,17 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from .automated_compliance_monitor import (
     AutomatedComplianceMonitor,
-    ComplianceFinding,
     MonitoringResult,
-    Severity,
 )
 from .compliance_dashboard_data import (
     ComplianceDashboardData,
     CoverageReport,
-    FrameworkStatus,
 )
 
 logger = logging.getLogger(__name__)
@@ -74,7 +71,7 @@ def _risk_indicator(risk: str) -> str:
 
 def generate_markdown_report(
     report: CoverageReport,
-    monitoring_result: Optional[MonitoringResult] = None,
+    monitoring_result: MonitoringResult | None = None,
 ) -> str:
     """
     Generate a full Markdown compliance report from a CoverageReport.
@@ -106,9 +103,7 @@ def generate_markdown_report(
     lines.append("## Executive Summary")
     lines.append("")
     lines.append(f"- **Overall Coverage:** {report.overall_coverage:.1f}%")
-    lines.append(
-        f"- **Full Implementation Coverage:** {report.overall_full_coverage:.1f}%"
-    )
+    lines.append(f"- **Full Implementation Coverage:** {report.overall_full_coverage:.1f}%")
     lines.append(f"- **Total Controls Assessed:** {report.total_controls_all}")
     lines.append(f"- **Total Open Findings:** {report.total_findings}")
     lines.append(f"- **Critical Findings:** {report.critical_findings}")
@@ -118,14 +113,8 @@ def generate_markdown_report(
     # -- Per-Framework Breakdown --------------------------------------------
     lines.append("## Framework Coverage")
     lines.append("")
-    lines.append(
-        "| Framework | Controls | Implemented | Partial | "
-        "Not Impl. | Coverage | Risk |"
-    )
-    lines.append(
-        "|-----------|----------|-------------|---------|"
-        "-----------|----------|------|"
-    )
+    lines.append("| Framework | Controls | Implemented | Partial | Not Impl. | Coverage | Risk |")
+    lines.append("|-----------|----------|-------------|---------|-----------|----------|------|")
     for fw in report.frameworks:
         lines.append(
             f"| {fw.framework.upper()} "
@@ -157,9 +146,7 @@ def generate_markdown_report(
         lines.append("")
         for i, gap in enumerate(report.gaps, 1):
             sev = _severity_badge(gap["severity"])
-            lines.append(
-                f"### Gap {i}: {gap['control_id']} - {gap['control_title']}"
-            )
+            lines.append(f"### Gap {i}: {gap['control_id']} - {gap['control_title']}")
             lines.append("")
             lines.append(f"- **Framework:** {gap['framework'].upper()}")
             lines.append(f"- **Severity:** {sev}")
@@ -175,12 +162,8 @@ def generate_markdown_report(
     if report.overdue_items:
         lines.append("## Overdue Reviews")
         lines.append("")
-        lines.append(
-            "| Finding ID | Framework | Control | Due Date | Severity |"
-        )
-        lines.append(
-            "|------------|-----------|---------|----------|----------|"
-        )
+        lines.append("| Finding ID | Framework | Control | Due Date | Severity |")
+        lines.append("|------------|-----------|---------|----------|----------|")
         for item in report.overdue_items:
             lines.append(
                 f"| {item['finding_id']} "
@@ -199,31 +182,33 @@ def generate_markdown_report(
 
     critical_gaps = [g for g in report.gaps if g["severity"] == "critical"]
     high_gaps = [g for g in report.gaps if g["severity"] == "high"]
-    other_gaps = [
-        g
-        for g in report.gaps
-        if g["severity"] not in ("critical", "high")
-    ]
+    other_gaps = [g for g in report.gaps if g["severity"] not in ("critical", "high")]
 
     if critical_gaps:
         lines.append("#### Immediate (Critical)")
         lines.append("")
         for gap in critical_gaps:
-            lines.append(f"1. **{gap['control_id']}** ({gap['framework'].upper()}): {gap.get('remediation', 'Remediation required')}")
+            lines.append(
+                f"1. **{gap['control_id']}** ({gap['framework'].upper()}): {gap.get('remediation', 'Remediation required')}"
+            )
         lines.append("")
 
     if high_gaps:
         lines.append("#### Short-Term (High)")
         lines.append("")
         for gap in high_gaps:
-            lines.append(f"1. **{gap['control_id']}** ({gap['framework'].upper()}): {gap.get('remediation', 'Remediation required')}")
+            lines.append(
+                f"1. **{gap['control_id']}** ({gap['framework'].upper()}): {gap.get('remediation', 'Remediation required')}"
+            )
         lines.append("")
 
     if other_gaps:
         lines.append("#### Medium-Term (Medium/Low)")
         lines.append("")
         for gap in other_gaps:
-            lines.append(f"1. **{gap['control_id']}** ({gap['framework'].upper()}): {gap.get('remediation', 'Review and update')}")
+            lines.append(
+                f"1. **{gap['control_id']}** ({gap['framework'].upper()}): {gap.get('remediation', 'Review and update')}"
+            )
         lines.append("")
 
     if not report.gaps:
@@ -244,7 +229,7 @@ def generate_markdown_report(
 
 def generate_json_report(
     report: CoverageReport,
-    monitoring_result: Optional[MonitoringResult] = None,
+    monitoring_result: MonitoringResult | None = None,
 ) -> str:
     """
     Generate a JSON compliance report from a CoverageReport.
@@ -310,7 +295,7 @@ class ComplianceReportGenerator:
         frameworks_dir: str,
         evidence_dir: str,
         output_dir: str = DEFAULT_OUTPUT_DIR,
-        config_path: Optional[str] = None,
+        config_path: str | None = None,
     ) -> None:
         self._monitor = AutomatedComplianceMonitor(
             frameworks_dir=frameworks_dir,
@@ -323,7 +308,7 @@ class ComplianceReportGenerator:
     def generate(
         self,
         format: str = "markdown",
-        frameworks: Optional[list[str]] = None,
+        frameworks: list[str] | None = None,
     ) -> str:
         """
         Run the monitor and generate a report.
@@ -357,7 +342,7 @@ class ComplianceReportGenerator:
 
     def generate_and_save(
         self,
-        frameworks: Optional[list[str]] = None,
+        frameworks: list[str] | None = None,
         prefix: str = "compliance_report",
     ) -> tuple[Path, Path]:
         """
@@ -365,17 +350,13 @@ class ComplianceReportGenerator:
 
         Returns tuple of (markdown_path, json_path).
         """
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
 
         md_content = self.generate(format="markdown", frameworks=frameworks)
-        md_path = self.save_report(
-            md_content, f"{prefix}_{timestamp}.md"
-        )
+        md_path = self.save_report(md_content, f"{prefix}_{timestamp}.md")
 
         json_content = self.generate(format="json", frameworks=frameworks)
-        json_path = self.save_report(
-            json_content, f"{prefix}_{timestamp}.json"
-        )
+        json_path = self.save_report(json_content, f"{prefix}_{timestamp}.json")
 
         return md_path, json_path
 

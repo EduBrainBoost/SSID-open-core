@@ -3,22 +3,22 @@
 Evaluates policy rules before critical distribution/reward actions.
 Returns PolicyDecision (ALLOW/DENY) with reason + evidence JSON.
 """
+
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class PolicyAction(str, Enum):
+class PolicyAction(StrEnum):
     ALLOW = "allow"
     DENY = "deny"
 
 
-class PolicyRuleType(str, Enum):
+class PolicyRuleType(StrEnum):
     MAX_FEE = "max_fee"
     MIN_PARTICIPANTS = "min_participants"
     MAX_GINI = "max_gini"
@@ -40,7 +40,7 @@ class PolicyDecision:
     rule_type: PolicyRuleType | None
     reason: str
     context: dict[str, Any]
-    decided_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    decided_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def allowed(self) -> bool:
@@ -136,6 +136,7 @@ class PolicyEnforcer:
 
 class PolicyViolationError(ValueError):
     """Raised when a policy check returns DENY."""
+
     def __init__(self, decision: PolicyDecision) -> None:
         super().__init__(f"Policy violation [{decision.rule_type}]: {decision.reason}")
         self.decision = decision

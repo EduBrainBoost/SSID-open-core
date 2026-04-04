@@ -4,6 +4,7 @@ Loads the canonical roots from structure_policy.yaml and asserts they match
 the ROOT-24-LOCK list. Also validates that the referenced exceptions file
 exists and that the policy YAML is well-formed.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -16,13 +17,30 @@ POLICY_PATH = REPO_ROOT / "23_compliance" / "policies" / "structure_policy.yaml"
 MASTER_DEF_PATH = REPO_ROOT / "16_codex" / "ssid_master_definition_corrected_v1.1.1.md"
 
 ROOT_24_LOCK = [
-    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-    "05_documentation", "06_data_pipeline", "07_governance_legal",
-    "08_identity_score", "09_meta_identity", "10_interoperability",
-    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
-    "15_infra", "16_codex", "17_observability", "18_data_layer",
-    "19_adapters", "20_foundation", "21_post_quantum_crypto", "22_datasets",
-    "23_compliance", "24_meta_orchestration",
+    "01_ai_layer",
+    "02_audit_logging",
+    "03_core",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "12_tooling",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "16_codex",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
+    "23_compliance",
+    "24_meta_orchestration",
 ]
 
 
@@ -54,9 +72,7 @@ class TestStructurePolicyYaml:
         assert full_path.exists(), f"Referenced exceptions file missing: {full_path}"
 
     def test_master_definition_exists(self):
-        assert MASTER_DEF_PATH.exists(), (
-            f"SoT master definition not found at {MASTER_DEF_PATH}"
-        )
+        assert MASTER_DEF_PATH.exists(), f"SoT master definition not found at {MASTER_DEF_PATH}"
 
 
 class TestStructurePolicyVsMasterDef:
@@ -76,14 +92,11 @@ class TestStructurePolicyVsMasterDef:
             #   '04_deployment', '04. deployment', '04. data_pipeline', etc.
             prefix, _, name = root.partition("_")
             variants = [
-                root.lower(),                           # 04_deployment
-                f"{prefix}. {name}".lower(),            # 04. data_pipeline
+                root.lower(),  # 04_deployment
+                f"{prefix}. {name}".lower(),  # 04. data_pipeline
                 f"{prefix}. {name.replace('_', ' ')}".lower(),  # 04. data pipeline
-                name.replace("_", " ").lower(),         # data pipeline
-                name.replace("_", "_").lower(),         # data_pipeline
+                name.replace("_", " ").lower(),  # data pipeline
+                name.replace("_", "_").lower(),  # data_pipeline
             ]
             found = any(v in content for v in variants)
-            assert found, (
-                f"Root '{root}' not found in master definition. "
-                f"Searched variants: {variants}"
-            )
+            assert found, f"Root '{root}' not found in master definition. Searched variants: {variants}"

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """ssidctl promote -- Initiate promotion workflow (dry-run by default)."""
+
 from __future__ import annotations
 
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 def build_parser(subparsers: argparse._SubParsersAction | None = None) -> argparse.ArgumentParser:
@@ -24,7 +25,7 @@ def build_parser(subparsers: argparse._SubParsersAction | None = None) -> argpar
 
 def run(args: argparse.Namespace) -> int:
     """Execute promote command."""
-    timestamp = datetime.now(timezone.utc).isoformat()
+    timestamp = datetime.now(UTC).isoformat()
     result: dict[str, object] = {
         "command": "promote",
         "target": args.target or "(unspecified)",

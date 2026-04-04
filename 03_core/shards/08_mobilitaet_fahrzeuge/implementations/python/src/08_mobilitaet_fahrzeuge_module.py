@@ -1,6 +1,7 @@
 """Validator module for Mobilitaet & Fahrzeuge."""
+
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -19,7 +20,7 @@ class Validator:
             "data_hash": data_hash,
             "schema_id": schema_id,
             "domain": "08_mobilitaet_fahrzeuge",
-            "validated_utc": datetime.now(timezone.utc).isoformat(),
+            "validated_utc": datetime.now(UTC).isoformat(),
         }
         self._reports.append(result)
         return result
@@ -35,7 +36,7 @@ class Validator:
 
     def create_evidence(self, operation: str) -> dict[str, str]:
         return {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "operation": operation,
             "domain": "08_mobilitaet_fahrzeuge",
             "root": "03_core",

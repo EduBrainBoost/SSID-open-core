@@ -13,6 +13,7 @@ Covers:
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import sys
@@ -35,12 +36,14 @@ if str(SRC_DIR) not in sys.path:
 @pytest.fixture(scope="module")
 def orchestrator_cls():
     from orchestrator import Orchestrator  # type: ignore[import]
+
     return Orchestrator
 
 
 @pytest.fixture(scope="module")
 def task_status_enum():
     from orchestrator import TaskStatus  # type: ignore[import]
+
     return TaskStatus
 
 
@@ -52,16 +55,20 @@ def orch(orchestrator_cls):
 @pytest.fixture()
 def echo_executor():
     """Executor that echoes back the task spec as result."""
+
     def _execute(task_spec: dict) -> dict:
         return {"echoed": task_spec}
+
     return _execute
 
 
 @pytest.fixture()
 def failing_executor():
     """Executor that always raises an exception."""
+
     def _execute(task_spec: dict) -> dict:
         raise RuntimeError("Executor failed deliberately")
+
     return _execute
 
 
@@ -248,17 +255,14 @@ class TestOrchestratorSource:
 
     def test_source_has_module_docstring(self):
         import orchestrator as _mod  # type: ignore[import]
+
         assert _mod.__doc__ is not None
 
     def test_source_mentions_sot_version(self):
         content = self.src_path.read_text(encoding="utf-8")
-        assert "SoT" in content or "v4" in content, (
-            "orchestrator.py should reference SoT version"
-        )
+        assert "SoT" in content or "v4" in content, "orchestrator.py should reference SoT version"
 
     def test_source_has_no_placeholder_markers(self):
         content = self.src_path.read_text(encoding="utf-8")
         for marker in ["AUTO-GENERATED PLACEHOLDER", "pass  # placeholder"]:
-            assert marker not in content, (
-                f"orchestrator.py still contains placeholder marker: {marker}"
-            )
+            assert marker not in content, f"orchestrator.py still contains placeholder marker: {marker}"

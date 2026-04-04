@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ssidctl approval -- Show and manage approval queue."""
+
 from __future__ import annotations
 
 import argparse
@@ -14,8 +15,9 @@ def build_parser(subparsers: argparse._SubParsersAction | None = None) -> argpar
         parser = subparsers.add_parser("approval", help="Show and manage approval queue")
     else:
         parser = argparse.ArgumentParser(prog="ssidctl approval", description=__doc__)
-    parser.add_argument("action", nargs="?", default="list", choices=["list", "show", "count"],
-                        help="Action to perform (default: list)")
+    parser.add_argument(
+        "action", nargs="?", default="list", choices=["list", "show", "count"], help="Action to perform (default: list)"
+    )
     parser.add_argument("--root", type=str, default=".", help="Repository root path")
     parser.add_argument("--json", dest="json_output", action="store_true", help="Output in JSON format")
     parser.set_defaults(func=run)
@@ -28,10 +30,12 @@ def _find_approval_artifacts(repo_root: Path) -> list[dict[str, str]]:
     for pattern in ("**/approval*.json", "**/approval*.yaml", "**/pending_approval*"):
         for p in sorted(repo_root.glob(pattern)):
             if ".git" not in p.parts:
-                artifacts.append({
-                    "path": str(p.relative_to(repo_root)),
-                    "status": "pending",
-                })
+                artifacts.append(
+                    {
+                        "path": str(p.relative_to(repo_root)),
+                        "status": "pending",
+                    }
+                )
     return artifacts
 
 

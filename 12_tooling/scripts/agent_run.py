@@ -13,6 +13,7 @@ instead of invoking agents directly.
 
 SoT v4.1.0 | ROOT-24-LOCK | Classification: Orchestration
 """
+
 from __future__ import annotations
 
 import argparse
@@ -53,7 +54,9 @@ def run_sot_validation() -> tuple[bool, str]:
 
     result = subprocess.run(
         [sys.executable, str(SOT_VALIDATOR), "--verify-all"],
-        capture_output=True, text=True, cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        cwd=str(REPO_ROOT),
         timeout=120,
     )
     output = result.stdout + result.stderr
@@ -99,25 +102,31 @@ def main() -> int:
         if not sot_passed:
             print(f"[MAOS] SoT validation FAILED — agent {agent_id} blocked")
             print(sot_output[:500])
-            _append_jsonl(WORKLOG_PATH, {
-                "timestamp": ts_start,
-                "agent_id": agent_id,
-                "event": "sot_validation_failed",
-                "status": "blocked",
-            })
+            _append_jsonl(
+                WORKLOG_PATH,
+                {
+                    "timestamp": ts_start,
+                    "agent_id": agent_id,
+                    "event": "sot_validation_failed",
+                    "status": "blocked",
+                },
+            )
             return 1
         print("[MAOS] SoT validation PASSED")
 
     # Step 2: Scratch boundary check
     if not validate_scratch_boundary(args.scratch_dir):
         print(f"[MAOS] Scratch directory violation: {args.scratch_dir} is inside repo")
-        _append_jsonl(WORKLOG_PATH, {
-            "timestamp": ts_start,
-            "agent_id": agent_id,
-            "event": "scratch_boundary_violation",
-            "scratch_dir": args.scratch_dir,
-            "status": "blocked",
-        })
+        _append_jsonl(
+            WORKLOG_PATH,
+            {
+                "timestamp": ts_start,
+                "agent_id": agent_id,
+                "event": "scratch_boundary_violation",
+                "scratch_dir": args.scratch_dir,
+                "status": "blocked",
+            },
+        )
         return 1
 
     # Step 3: Execute agent command

@@ -5,7 +5,6 @@ have empty verification, or contain known fake-success patterns.
 """
 
 import re
-from typing import Dict, List
 
 from ._evidence import make_evidence, result
 
@@ -22,7 +21,7 @@ FAKE_PATTERNS = [
 ]
 
 
-def execute(context: Dict) -> Dict:
+def execute(context: dict) -> dict:
     """Detect fake success in a result payload.
 
     context must contain:
@@ -37,7 +36,7 @@ def execute(context: Dict) -> Dict:
     evidence_ref = payload.get("evidence_ref", "")
     message = str(payload.get("message", ""))
 
-    suspicions: List[str] = []
+    suspicions: list[str] = []
 
     # PASS without evidence is suspicious
     if status == "PASS" and not evidence_ref:

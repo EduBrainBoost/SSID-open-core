@@ -6,11 +6,10 @@ Verifies:
 - all .py files in src/ have valid Python syntax
 - policies/policy.yaml exists and is valid YAML
 """
+
 from __future__ import annotations
 
-import ast
 import py_compile
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -24,9 +23,7 @@ POLICY_FILE = ROOT_DIR / "policies" / "policy.yaml"
 
 def test_src_init_exists() -> None:
     """src/__init__.py must exist."""
-    assert (SRC_DIR / "__init__.py").exists(), (
-        f"{ROOT_NAME}/src/__init__.py is missing"
-    )
+    assert (SRC_DIR / "__init__.py").exists(), f"{ROOT_NAME}/src/__init__.py is missing"
 
 
 def test_src_py_files_valid_syntax() -> None:
@@ -47,22 +44,16 @@ def test_src_py_files_valid_syntax() -> None:
 
 def test_policy_yaml_exists() -> None:
     """policies/policy.yaml must exist."""
-    assert POLICY_FILE.exists(), (
-        f"{ROOT_NAME}/policies/policy.yaml is missing"
-    )
+    assert POLICY_FILE.exists(), f"{ROOT_NAME}/policies/policy.yaml is missing"
 
 
 def test_policy_yaml_valid() -> None:
     """policies/policy.yaml must be valid YAML."""
-    assert POLICY_FILE.exists(), (
-        f"{ROOT_NAME}/policies/policy.yaml is missing — cannot validate"
-    )
+    assert POLICY_FILE.exists(), f"{ROOT_NAME}/policies/policy.yaml is missing — cannot validate"
     with open(POLICY_FILE, encoding="utf-8") as fh:
         content = fh.read()
     try:
         parsed = yaml.safe_load(content)
     except yaml.YAMLError as exc:
         pytest.fail(f"{ROOT_NAME}/policies/policy.yaml is not valid YAML: {exc}")
-    assert parsed is not None, (
-        f"{ROOT_NAME}/policies/policy.yaml is empty or null"
-    )
+    assert parsed is not None, f"{ROOT_NAME}/policies/policy.yaml is empty or null"

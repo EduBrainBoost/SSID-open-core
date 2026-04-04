@@ -6,14 +6,14 @@
 """
 SoT Validator CLI - --verify-all, --scorecard (deprecated: use --breakdown)
 """
+
 from __future__ import annotations
 
 import argparse
 import importlib.util
 import json
 import subprocess
-import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -78,7 +78,7 @@ def _generate_breakdown(results: dict) -> dict:
             violations.append(item)
 
     return {
-        "generated_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "contract_version": "1.0.0",
         "total_rules": len(results),
         "passed_count": len(passed),
@@ -113,19 +113,23 @@ def _breakdown_to_md(breakdown: dict) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(prog="sot_validator.py")
     parser.add_argument(
-        "--verify-all", action="store_true",
+        "--verify-all",
+        action="store_true",
         help="Run all checks, fail on any violation",
     )
     parser.add_argument(
-        "--scorecard", action="store_true",
+        "--scorecard",
+        action="store_true",
         help="(deprecated, use --breakdown) Generate breakdown inventory",
     )
     parser.add_argument(
-        "--breakdown", action="store_true",
+        "--breakdown",
+        action="store_true",
         help="Generate breakdown inventory (PASS/FAIL, counts, lists — no scores)",
     )
     parser.add_argument(
-        "--verify-phase5", action="store_true",
+        "--verify-phase5",
+        action="store_true",
         help="Verify Phase-5 SoT Engine Expansion components (SOT_AGENT_037-041)",
     )
     args = parser.parse_args()
@@ -153,8 +157,11 @@ def main() -> int:
 
     if args.verify_phase5:
         phase5_rules = [
-            "SOT_AGENT_037", "SOT_AGENT_038", "SOT_AGENT_039",
-            "SOT_AGENT_040", "SOT_AGENT_041",
+            "SOT_AGENT_037",
+            "SOT_AGENT_038",
+            "SOT_AGENT_039",
+            "SOT_AGENT_040",
+            "SOT_AGENT_041",
         ]
         phase5_violations = [r for r in failed if r in phase5_rules]
         phase5_passed = [r for r in phase5_rules if r not in phase5_violations]

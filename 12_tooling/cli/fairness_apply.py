@@ -3,6 +3,7 @@
 
 Usage: python 12_tooling/cli/fairness_apply.py --input scores.json
 """
+
 import argparse
 import json
 import sys
@@ -16,7 +17,9 @@ def check_fairness(scores: list[dict]) -> dict:
         return {"status": "PASS", "message": "No scores to check"}
     values = [s.get("score", 0) for s in scores]
     mean = sum(values) / len(values)
-    deviations = [(s.get("category_hash", "unknown"), abs(s["score"] - mean) / mean * 100 if mean else 0) for s in scores]
+    deviations = [
+        (s.get("category_hash", "unknown"), abs(s["score"] - mean) / mean * 100 if mean else 0) for s in scores
+    ]
     violations = [(cat, dev) for cat, dev in deviations if dev > 10.0]
     return {
         "mean_score": round(mean, 4),

@@ -11,6 +11,7 @@ and lazy imports so downstream code can do::
 
     from src.core_engine import CORE_ROOT
 """
+
 from __future__ import annotations
 
 from pathlib import Path

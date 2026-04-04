@@ -7,6 +7,7 @@ but outputs a visualization-ready graph.
 
 Output formats: DOT (Graphviz), JSON adjacency list.
 """
+
 from __future__ import annotations
 
 import json
@@ -25,6 +26,7 @@ VALIDATOR_PATH = Path(__file__).parent / "circular_dependency_validator.py"
 def _import_validator():
     """Import circular_dependency_validator dynamically."""
     import importlib.util
+
     spec = importlib.util.spec_from_file_location("circular_dependency_validator", VALIDATOR_PATH)
     if not spec or not spec.loader:
         raise ImportError(f"Cannot load {VALIDATOR_PATH}")
@@ -36,7 +38,7 @@ def _import_validator():
 def generate_dot(graph: dict[str, set[str]]) -> str:
     """Generate DOT format string from dependency graph."""
     lines = ["digraph ssid_dependencies {"]
-    lines.append('    rankdir=LR;')
+    lines.append("    rankdir=LR;")
     lines.append('    node [shape=box, style=filled, fillcolor="#e8f4fd"];')
     lines.append("")
 
@@ -71,8 +73,7 @@ def main() -> int:
     validator = _import_validator()
     graph = validator.build_dependency_graph()
 
-    log.info("Dependency graph: %d modules, %d edges",
-             len(graph), sum(len(v) for v in graph.values()))
+    log.info("Dependency graph: %d modules, %d edges", len(graph), sum(len(v) for v in graph.values()))
 
     output_dir = REPO_ROOT / "23_compliance" / "anti_gaming" / "output"
     output_dir.mkdir(parents=True, exist_ok=True)

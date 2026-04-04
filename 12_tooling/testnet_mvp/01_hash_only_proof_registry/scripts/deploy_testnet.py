@@ -6,6 +6,7 @@ Never logs or prints secret values.
 
 Exit code 0 on success, 1 on failure.
 """
+
 from __future__ import annotations
 
 import json
@@ -13,7 +14,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 try:
     from web3 import Web3
@@ -28,19 +29,8 @@ __all__ = ["deploy", "load_contract_artifacts", "redact_address"]
 # ---------------------------------------------------------------------------
 
 REPO_ROOT: Path = Path(__file__).resolve().parents[4]
-CONTRACTS_DIR: Path = (
-    REPO_ROOT
-    / "12_tooling"
-    / "testnet_mvp"
-    / "01_hash_only_proof_registry"
-    / "contracts"
-)
-AUDIT_DIR: Path = (
-    REPO_ROOT
-    / "02_audit_logging"
-    / "agent_runs"
-    / "PH3_IMPL_SCRIPTS_002"
-)
+CONTRACTS_DIR: Path = REPO_ROOT / "12_tooling" / "testnet_mvp" / "01_hash_only_proof_registry" / "contracts"
+AUDIT_DIR: Path = REPO_ROOT / "02_audit_logging" / "agent_runs" / "PH3_IMPL_SCRIPTS_002"
 ABI_PATH: Path = CONTRACTS_DIR / "proof_registry_abi.json"
 BYTECODE_PATH: Path = CONTRACTS_DIR / "proof_registry_bytecode.json"
 
@@ -63,11 +53,11 @@ def redact_address(addr: str) -> str:
     return f"{addr[:6]}...{addr[-4:]}"
 
 
-def _read_env() -> Tuple[str, int, str]:
+def _read_env() -> tuple[str, int, str]:
     """Read required environment variables. Exits on missing values."""
-    rpc_url: Optional[str] = os.environ.get("RPC_URL")
-    chain_id_str: Optional[str] = os.environ.get("CHAIN_ID")
-    private_key: Optional[str] = os.environ.get("PRIVATE_KEY")
+    rpc_url: str | None = os.environ.get("RPC_URL")
+    chain_id_str: str | None = os.environ.get("CHAIN_ID")
+    private_key: str | None = os.environ.get("PRIVATE_KEY")
 
     missing = []
     if not rpc_url:
@@ -90,24 +80,21 @@ def _read_env() -> Tuple[str, int, str]:
     return rpc_url, chain_id, private_key  # type: ignore[return-value]
 
 
-def load_contract_artifacts() -> Tuple[list, str]:
+def load_contract_artifacts() -> tuple[list, str]:
     """Load ABI and bytecode from the contracts directory.
 
     Returns:
         Tuple of (abi, bytecode_hex).
     """
-    with open(ABI_PATH, "r", encoding="utf-8") as f:
+    with open(ABI_PATH, encoding="utf-8") as f:
         abi: list = json.load(f)
 
-    with open(BYTECODE_PATH, "r", encoding="utf-8") as f:
-        bytecode_data: Dict[str, Any] = json.load(f)
+    with open(BYTECODE_PATH, encoding="utf-8") as f:
+        bytecode_data: dict[str, Any] = json.load(f)
 
     bytecode_hex: str = bytecode_data.get("bytecode") or bytecode_data.get("object", "")
     if not bytecode_hex:
-        raise ValueError(
-            f"No bytecode found in {BYTECODE_PATH}: "
-            "expected key 'bytecode' or 'object'"
-        )
+        raise ValueError(f"No bytecode found in {BYTECODE_PATH}: expected key 'bytecode' or 'object'")
     return abi, bytecode_hex
 
 
@@ -120,7 +107,7 @@ def deploy(
     rpc_url: str,
     chain_id: int,
     private_key: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Deploy ProofRegistry and return deployment metadata.
 
     Args:
@@ -149,15 +136,14 @@ def deploy(
     print(f"Balance: {w3.from_wei(balance, 'ether')} POL")
     if balance == 0:
         raise RuntimeError(
-            f"Deployer {deployer_address} has zero balance on chain {chain_id}. "
-            "Fund via faucet before deploying."
+            f"Deployer {deployer_address} has zero balance on chain {chain_id}. Fund via faucet before deploying."
         )
 
     contract = w3.eth.contract(abi=abi, bytecode=bytecode_hex)
 
     nonce: int = w3.eth.get_transaction_count(deployer_address)
 
-    tx: Dict[str, Any] = contract.constructor().build_transaction(
+    tx: dict[str, Any] = contract.constructor().build_transaction(
         {
             "chainId": chain_id,
             "from": deployer_address,
@@ -182,7 +168,7 @@ def deploy(
     contract_address: str = receipt.contractAddress
     print(f"Contract deployed at: {contract_address}")
 
-    result: Dict[str, Any] = {
+    result: dict[str, Any] = {
         "chain_id": chain_id,
         "contract_address": contract_address,
         "deployer": redact_address(deployer_address),
@@ -191,7 +177,7 @@ def deploy(
     return result
 
 
-def _write_deployment_json(data: Dict[str, Any]) -> Path:
+def _write_deployment_json(data: dict[str, Any]) -> Path:
     """Write deployment.json to the audit logging directory."""
     os.makedirs(AUDIT_DIR, exist_ok=True)
     output_path: Path = AUDIT_DIR / "deployment.json"

@@ -6,16 +6,18 @@ ledger and progress through a deterministic lifecycle.
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import datetime
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from enum import StrEnum
+from typing import Any
 
 
-class TaskStatus(str, Enum):
+class TaskStatus(StrEnum):
     """Lifecycle status of a dispatched task."""
 
     PENDING = "pending"
@@ -31,15 +33,11 @@ class TaskRecord:
     """Internal record of a dispatched task."""
 
     task_id: str
-    spec: Dict[str, Any]
+    spec: dict[str, Any]
     status: TaskStatus = TaskStatus.PENDING
-    result: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
-    created_at: str = field(
-        default_factory=lambda: datetime.datetime.now(
-            datetime.timezone.utc
-        ).isoformat()
-    )
+    result: dict[str, Any] | None = None
+    error: str | None = None
+    created_at: str = field(default_factory=lambda: datetime.datetime.now(datetime.UTC).isoformat())
     updated_at: str = ""
 
 
@@ -51,9 +49,7 @@ class Orchestrator:
     task is recorded as DISPATCHED for external processing.
     """
 
-    def __init__(
-        self, executor: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None
-    ) -> None:
+    def __init__(self, executor: Callable[[dict[str, Any]], dict[str, Any]] | None = None) -> None:
         """Initialise the Orchestrator.
 
         Args:
@@ -61,7 +57,7 @@ class Orchestrator:
                 a result dict.  When None, tasks are recorded as DISPATCHED
                 but not executed inline.
         """
-        self._ledger: Dict[str, TaskRecord] = {}
+        self._ledger: dict[str, TaskRecord] = {}
         self._executor = executor
 
     def dispatch_task(self, task_spec: dict) -> dict:
@@ -88,7 +84,7 @@ class Orchestrator:
         else:
             record.status = TaskStatus.DISPATCHED
 
-        record.updated_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        record.updated_at = datetime.datetime.now(datetime.UTC).isoformat()
         self._ledger[task_id] = record
 
         return {"task_id": task_id, "status": record.status.value}
@@ -106,7 +102,7 @@ class Orchestrator:
             KeyError: If the task_id is not found in the ledger.
         """
         record = self._ledger[task_id]
-        out: Dict[str, Any] = {
+        out: dict[str, Any] = {
             "task_id": record.task_id,
             "status": record.status.value,
             "created_at": record.created_at,
@@ -118,7 +114,7 @@ class Orchestrator:
             out["error"] = record.error
         return out
 
-    def list_tasks(self, status: Optional[TaskStatus] = None) -> List[dict]:
+    def list_tasks(self, status: TaskStatus | None = None) -> list[dict]:
         """List tasks, optionally filtered by status.
 
         Args:
@@ -155,9 +151,7 @@ class Orchestrator:
         """
         record = self._ledger[task_id]
         if record.status not in (TaskStatus.PENDING, TaskStatus.DISPATCHED):
-            raise ValueError(
-                f"Task {task_id} is in state {record.status.value} and cannot be cancelled."
-            )
+            raise ValueError(f"Task {task_id} is in state {record.status.value} and cannot be cancelled.")
         record.status = TaskStatus.CANCELLED
-        record.updated_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        record.updated_at = datetime.datetime.now(datetime.UTC).isoformat()
         return {"task_id": task_id, "status": record.status.value}

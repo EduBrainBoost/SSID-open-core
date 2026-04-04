@@ -1,4 +1,5 @@
 """Deterministic run_id computation for E2E pipeline."""
+
 from __future__ import annotations
 
 import hashlib

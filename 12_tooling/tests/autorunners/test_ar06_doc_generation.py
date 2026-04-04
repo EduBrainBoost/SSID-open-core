@@ -11,13 +11,22 @@ def _run_gen(chart_path: Path, tmp_path: Path) -> tuple[int, dict]:
     out_dir = tmp_path / "generated"
     manifest = tmp_path / "manifest.json"
     r = subprocess.run(
-        ["python", str(SCRIPT),
-         "--charts", str(chart_path),
-         "--template", str(TEMPLATE),
-         "--out-dir", str(out_dir),
-         "--out-manifest", str(manifest),
-         "--repo-root", str(SSID_ROOT)],
-        capture_output=True, text=True
+        [
+            "python",
+            str(SCRIPT),
+            "--charts",
+            str(chart_path),
+            "--template",
+            str(TEMPLATE),
+            "--out-dir",
+            str(out_dir),
+            "--out-manifest",
+            str(manifest),
+            "--repo-root",
+            str(SSID_ROOT),
+        ],
+        capture_output=True,
+        text=True,
     )
     data = json.loads(manifest.read_text()) if manifest.exists() else {}
     return r.returncode, data
@@ -57,13 +66,22 @@ def test_empty_doc_fails_qa(tmp_path):
     out_dir = tmp_path / "generated"
     manifest = tmp_path / "manifest.json"
     r = subprocess.run(
-        ["python", str(SCRIPT),
-         "--charts", str(charts_list),
-         "--template", str(TEMPLATE),
-         "--out-dir", str(out_dir),
-         "--out-manifest", str(manifest),
-         "--repo-root", str(SSID_ROOT)],
-        capture_output=True, text=True
+        [
+            "python",
+            str(SCRIPT),
+            "--charts",
+            str(charts_list),
+            "--template",
+            str(TEMPLATE),
+            "--out-dir",
+            str(out_dir),
+            "--out-manifest",
+            str(manifest),
+            "--repo-root",
+            str(SSID_ROOT),
+        ],
+        capture_output=True,
+        text=True,
     )
     assert r.returncode == 0
     data = json.loads(manifest.read_text())
@@ -86,13 +104,21 @@ def test_idempotent_generation(tmp_path):
         m = tmp_path / f"manifest_{run_and_get_sha.count}.json"
         run_and_get_sha.count += 1
         subprocess.run(
-            ["python", str(SCRIPT),
-             "--charts", str(chart),
-             "--template", str(TEMPLATE),
-             "--out-dir", str(tmp_path / "gen"),
-             "--out-manifest", str(m),
-             "--repo-root", str(SSID_ROOT)],
-            check=True
+            [
+                "python",
+                str(SCRIPT),
+                "--charts",
+                str(chart),
+                "--template",
+                str(TEMPLATE),
+                "--out-dir",
+                str(tmp_path / "gen"),
+                "--out-manifest",
+                str(m),
+                "--repo-root",
+                str(SSID_ROOT),
+            ],
+            check=True,
         )
         data = json.loads(m.read_text())
         return data["generated"][0].get("source_sha256")

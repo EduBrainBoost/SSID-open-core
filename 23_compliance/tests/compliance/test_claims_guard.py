@@ -2,9 +2,9 @@
 Source: 23_compliance/policies/claims_guard.rego
 Phase 4 — A02_A03_COMPLETION
 """
+
 import os
 import sys
-import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../23_compliance/validators"))
 from validate_claims_guard import validate_claims_guard
@@ -28,9 +28,7 @@ def test_claims_guard_pass_clean_content():
 def test_claims_guard_fail_forbidden_claim():
     """Test that forbidden claim without evidence fails."""
     data = {
-        "scanned_files": [
-            {"path": "docs/status.md", "content": "System is INTERFEDERATION_ACTIVE now."}
-        ],
+        "scanned_files": [{"path": "docs/status.md", "content": "System is INTERFEDERATION_ACTIVE now."}],
         "evidence_flags": [],
     }
     assert validate_claims_guard(data) is False
@@ -39,9 +37,7 @@ def test_claims_guard_fail_forbidden_claim():
 def test_claims_guard_pass_claim_with_evidence():
     """Test that forbidden claim WITH verified evidence passes."""
     data = {
-        "scanned_files": [
-            {"path": "docs/status.md", "content": "System is INTERFEDERATION_ACTIVE now."}
-        ],
+        "scanned_files": [{"path": "docs/status.md", "content": "System is INTERFEDERATION_ACTIVE now."}],
         "evidence_flags": [{"claim": "INTERFEDERATION_ACTIVE", "verified": True}],
     }
     assert validate_claims_guard(data) is True
@@ -50,9 +46,7 @@ def test_claims_guard_pass_claim_with_evidence():
 def test_claims_guard_fail_unverified_evidence():
     """Test that forbidden claim with unverified evidence still fails."""
     data = {
-        "scanned_files": [
-            {"path": "docs/status.md", "content": "System is EXECUTION_READY."}
-        ],
+        "scanned_files": [{"path": "docs/status.md", "content": "System is EXECUTION_READY."}],
         "evidence_flags": [{"claim": "EXECUTION_READY", "verified": False}],
     }
     assert validate_claims_guard(data) is False

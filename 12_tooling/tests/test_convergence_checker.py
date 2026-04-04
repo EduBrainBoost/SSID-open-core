@@ -4,24 +4,22 @@
 Tests verify each check function independently using temporary repo fixtures,
 then run an integration test against the actual SSID repo.
 """
+
 from __future__ import annotations
 
 import json
-import textwrap
-from pathlib import Path
-
-import pytest
-import yaml
 
 # Import the module under test
 import sys
+from pathlib import Path
+
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CLI_DIR = REPO_ROOT / "12_tooling" / "cli"
 sys.path.insert(0, str(CLI_DIR))
 
 from convergence_checker import (
-    ROOTS_24,
     ConvergenceResult,
     Finding,
     check_chart_manifest_alignment,
@@ -31,16 +29,15 @@ from convergence_checker import (
     check_registry_convergence,
     check_shard_declarations,
     check_status_version_convergence,
-    check_task_root_paths,
     check_yaml_wellformedness,
     generate_report,
     run_convergence,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_root(tmp_path: Path, root_name: str) -> Path:
     """Create a minimal root directory with module.yaml and manifest.yaml."""
@@ -56,6 +53,7 @@ def _write_yaml(path: Path, data: dict) -> None:
 # ---------------------------------------------------------------------------
 # Test Finding and ConvergenceResult
 # ---------------------------------------------------------------------------
+
 
 class TestFinding:
     def test_to_dict(self):
@@ -113,20 +111,27 @@ class TestConvergenceResult:
 # Test CVG-001: status/version convergence
 # ---------------------------------------------------------------------------
 
+
 class TestCheckStatusVersion:
     def test_matching_status_version(self, tmp_path):
         root = _make_root(tmp_path, "01_ai_layer")
-        _write_yaml(root / "module.yaml", {
-            "module_id": "01_ai_layer",
-            "status": "ROOT-24-LOCK",
-            "version": "4.1.0",
-            "classification": "Public Specification",
-        })
-        _write_yaml(root / "manifest.yaml", {
-            "root_id": "01_ai_layer",
-            "status": "ROOT-24-LOCK",
-            "version": "4.1.0",
-        })
+        _write_yaml(
+            root / "module.yaml",
+            {
+                "module_id": "01_ai_layer",
+                "status": "ROOT-24-LOCK",
+                "version": "4.1.0",
+                "classification": "Public Specification",
+            },
+        )
+        _write_yaml(
+            root / "manifest.yaml",
+            {
+                "root_id": "01_ai_layer",
+                "status": "ROOT-24-LOCK",
+                "version": "4.1.0",
+            },
+        )
         r = ConvergenceResult()
         check_status_version_convergence(tmp_path, r)
         denies = [f for f in r.findings if f.severity == "deny"]
@@ -134,17 +139,23 @@ class TestCheckStatusVersion:
 
     def test_mismatched_status(self, tmp_path):
         root = _make_root(tmp_path, "01_ai_layer")
-        _write_yaml(root / "module.yaml", {
-            "module_id": "01_ai_layer",
-            "status": "ROOT-24-LOCK",
-            "version": "4.1.0",
-            "classification": "X",
-        })
-        _write_yaml(root / "manifest.yaml", {
-            "root_id": "01_ai_layer",
-            "status": "draft",
-            "version": "4.1.0",
-        })
+        _write_yaml(
+            root / "module.yaml",
+            {
+                "module_id": "01_ai_layer",
+                "status": "ROOT-24-LOCK",
+                "version": "4.1.0",
+                "classification": "X",
+            },
+        )
+        _write_yaml(
+            root / "manifest.yaml",
+            {
+                "root_id": "01_ai_layer",
+                "status": "draft",
+                "version": "4.1.0",
+            },
+        )
         r = ConvergenceResult()
         check_status_version_convergence(tmp_path, r)
         denies = [f for f in r.findings if f.severity == "deny"]
@@ -153,17 +164,23 @@ class TestCheckStatusVersion:
 
     def test_mismatched_version(self, tmp_path):
         root = _make_root(tmp_path, "01_ai_layer")
-        _write_yaml(root / "module.yaml", {
-            "module_id": "01_ai_layer",
-            "status": "ROOT-24-LOCK",
-            "version": "4.1.0",
-            "classification": "X",
-        })
-        _write_yaml(root / "manifest.yaml", {
-            "root_id": "01_ai_layer",
-            "status": "ROOT-24-LOCK",
-            "version": "1.0.0",
-        })
+        _write_yaml(
+            root / "module.yaml",
+            {
+                "module_id": "01_ai_layer",
+                "status": "ROOT-24-LOCK",
+                "version": "4.1.0",
+                "classification": "X",
+            },
+        )
+        _write_yaml(
+            root / "manifest.yaml",
+            {
+                "root_id": "01_ai_layer",
+                "status": "ROOT-24-LOCK",
+                "version": "1.0.0",
+            },
+        )
         r = ConvergenceResult()
         check_status_version_convergence(tmp_path, r)
         denies = [f for f in r.findings if f.severity == "deny"]
@@ -174,6 +191,7 @@ class TestCheckStatusVersion:
 # ---------------------------------------------------------------------------
 # Test CVG-002: classification convergence
 # ---------------------------------------------------------------------------
+
 
 class TestCheckClassification:
     def test_matching_classification(self, tmp_path):
@@ -198,23 +216,30 @@ class TestCheckClassification:
 # Test CVG-003: contract refs
 # ---------------------------------------------------------------------------
 
+
 class TestCheckContractRefs:
     def test_existing_contract_ref(self, tmp_path):
         root = _make_root(tmp_path, "03_core")
         contracts_dir = root / "contracts" / "dispatcher"
         contracts_dir.mkdir(parents=True)
-        _write_yaml(root / "manifest.yaml", {
-            "contracts": [{"ref": "contracts/dispatcher/"}],
-        })
+        _write_yaml(
+            root / "manifest.yaml",
+            {
+                "contracts": [{"ref": "contracts/dispatcher/"}],
+            },
+        )
         r = ConvergenceResult()
         check_contract_refs(tmp_path, r)
         assert len([f for f in r.findings if f.severity == "deny"]) == 0
 
     def test_missing_contract_ref(self, tmp_path):
         root = _make_root(tmp_path, "03_core")
-        _write_yaml(root / "manifest.yaml", {
-            "contracts": [{"ref": "contracts/missing/"}],
-        })
+        _write_yaml(
+            root / "manifest.yaml",
+            {
+                "contracts": [{"ref": "contracts/missing/"}],
+            },
+        )
         r = ConvergenceResult()
         check_contract_refs(tmp_path, r)
         denies = [f for f in r.findings if f.severity == "deny"]
@@ -226,18 +251,22 @@ class TestCheckContractRefs:
 # Test CVG-004: shard declarations
 # ---------------------------------------------------------------------------
 
+
 class TestCheckShardDeclarations:
     def test_matching_shards(self, tmp_path):
         root = _make_root(tmp_path, "01_ai_layer")
         shards = root / "shards"
         (shards / "shard_a").mkdir(parents=True)
         (shards / "shard_b").mkdir(parents=True)
-        _write_yaml(root / "manifest.yaml", {
-            "shards": {
-                "count": 2,
-                "shards_list": ["shard_a", "shard_b"],
+        _write_yaml(
+            root / "manifest.yaml",
+            {
+                "shards": {
+                    "count": 2,
+                    "shards_list": ["shard_a", "shard_b"],
+                },
             },
-        })
+        )
         r = ConvergenceResult()
         check_shard_declarations(tmp_path, r)
         assert len(r.findings) == 0
@@ -248,12 +277,15 @@ class TestCheckShardDeclarations:
         (shards / "shard_a").mkdir(parents=True)
         (shards / "shard_b").mkdir(parents=True)
         (shards / "shard_c").mkdir(parents=True)
-        _write_yaml(root / "manifest.yaml", {
-            "shards": {
-                "count": 2,
-                "shards_list": ["shard_a", "shard_b"],
+        _write_yaml(
+            root / "manifest.yaml",
+            {
+                "shards": {
+                    "count": 2,
+                    "shards_list": ["shard_a", "shard_b"],
+                },
             },
-        })
+        )
         r = ConvergenceResult()
         check_shard_declarations(tmp_path, r)
         warns = [f for f in r.findings if f.severity == "warn"]
@@ -263,12 +295,15 @@ class TestCheckShardDeclarations:
         root = _make_root(tmp_path, "01_ai_layer")
         shards = root / "shards"
         (shards / "shard_a").mkdir(parents=True)
-        _write_yaml(root / "manifest.yaml", {
-            "shards": {
-                "count": 2,
-                "shards_list": ["shard_a", "shard_b"],
+        _write_yaml(
+            root / "manifest.yaml",
+            {
+                "shards": {
+                    "count": 2,
+                    "shards_list": ["shard_a", "shard_b"],
+                },
             },
-        })
+        )
         r = ConvergenceResult()
         check_shard_declarations(tmp_path, r)
         denies = [f for f in r.findings if f.severity == "deny"]
@@ -280,20 +315,27 @@ class TestCheckShardDeclarations:
 # Test CVG-005: chart/manifest alignment
 # ---------------------------------------------------------------------------
 
+
 class TestCheckChartManifestAlignment:
     def test_matching_root_and_shard(self, tmp_path):
         root = _make_root(tmp_path, "01_ai_layer")
         shard = root / "shards" / "01_identitaet_personen"
         shard.mkdir(parents=True)
-        _write_yaml(shard / "chart.yaml", {
-            "root": "01_ai_layer",
-            "shard": "01_identitaet_personen",
-            "status": "draft",
-        })
-        _write_yaml(shard / "manifest.yaml", {
-            "root_id": "01_ai_layer",
-            "shard_id": "01_identitaet_personen",
-        })
+        _write_yaml(
+            shard / "chart.yaml",
+            {
+                "root": "01_ai_layer",
+                "shard": "01_identitaet_personen",
+                "status": "draft",
+            },
+        )
+        _write_yaml(
+            shard / "manifest.yaml",
+            {
+                "root_id": "01_ai_layer",
+                "shard_id": "01_identitaet_personen",
+            },
+        )
         r = ConvergenceResult()
         check_chart_manifest_alignment(tmp_path, r)
         denies = [f for f in r.findings if f.severity == "deny"]
@@ -303,14 +345,20 @@ class TestCheckChartManifestAlignment:
         root = _make_root(tmp_path, "03_core")
         shard = root / "shards" / "01_identitaet_personen"
         shard.mkdir(parents=True)
-        _write_yaml(shard / "chart.yaml", {
-            "root": "03_core",
-            "shard": "01_identitaet_personen",
-        })
-        _write_yaml(shard / "manifest.yaml", {
-            "root_id": "03_core",
-            "shard_id": "03_core/01_identitaet_personen",
-        })
+        _write_yaml(
+            shard / "chart.yaml",
+            {
+                "root": "03_core",
+                "shard": "01_identitaet_personen",
+            },
+        )
+        _write_yaml(
+            shard / "manifest.yaml",
+            {
+                "root_id": "03_core",
+                "shard_id": "03_core/01_identitaet_personen",
+            },
+        )
         r = ConvergenceResult()
         check_chart_manifest_alignment(tmp_path, r)
         denies = [f for f in r.findings if f.severity == "deny"]
@@ -322,16 +370,20 @@ class TestCheckChartManifestAlignment:
 # Test CVG-006: registry convergence
 # ---------------------------------------------------------------------------
 
+
 class TestCheckRegistryConvergence:
     def test_matching_registry(self, tmp_path):
         root = _make_root(tmp_path, "01_ai_layer")
-        _write_yaml(root / "module.yaml", {
-            "module_id": "01_ai_layer",
-            "name": "AI Layer",
-            "status": "ROOT-24-LOCK",
-            "version": "4.1.0",
-            "classification": "X",
-        })
+        _write_yaml(
+            root / "module.yaml",
+            {
+                "module_id": "01_ai_layer",
+                "name": "AI Layer",
+                "status": "ROOT-24-LOCK",
+                "version": "4.1.0",
+                "classification": "X",
+            },
+        )
         registry_modules = {
             "01_ai_layer": {
                 "module_id": "01_ai_layer",
@@ -347,12 +399,15 @@ class TestCheckRegistryConvergence:
 
     def test_missing_in_registry(self, tmp_path):
         root = _make_root(tmp_path, "01_ai_layer")
-        _write_yaml(root / "module.yaml", {
-            "module_id": "01_ai_layer",
-            "status": "ROOT-24-LOCK",
-            "version": "4.1.0",
-            "classification": "X",
-        })
+        _write_yaml(
+            root / "module.yaml",
+            {
+                "module_id": "01_ai_layer",
+                "status": "ROOT-24-LOCK",
+                "version": "4.1.0",
+                "classification": "X",
+            },
+        )
         r = ConvergenceResult()
         check_registry_convergence(tmp_path, {}, r)
         denies = [f for f in r.findings if f.severity == "deny"]
@@ -361,12 +416,15 @@ class TestCheckRegistryConvergence:
 
     def test_status_mismatch_registry(self, tmp_path):
         root = _make_root(tmp_path, "01_ai_layer")
-        _write_yaml(root / "module.yaml", {
-            "module_id": "01_ai_layer",
-            "status": "ROOT-24-LOCK",
-            "version": "4.1.0",
-            "classification": "X",
-        })
+        _write_yaml(
+            root / "module.yaml",
+            {
+                "module_id": "01_ai_layer",
+                "status": "ROOT-24-LOCK",
+                "version": "4.1.0",
+                "classification": "X",
+            },
+        )
         registry_modules = {
             "01_ai_layer": {
                 "module_id": "01_ai_layer",
@@ -383,6 +441,7 @@ class TestCheckRegistryConvergence:
 # ---------------------------------------------------------------------------
 # Test CVG-008: YAML well-formedness
 # ---------------------------------------------------------------------------
+
 
 class TestCheckYamlWellformedness:
     def test_valid_yaml(self, tmp_path):
@@ -421,27 +480,40 @@ class TestCheckYamlWellformedness:
 # Test CVG-009: governance rules convergence
 # ---------------------------------------------------------------------------
 
+
 class TestCheckGovernanceRules:
     def test_matching_rules(self, tmp_path):
         root = _make_root(tmp_path, "01_ai_layer")
-        _write_yaml(root / "module.yaml", {
-            "governance_rules": ["SOT_AGENT_006", "SOT_AGENT_007"],
-        })
-        _write_yaml(root / "manifest.yaml", {
-            "governance_rules": ["SOT_AGENT_006", "SOT_AGENT_007"],
-        })
+        _write_yaml(
+            root / "module.yaml",
+            {
+                "governance_rules": ["SOT_AGENT_006", "SOT_AGENT_007"],
+            },
+        )
+        _write_yaml(
+            root / "manifest.yaml",
+            {
+                "governance_rules": ["SOT_AGENT_006", "SOT_AGENT_007"],
+            },
+        )
         r = ConvergenceResult()
         check_governance_rules_convergence(tmp_path, r)
         assert len(r.findings) == 0
 
     def test_module_has_rules_manifest_empty(self, tmp_path):
         root = _make_root(tmp_path, "01_ai_layer")
-        _write_yaml(root / "module.yaml", {
-            "governance_rules": ["SOT_AGENT_006"],
-        })
-        _write_yaml(root / "manifest.yaml", {
-            "governance_rules": [],
-        })
+        _write_yaml(
+            root / "module.yaml",
+            {
+                "governance_rules": ["SOT_AGENT_006"],
+            },
+        )
+        _write_yaml(
+            root / "manifest.yaml",
+            {
+                "governance_rules": [],
+            },
+        )
         r = ConvergenceResult()
         check_governance_rules_convergence(tmp_path, r)
         infos = [f for f in r.findings if f.severity == "info"]
@@ -451,6 +523,7 @@ class TestCheckGovernanceRules:
 # ---------------------------------------------------------------------------
 # Test generate_report
 # ---------------------------------------------------------------------------
+
 
 class TestGenerateReport:
     def test_report_structure(self, tmp_path):
@@ -475,6 +548,7 @@ class TestGenerateReport:
 # Integration test: run against real SSID repo
 # ---------------------------------------------------------------------------
 
+
 class TestIntegration:
     def test_convergence_on_real_repo(self):
         """Run convergence check on the actual SSID repository.
@@ -485,21 +559,15 @@ class TestIntegration:
         report = generate_report(result, REPO_ROOT)
 
         # No deny findings
-        assert report["deny_count"] == 0, (
-            f"Found {report['deny_count']} deny findings: "
-            + json.dumps(
-                [f for f in report["findings"] if f["severity"] == "deny"],
-                indent=2,
-            )
+        assert report["deny_count"] == 0, f"Found {report['deny_count']} deny findings: " + json.dumps(
+            [f for f in report["findings"] if f["severity"] == "deny"],
+            indent=2,
         )
 
         # No warn findings
-        assert report["warn_count"] == 0, (
-            f"Found {report['warn_count']} warn findings: "
-            + json.dumps(
-                [f for f in report["findings"] if f["severity"] == "warn"],
-                indent=2,
-            )
+        assert report["warn_count"] == 0, f"Found {report['warn_count']} warn findings: " + json.dumps(
+            [f for f in report["findings"] if f["severity"] == "warn"],
+            indent=2,
         )
 
         # All 24 roots present

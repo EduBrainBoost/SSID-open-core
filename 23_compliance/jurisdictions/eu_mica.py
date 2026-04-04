@@ -16,21 +16,21 @@ import hashlib
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
-
+from typing import Any
 
 # ======================================================================
 # Token Classification (MiCA Title III / IV / V)
 # ======================================================================
 
+
 class MiCATokenType(Enum):
     """MiCA token classification per Title III-V."""
 
-    UTILITY_TOKEN = "utility_token"                # Title V — utility tokens
+    UTILITY_TOKEN = "utility_token"  # Title V — utility tokens
     ASSET_REFERENCED_TOKEN = "asset_referenced_token"  # Title III — ARTs
-    E_MONEY_TOKEN = "e_money_token"                # Title IV — EMTs
-    OTHER_CRYPTO_ASSET = "other_crypto_asset"      # Catch-all
-    EXEMPT = "exempt"                              # Outside MiCA scope
+    E_MONEY_TOKEN = "e_money_token"  # Title IV — EMTs
+    OTHER_CRYPTO_ASSET = "other_crypto_asset"  # Catch-all
+    EXEMPT = "exempt"  # Outside MiCA scope
 
 
 class WhitepaperStatus(Enum):
@@ -52,17 +52,18 @@ class ComplianceStatus(Enum):
 # Data Models
 # ======================================================================
 
+
 @dataclass(frozen=True)
 class TokenClassification:
     """Result of classifying a token under MiCA."""
 
-    token_hash: str              # SHA-256 of token identifier
+    token_hash: str  # SHA-256 of token identifier
     token_type: MiCATokenType
-    is_significant: bool         # Art. 43 — significant ART/EMT thresholds
+    is_significant: bool  # Art. 43 — significant ART/EMT thresholds
     rationale: str
     classified_at: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "token_hash": self.token_hash,
             "token_type": self.token_type.value,
@@ -79,10 +80,10 @@ class WhitepaperRequirement:
     token_hash: str
     status: WhitepaperStatus
     required_sections: frozenset  # set of required section names
-    present_sections: frozenset   # set of sections found
+    present_sections: frozenset  # set of sections found
     evidence_hash: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "token_hash": self.token_hash,
             "status": self.status.value,
@@ -99,12 +100,12 @@ class ReserveRequirement:
 
     token_hash: str
     token_type: MiCATokenType
-    reserve_ratio_required: float   # e.g. 1.0 for 100 %
+    reserve_ratio_required: float  # e.g. 1.0 for 100 %
     reserve_ratio_actual: float
     compliant: bool
     evidence_hash: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "token_hash": self.token_hash,
             "token_type": self.token_type.value,
@@ -120,25 +121,28 @@ class ReserveRequirement:
 # ======================================================================
 
 # SSID-relevant whitepaper sections per MiCA Art. 6
-WHITEPAPER_REQUIRED_SECTIONS: frozenset = frozenset({
-    "project_description",
-    "token_details",
-    "rights_and_obligations",
-    "underlying_technology",
-    "risks",
-    "issuer_information",
-    "environmental_impact",
-})
+WHITEPAPER_REQUIRED_SECTIONS: frozenset = frozenset(
+    {
+        "project_description",
+        "token_details",
+        "rights_and_obligations",
+        "underlying_technology",
+        "risks",
+        "issuer_information",
+        "environmental_impact",
+    }
+)
 
 # Significant ART/EMT thresholds (Art. 43)
-SIGNIFICANT_ART_HOLDER_THRESHOLD = 10_000_000   # 10 M holders
+SIGNIFICANT_ART_HOLDER_THRESHOLD = 10_000_000  # 10 M holders
 SIGNIFICANT_ART_MARKET_CAP_EUR = 5_000_000_000  # EUR 5 B
-SIGNIFICANT_EMT_TX_VOLUME_DAILY = 1_000_000     # 1 M transactions/day
+SIGNIFICANT_EMT_TX_VOLUME_DAILY = 1_000_000  # 1 M transactions/day
 
 
 # ======================================================================
 # MiCA Compliance Engine
 # ======================================================================
+
 
 class MiCAComplianceEngine:
     """MiCA compliance rules engine.
@@ -148,9 +152,9 @@ class MiCAComplianceEngine:
     """
 
     def __init__(self) -> None:
-        self._classifications: Dict[str, TokenClassification] = {}
-        self._whitepaper_checks: Dict[str, WhitepaperRequirement] = {}
-        self._reserve_checks: Dict[str, ReserveRequirement] = {}
+        self._classifications: dict[str, TokenClassification] = {}
+        self._whitepaper_checks: dict[str, WhitepaperRequirement] = {}
+        self._reserve_checks: dict[str, ReserveRequirement] = {}
 
     # ------------------------------------------------------------------
     # Token Classification
@@ -179,15 +183,13 @@ class MiCAComplianceEngine:
             token_type = MiCATokenType.E_MONEY_TOKEN
             rationale = "References fiat currency with payment function → EMT (Title IV)"
             is_significant = (
-                daily_tx_volume >= SIGNIFICANT_EMT_TX_VOLUME_DAILY
-                or market_cap_eur >= SIGNIFICANT_ART_MARKET_CAP_EUR
+                daily_tx_volume >= SIGNIFICANT_EMT_TX_VOLUME_DAILY or market_cap_eur >= SIGNIFICANT_ART_MARKET_CAP_EUR
             )
         elif references_asset_basket or references_fiat:
             token_type = MiCATokenType.ASSET_REFERENCED_TOKEN
             rationale = "References asset basket or fiat → ART (Title III)"
             is_significant = (
-                holder_count >= SIGNIFICANT_ART_HOLDER_THRESHOLD
-                or market_cap_eur >= SIGNIFICANT_ART_MARKET_CAP_EUR
+                holder_count >= SIGNIFICANT_ART_HOLDER_THRESHOLD or market_cap_eur >= SIGNIFICANT_ART_MARKET_CAP_EUR
             )
         elif provides_access_to_service:
             token_type = MiCATokenType.UTILITY_TOKEN
@@ -214,17 +216,14 @@ class MiCAComplianceEngine:
     def check_whitepaper(
         self,
         token_id: str,
-        present_sections: Set[str],
+        present_sections: set[str],
     ) -> WhitepaperRequirement:
         """Validate whitepaper completeness against MiCA Art. 6 requirements."""
         token_hash = hashlib.sha256(token_id.encode()).hexdigest()
         present = frozenset(present_sections)
         missing = WHITEPAPER_REQUIRED_SECTIONS - present
 
-        if not missing:
-            status = WhitepaperStatus.APPROVED
-        else:
-            status = WhitepaperStatus.REJECTED
+        status = WhitepaperStatus.APPROVED if not missing else WhitepaperStatus.REJECTED
 
         evidence_payload = f"{token_hash}:{sorted(present)}:{sorted(missing)}"
         evidence_hash = hashlib.sha256(evidence_payload.encode()).hexdigest()
@@ -267,10 +266,7 @@ class MiCAComplianceEngine:
             required = 0.0
             compliant = True
 
-        evidence_payload = (
-            f"{token_hash}:{token_type.value}:"
-            f"{reserve_ratio_actual}:{required}"
-        )
+        evidence_payload = f"{token_hash}:{token_type.value}:{reserve_ratio_actual}:{required}"
         evidence_hash = hashlib.sha256(evidence_payload.encode()).hexdigest()
 
         req = ReserveRequirement(

@@ -2,13 +2,12 @@
 Source: 23_compliance/policies/registry/promotion_gate_policy.rego
 Phase 4 — A02_A03_COMPLETION
 """
+
 import os
 import sys
-import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../23_compliance/validators"))
 from validate_promotion_gate_policy import validate_promotion_gate_policy
-
 
 VALID_DATA = {
     "canonical_artifacts": [
@@ -42,9 +41,7 @@ def test_promotion_gate_pass_valid():
 def test_promotion_gate_fail_missing_derivative():
     """Test PROMO_ENFORCE_001: canonical on_disk with no derivative."""
     data = {
-        "canonical_artifacts": [
-            {"name": "a", "path": "public/a.py", "hash_sha256": "x", "on_disk": True}
-        ],
+        "canonical_artifacts": [{"name": "a", "path": "public/a.py", "hash_sha256": "x", "on_disk": True}],
         "derivative_artifacts": [],
         "export_scopes": ["public/"],
         "forbidden_patterns": [],
@@ -56,9 +53,7 @@ def test_promotion_gate_fail_unexpected_derivative():
     """Test PROMO_ENFORCE_002: derivative with no canonical source."""
     data = {
         "canonical_artifacts": [],
-        "derivative_artifacts": [
-            {"name": "b", "path": "public/b.py", "hash_sha256": "y", "on_disk": True}
-        ],
+        "derivative_artifacts": [{"name": "b", "path": "public/b.py", "hash_sha256": "y", "on_disk": True}],
         "export_scopes": ["public/"],
         "forbidden_patterns": [],
     }
@@ -68,12 +63,8 @@ def test_promotion_gate_fail_unexpected_derivative():
 def test_promotion_gate_fail_hash_drift():
     """Test PROMO_ENFORCE_004: hash drift between canonical and derivative."""
     data = {
-        "canonical_artifacts": [
-            {"name": "a", "path": "public/a.py", "hash_sha256": "hash1", "on_disk": True}
-        ],
-        "derivative_artifacts": [
-            {"name": "a", "path": "public/a.py", "hash_sha256": "hash2", "on_disk": True}
-        ],
+        "canonical_artifacts": [{"name": "a", "path": "public/a.py", "hash_sha256": "hash1", "on_disk": True}],
+        "derivative_artifacts": [{"name": "a", "path": "public/a.py", "hash_sha256": "hash2", "on_disk": True}],
         "export_scopes": ["public/"],
         "forbidden_patterns": [],
     }
@@ -83,12 +74,8 @@ def test_promotion_gate_fail_hash_drift():
 def test_promotion_gate_fail_forbidden_pattern():
     """Test PROMO_ENFORCE_003: derivative matches forbidden pattern."""
     data = {
-        "canonical_artifacts": [
-            {"name": "priv", "path": "private/secret.py", "hash_sha256": "x", "on_disk": True}
-        ],
-        "derivative_artifacts": [
-            {"name": "priv", "path": "private/secret.py", "hash_sha256": "x", "on_disk": True}
-        ],
+        "canonical_artifacts": [{"name": "priv", "path": "private/secret.py", "hash_sha256": "x", "on_disk": True}],
+        "derivative_artifacts": [{"name": "priv", "path": "private/secret.py", "hash_sha256": "x", "on_disk": True}],
         "export_scopes": ["private/"],
         "forbidden_patterns": ["private/"],
     }
