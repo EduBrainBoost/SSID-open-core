@@ -36,7 +36,9 @@ def test_github_pat_detected():
 
 
 def test_private_key_detected():
-    code, result = run_scan("-----BEGIN RSA PRIVATE KEY-----\nMIIE...\n-----END RSA PRIVATE KEY-----")  # ssid:test-fixture
+    code, result = run_scan(
+        "-----BEGIN RSA PRIVATE KEY-----\nMIIE...\n-----END RSA PRIVATE KEY-----"
+    )  # ssid:test-fixture
     assert code == 1
 
 

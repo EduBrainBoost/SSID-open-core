@@ -320,7 +320,8 @@ class TestRunExport:
         # Add a file with a secret to the public module
         secret_file = tmp_source / "01_ai_layer" / "src" / "config.py"
         secret_file.write_text(
-            'api_key = "this_is_a_very_secret_key_value"\n', encoding="utf-8"  # ssid:test-fixture
+            'api_key = "this_is_a_very_secret_key_value"\n',
+            encoding="utf-8",  # ssid:test-fixture
         )
         result = run_export(tmp_source, tmp_target, policy, dry_run=True)
         excluded_paths = {e["path"] for e in result.excluded}
