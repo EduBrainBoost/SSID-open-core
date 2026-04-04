@@ -7,13 +7,12 @@ Verifies that:
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import sys
 from decimal import Decimal
 from pathlib import Path
-
-import pytest
 
 # ---------------------------------------------------------------------------
 # Path setup
@@ -22,35 +21,35 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_REPO_ROOT / "03_core"))
 sys.path.insert(0, str(_REPO_ROOT / "08_identity_score"))
 
+from datetime import UTC
+
 from fee_distribution_engine import (
     FeeDistributionEngine,
 )
-from subscription_revenue_distributor import (
-    SubscriptionRevenueDistributor,
-    SettlementPeriod,
-)
-from license_fee_splitter import (
-    LicenseFeeSplitter,
-    LicenseType,
-    SplitRecipient,
-)
+from fee_proof_engine import AllocationLine, FeeBoundary, FeeProofEngine
 from governance_reward_engine import (
     GovernanceActivity,
     GovernanceActivityType,
     GovernanceParticipant,
     GovernanceRewardEngine,
 )
-from reward_handler import (
-    RewardHandler,
-    RewardStatus,
-    TrustLevel,
-    VerificationAction,
-)
-from fee_proof_engine import AllocationLine, FeeBoundary, FeeProofEngine
 from identity_fee_router import (
     IdentityFeeRouter,
     ValidatorProfile,
     VerificationType,
+)
+from license_fee_splitter import (
+    LicenseFeeSplitter,
+    LicenseType,
+)
+from reward_handler import (
+    RewardHandler,
+    TrustLevel,
+    VerificationAction,
+)
+from subscription_revenue_distributor import (
+    SettlementPeriod,
+    SubscriptionRevenueDistributor,
 )
 
 _N_RUNS = 5
@@ -64,16 +63,12 @@ class TestDeterminism:
         engine = FeeDistributionEngine()
         total = Decimal("500.00")
 
-        results = [
-            engine.calculate(total).allocations
-            for _ in range(_N_RUNS)
-        ]
+        results = [engine.calculate(total).allocations for _ in range(_N_RUNS)]
 
         baseline = results[0]
         for i, result in enumerate(results[1:], start=2):
             assert result == baseline, (
-                f"FeeDistributionEngine: run {i} differs from run 1\n"
-                f"run1={baseline}\nrun{i}={result}"
+                f"FeeDistributionEngine: run {i} differs from run 1\nrun1={baseline}\nrun{i}={result}"
             )
 
     def test_subscription_deterministic(self) -> None:
@@ -83,32 +78,23 @@ class TestDeterminism:
 
         results = []
         for _ in range(_N_RUNS):
-            r = distributor.calculate_settlement(
-                gross, SettlementPeriod.MONTHLY, "2026-03"
-            )
+            r = distributor.calculate_settlement(gross, SettlementPeriod.MONTHLY, "2026-03")
             results.append(r.allocations)
 
         baseline = results[0]
         for i, result in enumerate(results[1:], start=2):
-            assert result == baseline, (
-                f"SubscriptionRevenueDistributor: run {i} differs from run 1"
-            )
+            assert result == baseline, f"SubscriptionRevenueDistributor: run {i} differs from run 1"
 
     def test_license_split_deterministic(self) -> None:
         """5 runs of license split → identical SplitResult allocations."""
         splitter = LicenseFeeSplitter()
         amount = Decimal("1000.00")
 
-        results = [
-            splitter.split(amount, LicenseType.COMMERCIAL).allocations
-            for _ in range(_N_RUNS)
-        ]
+        results = [splitter.split(amount, LicenseType.COMMERCIAL).allocations for _ in range(_N_RUNS)]
 
         baseline = results[0]
         for i, result in enumerate(results[1:], start=2):
-            assert result == baseline, (
-                f"LicenseFeeSplitter: run {i} differs from run 1"
-            )
+            assert result == baseline, f"LicenseFeeSplitter: run {i} differs from run 1"
 
     def test_governance_rewards_deterministic(self) -> None:
         """5 runs of governance reward distribution → identical allocations."""
@@ -118,43 +104,48 @@ class TestDeterminism:
         results = []
         for _ in range(_N_RUNS):
             participants = [
-                GovernanceParticipant("p1", activities=[
-                    GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
-                    GovernanceActivity(GovernanceActivityType.PROPOSAL, weight=1.0),
-                ]),
-                GovernanceParticipant("p2", activities=[
-                    GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
-                ]),
+                GovernanceParticipant(
+                    "p1",
+                    activities=[
+                        GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
+                        GovernanceActivity(GovernanceActivityType.PROPOSAL, weight=1.0),
+                    ],
+                ),
+                GovernanceParticipant(
+                    "p2",
+                    activities=[
+                        GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
+                    ],
+                ),
             ]
             r = engine.distribute(pool, participants)
             results.append(r.allocations)
 
         baseline = results[0]
         for i, result in enumerate(results[1:], start=2):
-            assert result == baseline, (
-                f"GovernanceRewardEngine: run {i} differs from run 1"
-            )
+            assert result == baseline, f"GovernanceRewardEngine: run {i} differs from run 1"
 
     def test_reward_handler_deterministic(self) -> None:
         """5 runs with identical inputs → identical final_amount (fresh handler each run)."""
-        from datetime import datetime, timezone as tz
-        fixed_now = datetime(2026, 3, 17, 12, 0, 0, tzinfo=tz.utc)
+        from datetime import datetime
+
+        fixed_now = datetime(2026, 3, 17, 12, 0, 0, tzinfo=UTC)
 
         results = [
-            RewardHandler().calculate_reward(
+            RewardHandler()
+            .calculate_reward(
                 "alice",
                 VerificationAction.EMAIL_VERIFY,
                 TrustLevel.VERIFIED,
                 now=fixed_now,
-            ).final_amount
+            )
+            .final_amount
             for _ in range(_N_RUNS)
         ]
 
         baseline = results[0]
         for i, result in enumerate(results[1:], start=2):
-            assert result == baseline, (
-                f"RewardHandler: run {i} final_amount {result} differs from run 1 {baseline}"
-            )
+            assert result == baseline, f"RewardHandler: run {i} final_amount {result} differs from run 1 {baseline}"
 
     def test_proof_hash_deterministic(self) -> None:
         """5 runs with identical inputs → verify_proof always returns True (self-consistent hash)."""
@@ -170,14 +161,10 @@ class TestDeterminism:
         ]
 
         for _ in range(_N_RUNS):
-            proof = engine.generate_proof(
-                Decimal("1000.00"), FeeBoundary.PEER, allocations
-            )
+            proof = engine.generate_proof(Decimal("1000.00"), FeeBoundary.PEER, allocations)
             result = engine.verify_proof(proof)
             is_valid = result.hash_valid if hasattr(result, "hash_valid") else bool(result)
-            assert is_valid, (
-                "FeeProofEngine: verify_proof returned invalid for freshly-generated proof"
-            )
+            assert is_valid, "FeeProofEngine: verify_proof returned invalid for freshly-generated proof"
 
 
 class TestIdempotency:

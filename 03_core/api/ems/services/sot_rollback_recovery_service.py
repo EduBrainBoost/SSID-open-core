@@ -1,26 +1,21 @@
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from ems.services.sot_promotion_execution_service import (
-    ExecutionHandoffError,
-    _REGISTRY_CONSUMER,
-    _active_state_path,
-    _finding,
-    _promotions_path,
-    _reports_dir,
-    _snapshot_path,
-    _write_history_or_raise,
-    _build_promotion_record,
-    _json_sha256,
-    refresh_active_state_after_promotion,
-    run_release_block_check,
-)
 from ems.services.sot_incident_freeze_governance import (
     FreezeGovernanceError,
     evaluate_recovery_freeze_gate,
+)
+from ems.services.sot_promotion_execution_service import (
+    _REGISTRY_CONSUMER,
+    ExecutionHandoffError,
+    _active_state_path,
+    _json_sha256,
+    _promotions_path,
+    _snapshot_path,
+    run_release_block_check,
 )
 from ems.services.sot_promotion_service import _read_jsonl, load_active_baseline_state
 from ems.services.sot_rollback_proposal_service import (
@@ -30,7 +25,7 @@ from ems.services.sot_rollback_proposal_service import (
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _recovery_history_path(repo_root: Path) -> Path:
@@ -94,9 +89,7 @@ def write_recovery_history_record(repo_root: Path, payload: dict[str, Any]) -> d
     record = dict(payload)
     record.setdefault("recovery_id", f"REC-{uuid.uuid4().hex[:12].upper()}")
     record.setdefault("executed_at_utc", _utc_now_iso())
-    record["recovery_evidence_hash"] = _json_sha256(
-        {k: v for k, v in record.items() if k != "recovery_evidence_hash"}
-    )
+    record["recovery_evidence_hash"] = _json_sha256({k: v for k, v in record.items() if k != "recovery_evidence_hash"})
     try:
         _append_jsonl(_recovery_history_path(repo_root), record)
     except Exception as exc:
@@ -249,7 +242,7 @@ def execute_guarded_recovery_handoff(
             f"failed to persist guarded recovery state: {exc}",
         ) from exc
 
-    refreshed = refresh_active_state_after_recovery(repo_root)
+    refresh_active_state_after_recovery(repo_root)
     blocker = run_release_block_check_after_recovery(repo_root)
     try:
         mark_rollback_proposal_status(

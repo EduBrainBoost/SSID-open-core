@@ -1,12 +1,11 @@
 import hashlib
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import yaml
-
 
 READY_STATE = "ready"
 ALLOWED_RUNTIME_STATES = {"ready", "blocked", "degraded", "unknown"}
@@ -102,7 +101,7 @@ class ShardRuntimeState:
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _json_hash(payload: dict[str, Any]) -> str:
@@ -169,7 +168,9 @@ def _collect_contracts(manifest: dict[str, Any], runtime_index: dict[str, Any]) 
     return tuple(normalized)
 
 
-def _dependency_from_mapping(consumer_root_id: str, consumer_shard_id: str, payload: dict[str, Any]) -> RuntimeDependency:
+def _dependency_from_mapping(
+    consumer_root_id: str, consumer_shard_id: str, payload: dict[str, Any]
+) -> RuntimeDependency:
     return RuntimeDependency(
         consumer_root_id=consumer_root_id,
         consumer_shard_id=consumer_shard_id,
@@ -181,17 +182,15 @@ def _dependency_from_mapping(consumer_root_id: str, consumer_shard_id: str, payl
     )
 
 
-def _collect_runtime_dependencies(root_id: str, shard_id: str, manifest: dict[str, Any], runtime_index: dict[str, Any]) -> tuple[RuntimeDependency, ...]:
+def _collect_runtime_dependencies(
+    root_id: str, shard_id: str, manifest: dict[str, Any], runtime_index: dict[str, Any]
+) -> tuple[RuntimeDependency, ...]:
     payload = manifest.get("runtime_dependencies")
     if payload is None:
         payload = runtime_index.get("runtime_dependencies", [])
     if not isinstance(payload, list):
         return ()
-    dependencies = [
-        _dependency_from_mapping(root_id, shard_id, item)
-        for item in payload
-        if isinstance(item, dict)
-    ]
+    dependencies = [_dependency_from_mapping(root_id, shard_id, item) for item in payload if isinstance(item, dict)]
     return tuple(dependencies)
 
 
@@ -207,9 +206,7 @@ def load_shard_state(repo_root: Path, root_id: str, shard_id: str) -> ShardRunti
     runtime_path = runtime_index_path if runtime_index_path.exists() else None
 
     service_runtime_status = str(
-        runtime_index.get("service_runtime_status")
-        or manifest.get("service_runtime_status")
-        or "unknown"
+        runtime_index.get("service_runtime_status") or manifest.get("service_runtime_status") or "unknown"
     )
     capabilities = _collect_capabilities(chart, runtime_index)
     dependencies = _collect_runtime_dependencies(root_id, shard_id, manifest, runtime_index)
@@ -231,16 +228,22 @@ def load_shard_state(repo_root: Path, root_id: str, shard_id: str) -> ShardRunti
     )
 
 
-def collect_runtime_dependencies(repo_root: Path, consumer_root_id: str, consumer_shard_id: str) -> list[RuntimeDependency]:
+def collect_runtime_dependencies(
+    repo_root: Path, consumer_root_id: str, consumer_shard_id: str
+) -> list[RuntimeDependency]:
     state = load_shard_state(repo_root, consumer_root_id, consumer_shard_id)
     return list(state.runtime_dependencies)
 
 
 def derive_registry_runtime_fields(state: ShardRuntimeState) -> dict[str, Any]:
-    dependency_capability = sorted({dep.dependency_capability for dep in state.runtime_dependencies if dep.dependency_capability})
+    dependency_capability = sorted(
+        {dep.dependency_capability for dep in state.runtime_dependencies if dep.dependency_capability}
+    )
     dependency_status = "n/a"
     if state.runtime_dependencies:
-        dependency_status = "ready" if all(dep.dependency_status == READY_STATE for dep in state.runtime_dependencies) else "blocked"
+        dependency_status = (
+            "ready" if all(dep.dependency_status == READY_STATE for dep in state.runtime_dependencies) else "blocked"
+        )
     runtime_index_path = None
     if state.runtime_index_path is not None:
         runtime_index_path = f"{state.root_id}/shards/{state.shard_id}/runtime/index.yaml"
@@ -295,7 +298,13 @@ def _build_decision(
     return GateDecision(**event)
 
 
-def _raise(error_cls: type[RuntimeGateError], dependency: RuntimeDependency, finding_code: str, detail: str, service_runtime_status: str) -> None:
+def _raise(
+    error_cls: type[RuntimeGateError],
+    dependency: RuntimeDependency,
+    finding_code: str,
+    detail: str,
+    service_runtime_status: str,
+) -> None:
     decision = _build_decision(
         dependency,
         decision="block",
@@ -437,7 +446,7 @@ def append_gate_decisions(decision_log_path: Path, decisions: list[GateDecision]
                 "root": decision.consumer_root_id,
                 "shard": decision.consumer_shard_id,
                 "actor_ref_hash": hashlib.sha256(
-                    f"{decision.consumer_root_id}/{decision.consumer_shard_id}".encode("utf-8")
+                    f"{decision.consumer_root_id}/{decision.consumer_shard_id}".encode()
                 ).hexdigest(),
                 "action": "cross_root_runtime_gate",
                 "result": decision.decision.upper(),

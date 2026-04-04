@@ -4,46 +4,43 @@
 Tests verify each check function independently using temporary repo fixtures,
 plus integration tests for report generation and the load test stub.
 """
+
 from __future__ import annotations
 
 import json
 import sys
-import textwrap
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 # Import the modules under test
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CLI_DIR = REPO_ROOT / "12_tooling" / "cli"
 sys.path.insert(0, str(CLI_DIR))
 
-from production_readiness import (
-    EXPECTED_CHART_COUNT,
-    EXPECTED_MANIFEST_COUNT,
-    PLACEHOLDER_SIZE,
-    ROOTS_24,
-    ProductionReadinessChecker,
-    ReadinessCheck,
-    ReadinessReport,
-    _sha256,
-    _scan_files,
-    SECRET_PATTERNS,
-    PII_PATTERNS,
-)
 from load_test_stub import (
     LoadTestRunner,
     LoadTestScenario,
     ScenarioResult,
-    _make_request,
     _percentile,
 )
-
+from production_readiness import (
+    EXPECTED_CHART_COUNT,
+    EXPECTED_MANIFEST_COUNT,
+    PII_PATTERNS,
+    PLACEHOLDER_SIZE,
+    ROOTS_24,
+    SECRET_PATTERNS,
+    ProductionReadinessChecker,
+    ReadinessCheck,
+    ReadinessReport,
+    _scan_files,
+    _sha256,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_repo(tmp_path: Path, roots: list[str] | None = None) -> Path:
     """Create a minimal repo structure with root dirs."""
@@ -53,10 +50,8 @@ def _make_repo(tmp_path: Path, roots: list[str] | None = None) -> Path:
         d = tmp_path / r
         d.mkdir(parents=True, exist_ok=True)
         # Create a manifest.yaml in each root
-        (d / "manifest.yaml").write_text(
-            f"name: {r}\nstatus: draft\n", encoding="utf-8")
-        (d / "module.yaml").write_text(
-            f"name: {r}\nstatus: draft\n", encoding="utf-8")
+        (d / "manifest.yaml").write_text(f"name: {r}\nstatus: draft\n", encoding="utf-8")
+        (d / "module.yaml").write_text(f"name: {r}\nstatus: draft\n", encoding="utf-8")
     return tmp_path
 
 
@@ -64,23 +59,22 @@ def _make_evidence(repo: Path) -> None:
     """Create minimal evidence files."""
     evidence_dir = repo / "02_audit_logging" / "evidence"
     evidence_dir.mkdir(parents=True, exist_ok=True)
-    (evidence_dir / "evidence_001.json").write_text(
-        '{"type": "audit", "ts": "2025-01-01T00:00:00Z"}', encoding="utf-8")
+    (evidence_dir / "evidence_001.json").write_text('{"type": "audit", "ts": "2025-01-01T00:00:00Z"}', encoding="utf-8")
     reports_dir = repo / "02_audit_logging" / "reports"
     reports_dir.mkdir(parents=True, exist_ok=True)
-    (reports_dir / "gate_report_001.json").write_text(
-        '{"gate": "structure", "result": "pass"}', encoding="utf-8")
+    (reports_dir / "gate_report_001.json").write_text('{"gate": "structure", "result": "pass"}', encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
 # ReadinessCheck dataclass
 # ---------------------------------------------------------------------------
 
+
 class TestReadinessCheck:
     def test_to_dict(self):
         c = ReadinessCheck(
-            name="test_check", category="testing",
-            status="pass", detail="all good", evidence_hash="abc123")
+            name="test_check", category="testing", status="pass", detail="all good", evidence_hash="abc123"
+        )
         d = c.to_dict()
         assert d["name"] == "test_check"
         assert d["category"] == "testing"
@@ -90,14 +84,14 @@ class TestReadinessCheck:
 
     def test_status_values(self):
         for status in ("pass", "fail", "warn"):
-            c = ReadinessCheck(
-                name="x", category="y", status=status, detail="z")
+            c = ReadinessCheck(name="x", category="y", status=status, detail="z")
             assert c.status == status
 
 
 # ---------------------------------------------------------------------------
 # ReadinessReport dataclass
 # ---------------------------------------------------------------------------
+
 
 class TestReadinessReport:
     def test_empty_report(self):
@@ -123,6 +117,7 @@ class TestReadinessReport:
 # Utility functions
 # ---------------------------------------------------------------------------
 
+
 class TestUtilities:
     def test_sha256_deterministic(self):
         h1 = _sha256("hello")
@@ -136,38 +131,34 @@ class TestUtilities:
     def test_scan_files_detects_secrets(self, tmp_path):
         f = tmp_path / "config.py"
         f.write_text('password = "SuperSecret123"', encoding="utf-8")
-        findings = _scan_files(tmp_path, SECRET_PATTERNS,
-                               skip_dirs=set(), extensions={".py"})
+        findings = _scan_files(tmp_path, SECRET_PATTERNS, skip_dirs=set(), extensions={".py"})
         assert len(findings) >= 1
         assert findings[0]["file"] == "config.py"
 
     def test_scan_files_no_false_positives(self, tmp_path):
         f = tmp_path / "clean.py"
         f.write_text('x = 42\nprint("hello")\n', encoding="utf-8")
-        findings = _scan_files(tmp_path, SECRET_PATTERNS,
-                               skip_dirs=set(), extensions={".py"})
+        findings = _scan_files(tmp_path, SECRET_PATTERNS, skip_dirs=set(), extensions={".py"})
         assert len(findings) == 0
 
     def test_scan_files_detects_pii(self, tmp_path):
         f = tmp_path / "data.yaml"
-        f.write_text('ssn: 123-45-6789\n', encoding="utf-8")
-        findings = _scan_files(tmp_path, PII_PATTERNS,
-                               skip_dirs=set(), extensions={".yaml"})
+        f.write_text("ssn: 123-45-6789\n", encoding="utf-8")
+        findings = _scan_files(tmp_path, PII_PATTERNS, skip_dirs=set(), extensions={".yaml"})
         assert len(findings) >= 1
 
     def test_scan_files_skips_dirs(self, tmp_path):
         skip_dir = tmp_path / "__pycache__"
         skip_dir.mkdir()
-        (skip_dir / "secret.py").write_text(
-            'api_key = "ABCDEF123456789"', encoding="utf-8")
-        findings = _scan_files(tmp_path, SECRET_PATTERNS,
-                               skip_dirs={"__pycache__"}, extensions={".py"})
+        (skip_dir / "secret.py").write_text('api_key = "ABCDEF123456789"', encoding="utf-8")
+        findings = _scan_files(tmp_path, SECRET_PATTERNS, skip_dirs={"__pycache__"}, extensions={".py"})
         assert len(findings) == 0
 
 
 # ---------------------------------------------------------------------------
 # ProductionReadinessChecker — individual checks
 # ---------------------------------------------------------------------------
+
 
 class TestCheckRoot24Lock:
     def test_all_24_roots_pass(self, tmp_path):
@@ -230,7 +221,7 @@ class TestCheckPiiScan:
     def test_pii_detected_warns(self, tmp_path):
         _make_repo(tmp_path)
         pii_file = tmp_path / "01_ai_layer" / "test_data.yaml"
-        pii_file.write_text('ssn: 123-45-6789\n', encoding="utf-8")
+        pii_file.write_text("ssn: 123-45-6789\n", encoding="utf-8")
         checker = ProductionReadinessChecker(tmp_path)
         result = checker.check_pii_scan_clean()
         assert result.status == "warn"
@@ -251,8 +242,7 @@ class TestCheckChartsComplete:
         for i in range(EXPECTED_CHART_COUNT):
             shard = shards_dir / f"shard_{i:04d}"
             shard.mkdir(parents=True, exist_ok=True)
-            (shard / "chart.yaml").write_text(
-                f"name: shard_{i}\n", encoding="utf-8")
+            (shard / "chart.yaml").write_text(f"name: shard_{i}\n", encoding="utf-8")
         checker = ProductionReadinessChecker(tmp_path)
         result = checker.check_charts_complete()
         assert result.status == "pass"
@@ -299,8 +289,7 @@ class TestCheckNoPlaceholders:
 class TestCheckAllTestsGreen:
     @patch("production_readiness.subprocess.run")
     def test_pytest_passes(self, mock_run):
-        mock_run.return_value = MagicMock(
-            returncode=0, stdout="42 passed in 3.14s", stderr="")
+        mock_run.return_value = MagicMock(returncode=0, stdout="42 passed in 3.14s", stderr="")
         checker = ProductionReadinessChecker(Path("/fake"))
         result = checker.check_all_tests_green()
         assert result.status == "pass"
@@ -308,8 +297,7 @@ class TestCheckAllTestsGreen:
 
     @patch("production_readiness.subprocess.run")
     def test_pytest_fails(self, mock_run):
-        mock_run.return_value = MagicMock(
-            returncode=1, stdout="3 failed, 39 passed", stderr="")
+        mock_run.return_value = MagicMock(returncode=1, stdout="3 failed, 39 passed", stderr="")
         checker = ProductionReadinessChecker(Path("/fake"))
         result = checker.check_all_tests_green()
         assert result.status == "fail"
@@ -354,8 +342,7 @@ class TestCheckGatesPass:
         cli_dir = tmp_path / "12_tooling" / "cli"
         cli_dir.mkdir(parents=True)
         (cli_dir / "run_all_gates.py").write_text("# stub", encoding="utf-8")
-        mock_run.return_value = MagicMock(
-            returncode=2, stdout="FAIL: structure_guard", stderr="")
+        mock_run.return_value = MagicMock(returncode=2, stdout="FAIL: structure_guard", stderr="")
         checker = ProductionReadinessChecker(tmp_path)
         result = checker.check_gates_pass()
         assert result.status == "fail"
@@ -364,6 +351,7 @@ class TestCheckGatesPass:
 # ---------------------------------------------------------------------------
 # Report generation
 # ---------------------------------------------------------------------------
+
 
 class TestGenerateReadinessReport:
     def test_all_pass_is_ready(self, tmp_path):
@@ -417,6 +405,7 @@ class TestGenerateReadinessReport:
 # Load Test Stub
 # ---------------------------------------------------------------------------
 
+
 class TestLoadTestScenario:
     def test_default_values(self):
         s = LoadTestScenario(name="test", target_url="http://localhost")
@@ -431,16 +420,14 @@ class TestLoadTestScenario:
         assert d["target_url"] == "http://localhost"
 
     def test_from_dict(self):
-        data = {"name": "test", "target_url": "http://localhost",
-                "concurrent_users": 10, "duration_seconds": 30}
+        data = {"name": "test", "target_url": "http://localhost", "concurrent_users": 10, "duration_seconds": 30}
         s = LoadTestScenario.from_dict(data)
         assert s.name == "test"
         assert s.concurrent_users == 10
         assert s.duration_seconds == 30
 
     def test_from_dict_ignores_unknown(self):
-        data = {"name": "test", "target_url": "http://localhost",
-                "unknown_field": 999}
+        data = {"name": "test", "target_url": "http://localhost", "unknown_field": 999}
         s = LoadTestScenario.from_dict(data)
         assert s.name == "test"
 
@@ -491,9 +478,14 @@ class TestLoadTestRunner:
         assert report["scenarios_passed"] == 1
 
     def test_scenario_result_to_dict(self):
-        r = ScenarioResult(scenario_name="test", total_requests=100,
-                           successful_requests=95, failed_requests=5,
-                           error_rate=0.05, passed=True)
+        r = ScenarioResult(
+            scenario_name="test",
+            total_requests=100,
+            successful_requests=95,
+            failed_requests=5,
+            error_rate=0.05,
+            passed=True,
+        )
         d = r.to_dict()
         assert d["scenario_name"] == "test"
         assert d["total_requests"] == 100
@@ -504,10 +496,12 @@ class TestLoadTestRunner:
 # CLI main (smoke)
 # ---------------------------------------------------------------------------
 
+
 class TestCLIMain:
     @patch("production_readiness.ProductionReadinessChecker.run_all")
     def test_main_json_output(self, mock_run_all, capsys):
         from production_readiness import main
+
         mock_run_all.return_value = ReadinessReport(
             timestamp="2025-01-01T00:00:00Z",
             verdict="READY",
@@ -523,6 +517,7 @@ class TestCLIMain:
     @patch("production_readiness.ProductionReadinessChecker.run_all")
     def test_main_not_ready(self, mock_run_all):
         from production_readiness import main
+
         mock_run_all.return_value = ReadinessReport(
             timestamp="2025-01-01T00:00:00Z",
             verdict="NOT_READY",

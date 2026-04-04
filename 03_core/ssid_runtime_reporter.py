@@ -9,12 +9,13 @@ Usage:
     report = reporter.generate_report()
     reporter.export_to_file("ssid_runtime_status.json")
 """
+
 from __future__ import annotations
 
 import json
 import sys
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -26,25 +27,32 @@ sys.path.insert(0, str(_REPO / "08_identity_score"))
 sys.path.insert(0, str(_REPO / "02_audit_logging"))
 
 from ems_contract import (
-    SCHEMA_VERSION, FlowStatusPayload, ModuleHealthPayload,
+    SCHEMA_VERSION,
+    FlowStatusPayload,
+    ModuleHealthPayload,
     get_module_health_payloads,
 )
+from fee_distribution_engine import FeeParticipant, ParticipantRole
+from governance_reward_engine import (
+    GovernanceActivity,
+    GovernanceActivityType,
+    GovernanceParticipant,
+)
+from license_fee_splitter import LicenseType
+from policy_enforcer import PolicyViolationError
+from reward_handler import RewardAction, RewardEvent
 from ssid_flows import (
-    run_subscription_revenue_flow, run_license_fee_flow, run_reward_governance_flow,
+    run_license_fee_flow,
+    run_reward_governance_flow,
+    run_subscription_revenue_flow,
 )
 from subscription_revenue_distributor import RevenueParticipant, SubscriptionTier
-from fee_distribution_engine import FeeParticipant, ParticipantRole
-from license_fee_splitter import LicenseType
-from governance_reward_engine import (
-    GovernanceParticipant, GovernanceActivity, GovernanceActivityType,
-)
-from reward_handler import RewardEvent, RewardAction
-from policy_enforcer import PolicyViolationError
 
 
 @dataclass
 class SsidRuntimeReport:
     """Full runtime status snapshot of SSID core flows."""
+
     schema_version: str
     generated_at: str
     module_health: list[dict[str, str]]
@@ -135,7 +143,7 @@ class SsidRuntimeReporter:
                 proof_hash=None,
                 determinism_hash="",
                 policy_decisions=[exc.decision.to_evidence()],
-                timestamp_utc=datetime.now(timezone.utc).isoformat(),
+                timestamp_utc=datetime.now(UTC).isoformat(),
             ).to_dict()
         except Exception as exc:
             return {"flow_name": "subscription_revenue", "status": "error", "error": str(exc)}
@@ -196,20 +204,22 @@ class SsidRuntimeReporter:
 
     def _probe_subscription_denied(self) -> dict[str, Any]:
         """Probe subscription flow with invalid input → expect DENY."""
+        from decimal import Decimal as D  # noqa: N817
+
         from policy_enforcer import PolicyEnforcer, PolicyRule, PolicyRuleType
-        from decimal import Decimal as D
-        from flow_evidence import MODULE_VERSIONS
 
         # Use custom enforcer with very high MIN_POOL_AMOUNT to force deny
         # (subscription flow uses check_reward_distribution which checks MIN_POOL_AMOUNT)
-        custom_enforcer = PolicyEnforcer(rules=[
-            PolicyRule(PolicyRuleType.MAX_FEE, D("1000000"), "max fee cap"),
-            PolicyRule(PolicyRuleType.MIN_PARTICIPANTS, 1, "min 1"),
-            PolicyRule(PolicyRuleType.MIN_POOL_AMOUNT, D("9999999"), "very high minimum pool"),
-            PolicyRule(PolicyRuleType.NON_NEGATIVE_AMOUNT, D("0"), "non-negative amount"),
-            PolicyRule(PolicyRuleType.VALID_CURRENCY, {"USD", "EUR", "SSID", "BTC", "ETH"}, "valid currency"),
-            PolicyRule(PolicyRuleType.MAX_GINI, 0.95, "max gini"),
-        ])
+        custom_enforcer = PolicyEnforcer(
+            rules=[
+                PolicyRule(PolicyRuleType.MAX_FEE, D("1000000"), "max fee cap"),
+                PolicyRule(PolicyRuleType.MIN_PARTICIPANTS, 1, "min 1"),
+                PolicyRule(PolicyRuleType.MIN_POOL_AMOUNT, D("9999999"), "very high minimum pool"),
+                PolicyRule(PolicyRuleType.NON_NEGATIVE_AMOUNT, D("0"), "non-negative amount"),
+                PolicyRule(PolicyRuleType.VALID_CURRENCY, {"USD", "EUR", "SSID", "BTC", "ETH"}, "valid currency"),
+                PolicyRule(PolicyRuleType.MAX_GINI, 0.95, "max gini"),
+            ]
+        )
         try:
             run_subscription_revenue_flow(
                 gross_revenue=D("1000.00"),  # below custom MIN_POOL_AMOUNT of 9999999 → DENY
@@ -230,14 +240,15 @@ class SsidRuntimeReporter:
                 "proof_hash": None,
                 "determinism_hash": "",
                 "policy_decisions": [decision.to_evidence()],
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+                "timestamp_utc": datetime.now(UTC).isoformat(),
                 "error_reason": decision.reason,
             }
 
     def _module_health_with_degraded(self, degraded_module: str) -> list[dict[str, str]]:
         """Return module health list with one module marked as degraded."""
         from flow_evidence import MODULE_VERSIONS
-        now = datetime.now(timezone.utc).isoformat()
+
+        now = datetime.now(UTC).isoformat()
         return [
             ModuleHealthPayload(
                 module_name=m,
@@ -245,10 +256,16 @@ class SsidRuntimeReporter:
                 version=MODULE_VERSIONS.get(m, "1.0.0"),
                 last_checked_utc=now,
             ).to_dict()
-            for m in ["fee_distribution_engine", "subscription_revenue_distributor",
-                      "governance_reward_engine", "license_fee_splitter",
-                      "identity_fee_router", "reward_handler", "fee_proof_engine",
-                      "policy_enforcer"]
+            for m in [
+                "fee_distribution_engine",
+                "subscription_revenue_distributor",
+                "governance_reward_engine",
+                "license_fee_splitter",
+                "identity_fee_router",
+                "reward_handler",
+                "fee_proof_engine",
+                "policy_enforcer",
+            ]
         ]
 
     def generate_denied_report(self, flow_name: str = "subscription_revenue") -> SsidRuntimeReport:
@@ -260,7 +277,7 @@ class SsidRuntimeReporter:
             flow_status = {"flow_name": flow_name, "status": "denied", "allow_or_deny": "deny", "proof_hash": None}
         return SsidRuntimeReport(
             schema_version=SCHEMA_VERSION,
-            generated_at=datetime.now(timezone.utc).isoformat(),
+            generated_at=datetime.now(UTC).isoformat(),
             module_health=module_health,
             flow_statuses=[flow_status],
         )
@@ -275,7 +292,7 @@ class SsidRuntimeReporter:
         ]
         return SsidRuntimeReport(
             schema_version=SCHEMA_VERSION,
-            generated_at=datetime.now(timezone.utc).isoformat(),
+            generated_at=datetime.now(UTC).isoformat(),
             module_health=module_health,
             flow_statuses=flow_statuses,
         )
@@ -290,7 +307,7 @@ class SsidRuntimeReporter:
         ]
         return SsidRuntimeReport(
             schema_version=SCHEMA_VERSION,
-            generated_at=datetime.now(timezone.utc).isoformat(),
+            generated_at=datetime.now(UTC).isoformat(),
             module_health=module_health,
             flow_statuses=flow_statuses,
         )
@@ -316,6 +333,7 @@ class SsidRuntimeReporter:
     def export_report_with_hash(self, output_path: str | Path) -> tuple[Path, str]:
         """Export report to file and return (path, sha256_hash_of_content)."""
         import hashlib
+
         path = self.export_to_file(output_path)
         content = path.read_text(encoding="utf-8")
         sha256 = hashlib.sha256(content.encode("utf-8")).hexdigest()

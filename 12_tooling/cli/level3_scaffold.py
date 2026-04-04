@@ -6,6 +6,7 @@ Idempotent, no-overwrite. Default: dry-run. Use --apply to persist.
 Templates: 16_codex/templates/level3_root_scaffold/
 Report:    02_audit_logging/reports/LEVEL3_SCAFFOLD_APPLY.json
 """
+
 from __future__ import annotations
 
 import argparse
@@ -79,24 +80,13 @@ def process_root(root_name: str, apply: bool) -> dict:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Level-3 Root Scaffold Generator (idempotent, no-overwrite)"
-    )
+    parser = argparse.ArgumentParser(description="Level-3 Root Scaffold Generator (idempotent, no-overwrite)")
+    parser.add_argument("--root", type=str, help="Process single root (e.g. 03_core)")
+    parser.add_argument("--all", action="store_true", dest="all_roots", help="Process all 24 roots")
+    parser.add_argument("--apply", action="store_true", help="Write scaffold files (default: dry-run)")
+    parser.add_argument("--report", type=str, help="Write JSON report to path (default: canonical path)")
     parser.add_argument(
-        "--root", type=str, help="Process single root (e.g. 03_core)"
-    )
-    parser.add_argument(
-        "--all", action="store_true", dest="all_roots", help="Process all 24 roots"
-    )
-    parser.add_argument(
-        "--apply", action="store_true", help="Write scaffold files (default: dry-run)"
-    )
-    parser.add_argument(
-        "--report", type=str, help="Write JSON report to path (default: canonical path)"
-    )
-    parser.add_argument(
-        "--check", action="store_true",
-        help="Check mode: FAIL (exit 1) if any root is missing scaffold files"
+        "--check", action="store_true", help="Check mode: FAIL (exit 1) if any root is missing scaffold files"
     )
     args = parser.parse_args()
 

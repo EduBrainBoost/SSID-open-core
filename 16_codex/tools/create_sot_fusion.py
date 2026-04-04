@@ -11,21 +11,21 @@ source file, deduplicates on a line-by-line basis, and writes:
 Usage:
     python create_sot_fusion.py --output <directory>
 """
+
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
 def find_codex_root(start: Path | None = None) -> Path:
     """Locate 16_codex relative to this script or CWD."""
     candidates = [
-        Path(__file__).resolve().parent.parent,          # 16_codex/tools -> 16_codex
+        Path(__file__).resolve().parent.parent,  # 16_codex/tools -> 16_codex
         (start or Path.cwd()),
     ]
     for c in candidates:
@@ -95,10 +95,12 @@ def main(argv: list[str] | None = None) -> int:
 
     for src in sources:
         lines = read_source(codex, src)
-        per_source_stats.append({
-            "file": src["file"],
-            "lines_raw": len(lines),
-        })
+        per_source_stats.append(
+            {
+                "file": src["file"],
+                "lines_raw": len(lines),
+            }
+        )
         all_lines.extend(lines)
 
     total_raw = len(all_lines)
@@ -115,7 +117,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # Write stats
     stats = {
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "generated_at_utc": datetime.now(UTC).isoformat(),
         "source_count": len(sources),
         "total_lines_raw": total_raw,
         "total_lines_deduped": total_deduped,

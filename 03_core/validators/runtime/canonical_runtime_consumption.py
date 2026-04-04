@@ -16,14 +16,14 @@ import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import yaml
-
 
 # ---------------------------------------------------------------------------
 # Result types
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class ConsumptionFinding:
@@ -39,7 +39,7 @@ class ConsumptionFinding:
 
     severity: str  # "critical" / "high" / "medium"
     file_path: str
-    line_number: Optional[int]
+    line_number: int | None
     detail: str
 
     def to_dict(self) -> dict[str, Any]:
@@ -157,9 +157,8 @@ def _extract_imports(source_code: str) -> list[tuple[str, int]]:
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     imports.append((alias.name, node.lineno))
-            elif isinstance(node, ast.ImportFrom):
-                if node.module:
-                    imports.append((node.module, node.lineno))
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imports.append((node.module, node.lineno))
         return imports
     except SyntaxError:
         pass
@@ -184,9 +183,8 @@ def _is_cross_root_import(import_path: str, consumer_root_id: str) -> tuple[bool
         return False, None
     first = parts[0]
     # Check if it looks like a root ID (e.g., 03_core, 09_meta_identity)
-    if "_" in first and len(first) >= 4 and first[:2].isdigit():
-        if first != consumer_root_id:
-            return True, first
+    if "_" in first and len(first) >= 4 and first[:2].isdigit() and first != consumer_root_id:
+        return True, first
     return False, None
 
 
@@ -204,6 +202,7 @@ def _check_gate_usage(source_code: str) -> bool:
 # ---------------------------------------------------------------------------
 # Policy
 # ---------------------------------------------------------------------------
+
 
 class CanonicalConsumptionPolicy:
     """Validates canonical runtime consumption patterns for cross-root consumers."""
@@ -223,13 +222,15 @@ class CanonicalConsumptionPolicy:
         # 1. Check for reference facade
         has_facade = (shard_src / "reference_services.py").exists()
         if not has_facade and allowed_providers:
-            findings.append(ConsumptionFinding(
-                finding_code="MISSING_REFERENCE_FACADE",
-                severity="high",
-                file_path=str(shard_src / "reference_services.py"),
-                line_number=None,
-                detail=f"Consumer {consumer_root_id}/{consumer_shard_id} has cross-root dependencies but no reference_services.py facade",
-            ))
+            findings.append(
+                ConsumptionFinding(
+                    finding_code="MISSING_REFERENCE_FACADE",
+                    severity="high",
+                    file_path=str(shard_src / "reference_services.py"),
+                    line_number=None,
+                    detail=f"Consumer {consumer_root_id}/{consumer_shard_id} has cross-root dependencies but no reference_services.py facade",
+                )
+            )
 
         # 2. Scan source files for imports
         if shard_src.exists():
@@ -249,52 +250,64 @@ class CanonicalConsumptionPolicy:
 
                     # Direct cross-root import
                     if ".src." in import_path or import_path.endswith(".src"):
-                        findings.append(ConsumptionFinding(
-                            finding_code="DIRECT_PROVIDER_IMPORT",
-                            severity="critical",
-                            file_path=str(py_file.relative_to(self.repo_root)),
-                            line_number=lineno,
-                            detail=f"Direct cross-root import from {provider_root}: {import_path}",
-                        ))
+                        findings.append(
+                            ConsumptionFinding(
+                                finding_code="DIRECT_PROVIDER_IMPORT",
+                                severity="critical",
+                                file_path=str(py_file.relative_to(self.repo_root)),
+                                line_number=lineno,
+                                detail=f"Direct cross-root import from {provider_root}: {import_path}",
+                            )
+                        )
 
                     # Check if provider is authorized
-                    provider_shard_guess = import_path.split(".")[1] if len(import_path.split(".")) > 1 else ""
+                    import_path.split(".")[1] if len(import_path.split(".")) > 1 else ""
                     if allowed_providers and not any(p[0] == provider_root for p in allowed_providers):
-                        findings.append(ConsumptionFinding(
-                            finding_code="UNAUTHORIZED_PROVIDER",
-                            severity="high",
-                            file_path=str(py_file.relative_to(self.repo_root)),
-                            line_number=lineno,
-                            detail=f"Access to unauthorized provider root {provider_root}",
-                        ))
+                        findings.append(
+                            ConsumptionFinding(
+                                finding_code="UNAUTHORIZED_PROVIDER",
+                                severity="high",
+                                file_path=str(py_file.relative_to(self.repo_root)),
+                                line_number=lineno,
+                                detail=f"Access to unauthorized provider root {provider_root}",
+                            )
+                        )
 
                 # Cross-root code without gate usage
                 has_cross_root = any(_is_cross_root_import(imp, consumer_root_id)[0] for imp, _ in imports)
                 if has_cross_root and not has_gate:
-                    findings.append(ConsumptionFinding(
-                        finding_code="MISSING_RUNTIME_GATE",
-                        severity="critical",
-                        file_path=str(py_file.relative_to(self.repo_root)),
-                        line_number=None,
-                        detail=f"Cross-root access without runtime gate call in {py_file.name}",
-                    ))
+                    findings.append(
+                        ConsumptionFinding(
+                            finding_code="MISSING_RUNTIME_GATE",
+                            severity="critical",
+                            file_path=str(py_file.relative_to(self.repo_root)),
+                            line_number=None,
+                            detail=f"Cross-root access without runtime gate call in {py_file.name}",
+                        )
+                    )
 
         # 3. Check capability declarations
         registry_entry = self._registry.get((consumer_root_id, consumer_shard_id))
         if registry_entry:
             reg_dep_caps = set(registry_entry.get("dependency_capability", []))
             if reg_dep_caps and declared_caps and reg_dep_caps != declared_caps:
-                findings.append(ConsumptionFinding(
-                    finding_code="UNDECLARED_CAPABILITY",
-                    severity="high",
-                    file_path=str(self.repo_root / consumer_root_id / "shards" / consumer_shard_id / "runtime" / "index.yaml"),
-                    line_number=None,
-                    detail=f"Registry/runtime capability mismatch: registry={sorted(reg_dep_caps)}, runtime={sorted(declared_caps)}",
-                ))
+                findings.append(
+                    ConsumptionFinding(
+                        finding_code="UNDECLARED_CAPABILITY",
+                        severity="high",
+                        file_path=str(
+                            self.repo_root / consumer_root_id / "shards" / consumer_shard_id / "runtime" / "index.yaml"
+                        ),
+                        line_number=None,
+                        detail=f"Registry/runtime capability mismatch: registry={sorted(reg_dep_caps)}, runtime={sorted(declared_caps)}",
+                    )
+                )
 
         # Build result
         status = "fail" if findings else "pass"
-        sorted_findings = tuple(sorted(findings, key=lambda f: (f.severity, f.finding_code, f.file_path, f.line_number or 0)))
+        sorted_findings = tuple(
+            sorted(findings, key=lambda f: (f.severity, f.finding_code, f.file_path, f.line_number or 0))
+        )
         result_payload = json.dumps([f.to_dict() for f in sorted_findings], sort_keys=True)
         result_hash = hashlib.sha256(result_payload.encode()).hexdigest()
 

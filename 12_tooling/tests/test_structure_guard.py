@@ -8,10 +8,10 @@ Covers:
   - main() fails on archive files at repo root
   - main() fails on unauthorised directories
 """
+
 from __future__ import annotations
 
 import importlib.util
-import sys
 from pathlib import Path
 
 import pytest
@@ -20,13 +20,30 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 GUARD_PATH = REPO_ROOT / "12_tooling" / "scripts" / "structure_guard.py"
 
 ROOT_24_LOCK = [
-    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-    "05_documentation", "06_data_pipeline", "07_governance_legal",
-    "08_identity_score", "09_meta_identity", "10_interoperability",
-    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
-    "15_infra", "16_codex", "17_observability", "18_data_layer",
-    "19_adapters", "20_foundation", "21_post_quantum_crypto", "22_datasets",
-    "23_compliance", "24_meta_orchestration",
+    "01_ai_layer",
+    "02_audit_logging",
+    "03_core",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "12_tooling",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "16_codex",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
+    "23_compliance",
+    "24_meta_orchestration",
 ]
 
 
@@ -153,6 +170,7 @@ class TestStructureGuardMainFail:
     def test_fails_with_23_roots(self, tmp_path, monkeypatch):
         repo = _make_valid_repo(tmp_path)
         import shutil
+
         shutil.rmtree(str(repo / "24_meta_orchestration"))
         guard = _load_guard()
         monkeypatch.setattr(guard, "main", _patched_main(guard, repo))
@@ -207,10 +225,7 @@ def _patched_main(guard_mod, repo_root: Path):
         allowed_dirs = set(data.get("allowed_directories", []) or [])
         allowed_files = set(data.get("allowed_files", []) or [])
 
-        roots = sorted([
-            p.name for p in repo_root.iterdir()
-            if p.is_dir() and p.name[:2].isdigit() and "_" in p.name
-        ])
+        roots = sorted([p.name for p in repo_root.iterdir() if p.is_dir() and p.name[:2].isdigit() and "_" in p.name])
         if len(roots) != 24:
             guard_mod.die(f"expected 24 root modules, found {len(roots)}: {roots}")
 

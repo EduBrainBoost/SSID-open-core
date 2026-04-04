@@ -8,6 +8,7 @@ Verifies:
 
 Note: 23_compliance uses structure_policy.yaml instead of policy.yaml.
 """
+
 from __future__ import annotations
 
 import py_compile
@@ -26,9 +27,7 @@ POLICY_FILE = POLICIES_DIR / "structure_policy.yaml"
 
 def test_src_init_exists() -> None:
     """src/__init__.py must exist."""
-    assert (SRC_DIR / "__init__.py").exists(), (
-        f"{ROOT_NAME}/src/__init__.py is missing"
-    )
+    assert (SRC_DIR / "__init__.py").exists(), f"{ROOT_NAME}/src/__init__.py is missing"
 
 
 def test_src_py_files_valid_syntax() -> None:
@@ -49,22 +48,16 @@ def test_src_py_files_valid_syntax() -> None:
 
 def test_policy_yaml_exists() -> None:
     """policies/structure_policy.yaml must exist (23_compliance canonical policy)."""
-    assert POLICY_FILE.exists(), (
-        f"{ROOT_NAME}/policies/structure_policy.yaml is missing"
-    )
+    assert POLICY_FILE.exists(), f"{ROOT_NAME}/policies/structure_policy.yaml is missing"
 
 
 def test_policy_yaml_valid() -> None:
     """policies/structure_policy.yaml must be valid YAML."""
-    assert POLICY_FILE.exists(), (
-        f"{ROOT_NAME}/policies/structure_policy.yaml is missing — cannot validate"
-    )
+    assert POLICY_FILE.exists(), f"{ROOT_NAME}/policies/structure_policy.yaml is missing — cannot validate"
     with open(POLICY_FILE, encoding="utf-8") as fh:
         content = fh.read()
     try:
         parsed = yaml.safe_load(content)
     except yaml.YAMLError as exc:
         pytest.fail(f"{ROOT_NAME}/policies/structure_policy.yaml is not valid YAML: {exc}")
-    assert parsed is not None, (
-        f"{ROOT_NAME}/policies/structure_policy.yaml is empty or null"
-    )
+    assert parsed is not None, f"{ROOT_NAME}/policies/structure_policy.yaml is empty or null"

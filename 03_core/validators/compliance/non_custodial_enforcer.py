@@ -19,7 +19,7 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, List, Optional
+from typing import Any
 
 
 class ViolationType(Enum):
@@ -56,7 +56,7 @@ class EnforcementResult:
     """Result of an enforcement check."""
 
     passed: bool
-    violations: List[Violation] = field(default_factory=list)
+    violations: list[Violation] = field(default_factory=list)
     enforcer: str = "NonCustodialEnforcer"
 
     def to_dict(self) -> dict[str, Any]:
@@ -74,10 +74,10 @@ _HASH_HEX_64 = re.compile(r"^[0-9a-fA-F]{64}$")
 # Proof reference patterns (DID, CID, URN)
 _PROOF_PATTERNS = [
     re.compile(r"^did:"),
-    re.compile(r"^bafy"),       # IPFS CID v1
+    re.compile(r"^bafy"),  # IPFS CID v1
     re.compile(r"^Qm[1-9A-HJ-NP-Za-km-z]{44}$"),  # IPFS CID v0
     re.compile(r"^urn:ssid:"),  # SSID internal proof URN
-    re.compile(r"^proof:"),     # Generic proof reference
+    re.compile(r"^proof:"),  # Generic proof reference
 ]
 
 
@@ -91,7 +91,7 @@ class NonCustodialEnforcer:
     """
 
     # Operations that imply custody — must never appear in SSID
-    FORBIDDEN_OPERATIONS: List[str] = [
+    FORBIDDEN_OPERATIONS: list[str] = [
         "store_private_key",
         "save_credential",
         "persist_identity",
@@ -105,12 +105,29 @@ class NonCustodialEnforcer:
     ]
 
     # Field names that indicate PII content
-    PII_FIELD_INDICATORS: List[str] = [
-        "name", "email", "phone", "address", "ssn", "passport",
-        "dob", "birth", "national_id", "tax_id", "iban",
-        "credit_card", "biometric", "face_image", "fingerprint",
-        "full_name", "first_name", "last_name", "maiden_name",
-        "social_security", "driver_license", "ip_address",
+    PII_FIELD_INDICATORS: list[str] = [
+        "name",
+        "email",
+        "phone",
+        "address",
+        "ssn",
+        "passport",
+        "dob",
+        "birth",
+        "national_id",
+        "tax_id",
+        "iban",
+        "credit_card",
+        "biometric",
+        "face_image",
+        "fingerprint",
+        "full_name",
+        "first_name",
+        "last_name",
+        "maiden_name",
+        "social_security",
+        "driver_license",
+        "ip_address",
     ]
 
     def validate_no_pii_storage(self, data: dict[str, Any]) -> EnforcementResult:
@@ -122,7 +139,7 @@ class NonCustodialEnforcer:
         Returns:
             EnforcementResult with any PII storage violations.
         """
-        violations: List[Violation] = []
+        violations: list[Violation] = []
 
         for key, value in data.items():
             if not isinstance(value, str) or len(value) == 0:
@@ -134,13 +151,15 @@ class NonCustodialEnforcer:
 
             # Check if the field name suggests PII content
             if self._looks_like_pii(key):
-                violations.append(Violation(
-                    violation_type=ViolationType.PII_STORAGE.value,
-                    field_or_operation=key,
-                    detail=f"Field '{key}' contains non-hashed value (length={len(value)})",
-                    remedy="Replace with SHA3-256 hash: hashlib.sha3_256(value.encode()).hexdigest()",
-                    severity="critical",
-                ))
+                violations.append(
+                    Violation(
+                        violation_type=ViolationType.PII_STORAGE.value,
+                        field_or_operation=key,
+                        detail=f"Field '{key}' contains non-hashed value (length={len(value)})",
+                        remedy="Replace with SHA3-256 hash: hashlib.sha3_256(value.encode()).hexdigest()",
+                        severity="critical",
+                    )
+                )
 
         return EnforcementResult(
             passed=len(violations) == 0,
@@ -156,25 +175,27 @@ class NonCustodialEnforcer:
         Returns:
             EnforcementResult with any custody pattern violations.
         """
-        violations: List[Violation] = []
+        violations: list[Violation] = []
         op_lower = operation.lower()
 
         for pattern in self.FORBIDDEN_OPERATIONS:
             if pattern in op_lower:
-                violations.append(Violation(
-                    violation_type=ViolationType.CUSTODY_PATTERN.value,
-                    field_or_operation=operation,
-                    detail=f"Forbidden custody pattern '{pattern}' in operation",
-                    remedy="Use non-custodial alternative: hash, proof, or DID reference",
-                    severity="critical",
-                ))
+                violations.append(
+                    Violation(
+                        violation_type=ViolationType.CUSTODY_PATTERN.value,
+                        field_or_operation=operation,
+                        detail=f"Forbidden custody pattern '{pattern}' in operation",
+                        remedy="Use non-custodial alternative: hash, proof, or DID reference",
+                        severity="critical",
+                    )
+                )
 
         return EnforcementResult(
             passed=len(violations) == 0,
             violations=violations,
         )
 
-    def validate_no_direct_key_access(self, operation: str, params: Optional[dict] = None) -> EnforcementResult:
+    def validate_no_direct_key_access(self, operation: str, params: dict | None = None) -> EnforcementResult:
         """Validate that no direct private key access is attempted.
 
         Args:
@@ -184,39 +205,43 @@ class NonCustodialEnforcer:
         Returns:
             EnforcementResult with any key access violations.
         """
-        violations: List[Violation] = []
+        violations: list[Violation] = []
 
         key_patterns = ["private_key", "secret_key", "signing_key", "master_key", "seed_phrase"]
         op_lower = operation.lower()
 
         for kp in key_patterns:
             if kp in op_lower:
-                violations.append(Violation(
-                    violation_type=ViolationType.DIRECT_KEY_ACCESS.value,
-                    field_or_operation=operation,
-                    detail=f"Direct key access pattern '{kp}' detected",
-                    remedy="Use vault-delegated signing; never access keys directly",
-                    severity="critical",
-                ))
+                violations.append(
+                    Violation(
+                        violation_type=ViolationType.DIRECT_KEY_ACCESS.value,
+                        field_or_operation=operation,
+                        detail=f"Direct key access pattern '{kp}' detected",
+                        remedy="Use vault-delegated signing; never access keys directly",
+                        severity="critical",
+                    )
+                )
 
         if params:
-            for param_key, param_value in params.items():
+            for param_key, _param_value in params.items():
                 for kp in key_patterns:
                     if kp in param_key.lower():
-                        violations.append(Violation(
-                            violation_type=ViolationType.DIRECT_KEY_ACCESS.value,
-                            field_or_operation=param_key,
-                            detail=f"Parameter '{param_key}' contains key material reference",
-                            remedy="Remove key material from parameters; use vault reference instead",
-                            severity="critical",
-                        ))
+                        violations.append(
+                            Violation(
+                                violation_type=ViolationType.DIRECT_KEY_ACCESS.value,
+                                field_or_operation=param_key,
+                                detail=f"Parameter '{param_key}' contains key material reference",
+                                remedy="Remove key material from parameters; use vault reference instead",
+                                severity="critical",
+                            )
+                        )
 
         return EnforcementResult(
             passed=len(violations) == 0,
             violations=violations,
         )
 
-    def enforce_all(self, data: dict[str, Any], operation: str, params: Optional[dict] = None) -> EnforcementResult:
+    def enforce_all(self, data: dict[str, Any], operation: str, params: dict | None = None) -> EnforcementResult:
         """Run all non-custodial checks and return combined result.
 
         Args:
@@ -227,7 +252,7 @@ class NonCustodialEnforcer:
         Returns:
             Combined EnforcementResult with all violations.
         """
-        all_violations: List[Violation] = []
+        all_violations: list[Violation] = []
 
         pii_result = self.validate_no_pii_storage(data)
         all_violations.extend(pii_result.violations)

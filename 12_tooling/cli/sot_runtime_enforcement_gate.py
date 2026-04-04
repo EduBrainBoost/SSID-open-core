@@ -27,6 +27,7 @@ Exit codes:
   0  — PASS: no violations detected
   1  — FAIL: drift or violations detected (or --fail-on-drift triggered)
 """
+
 from __future__ import annotations
 
 import argparse
@@ -34,9 +35,9 @@ import hashlib
 import importlib.util
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Repo root detection
@@ -62,7 +63,7 @@ GATE_NAME = "sot_runtime_enforcement_gate"
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _file_sha256(path: Path) -> str:
@@ -98,9 +99,9 @@ def _load_sot_core(repo_root: Path):
 # ---------------------------------------------------------------------------
 
 
-def _check_sot_contract(repo_root: Path) -> Dict[str, Any]:
+def _check_sot_contract(repo_root: Path) -> dict[str, Any]:
     """Run the SoT validator core and return a structured check result."""
-    result: Dict[str, Any] = {
+    result: dict[str, Any] = {
         "check": "sot_contract_validation",
         "status": "UNKNOWN",
         "violations": [],
@@ -111,10 +112,12 @@ def _check_sot_contract(repo_root: Path) -> Dict[str, Any]:
     mod = _load_sot_core(repo_root)
     if mod is None:
         result["status"] = "FAIL"
-        result["violations"].append({
-            "rule_id": "GATE_SOT_001",
-            "message": f"sot_validator_core.py not found at {_SOT_CORE_PATH}",
-        })
+        result["violations"].append(
+            {
+                "rule_id": "GATE_SOT_001",
+                "message": f"sot_validator_core.py not found at {_SOT_CORE_PATH}",
+            }
+        )
         return result
 
     try:
@@ -123,20 +126,24 @@ def _check_sot_contract(repo_root: Path) -> Dict[str, Any]:
         ok, failed = validator.evaluate_priorities(results)
     except Exception as exc:
         result["status"] = "FAIL"
-        result["violations"].append({
-            "rule_id": "GATE_SOT_002",
-            "message": f"SoT validator raised exception: {exc}",
-        })
+        result["violations"].append(
+            {
+                "rule_id": "GATE_SOT_002",
+                "message": f"SoT validator raised exception: {exc}",
+            }
+        )
         return result
 
     for rule_id, data in sorted(results.items()):
         if data.get("status") == "PASS":
             result["passed_rules"].append(rule_id)
         else:
-            result["violations"].append({
-                "rule_id": rule_id,
-                "message": data.get("message", ""),
-            })
+            result["violations"].append(
+                {
+                    "rule_id": rule_id,
+                    "message": data.get("message", ""),
+                }
+            )
 
     result["rules_checked"] = len(results)
     result["status"] = "PASS" if ok else "FAIL"
@@ -148,7 +155,7 @@ def _check_sot_contract(repo_root: Path) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def _check_contract_artifacts(repo_root: Path) -> Dict[str, Any]:
+def _check_contract_artifacts(repo_root: Path) -> dict[str, Any]:
     """Verify Phase 3 contract artifacts exist and hashes match the manifest.
 
     Checks:
@@ -166,14 +173,14 @@ def _check_contract_artifacts(repo_root: Path) -> Dict[str, Any]:
     manifest_path = contracts_dir / "compiler_manifest.json"
     spec_path = contracts_dir / "proof_registry_spec.md"
 
-    result: Dict[str, Any] = {
+    result: dict[str, Any] = {
         "check": "contract_artifact_integrity",
         "status": "UNKNOWN",
         "violations": [],
         "artifacts": {},
     }
 
-    violations: List[Dict[str, str]] = []
+    violations: list[dict[str, str]] = []
 
     # Check file existence
     for label, path in [
@@ -183,10 +190,12 @@ def _check_contract_artifacts(repo_root: Path) -> Dict[str, Any]:
         ("proof_registry_spec.md", spec_path),
     ]:
         if not path.is_file():
-            violations.append({
-                "rule_id": f"ARTIFACT_{label.upper().replace('.', '_').replace('-', '_')}_MISSING",
-                "message": f"Required artifact missing: {label}",
-            })
+            violations.append(
+                {
+                    "rule_id": f"ARTIFACT_{label.upper().replace('.', '_').replace('-', '_')}_MISSING",
+                    "message": f"Required artifact missing: {label}",
+                }
+            )
         else:
             result["artifacts"][label] = _file_sha256(path)
 
@@ -197,43 +206,39 @@ def _check_contract_artifacts(repo_root: Path) -> Dict[str, Any]:
 
     # Check hash integrity via compiler_manifest.json
     try:
-        manifest: Dict[str, Any] = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest: dict[str, Any] = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError) as exc:
-        violations.append({
-            "rule_id": "ARTIFACT_MANIFEST_PARSE_ERROR",
-            "message": f"Cannot parse compiler_manifest.json: {exc}",
-        })
+        violations.append(
+            {
+                "rule_id": "ARTIFACT_MANIFEST_PARSE_ERROR",
+                "message": f"Cannot parse compiler_manifest.json: {exc}",
+            }
+        )
         result["violations"] = violations
         result["status"] = "FAIL"
         return result
 
     # ABI hash
-    recorded_abi_hash: Optional[str] = (
-        manifest.get("artifacts", {}).get("abi", {}).get("sha256")
-    )
+    recorded_abi_hash: str | None = manifest.get("artifacts", {}).get("abi", {}).get("sha256")
     actual_abi_hash = _file_sha256(abi_path)
     if recorded_abi_hash and recorded_abi_hash != actual_abi_hash:
-        violations.append({
-            "rule_id": "ARTIFACT_ABI_HASH_DRIFT",
-            "message": (
-                f"ABI hash drift: manifest={recorded_abi_hash!r}, "
-                f"actual={actual_abi_hash!r}"
-            ),
-        })
+        violations.append(
+            {
+                "rule_id": "ARTIFACT_ABI_HASH_DRIFT",
+                "message": (f"ABI hash drift: manifest={recorded_abi_hash!r}, actual={actual_abi_hash!r}"),
+            }
+        )
 
     # Bytecode hash
-    recorded_bc_hash: Optional[str] = (
-        manifest.get("artifacts", {}).get("bytecode", {}).get("sha256")
-    )
+    recorded_bc_hash: str | None = manifest.get("artifacts", {}).get("bytecode", {}).get("sha256")
     actual_bc_hash = _file_sha256(bytecode_path)
     if recorded_bc_hash and recorded_bc_hash != actual_bc_hash:
-        violations.append({
-            "rule_id": "ARTIFACT_BYTECODE_HASH_DRIFT",
-            "message": (
-                f"Bytecode hash drift: manifest={recorded_bc_hash!r}, "
-                f"actual={actual_bc_hash!r}"
-            ),
-        })
+        violations.append(
+            {
+                "rule_id": "ARTIFACT_BYTECODE_HASH_DRIFT",
+                "message": (f"Bytecode hash drift: manifest={recorded_bc_hash!r}, actual={actual_bc_hash!r}"),
+            }
+        )
 
     # ABI structure: addProof, hasProof, ProofAdded
     try:
@@ -242,25 +247,33 @@ def _check_contract_artifacts(repo_root: Path) -> Dict[str, Any]:
         event_names = {e.get("name") for e in abi if e.get("type") == "event"}
 
         if "addProof" not in fn_names:
-            violations.append({
-                "rule_id": "ARTIFACT_ABI_MISSING_ADD_PROOF",
-                "message": "ABI missing addProof function",
-            })
+            violations.append(
+                {
+                    "rule_id": "ARTIFACT_ABI_MISSING_ADD_PROOF",
+                    "message": "ABI missing addProof function",
+                }
+            )
         if "hasProof" not in fn_names:
-            violations.append({
-                "rule_id": "ARTIFACT_ABI_MISSING_HAS_PROOF",
-                "message": "ABI missing hasProof function",
-            })
+            violations.append(
+                {
+                    "rule_id": "ARTIFACT_ABI_MISSING_HAS_PROOF",
+                    "message": "ABI missing hasProof function",
+                }
+            )
         if "ProofAdded" not in event_names:
-            violations.append({
-                "rule_id": "ARTIFACT_ABI_MISSING_PROOF_ADDED_EVENT",
-                "message": "ABI missing ProofAdded event",
-            })
+            violations.append(
+                {
+                    "rule_id": "ARTIFACT_ABI_MISSING_PROOF_ADDED_EVENT",
+                    "message": "ABI missing ProofAdded event",
+                }
+            )
     except (json.JSONDecodeError, OSError) as exc:
-        violations.append({
-            "rule_id": "ARTIFACT_ABI_PARSE_ERROR",
-            "message": f"Cannot parse proof_registry_abi.json: {exc}",
-        })
+        violations.append(
+            {
+                "rule_id": "ARTIFACT_ABI_PARSE_ERROR",
+                "message": f"Cannot parse proof_registry_abi.json: {exc}",
+            }
+        )
 
     result["violations"] = violations
     result["status"] = "PASS" if not violations else "FAIL"
@@ -272,7 +285,7 @@ def _check_contract_artifacts(repo_root: Path) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def _load_sol_zone_policy(repo_root: Path) -> List[str]:
+def _load_sol_zone_policy(repo_root: Path) -> list[str]:
     """Load allowed Solidity zones from the canonical zone policy YAML.
 
     Falls back to a built-in list if the policy file cannot be read.
@@ -293,6 +306,7 @@ def _load_sol_zone_policy(repo_root: Path) -> List[str]:
         return fallback_zones
     try:
         import yaml  # type: ignore
+
         data = yaml.safe_load(policy_path.read_text(encoding="utf-8"))
         zones = data.get("allowed_zones", fallback_zones)
         return [str(z) for z in zones]
@@ -301,7 +315,7 @@ def _load_sol_zone_policy(repo_root: Path) -> List[str]:
         return fallback_zones
 
 
-def _check_no_sol_files(repo_root: Path) -> Dict[str, Any]:
+def _check_no_sol_files(repo_root: Path) -> dict[str, Any]:
     """Verify .sol files only exist inside allowed Solidity zones.
 
     Loads allowed zones from 23_compliance/policies/solidity_zone_policy.yaml.
@@ -309,7 +323,7 @@ def _check_no_sol_files(repo_root: Path) -> Dict[str, Any]:
 
     Returns a check result dict with status PASS/FAIL.
     """
-    result: Dict[str, Any] = {
+    result: dict[str, Any] = {
         "check": "sol_zone_enforcement",
         "status": "UNKNOWN",
         "violations": [],
@@ -321,10 +335,7 @@ def _check_no_sol_files(repo_root: Path) -> Dict[str, Any]:
     allowed_zones = _load_sol_zone_policy(repo_root)
     result["allowed_zones"] = allowed_zones
 
-    sol_files = [
-        p for p in repo_root.rglob("*.sol")
-        if ".git" not in p.parts
-    ]
+    sol_files = [p for p in repo_root.rglob("*.sol") if ".git" not in p.parts]
 
     for sol_path in sorted(sol_files):
         rel = str(sol_path.relative_to(repo_root)).replace("\\", "/")
@@ -333,10 +344,12 @@ def _check_no_sol_files(repo_root: Path) -> Dict[str, Any]:
             result["in_zone_files"].append(rel)
         else:
             result["out_of_zone_files"].append(rel)
-            result["violations"].append({
-                "rule_id": "SOL_FILE_OUTSIDE_ZONE",
-                "message": f"Found .sol file outside allowed zone: {rel}",
-            })
+            result["violations"].append(
+                {
+                    "rule_id": "SOL_FILE_OUTSIDE_ZONE",
+                    "message": f"Found .sol file outside allowed zone: {rel}",
+                }
+            )
 
     result["status"] = "PASS" if not result["violations"] else "FAIL"
     return result
@@ -352,7 +365,7 @@ def run_gate(
     check_sot: bool = True,
     check_artifacts: bool = True,
     check_no_sol: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Run all enabled gate checks and return a structured report.
 
     Args:
@@ -366,8 +379,8 @@ def run_gate(
         violation list, and evidence hashes.
     """
     ts = _utc_now()
-    checks: List[Dict[str, Any]] = []
-    all_violations: List[Dict[str, str]] = []
+    checks: list[dict[str, Any]] = []
+    all_violations: list[dict[str, str]] = []
 
     # Run enabled checks
     if check_sot:
@@ -395,10 +408,7 @@ def run_gate(
         "24_meta_orchestration/contracts/proof_registry_bytecode.json",
         "24_meta_orchestration/contracts/compiler_manifest.json",
     ]
-    artifacts_hashed = [
-        {"path": p, "sha256": _file_sha256(repo_root / p)}
-        for p in evidence_files
-    ]
+    artifacts_hashed = [{"path": p, "sha256": _file_sha256(repo_root / p)} for p in evidence_files]
 
     report = {
         "gate": GATE_NAME,
@@ -426,14 +436,14 @@ def run_gate(
 # ---------------------------------------------------------------------------
 
 
-def _report_to_md(report: Dict[str, Any]) -> str:
+def _report_to_md(report: dict[str, Any]) -> str:
     """Render the gate report as a markdown document."""
     lines = [
-        f"# SoT Runtime Enforcement Gate Report\n",
+        "# SoT Runtime Enforcement Gate Report\n",
         f"\nGate: `{report['gate']}` v{report['version']}\n",
         f"\nTimestamp: {report['timestamp_utc']}\n",
         f"\nStatus: **{report['status']}**\n",
-        f"\n## Summary\n",
+        "\n## Summary\n",
         f"\n- Total checks: {report['summary']['total_checks']}\n",
         f"- Passed: {report['summary']['passed_checks']}\n",
         f"- Failed: {report['summary']['failed_checks']}\n",

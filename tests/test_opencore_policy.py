@@ -1,8 +1,9 @@
 """Tests for opencore_policy.yaml validation."""
 
 import pathlib
-import yaml
+
 import pytest
+import yaml
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 POLICY_PATH = REPO_ROOT / "opencore_policy.yaml"
@@ -20,7 +21,7 @@ CANONICAL_ROOTS = [
 def policy():
     """Load the opencore policy YAML."""
     assert POLICY_PATH.exists(), f"Policy file not found: {POLICY_PATH}"
-    with open(POLICY_PATH, "r", encoding="utf-8") as fh:
+    with open(POLICY_PATH, encoding="utf-8") as fh:
         return yaml.safe_load(fh)
 
 

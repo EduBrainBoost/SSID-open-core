@@ -2,9 +2,9 @@
 Validates governance proposal schemas (YAML registry, JSON ballots).
 Enforces required fields, quorum rules, and threshold rules.
 """
+
 import json
-from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 try:
     import yaml
@@ -42,12 +42,12 @@ VALID_STATUSES = {"draft", "active", "passed", "rejected", "enacted", "cancelled
 VALID_TYPES = {"parameter_change", "protocol_upgrade", "treasury_allocation", "governance_rule"}
 
 
-def validate_registry(data: Dict[str, Any]) -> Tuple[bool, List[str]]:
+def validate_registry(data: dict[str, Any]) -> tuple[bool, list[str]]:
     """Validate a proposal registry YAML structure.
 
     Returns (True, []) if valid, otherwise (False, [violations]).
     """
-    violations: List[str] = []
+    violations: list[str] = []
 
     if not isinstance(data, dict):
         return (False, ["Registry data is not a dict"])
@@ -72,41 +72,29 @@ def validate_registry(data: Dict[str, Any]) -> Tuple[bool, List[str]]:
 
         status = prop.get("status")
         if status and status not in VALID_STATUSES:
-            violations.append(
-                f"proposals[{i}]: invalid status '{status}', "
-                f"expected one of {sorted(VALID_STATUSES)}"
-            )
+            violations.append(f"proposals[{i}]: invalid status '{status}', expected one of {sorted(VALID_STATUSES)}")
 
         ptype = prop.get("type")
         if ptype and ptype not in VALID_TYPES:
-            violations.append(
-                f"proposals[{i}]: invalid type '{ptype}', "
-                f"expected one of {sorted(VALID_TYPES)}"
-            )
+            violations.append(f"proposals[{i}]: invalid type '{ptype}', expected one of {sorted(VALID_TYPES)}")
 
         quorum = prop.get("quorum_required")
-        if quorum is not None:
-            if not isinstance(quorum, (int, float)) or not (0.0 < quorum <= 1.0):
-                violations.append(
-                    f"proposals[{i}]: quorum_required must be a float in (0.0, 1.0]"
-                )
+        if quorum is not None and (not isinstance(quorum, (int, float)) or not (0.0 < quorum <= 1.0)):
+            violations.append(f"proposals[{i}]: quorum_required must be a float in (0.0, 1.0]")
 
         threshold = prop.get("threshold_required")
-        if threshold is not None:
-            if not isinstance(threshold, (int, float)) or not (0.0 < threshold <= 1.0):
-                violations.append(
-                    f"proposals[{i}]: threshold_required must be a float in (0.0, 1.0]"
-                )
+        if threshold is not None and (not isinstance(threshold, (int, float)) or not (0.0 < threshold <= 1.0)):
+            violations.append(f"proposals[{i}]: threshold_required must be a float in (0.0, 1.0]")
 
     return (len(violations) == 0, violations)
 
 
-def validate_ballot(data: Dict[str, Any]) -> Tuple[bool, List[str]]:
+def validate_ballot(data: dict[str, Any]) -> tuple[bool, list[str]]:
     """Validate a ballot record JSON structure.
 
     Returns (True, []) if valid, otherwise (False, [violations]).
     """
-    violations: List[str] = []
+    violations: list[str] = []
 
     if not isinstance(data, dict):
         return (False, ["Ballot data is not a dict"])
@@ -117,15 +105,11 @@ def validate_ballot(data: Dict[str, Any]) -> Tuple[bool, List[str]]:
 
     status = data.get("status")
     if status and status not in VALID_STATUSES:
-        violations.append(
-            f"Invalid status '{status}', expected one of {sorted(VALID_STATUSES)}"
-        )
+        violations.append(f"Invalid status '{status}', expected one of {sorted(VALID_STATUSES)}")
 
     btype = data.get("type")
     if btype and btype not in VALID_TYPES:
-        violations.append(
-            f"Invalid type '{btype}', expected one of {sorted(VALID_TYPES)}"
-        )
+        violations.append(f"Invalid type '{btype}', expected one of {sorted(VALID_TYPES)}")
 
     # Quorum validation
     quorum = data.get("quorum")
@@ -161,29 +145,27 @@ def validate_ballot(data: Dict[str, Any]) -> Tuple[bool, List[str]]:
     evidence_hash = data.get("evidence_hash")
     if evidence_hash is not None:
         if not isinstance(evidence_hash, str) or not evidence_hash.startswith("sha3-256:"):
-            violations.append(
-                "evidence_hash must be a string starting with 'sha3-256:'"
-            )
+            violations.append("evidence_hash must be a string starting with 'sha3-256:'")
 
     return (len(violations) == 0, violations)
 
 
-def validate_ballot_file(path: str) -> Tuple[bool, List[str]]:
+def validate_ballot_file(path: str) -> tuple[bool, list[str]]:
     """Load and validate a ballot JSON file."""
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
     except (json.JSONDecodeError, OSError) as e:
         return (False, [f"Failed to load ballot file: {e}"])
     return validate_ballot(data)
 
 
-def validate_registry_file(path: str) -> Tuple[bool, List[str]]:
+def validate_registry_file(path: str) -> tuple[bool, list[str]]:
     """Load and validate a registry YAML file."""
     if yaml is None:
         return (False, ["PyYAML is not installed"])
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
     except (yaml.YAMLError, OSError) as e:
         return (False, [f"Failed to load registry file: {e}"])

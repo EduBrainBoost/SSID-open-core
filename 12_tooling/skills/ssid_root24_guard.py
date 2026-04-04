@@ -7,7 +7,6 @@ and none have been added, renamed, or removed.
 import importlib.util
 import os
 from pathlib import Path
-from typing import Dict
 
 from ._evidence import make_evidence, result
 
@@ -21,7 +20,7 @@ _spec.loader.exec_module(_mod)
 CANONICAL_ROOTS = _mod.CANONICAL_ROOTS  # frozenset form
 
 
-def execute(context: Dict) -> Dict:
+def execute(context: dict) -> dict:
     """Check that workspace_root contains exactly the 24 canonical roots.
 
     context must contain:
@@ -33,7 +32,8 @@ def execute(context: Dict) -> Dict:
         return result("FAIL", ev, "workspace_root is required and must be a valid directory")
 
     entries = {
-        e for e in os.listdir(workspace_root)
+        e
+        for e in os.listdir(workspace_root)
         if os.path.isdir(os.path.join(workspace_root, e)) and not e.startswith(".")
     }
 

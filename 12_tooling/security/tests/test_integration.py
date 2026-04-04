@@ -6,55 +6,42 @@ All tests use tmp_path for isolation and are runnable standalone.
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import hashlib
-import hmac as _hmac
 import json
 import sys
 from pathlib import Path
 from typing import Any
 
-import pytest
-
 # Make security package importable regardless of working directory
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from security.sbom_generator import (
-    _check_secrets,
-    _parse_requirements,
-    generate_cyclonedx_sbom,
-    scan_root,
-)
 from security.dependency_scanner import (
     ScanReport,
-    VulnerabilityFinding,
     _classify_severity,
     scan_components,
     scan_sbom_file,
 )
+from security.sbom_generator import (
+    generate_cyclonedx_sbom,
+)
 from security.signature_verifier import (
-    ALLOWED_HASH_ALGORITHMS,
-    FORBIDDEN_HASH_ALGORITHMS,
     compute_hash,
     hmac_sign,
     hmac_verify,
-    verify_hash,
-    verify_sealed_evidence,
     verify_evidence_chain,
+    verify_sealed_evidence,
 )
 from security.supply_chain_validator import (
-    ValidationReport,
-    compare_sboms,
-    validate_artifact_manifest,
-    validate_provenance,
     validate_sbom_integrity,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_requirements(tmp_path: Path, content: str) -> Path:
     """Write a requirements.txt file and return its path."""
@@ -89,15 +76,14 @@ def _seal_record(record: dict, secret: bytes) -> dict:
 # Test 1: SBOM generation from requirements.txt produces valid CycloneDX output
 # ---------------------------------------------------------------------------
 
+
 class TestSBOMGenerationFromRequirements:
     def test_sbom_generated_from_requirements_txt(self, tmp_path: Path) -> None:
         """SBOM generator reads requirements.txt and emits CycloneDX structure."""
         # Arrange: create a minimal root with requirements.txt
         root = tmp_path / "03_core"
         root.mkdir()
-        (root / "requirements.txt").write_text(
-            "requests==2.31.0\nurllib3==2.0.7\n", encoding="utf-8"
-        )
+        (root / "requirements.txt").write_text("requests==2.31.0\nurllib3==2.0.7\n", encoding="utf-8")
 
         # Act
         sbom = generate_cyclonedx_sbom(repo_root=tmp_path, root_filter="03_core")
@@ -126,6 +112,7 @@ class TestSBOMGenerationFromRequirements:
 # ---------------------------------------------------------------------------
 # Test 2: SBOM scanner → ScanReport chain works offline
 # ---------------------------------------------------------------------------
+
 
 class TestSBOMToScannerChain:
     def test_scan_sbom_file_offline_produces_report(self, tmp_path: Path) -> None:
@@ -164,6 +151,7 @@ class TestSBOMToScannerChain:
 # ---------------------------------------------------------------------------
 # Test 3: Verifier chain — HMAC signing → sealed evidence verification
 # ---------------------------------------------------------------------------
+
 
 class TestSignerToVerifierChain:
     def test_hmac_sign_then_verify_passes(self) -> None:
@@ -254,6 +242,7 @@ class TestSignerToVerifierChain:
 # ---------------------------------------------------------------------------
 # Test 4: Supply chain → SBOM integrity cross-check
 # ---------------------------------------------------------------------------
+
 
 class TestSBOMIntegrityChain:
     def test_validate_sbom_integrity_with_correct_hash(self, tmp_path: Path) -> None:

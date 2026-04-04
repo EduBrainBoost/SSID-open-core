@@ -5,4 +5,5 @@ and supply chain validation.
 
 SoT v4.1.0 | ROOT-24-LOCK | Classification: Developer Tools
 """
+
 from __future__ import annotations

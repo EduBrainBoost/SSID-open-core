@@ -17,6 +17,7 @@ Usage:
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import argparse
@@ -25,18 +26,15 @@ import hmac
 import json
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-
 
 # ---------------------------------------------------------------------------
 # Required seal fields (must match security_config.yaml)
 # ---------------------------------------------------------------------------
 
-REQUIRED_SEAL_FIELDS = frozenset(
-    ["evidence_id", "hash", "algorithm", "sealed_at", "signature"]
-)
+REQUIRED_SEAL_FIELDS = frozenset(["evidence_id", "hash", "algorithm", "sealed_at", "signature"])
 
 ALLOWED_HASH_ALGORITHMS = frozenset(["sha256", "sha384", "sha512", "sha3_256", "sha3_512"])
 FORBIDDEN_HASH_ALGORITHMS = frozenset(["md5", "sha1"])
@@ -47,6 +45,7 @@ MIN_SIGNATURE_HEX_LENGTH = 64  # 32 bytes minimum
 # ---------------------------------------------------------------------------
 # Data types
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class VerificationResult:
@@ -77,16 +76,14 @@ class VerificationReport:
             "artifact_id": self.artifact_id,
             "verified_at": self.verified_at,
             "overall_pass": self.overall_pass,
-            "results": [
-                {"check": r.check, "passed": r.passed, "detail": r.detail}
-                for r in self.results
-            ],
+            "results": [{"check": r.check, "passed": r.passed, "detail": r.detail} for r in self.results],
         }
 
 
 # ---------------------------------------------------------------------------
 # Hash integrity
 # ---------------------------------------------------------------------------
+
 
 def compute_hash(data: bytes, algorithm: str = "sha256") -> str:
     """Compute a hex digest using the given algorithm.
@@ -133,6 +130,7 @@ def verify_hash(data: bytes, expected_hex: str, algorithm: str = "sha256") -> bo
 # HMAC-SHA256 signature (symmetric — internal evidence sealing)
 # ---------------------------------------------------------------------------
 
+
 def hmac_sign(payload: bytes, secret: bytes) -> str:
     """Create an HMAC-SHA256 signature.
 
@@ -165,6 +163,7 @@ def hmac_verify(payload: bytes, signature_hex: str, secret: bytes) -> bool:
 # Ed25519 (optional — requires cryptography package)
 # ---------------------------------------------------------------------------
 
+
 def ed25519_verify(
     message: bytes,
     signature_hex: str,
@@ -181,8 +180,8 @@ def ed25519_verify(
         (success, detail_message) tuple.
     """
     try:
-        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
         from cryptography.exceptions import InvalidSignature
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
     except ImportError:
         return False, "cryptography package not installed — Ed25519 unavailable"
 
@@ -199,6 +198,7 @@ def ed25519_verify(
 # ---------------------------------------------------------------------------
 # Sealed evidence verification
 # ---------------------------------------------------------------------------
+
 
 def verify_sealed_evidence(
     record: dict[str, Any],
@@ -223,7 +223,7 @@ def verify_sealed_evidence(
     artifact_id = str(record.get("evidence_id", "<unknown>"))
     report = VerificationReport(
         artifact_id=artifact_id,
-        verified_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        verified_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         overall_pass=True,
     )
 
@@ -250,7 +250,8 @@ def verify_sealed_evidence(
     report.add(
         "signature_length",
         sig_len_ok,
-        f"Signature length {len(sig_hex)} >= {MIN_SIGNATURE_HEX_LENGTH}" if sig_len_ok
+        f"Signature length {len(sig_hex)} >= {MIN_SIGNATURE_HEX_LENGTH}"
+        if sig_len_ok
         else f"Signature too short: {len(sig_hex)} < {MIN_SIGNATURE_HEX_LENGTH}",
     )
 
@@ -290,6 +291,7 @@ def verify_sealed_evidence(
 # Batch evidence chain verifier
 # ---------------------------------------------------------------------------
 
+
 def verify_evidence_chain(
     records: list[dict[str, Any]],
     hmac_secret: bytes | None = None,
@@ -310,17 +312,16 @@ def verify_evidence_chain(
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def main(argv: list[str] | None = None) -> int:
     """Entry point."""
     parser = argparse.ArgumentParser(description="SSID Artifact Signature Verifier")
-    parser.add_argument("--evidence", type=Path, required=True,
-                        help="Path to evidence JSON file (single record or list)")
-    parser.add_argument("--key-file", type=Path, default=None,
-                        help="Path to file containing hex-encoded HMAC secret")
-    parser.add_argument("--output", "-o", type=Path, default=None,
-                        help="Write verification report JSON to this path")
-    parser.add_argument("--fail-on-invalid", action="store_true",
-                        help="Exit non-zero if any verification fails")
+    parser.add_argument(
+        "--evidence", type=Path, required=True, help="Path to evidence JSON file (single record or list)"
+    )
+    parser.add_argument("--key-file", type=Path, default=None, help="Path to file containing hex-encoded HMAC secret")
+    parser.add_argument("--output", "-o", type=Path, default=None, help="Write verification report JSON to this path")
+    parser.add_argument("--fail-on-invalid", action="store_true", help="Exit non-zero if any verification fails")
     args = parser.parse_args(argv)
 
     hmac_secret: bytes | None = None
@@ -335,7 +336,7 @@ def main(argv: list[str] | None = None) -> int:
 
     overall_pass = all(r.overall_pass for r in reports)
     output = {
-        "verified_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "verified_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "overall_pass": overall_pass,
         "record_count": len(reports),
         "pass_count": sum(1 for r in reports if r.overall_pass),
@@ -352,8 +353,7 @@ def main(argv: list[str] | None = None) -> int:
         print(output_json)
 
     status = "PASS" if overall_pass else "FAIL"
-    print(f"\nOverall: {status} ({output['pass_count']}/{output['record_count']} records passed)",
-          file=sys.stderr)
+    print(f"\nOverall: {status} ({output['pass_count']}/{output['record_count']} records passed)", file=sys.stderr)
 
     if args.fail_on_invalid and not overall_pass:
         return 1

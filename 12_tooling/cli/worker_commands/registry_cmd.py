@@ -12,7 +12,7 @@ import argparse
 import hashlib
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -23,7 +23,7 @@ def _validate(args: argparse.Namespace) -> int:
     if not registry_path.exists():
         error = {
             "command": "registry.validate",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "path": str(registry_path),
             "exists": False,
             "status": "failed",
@@ -41,6 +41,7 @@ def _validate(args: argparse.Namespace) -> int:
         elif registry_path.suffix in (".yaml", ".yml"):
             try:
                 import yaml
+
                 data = yaml.safe_load(content)
             except ImportError:
                 issues.append("PyYAML not installed, cannot validate YAML")
@@ -60,7 +61,7 @@ def _validate(args: argparse.Namespace) -> int:
 
     output = {
         "command": "registry.validate",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "path": str(registry_path),
         "sha256": sha256,
         "issues": issues,
@@ -79,7 +80,7 @@ def _sync(args: argparse.Namespace) -> int:
     if not source.exists():
         error = {
             "command": "registry.sync",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "source": str(source),
             "error": "Source does not exist",
             "status": "failed",
@@ -92,7 +93,7 @@ def _sync(args: argparse.Namespace) -> int:
 
     output = {
         "command": "registry.sync",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "source": str(source),
         "target": str(target),
         "source_sha256": source_hash,
@@ -108,7 +109,7 @@ def _status(args: argparse.Namespace) -> int:
     """Report registry worker status."""
     output = {
         "command": "registry.status",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "supported_formats": ["json", "yaml"],
         "hash_algorithm": "sha256",
         "canonical_path": "24_meta_orchestration/registry/",
@@ -147,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         error = {
             "command": f"registry.{args.action}",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "error": str(exc),
             "status": "failed",
         }

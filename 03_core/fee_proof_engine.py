@@ -15,30 +15,32 @@ Referenced in SoT:
 SoT v4.1.0 | ROOT-24-LOCK | Module: 03_core
 Evidence strategy: hash_manifest_only
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import uuid
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from collections.abc import Sequence
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from decimal import Decimal
-from enum import Enum
-from typing import Dict, List, Optional, Sequence
-
+from enum import StrEnum
 
 # ---------------------------------------------------------------------------
 # Domain types
 # ---------------------------------------------------------------------------
 
-class ProofStatus(str, Enum):
+
+class ProofStatus(StrEnum):
     """Status of a fee allocation proof."""
+
     PENDING = "pending"
     VERIFIED = "verified"
     INVALID = "invalid"
 
 
-class FeeBoundary(str, Enum):
+class FeeBoundary(StrEnum):
     """Fee boundary categories from the SSID SoT.
 
     Derived from SSID_structure_gebuehren_abo_modelle.md 7-Säulen-Verteilung:
@@ -48,6 +50,7 @@ class FeeBoundary(str, Enum):
                Liquidity, Marketing)
     - REWARD:  Developer reward (1% developer share)
     """
+
     PEER = "peer"
     PROOF = "proof"
     UTILITY = "utility"
@@ -65,13 +68,14 @@ class AllocationLine:
         amount: Allocated amount as Decimal.
         ratio: Fraction of the total gross fee (0–1).
     """
+
     recipient_id: str
     role: str
     boundary: FeeBoundary
     amount: Decimal
     ratio: Decimal
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         """Canonical dict for hashing — all values as str."""
         return {
             "recipient_id": self.recipient_id,
@@ -97,15 +101,16 @@ class FeeProof:
         parent_proof_id: Optional id of a prior proof in a proof chain.
         merkle_root: Optional Merkle root if this proof is part of a batch.
     """
+
     proof_id: str
     timestamp: str
     gross_amount: Decimal
     fee_boundary: FeeBoundary
-    allocations: List[AllocationLine]
+    allocations: list[AllocationLine]
     proof_hash: str
     status: ProofStatus = ProofStatus.PENDING
-    parent_proof_id: Optional[str] = None
-    merkle_root: Optional[str] = None
+    parent_proof_id: str | None = None
+    merkle_root: str | None = None
 
     # ------------------------------------------------------------------
     # Convenience
@@ -119,7 +124,7 @@ class FeeProof:
         """Return unallocated gross amount (rounding residual)."""
         return self.gross_amount - self.total_allocated()
 
-    def to_audit_dict(self) -> Dict[str, object]:
+    def to_audit_dict(self) -> dict[str, object]:
         """Return PII-free dict for audit logging."""
         return {
             "proof_id": self.proof_id,
@@ -148,9 +153,10 @@ class BatchProof:
         total_gross: Sum of all gross amounts in the batch.
         status: Verification status.
     """
+
     batch_id: str
     timestamp: str
-    proof_ids: List[str]
+    proof_ids: list[str]
     merkle_root: str
     total_gross: Decimal
     status: ProofStatus = ProofStatus.PENDING
@@ -159,6 +165,7 @@ class BatchProof:
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
+
 
 class FeeProofEngine:
     """Generates and verifies cryptographic proofs of fee allocations.
@@ -199,9 +206,9 @@ class FeeProofEngine:
 
     def __init__(self) -> None:
         # Ledger: proof_id -> FeeProof
-        self._ledger: Dict[str, FeeProof] = {}
+        self._ledger: dict[str, FeeProof] = {}
         # Batch ledger: batch_id -> BatchProof
-        self._batch_ledger: Dict[str, BatchProof] = {}
+        self._batch_ledger: dict[str, BatchProof] = {}
 
     # ------------------------------------------------------------------
     # Proof generation
@@ -212,7 +219,7 @@ class FeeProofEngine:
         gross_amount: Decimal,
         fee_boundary: FeeBoundary,
         allocations: Sequence[AllocationLine],
-        parent_proof_id: Optional[str] = None,
+        parent_proof_id: str | None = None,
     ) -> FeeProof:
         """Generate a new fee allocation proof.
 
@@ -232,7 +239,7 @@ class FeeProofEngine:
             raise ValueError("gross_amount must not be negative")
 
         proof_id = uuid.uuid4().hex[:16]
-        timestamp = datetime.now(timezone.utc).isoformat()
+        timestamp = datetime.now(UTC).isoformat()
 
         proof_hash = self._compute_proof_hash(
             proof_id=proof_id,
@@ -312,9 +319,7 @@ class FeeProofEngine:
     # Batch operations
     # ------------------------------------------------------------------
 
-    def generate_batch_proof(
-        self, proof_ids: Sequence[str]
-    ) -> BatchProof:
+    def generate_batch_proof(self, proof_ids: Sequence[str]) -> BatchProof:
         """Generate a Merkle-style batch proof over a set of FeeProofs.
 
         The Merkle root is the SHA-256 of the space-joined sorted proof
@@ -331,19 +336,15 @@ class FeeProofEngine:
         """
         missing = [pid for pid in proof_ids if pid not in self._ledger]
         if missing:
-            raise ValueError(
-                f"Proof IDs not found in ledger: {', '.join(missing)}"
-            )
+            raise ValueError(f"Proof IDs not found in ledger: {', '.join(missing)}")
 
         proofs = [self._ledger[pid] for pid in proof_ids]
         sorted_hashes = sorted(p.proof_hash for p in proofs)
-        merkle_root = hashlib.sha256(
-            " ".join(sorted_hashes).encode("utf-8")
-        ).hexdigest()
+        merkle_root = hashlib.sha256(" ".join(sorted_hashes).encode("utf-8")).hexdigest()
 
         total_gross = sum(p.gross_amount for p in proofs)
         batch_id = uuid.uuid4().hex[:16]
-        timestamp = datetime.now(timezone.utc).isoformat()
+        timestamp = datetime.now(UTC).isoformat()
 
         # Annotate individual proofs with the batch merkle_root
         for p in proofs:
@@ -364,19 +365,19 @@ class FeeProofEngine:
     # Ledger access
     # ------------------------------------------------------------------
 
-    def get_proof(self, proof_id: str) -> Optional[FeeProof]:
+    def get_proof(self, proof_id: str) -> FeeProof | None:
         """Return a FeeProof by id, or None."""
         return self._ledger.get(proof_id)
 
-    def get_batch_proof(self, batch_id: str) -> Optional[BatchProof]:
+    def get_batch_proof(self, batch_id: str) -> BatchProof | None:
         """Return a BatchProof by id, or None."""
         return self._batch_ledger.get(batch_id)
 
-    def all_proofs(self) -> List[FeeProof]:
+    def all_proofs(self) -> list[FeeProof]:
         """Return a copy of all registered FeeProofs."""
         return list(self._ledger.values())
 
-    def all_batch_proofs(self) -> List[BatchProof]:
+    def all_batch_proofs(self) -> list[BatchProof]:
         """Return a copy of all registered BatchProofs."""
         return list(self._batch_ledger.values())
 
@@ -390,11 +391,11 @@ class FeeProofEngine:
         timestamp: str,
         gross_amount: Decimal,
         fee_boundary: FeeBoundary,
-        allocations: List[AllocationLine],
-        parent_proof_id: Optional[str],
+        allocations: list[AllocationLine],
+        parent_proof_id: str | None,
     ) -> str:
         """Compute deterministic SHA-256 proof hash."""
-        payload: Dict[str, object] = {
+        payload: dict[str, object] = {
             "proof_id": proof_id,
             "timestamp": timestamp,
             "gross_amount": str(gross_amount),

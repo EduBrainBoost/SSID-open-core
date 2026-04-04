@@ -6,6 +6,7 @@ enforcement, and evidence generation.
 
 Root: 03_core | Shard: 01_identitaet_personen
 """
+
 from __future__ import annotations
 
 import sys
@@ -19,7 +20,6 @@ if str(SHARD_SRC) not in sys.path:
     sys.path.insert(0, str(SHARD_SRC))
 
 from identity_resolver import IdentityResolver
-
 
 # ---------------------------------------------------------------------------
 # IdentityResolver tests
@@ -82,9 +82,8 @@ class TestIdentityResolverRegistration:
 try:
     # Module may be named with leading digits; use importlib
     import importlib.util
-    _spec = importlib.util.spec_from_file_location(
-        "identitaet_module", SHARD_SRC / "01_identitaet_personen_module.py"
-    )
+
+    _spec = importlib.util.spec_from_file_location("identitaet_module", SHARD_SRC / "01_identitaet_personen_module.py")
     _mod = importlib.util.module_from_spec(_spec)
     _spec.loader.exec_module(_mod)  # type: ignore[union-attr]
     Validator = _mod.Validator

@@ -3,6 +3,7 @@
 
 pytest-compatible, also runnable as plain unittest.
 """
+
 from __future__ import annotations
 
 import sys
@@ -21,10 +22,10 @@ from fee_proof_engine import (
     ProofStatus,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_lines(boundary: FeeBoundary = FeeBoundary.PEER) -> list:
     return [
@@ -49,8 +50,8 @@ def _make_lines(boundary: FeeBoundary = FeeBoundary.PEER) -> list:
 # AllocationLine tests
 # ---------------------------------------------------------------------------
 
-class TestAllocationLine(unittest.TestCase):
 
+class TestAllocationLine(unittest.TestCase):
     def test_to_dict_all_strings(self) -> None:
         line = AllocationLine(
             recipient_id="did:ssid:x",
@@ -68,11 +69,13 @@ class TestAllocationLine(unittest.TestCase):
 
     def test_frozen(self) -> None:
         line = AllocationLine(
-            recipient_id="x", role="r",
+            recipient_id="x",
+            role="r",
             boundary=FeeBoundary.PEER,
-            amount=Decimal("1"), ratio=Decimal("0.01"),
+            amount=Decimal("1"),
+            ratio=Decimal("0.01"),
         )
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             line.role = "changed"  # type: ignore[misc]
 
 
@@ -80,8 +83,8 @@ class TestAllocationLine(unittest.TestCase):
 # FeeProofEngine tests
 # ---------------------------------------------------------------------------
 
-class TestFeeProofEngine(unittest.TestCase):
 
+class TestFeeProofEngine(unittest.TestCase):
     def setUp(self) -> None:
         self.engine = FeeProofEngine()
 
@@ -138,7 +141,8 @@ class TestFeeProofEngine(unittest.TestCase):
     def test_verify_proof_allocation_exceeds_gross(self) -> None:
         lines = [
             AllocationLine(
-                recipient_id="x", role="r",
+                recipient_id="x",
+                role="r",
                 boundary=FeeBoundary.UTILITY,
                 amount=Decimal("999999.00"),
                 ratio=Decimal("0.99"),
@@ -251,9 +255,7 @@ class TestFeeProofEngine(unittest.TestCase):
 
     def test_all_fee_boundaries(self) -> None:
         for boundary in FeeBoundary:
-            proof = self.engine.generate_proof(
-                Decimal("50"), boundary, []
-            )
+            proof = self.engine.generate_proof(Decimal("50"), boundary, [])
             self.assertTrue(self.engine.verify_proof(proof))
 
 

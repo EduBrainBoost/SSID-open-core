@@ -7,20 +7,22 @@ fee schedule for all supported verification types.
 Registry import path (orchestrator):
     03_core.identity_fee_router
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from decimal import Decimal, ROUND_HALF_UP
-from enum import Enum
-from typing import Dict, List, Optional, Sequence
-
+from collections.abc import Sequence
+from dataclasses import dataclass
+from decimal import ROUND_HALF_UP, Decimal
+from enum import StrEnum
 
 # ---------------------------------------------------------------------------
 # Domain types
 # ---------------------------------------------------------------------------
 
-class VerificationType(str, Enum):
+
+class VerificationType(StrEnum):
     """Categories of identity verification supported by the SSID network."""
+
     EMAIL = "email"
     PHONE = "phone"
     GOVERNMENT_ID = "government_id"
@@ -41,16 +43,15 @@ class ValidatorProfile:
             validators share a verification type.
         address: Optional settlement address / account reference.
     """
+
     validator_id: str
-    supported_types: List[VerificationType]
+    supported_types: list[VerificationType]
     reliability_score: float = 1.0
-    address: Optional[str] = None
+    address: str | None = None
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.reliability_score <= 1.0:
-            raise ValueError(
-                f"reliability_score must be in [0, 1], got {self.reliability_score}"
-            )
+            raise ValueError(f"reliability_score must be in [0, 1], got {self.reliability_score}")
         if not self.supported_types:
             raise ValueError("supported_types must not be empty")
 
@@ -66,9 +67,10 @@ class RoutingResult:
         platform_fee: Amount retained by the platform.
         residual: Unallocated remainder due to rounding (typically near-zero).
     """
+
     verification_type: VerificationType
     total_fee: Decimal
-    validator_allocations: Dict[str, Decimal]
+    validator_allocations: dict[str, Decimal]
     platform_fee: Decimal = Decimal("0")
     residual: Decimal = Decimal("0")
 
@@ -88,6 +90,7 @@ class FeeScheduleEntry:
         developer_percent: Developer reward as percentage of tx value (canonical: 1.0).
         treasury_percent: System treasury as percentage of tx value (canonical: 2.0).
     """
+
     verification_type: VerificationType
     total_fee_percent: Decimal = Decimal("3.0")
     developer_percent: Decimal = Decimal("1.0")
@@ -111,7 +114,7 @@ class FeeScheduleEntry:
 # Canonical fee model: 3% of transaction value for all verification types.
 # Allocation: 1% developer reward, 2% system treasury.
 # Per-type entries preserved for routing/auditing; all use canonical percentages.
-DEFAULT_FEE_SCHEDULE: Dict[VerificationType, FeeScheduleEntry] = {
+DEFAULT_FEE_SCHEDULE: dict[VerificationType, FeeScheduleEntry] = {
     VerificationType.EMAIL: FeeScheduleEntry(VerificationType.EMAIL),
     VerificationType.PHONE: FeeScheduleEntry(VerificationType.PHONE),
     VerificationType.GOVERNMENT_ID: FeeScheduleEntry(VerificationType.GOVERNMENT_ID),
@@ -124,6 +127,7 @@ DEFAULT_FEE_SCHEDULE: Dict[VerificationType, FeeScheduleEntry] = {
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
+
 
 class IdentityFeeRouter:
     """Routes identity verification fees to validators in the SSID network.
@@ -159,7 +163,7 @@ class IdentityFeeRouter:
 
     def __init__(
         self,
-        fee_schedule: Optional[Dict[VerificationType, FeeScheduleEntry]] = None,
+        fee_schedule: dict[VerificationType, FeeScheduleEntry] | None = None,
     ) -> None:
         """Initialise the router.
 
@@ -167,17 +171,15 @@ class IdentityFeeRouter:
             fee_schedule: Optional override for the fee schedule. Missing
                 verification types fall back to ``DEFAULT_FEE_SCHEDULE``.
         """
-        self._fee_schedule: Dict[VerificationType, FeeScheduleEntry] = dict(
-            DEFAULT_FEE_SCHEDULE
-        )
+        self._fee_schedule: dict[VerificationType, FeeScheduleEntry] = dict(DEFAULT_FEE_SCHEDULE)
         if fee_schedule:
             self._fee_schedule.update(fee_schedule)
 
         # Earnings ledger: validator_id → cumulative earnings
-        self._validator_earnings: Dict[str, Decimal] = {}
+        self._validator_earnings: dict[str, Decimal] = {}
 
         # Routing history
-        self._routing_history: List[RoutingResult] = []
+        self._routing_history: list[RoutingResult] = []
 
     # ------------------------------------------------------------------
     # Public API
@@ -187,9 +189,9 @@ class IdentityFeeRouter:
         self,
         verification_type: VerificationType,
         tx_value: Decimal,
-        eligible_validators: Optional[Sequence[ValidatorProfile]] = None,
+        eligible_validators: Sequence[ValidatorProfile] | None = None,
         *,
-        amount: Optional[Decimal] = None,
+        amount: Decimal | None = None,
     ) -> RoutingResult:
         """Route canonical 3% fee for *verification_type* to eligible validators.
 
@@ -215,37 +217,26 @@ class IdentityFeeRouter:
             raise ValueError("tx_value must not be negative")
 
         schedule_entry = self._fee_schedule.get(verification_type)
-        total_pct = Decimal(str(
-            schedule_entry.total_fee_percent if schedule_entry else Decimal("3.0")
-        )) / Decimal("100")
-        dev_pct = Decimal(str(
-            schedule_entry.developer_percent if schedule_entry else Decimal("1.0")
-        )) / Decimal("100")
-        treasury_pct = Decimal(str(
-            schedule_entry.treasury_percent if schedule_entry else Decimal("2.0")
-        )) / Decimal("100")
+        total_pct = Decimal(str(schedule_entry.total_fee_percent if schedule_entry else Decimal("3.0"))) / Decimal(
+            "100"
+        )
+        dev_pct = Decimal(str(schedule_entry.developer_percent if schedule_entry else Decimal("1.0"))) / Decimal("100")
+        treasury_pct = Decimal(str(schedule_entry.treasury_percent if schedule_entry else Decimal("2.0"))) / Decimal(
+            "100"
+        )
 
         quantize_unit = Decimal("0.000001")
 
-        effective_amount = (tx_value * total_pct).quantize(
-            quantize_unit, rounding=ROUND_HALF_UP
-        )
-        platform_fee = (tx_value * treasury_pct).quantize(
-            quantize_unit, rounding=ROUND_HALF_UP
-        )
-        validator_pool = (tx_value * dev_pct).quantize(
-            quantize_unit, rounding=ROUND_HALF_UP
-        )
+        effective_amount = (tx_value * total_pct).quantize(quantize_unit, rounding=ROUND_HALF_UP)
+        platform_fee = (tx_value * treasury_pct).quantize(quantize_unit, rounding=ROUND_HALF_UP)
+        validator_pool = (tx_value * dev_pct).quantize(quantize_unit, rounding=ROUND_HALF_UP)
 
         # Filter validators that support this verification type
-        capable_validators: List[ValidatorProfile] = []
+        capable_validators: list[ValidatorProfile] = []
         if eligible_validators:
-            capable_validators = [
-                v for v in eligible_validators
-                if verification_type in v.supported_types
-            ]
+            capable_validators = [v for v in eligible_validators if verification_type in v.supported_types]
 
-        validator_allocations: Dict[str, Decimal] = {}
+        validator_allocations: dict[str, Decimal] = {}
         allocated = Decimal("0")
 
         if capable_validators and validator_pool > Decimal("0"):
@@ -256,19 +247,13 @@ class IdentityFeeRouter:
                 if total_reliability == 0.0:
                     share = Decimal("0")
                 else:
-                    ratio = Decimal(
-                        str(validator.reliability_score / total_reliability)
-                    )
-                    share = (validator_pool * ratio).quantize(
-                        quantize_unit, rounding=ROUND_HALF_UP
-                    )
+                    ratio = Decimal(str(validator.reliability_score / total_reliability))
+                    share = (validator_pool * ratio).quantize(quantize_unit, rounding=ROUND_HALF_UP)
                 validator_allocations[vid] = share
                 allocated += share
 
                 # Update ledger
-                self._validator_earnings[vid] = (
-                    self._validator_earnings.get(vid, Decimal("0")) + share
-                )
+                self._validator_earnings[vid] = self._validator_earnings.get(vid, Decimal("0")) + share
         else:
             # No capable validators — validator pool absorbed into platform
             platform_fee += validator_pool
@@ -298,7 +283,7 @@ class IdentityFeeRouter:
         """
         return self._validator_earnings.get(validator_id, Decimal("0"))
 
-    def get_fee_schedule(self) -> Dict[VerificationType, FeeScheduleEntry]:
+    def get_fee_schedule(self) -> dict[VerificationType, FeeScheduleEntry]:
         """Return a copy of the current fee schedule.
 
         Returns:
@@ -319,11 +304,11 @@ class IdentityFeeRouter:
         """
         self._fee_schedule[verification_type] = entry
 
-    def get_routing_history(self) -> List[RoutingResult]:
+    def get_routing_history(self) -> list[RoutingResult]:
         """Return the full history of routing operations (read-only copy)."""
         return list(self._routing_history)
 
-    def get_all_validator_earnings(self) -> Dict[str, Decimal]:
+    def get_all_validator_earnings(self) -> dict[str, Decimal]:
         """Return a copy of the full validator earnings ledger."""
         return dict(self._validator_earnings)
 

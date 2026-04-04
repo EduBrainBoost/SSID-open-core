@@ -3,11 +3,11 @@
 
 pytest-compatible, also runnable as plain unittest.
 """
+
 from __future__ import annotations
 
 import sys
 import unittest
-from decimal import Decimal
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -21,13 +21,12 @@ from participants import (
     RevenueParticipant,
 )
 
-
 # ---------------------------------------------------------------------------
 # FeeParticipant tests
 # ---------------------------------------------------------------------------
 
-class TestFeeParticipant(unittest.TestCase):
 
+class TestFeeParticipant(unittest.TestCase):
     def _make_fee_participant(self, **kwargs) -> FeeParticipant:
         defaults = dict(
             participant_id="fp-001",
@@ -110,8 +109,8 @@ class TestFeeParticipant(unittest.TestCase):
 # RevenueParticipant tests
 # ---------------------------------------------------------------------------
 
-class TestRevenueParticipant(unittest.TestCase):
 
+class TestRevenueParticipant(unittest.TestCase):
     def _make_revenue_participant(self, **kwargs) -> RevenueParticipant:
         defaults = dict(
             participant_id="rp-001",
@@ -200,8 +199,8 @@ class TestRevenueParticipant(unittest.TestCase):
 # ParticipantRegistry tests
 # ---------------------------------------------------------------------------
 
-class TestParticipantRegistry(unittest.TestCase):
 
+class TestParticipantRegistry(unittest.TestCase):
     def _make_fee(self, pid: str = "fp-001") -> FeeParticipant:
         return FeeParticipant(
             participant_id=pid,
@@ -236,10 +235,7 @@ class TestParticipantRegistry(unittest.TestCase):
         reg = ParticipantRegistry()
         p1 = FeeParticipant("fp-1", "A", [FeeCategory.PEER])
         p2 = FeeParticipant("fp-2", "B", [FeeCategory.UTILITY])
-        p3 = FeeParticipant(
-            "fp-3", "C", [FeeCategory.PEER],
-            status=ParticipantStatus.SUSPENDED
-        )
+        p3 = FeeParticipant("fp-3", "C", [FeeCategory.PEER], status=ParticipantStatus.SUSPENDED)
         for p in (p1, p2, p3):
             reg.register_fee_participant(p)
 
@@ -264,7 +260,9 @@ class TestParticipantRegistry(unittest.TestCase):
         p1 = RevenueParticipant("rp-1", "A", [RevenueCategory.DAO_TREASURY])
         p2 = RevenueParticipant("rp-2", "B", [RevenueCategory.DEVELOPER_CORE])
         p3 = RevenueParticipant(
-            "rp-3", "C", [RevenueCategory.DAO_TREASURY],
+            "rp-3",
+            "C",
+            [RevenueCategory.DAO_TREASURY],
             status=ParticipantStatus.RETIRED,
         )
         for p in (p1, p2, p3):

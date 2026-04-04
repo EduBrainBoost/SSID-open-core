@@ -20,8 +20,7 @@ import hashlib
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, FrozenSet, List, Optional, Set
-
+from typing import Any
 
 # ======================================================================
 # Constants
@@ -32,33 +31,37 @@ MAX_STALENESS_SECONDS = 24 * 3600
 
 # ISO 3166-1 alpha-2 codes for jurisdictions with comprehensive sanctions
 # (OFAC, EU, UN). These are BLOCKED unconditionally.
-BLACKLISTED_JURISDICTIONS: FrozenSet[str] = frozenset({
-    "IR",  # Iran
-    "KP",  # North Korea (DPRK)
-    "SY",  # Syria
-    "CU",  # Cuba
-})
+BLACKLISTED_JURISDICTIONS: frozenset[str] = frozenset(
+    {
+        "IR",  # Iran
+        "KP",  # North Korea (DPRK)
+        "SY",  # Syria
+        "CU",  # Cuba
+    }
+)
 
 # Additional high-risk jurisdictions requiring enhanced screening
-HIGH_RISK_JURISDICTIONS: FrozenSet[str] = frozenset({
-    "AF",  # Afghanistan
-    "BY",  # Belarus
-    "MM",  # Myanmar
-    "RU",  # Russia
-    "VE",  # Venezuela
-    "YE",  # Yemen
-    "ZW",  # Zimbabwe
-})
+HIGH_RISK_JURISDICTIONS: frozenset[str] = frozenset(
+    {
+        "AF",  # Afghanistan
+        "BY",  # Belarus
+        "MM",  # Myanmar
+        "RU",  # Russia
+        "VE",  # Venezuela
+        "YE",  # Yemen
+        "ZW",  # Zimbabwe
+    }
+)
 
 
 class SanctionsListSource(Enum):
     """Known sanctions list sources."""
 
-    OFAC_SDN = "ofac_sdn"              # US OFAC Specially Designated Nationals
+    OFAC_SDN = "ofac_sdn"  # US OFAC Specially Designated Nationals
     OFAC_CONSOLIDATED = "ofac_consolidated"
     EU_CONSOLIDATED = "eu_consolidated"
     UN_CONSOLIDATED = "un_consolidated"
-    UK_OFSI = "uk_ofsi"               # UK Office of Financial Sanctions
+    UK_OFSI = "uk_ofsi"  # UK Office of Financial Sanctions
     CUSTOM = "custom"
 
 
@@ -83,6 +86,7 @@ class RiskLevel(Enum):
 # Data Models
 # ======================================================================
 
+
 @dataclass(frozen=True)
 class SanctionsListMetadata:
     """Metadata for a loaded sanctions list — no raw data stored."""
@@ -90,7 +94,7 @@ class SanctionsListMetadata:
     source: SanctionsListSource
     entry_count: int
     loaded_at: float
-    list_hash: str          # SHA-256 of the full list for integrity
+    list_hash: str  # SHA-256 of the full list for integrity
 
     @property
     def age_seconds(self) -> float:
@@ -100,7 +104,7 @@ class SanctionsListMetadata:
     def is_stale(self) -> bool:
         return self.age_seconds > MAX_STALENESS_SECONDS
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "source": self.source.value,
             "entry_count": self.entry_count,
@@ -118,18 +122,19 @@ class ScreeningReport:
     entity_hash: str
     result: ScreeningResult
     risk_level: RiskLevel
-    matched_sources: frozenset       # set of SanctionsListSource values
+    matched_sources: frozenset  # set of SanctionsListSource values
     detail: str
     evidence_hash: str = ""
     screened_at: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "entity_hash": self.entity_hash,
             "result": self.result.value,
             "risk_level": self.risk_level.value,
-            "matched_sources": sorted(s.value if isinstance(s, SanctionsListSource) else s
-                                       for s in self.matched_sources),
+            "matched_sources": sorted(
+                s.value if isinstance(s, SanctionsListSource) else s for s in self.matched_sources
+            ),
             "detail": self.detail,
             "evidence_hash": self.evidence_hash,
             "screened_at": self.screened_at,
@@ -139,6 +144,7 @@ class ScreeningReport:
 # ======================================================================
 # Global Sanctions Screening Engine
 # ======================================================================
+
 
 class GlobalSanctionsEngine:
     """Hash-based global sanctions screening engine.
@@ -150,9 +156,9 @@ class GlobalSanctionsEngine:
 
     def __init__(self) -> None:
         # source → set of entity hashes
-        self._lists: Dict[SanctionsListSource, Set[str]] = {}
+        self._lists: dict[SanctionsListSource, set[str]] = {}
         # source → metadata
-        self._metadata: Dict[SanctionsListSource, SanctionsListMetadata] = {}
+        self._metadata: dict[SanctionsListSource, SanctionsListMetadata] = {}
 
     # ------------------------------------------------------------------
     # List Management
@@ -161,7 +167,7 @@ class GlobalSanctionsEngine:
     def load_list(
         self,
         source: SanctionsListSource,
-        entity_hashes: Set[str],
+        entity_hashes: set[str],
     ) -> SanctionsListMetadata:
         """Load a pre-hashed sanctions list.
 
@@ -185,16 +191,14 @@ class GlobalSanctionsEngine:
         return meta
 
     def get_list_metadata(
-        self, source: SanctionsListSource,
-    ) -> Optional[SanctionsListMetadata]:
+        self,
+        source: SanctionsListSource,
+    ) -> SanctionsListMetadata | None:
         return self._metadata.get(source)
 
-    def check_staleness(self) -> Dict[SanctionsListSource, bool]:
+    def check_staleness(self) -> dict[SanctionsListSource, bool]:
         """Return staleness status for all loaded lists."""
-        return {
-            source: meta.is_stale
-            for source, meta in self._metadata.items()
-        }
+        return {source: meta.is_stale for source, meta in self._metadata.items()}
 
     def has_stale_lists(self) -> bool:
         """Return True if any loaded list exceeds 24 h staleness."""
@@ -207,9 +211,7 @@ class GlobalSanctionsEngine:
     @staticmethod
     def hash_entity(identifier: str) -> str:
         """Normalise and SHA-256-hash an entity identifier."""
-        return hashlib.sha256(
-            identifier.strip().lower().encode("utf-8")
-        ).hexdigest()
+        return hashlib.sha256(identifier.strip().lower().encode("utf-8")).hexdigest()
 
     def screen_entity(self, identifier: str) -> ScreeningReport:
         """Screen an entity identifier against all loaded sanctions lists.
@@ -234,9 +236,7 @@ class GlobalSanctionsEngine:
 
         # Fail-closed: stale data
         if self.has_stale_lists():
-            stale_sources = [
-                s for s, meta in self._metadata.items() if meta.is_stale
-            ]
+            stale_sources = [s for s, meta in self._metadata.items() if meta.is_stale]
             return ScreeningReport(
                 entity_hash=entity_hash,
                 result=ScreeningResult.STALE_DATA,
@@ -247,7 +247,7 @@ class GlobalSanctionsEngine:
             )
 
         # Check entity against all lists
-        matched: Set[SanctionsListSource] = set()
+        matched: set[SanctionsListSource] = set()
         for source, hashes in self._lists.items():
             if entity_hash in hashes:
                 matched.add(source)
@@ -320,7 +320,7 @@ class GlobalSanctionsEngine:
         self,
         identifier: str,
         country_code: str,
-    ) -> List[ScreeningReport]:
+    ) -> list[ScreeningReport]:
         """Run entity + jurisdiction screening. Returns list of reports."""
         return [
             self.screen_entity(identifier),

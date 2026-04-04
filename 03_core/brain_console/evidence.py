@@ -1,13 +1,14 @@
 """Evidence logging with SHA-256 integrity for brain console interactions."""
+
 from __future__ import annotations
 
 import datetime as dt
 import hashlib
 import json
 import uuid
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 @dataclass
@@ -15,10 +16,9 @@ class EvidenceEntry:
     """Immutable evidence record for a single brain console interaction."""
 
     entry_id: str = field(default_factory=lambda: f"ev_{uuid.uuid4().hex[:16]}")
-    timestamp: str = field(default_factory=lambda: (
-        dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
-        .isoformat().replace("+00:00", "Z")
-    ))
+    timestamp: str = field(
+        default_factory=lambda: dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    )
     sha256: str = ""
     payload_ref: str = ""
     session_id: str = ""
@@ -27,10 +27,10 @@ class EvidenceEntry:
     query_hash: str = ""
     response_hash: str = ""
     policy_decision: str = ""
-    context_summary: Dict[str, Any] = field(default_factory=dict)
+    context_summary: dict[str, Any] = field(default_factory=dict)
     evidence_hash: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return asdict(self)
 
@@ -50,7 +50,7 @@ class BrainEvidenceLogger:
         If None, operates in memory-only mode.
     """
 
-    def __init__(self, evidence_root: Optional[Path] = None) -> None:
+    def __init__(self, evidence_root: Path | None = None) -> None:
         self._root = Path(evidence_root) if evidence_root else None
         if self._root is not None:
             self._root.mkdir(parents=True, exist_ok=True)
@@ -63,7 +63,7 @@ class BrainEvidenceLogger:
         query: str,
         response: str,
         policy_decision: str,
-        context_summary: Optional[Dict[str, Any]] = None,
+        context_summary: dict[str, Any] | None = None,
     ) -> EvidenceEntry:
         """Create and persist an evidence entry for a brain console interaction.
 

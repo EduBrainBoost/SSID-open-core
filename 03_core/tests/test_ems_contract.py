@@ -1,16 +1,20 @@
 """Tests for ems_contract.py — EMS-compatible schema P4.5."""
+
 from __future__ import annotations
+
 import json
 import sys
 from pathlib import Path
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ems_contract import (
-    SCHEMA_VERSION, PolicyDecisionPayload, FlowStatusPayload,
-    ModuleHealthPayload, CORE_MODULES, get_module_health_payloads,
+    CORE_MODULES,
+    SCHEMA_VERSION,
+    FlowStatusPayload,
+    ModuleHealthPayload,
+    PolicyDecisionPayload,
+    get_module_health_payloads,
 )
 
 

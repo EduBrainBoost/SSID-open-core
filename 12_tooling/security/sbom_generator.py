@@ -16,6 +16,7 @@ Usage:
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import argparse
@@ -26,10 +27,9 @@ import re
 import subprocess
 import sys
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -41,13 +41,30 @@ GENERATOR = "ssid-sbom-generator"
 SOT_VERSION = "4.1.0"
 
 SSID_ROOTS = [
-    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-    "05_documentation", "06_data_pipeline", "07_governance_legal",
-    "08_identity_score", "09_meta_identity", "10_interoperability",
-    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
-    "15_infra", "16_codex", "17_observability", "18_data_layer",
-    "19_adapters", "20_foundation", "21_post_quantum_crypto", "22_datasets",
-    "23_compliance", "24_meta_orchestration",
+    "01_ai_layer",
+    "02_audit_logging",
+    "03_core",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "12_tooling",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "16_codex",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
+    "23_compliance",
+    "24_meta_orchestration",
 ]
 
 # Secret patterns — output is scrubbed before writing.
@@ -65,6 +82,7 @@ _SECRET_PATTERNS = [
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _sha256(data: bytes | str) -> str:
     """Return SHA-256 hex digest of bytes or UTF-8 string."""
@@ -101,6 +119,7 @@ def _bom_ref(name: str, version: str) -> str:
 # Python dependency parsers
 # ---------------------------------------------------------------------------
 
+
 def _parse_requirements(path: Path) -> list[dict[str, str]]:
     """Parse requirements.txt / requirements.lock style file."""
     components: list[dict[str, str]] = []
@@ -110,14 +129,16 @@ def _parse_requirements(path: Path) -> list[dict[str, str]]:
             continue
         m = re.match(r"^([A-Za-z0-9_.-]+)==([^\s;#]+)", line)
         if m:
-            components.append({
-                "type": "library",
-                "name": m.group(1).lower(),
-                "version": m.group(2),
-                "purl": f"pkg:pypi/{m.group(1).lower()}@{m.group(2)}",
-                "bom-ref": _bom_ref(m.group(1), m.group(2)),
-                "source": path.name,
-            })
+            components.append(
+                {
+                    "type": "library",
+                    "name": m.group(1).lower(),
+                    "version": m.group(2),
+                    "purl": f"pkg:pypi/{m.group(1).lower()}@{m.group(2)}",
+                    "bom-ref": _bom_ref(m.group(1), m.group(2)),
+                    "source": path.name,
+                }
+            )
     return components
 
 
@@ -131,14 +152,16 @@ def _parse_poetry_lock(path: Path) -> list[dict[str, str]]:
         ver_m = re.search(r'^version\s*=\s*"([^"]+)"', block, re.MULTILINE)
         if name_m and ver_m:
             name, ver = name_m.group(1).lower(), ver_m.group(1)
-            components.append({
-                "type": "library",
-                "name": name,
-                "version": ver,
-                "purl": f"pkg:pypi/{name}@{ver}",
-                "bom-ref": _bom_ref(name, ver),
-                "source": "poetry.lock",
-            })
+            components.append(
+                {
+                    "type": "library",
+                    "name": name,
+                    "version": ver,
+                    "purl": f"pkg:pypi/{name}@{ver}",
+                    "bom-ref": _bom_ref(name, ver),
+                    "source": "poetry.lock",
+                }
+            )
     return components
 
 
@@ -146,7 +169,9 @@ def _pip_freeze_components() -> list[dict[str, str]]:
     """Collect installed packages via pip freeze as last-resort fallback."""
     result = subprocess.run(
         [sys.executable, "-m", "pip", "freeze", "--local"],
-        capture_output=True, text=True, check=False,
+        capture_output=True,
+        text=True,
+        check=False,
     )
     components: list[dict[str, str]] = []
     for line in result.stdout.splitlines():
@@ -156,20 +181,23 @@ def _pip_freeze_components() -> list[dict[str, str]]:
         m = re.match(r"^([A-Za-z0-9_.-]+)==([^\s;#]+)", line)
         if m:
             name, ver = m.group(1).lower(), m.group(2)
-            components.append({
-                "type": "library",
-                "name": name,
-                "version": ver,
-                "purl": f"pkg:pypi/{name}@{ver}",
-                "bom-ref": _bom_ref(name, ver),
-                "source": "pip_freeze",
-            })
+            components.append(
+                {
+                    "type": "library",
+                    "name": name,
+                    "version": ver,
+                    "purl": f"pkg:pypi/{name}@{ver}",
+                    "bom-ref": _bom_ref(name, ver),
+                    "source": "pip_freeze",
+                }
+            )
     return components
 
 
 # ---------------------------------------------------------------------------
 # npm dependency parsers
 # ---------------------------------------------------------------------------
+
 
 def _parse_package_lock(path: Path) -> list[dict[str, str]]:
     """Parse package-lock.json v2/v3 for npm components."""
@@ -183,22 +211,25 @@ def _parse_package_lock(path: Path) -> list[dict[str, str]]:
     for pkg_path, info in packages.items():
         if not pkg_path or pkg_path == "":
             continue  # skip root
-        name = pkg_path.lstrip("node_modules/").split("/node_modules/")[-1]
+        name = pkg_path.removeprefix("node_modules/").split("/node_modules/")[-1]
         ver = info.get("version", "unknown")
-        components.append({
-            "type": "library",
-            "name": name,
-            "version": ver,
-            "purl": f"pkg:npm/{name}@{ver}",
-            "bom-ref": _bom_ref(name, ver),
-            "source": "package-lock.json",
-        })
+        components.append(
+            {
+                "type": "library",
+                "name": name,
+                "version": ver,
+                "purl": f"pkg:npm/{name}@{ver}",
+                "bom-ref": _bom_ref(name, ver),
+                "source": "package-lock.json",
+            }
+        )
     return components
 
 
 # ---------------------------------------------------------------------------
 # Root scanner
 # ---------------------------------------------------------------------------
+
 
 def scan_root(root_dir: Path) -> list[dict[str, str]]:
     """Scan a single SSID root for dependencies.
@@ -262,6 +293,7 @@ def scan_all_roots(repo_root: Path) -> list[dict[str, Any]]:
 # CycloneDX SBOM builder
 # ---------------------------------------------------------------------------
 
+
 def generate_cyclonedx_sbom(
     repo_root: Path,
     root_filter: str | None = None,
@@ -282,7 +314,7 @@ def generate_cyclonedx_sbom(
         components = scan_all_roots(repo_root)
 
     bom_serial = f"urn:uuid:{uuid.uuid4()}"
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     return {
         "bomFormat": "CycloneDX",
@@ -316,15 +348,15 @@ def generate_cyclonedx_sbom(
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def main(argv: list[str] | None = None) -> int:
     """Entry point."""
     parser = argparse.ArgumentParser(description="SSID CycloneDX SBOM Generator")
-    parser.add_argument("--output", "-o", type=Path, required=True,
-                        help="Output path for the CycloneDX SBOM JSON")
-    parser.add_argument("--repo-root", type=Path, default=None,
-                        help="SSID repo root (default: auto-detect from script location)")
-    parser.add_argument("--root", type=str, default=None,
-                        help="Only scan this SSID root (e.g. '03_core')")
+    parser.add_argument("--output", "-o", type=Path, required=True, help="Output path for the CycloneDX SBOM JSON")
+    parser.add_argument(
+        "--repo-root", type=Path, default=None, help="SSID repo root (default: auto-detect from script location)"
+    )
+    parser.add_argument("--root", type=str, default=None, help="Only scan this SSID root (e.g. '03_core')")
     args = parser.parse_args(argv)
 
     repo_root = args.repo_root or Path(__file__).resolve().parents[2]

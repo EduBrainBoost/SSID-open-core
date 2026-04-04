@@ -25,10 +25,7 @@ def decode_jwt_payload(token: str) -> dict[str, Any]:
 def load_jwks(path: str | None = None) -> dict[str, Any]:
     """Load JWKS from file. Returns empty keyset if not found."""
     if path is None:
-        path = os.path.join(
-            os.path.dirname(__file__), "..", "..", "..",
-            "14_zero_time_auth", "jwt", "jwks.json"
-        )
+        path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "14_zero_time_auth", "jwt", "jwks.json")
     if os.path.exists(path):
         with open(path, encoding="utf-8") as f:
             return json.load(f)

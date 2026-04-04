@@ -8,6 +8,7 @@ Usage:
   python 12_tooling/cli/evidence_chain.py backfill-merges [--write]
   python 12_tooling/cli/evidence_chain.py scan --last-merge --require-agent-run --require-report-event
 """
+
 from __future__ import annotations
 
 import argparse
@@ -15,7 +16,7 @@ import hashlib
 import json
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +37,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # status subcommand
 # ---------------------------------------------------------------------------
+
 
 def _collect_evidence_entries(repo: Path) -> list[dict[str, Any]]:
     """Collect all evidence entries from .ssid-system/evidence and agent_runs."""
@@ -83,12 +85,17 @@ def cmd_status(args: argparse.Namespace) -> int:
     entries = _collect_evidence_entries(repo)
     chain_hash = _compute_chain_hash(entries)
     last_entry = entries[-1] if entries else None
-    print(json.dumps({
-        "total_entries": len(entries),
-        "last_entry": last_entry.get("file") if last_entry else None,
-        "chain_hash": chain_hash,
-        "chain_valid": len(entries) > 0,
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "total_entries": len(entries),
+                "last_entry": last_entry.get("file") if last_entry else None,
+                "chain_hash": chain_hash,
+                "chain_valid": len(entries) > 0,
+            },
+            indent=2,
+        )
+    )
     return 0
 
 
@@ -96,13 +103,15 @@ def cmd_status(args: argparse.Namespace) -> int:
 # backfill subcommand
 # ---------------------------------------------------------------------------
 
+
 def _get_merge_commits(repo: Path, limit: int = 200) -> list[dict[str, str]]:
     """Get merge commits from git log."""
     try:
         raw = subprocess.check_output(
-            ["git", "log", "--first-parent", f"-n{limit}", "--merges",
-             "--pretty=format:%H|%cI|%s"],
-            cwd=str(repo), text=True, errors="replace",
+            ["git", "log", "--first-parent", f"-n{limit}", "--merges", "--pretty=format:%H|%cI|%s"],
+            cwd=str(repo),
+            text=True,
+            errors="replace",
         ).strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         return []
@@ -147,7 +156,7 @@ def _create_backfill_entry(repo: Path, commit: dict[str, str], apply: bool) -> d
     """Create a retroactive evidence entry for a merge commit."""
     sha = commit["sha"]
     short_sha = sha[:7]
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     entry = {
         "timestamp": now,
         "agent_id": "evidence_chain_cli",
@@ -227,13 +236,18 @@ def cmd_scan(args: argparse.Namespace) -> int:
         print(f"PASS: merge {sha[:7]} has required evidence")
         return 0
     result = ecl.scan(repo, limit=args.limit, pr_only=args.pr_only)
-    print(json.dumps({
-        "total_commits": result["total_commits"],
-        "commits_with_agent_run": result["commits_with_agent_run"],
-        "commits_with_report_event": result["commits_with_report_event"],
-        "missing_agent_runs": result["missing_agent_runs"],
-        "missing_report_events": result["missing_report_events"],
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "total_commits": result["total_commits"],
+                "commits_with_agent_run": result["commits_with_agent_run"],
+                "commits_with_report_event": result["commits_with_report_event"],
+                "missing_agent_runs": result["missing_agent_runs"],
+                "missing_report_events": result["missing_report_events"],
+            },
+            indent=2,
+        )
+    )
     if result["missing_agent_runs"] > 0 or result["missing_report_events"] > 0:
         print(f"\nGaps: {result['missing_agent_runs']} missing runs, {result['missing_report_events']} missing events")
         return 1
@@ -260,6 +274,7 @@ def cmd_backfill_merges(args: argparse.Namespace) -> int:
         print(f"Wrote gap report: {gap_path}")
         sys.path.insert(0, str(REPO_ROOT / "12_tooling" / "cli"))
         import report_bus as rb_mod
+
         rb_mod.rebuild_jsonl()
         print("Rebuilt report_bus.jsonl from events/")
     print(f"\nAgent runs created: {len(backfill_result['created_agent_runs'])}")
@@ -281,10 +296,8 @@ def main() -> int:
     # --- backfill (new: --dry-run / --apply) ---
     bf2_p = sub.add_parser("backfill", help="Backfill merge commits without evidence")
     bf2_g = bf2_p.add_mutually_exclusive_group()
-    bf2_g.add_argument("--dry-run", dest="apply", action="store_false", default=False,
-                       help="Preview only (default)")
-    bf2_g.add_argument("--apply", dest="apply", action="store_true",
-                       help="Write entries")
+    bf2_g.add_argument("--dry-run", dest="apply", action="store_false", default=False, help="Preview only (default)")
+    bf2_g.add_argument("--apply", dest="apply", action="store_true", help="Write entries")
     bf2_p.add_argument("--limit", type=int, default=200)
 
     # --- scan (legacy v2) ---

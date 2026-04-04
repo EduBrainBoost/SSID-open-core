@@ -2,11 +2,10 @@ import hashlib
 import importlib
 import json
 import sys
-from datetime import datetime, timezone
+import uuid
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-import uuid
-
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[4]
 _CLI_ROOT = _PROJECT_ROOT / "12_tooling" / "cli"
@@ -21,7 +20,7 @@ class RegistryConsistencyError(RuntimeError):
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _read_json(path: Path) -> dict[str, Any]:

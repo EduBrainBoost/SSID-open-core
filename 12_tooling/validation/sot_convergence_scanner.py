@@ -16,18 +16,15 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
     import yaml
 except ImportError:
-    sys.exit(
-        "ERROR: PyYAML is required. Install via: pip install pyyaml"
-    )
+    sys.exit("ERROR: PyYAML is required. Install via: pip install pyyaml")
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -70,12 +67,12 @@ def _sha256_file(path: Path) -> str:
 
 
 def _load_yaml(path: Path) -> Any:
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         return yaml.safe_load(fh)
 
 
 def _load_json(path: Path) -> Any:
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         return json.load(fh)
 
 
@@ -89,7 +86,7 @@ def _exists(repo_root: Path, rel: str) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def parse_contract(contract_path: Path) -> Dict[str, Any]:
+def parse_contract(contract_path: Path) -> dict[str, Any]:
     """Parse sot_contract.yaml and return structured data.
 
     Returns dict with keys: version, rules (list[dict]), agent_stack, rule_count.
@@ -99,7 +96,7 @@ def parse_contract(contract_path: Path) -> Dict[str, Any]:
     if not isinstance(data, dict):
         raise ValueError(f"Contract root must be a mapping, got {type(data).__name__}")
 
-    rules: List[Dict[str, Any]] = data.get("rules", [])
+    rules: list[dict[str, Any]] = data.get("rules", [])
     return {
         "version": data.get("version", "unknown"),
         "rules": rules,
@@ -113,7 +110,7 @@ def parse_contract(contract_path: Path) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def load_registry(repo_root: Path) -> Optional[Dict[str, Any]]:
+def load_registry(repo_root: Path) -> dict[str, Any] | None:
     """Load sot_registry.json if it exists, else return None."""
     p = repo_root / _REGISTRY_PATH
     if not p.is_file():
@@ -121,7 +118,7 @@ def load_registry(repo_root: Path) -> Optional[Dict[str, Any]]:
     return _load_json(p)
 
 
-def load_structure_spec(repo_root: Path) -> Optional[Dict[str, Any]]:
+def load_structure_spec(repo_root: Path) -> dict[str, Any] | None:
     """Load structure_spec.json if it exists, else return None."""
     p = repo_root / _STRUCTURE_SPEC_PATH
     if not p.is_file():
@@ -135,8 +132,8 @@ def load_structure_spec(repo_root: Path) -> Optional[Dict[str, Any]]:
 
 
 def _expected_artifacts_from_registry(
-    registry: Optional[Dict[str, Any]],
-) -> List[str]:
+    registry: dict[str, Any] | None,
+) -> list[str]:
     """Return sorted list of expected artifact paths from registry."""
     if registry is None:
         return []
@@ -144,7 +141,7 @@ def _expected_artifacts_from_registry(
     return sorted(a["path"] for a in artifacts if "path" in a)
 
 
-def _expected_must_paths(spec: Optional[Dict[str, Any]]) -> List[str]:
+def _expected_must_paths(spec: dict[str, Any] | None) -> list[str]:
     """Return sorted MUST paths from structure_spec."""
     if spec is None:
         return []
@@ -158,20 +155,20 @@ def _expected_must_paths(spec: Optional[Dict[str, Any]]) -> List[str]:
 
 def _classify_drift(
     repo_root: Path,
-    contract: Dict[str, Any],
-    registry: Optional[Dict[str, Any]],
-    spec: Optional[Dict[str, Any]],
+    contract: dict[str, Any],
+    registry: dict[str, Any] | None,
+    spec: dict[str, Any] | None,
     repo_role: str,
 ) -> tuple[
-    List[str],  # expected_artifacts
-    List[str],  # actual_artifacts
-    List[str],  # missing_artifacts
-    List[Dict[str, Any]],  # drift_findings
-    List[Dict[str, str]],  # blocked_operations
+    list[str],  # expected_artifacts
+    list[str],  # actual_artifacts
+    list[str],  # missing_artifacts
+    list[dict[str, Any]],  # drift_findings
+    list[dict[str, str]],  # blocked_operations
 ]:
     """Run all drift checks and return aggregated results."""
-    drift_findings: List[Dict[str, Any]] = []
-    blocked_operations: List[Dict[str, str]] = []
+    drift_findings: list[dict[str, Any]] = []
+    blocked_operations: list[dict[str, str]] = []
 
     # --- 1. Registry artifact checks ---
     expected = _expected_artifacts_from_registry(registry)
@@ -266,10 +263,7 @@ def _classify_drift(
                     "class": "enforcement_gap",
                     "path": f"rule:{rule.get('id', '?')}",
                     "severity": "medium",
-                    "detail": (
-                        f"Rule {rule.get('id')} mode is "
-                        f"'{rule.get('mode')}', expected 'hard_fail'"
-                    ),
+                    "detail": (f"Rule {rule.get('id')} mode is '{rule.get('mode')}', expected 'hard_fail'"),
                 }
             )
 
@@ -338,7 +332,7 @@ def scan(
     canonical_contract_path: str,
     target_repo_root: str,
     repo_role: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Execute the convergence scan and return the result dict.
 
     Parameters
@@ -355,9 +349,7 @@ def scan(
     dict with all mandatory output fields.
     """
     if repo_role not in VALID_REPO_ROLES:
-        raise ValueError(
-            f"repo_role must be one of {VALID_REPO_ROLES}, got '{repo_role}'"
-        )
+        raise ValueError(f"repo_role must be one of {VALID_REPO_ROLES}, got '{repo_role}'")
 
     repo_root = Path(target_repo_root).resolve()
     contract_path = Path(canonical_contract_path)
@@ -373,21 +365,16 @@ def scan(
     registry = load_registry(repo_root)
     spec = load_structure_spec(repo_root)
 
-    expected, actual, missing, findings, blocked = _classify_drift(
-        repo_root, contract, registry, spec, repo_role
-    )
+    expected, actual, missing, findings, blocked = _classify_drift(repo_root, contract, registry, spec, repo_role)
 
-    export_ready = (
-        len(blocked) == 0
-        and not any(f["class"] == "export_violation" for f in findings)
-    )
+    export_ready = len(blocked) == 0 and not any(f["class"] == "export_violation" for f in findings)
 
     status = "PASS" if len(findings) == 0 else "FAIL"
 
     return {
         "repo_name": repo_root.name,
         "repo_role": repo_role,
-        "scan_time_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "scan_time_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "contract_path": str(contract_path.relative_to(repo_root)),
         "contract_version": contract["version"],
         "contract_sha256": contract_sha,
@@ -407,7 +394,7 @@ def scan(
 # ---------------------------------------------------------------------------
 
 
-def main(argv: Optional[List[str]] = None) -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="SoT Convergence Scanner -- read-only drift detection",
     )

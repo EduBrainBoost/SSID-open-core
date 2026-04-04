@@ -3,10 +3,10 @@
 
 Usage: python 12_tooling/cli/subscription_simulate.py --plan basic --period monthly --amount 29.99
 """
+
 import argparse
 import json
 import sys
-
 
 PLANS = {
     "basic": {"platform_pct": 30, "creator_pct": 60, "validator_pct": 10},

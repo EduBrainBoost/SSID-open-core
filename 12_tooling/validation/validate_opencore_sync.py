@@ -33,9 +33,9 @@ import json
 import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 try:
     import yaml
@@ -88,18 +88,18 @@ def _sha256_file(path: Path) -> str:
 
 
 def _load_yaml(path: Path) -> Any:
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         return yaml.safe_load(fh)
 
 
 def _load_json(path: Path) -> Any:
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         return json.load(fh)
 
 
-def _collect_files(root: Path) -> Set[str]:
+def _collect_files(root: Path) -> set[str]:
     """Collect all files under *root* as POSIX-style relative paths."""
-    result: Set[str] = set()
+    result: set[str] = set()
     for dirpath, _dirnames, filenames in os.walk(root):
         for fn in filenames:
             full = Path(dirpath) / fn
@@ -108,7 +108,7 @@ def _collect_files(root: Path) -> Set[str]:
     return result
 
 
-def _matches_any_glob(path: str, globs: List[str]) -> bool:
+def _matches_any_glob(path: str, globs: list[str]) -> bool:
     """Check if *path* matches any of the given glob patterns."""
     for pattern in globs:
         if fnmatch.fnmatch(path, pattern):
@@ -121,12 +121,9 @@ def _matches_any_glob(path: str, globs: List[str]) -> bool:
     return False
 
 
-def _matches_any_secret_pattern(content: str, patterns: List[str]) -> bool:
+def _matches_any_secret_pattern(content: str, patterns: list[str]) -> bool:
     """Check if *content* contains any secret patterns."""
-    for pattern in patterns:
-        if re.search(pattern, content):
-            return True
-    return False
+    return any(re.search(pattern, content) for pattern in patterns)
 
 
 # ---------------------------------------------------------------------------
@@ -134,13 +131,11 @@ def _matches_any_secret_pattern(content: str, patterns: List[str]) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def load_export_policy(policy_path: Path) -> Dict[str, Any]:
+def load_export_policy(policy_path: Path) -> dict[str, Any]:
     """Load opencore_export_policy.yaml and return structured data."""
     data = _load_yaml(policy_path)
     if not isinstance(data, dict):
-        raise ValueError(
-            f"Export policy root must be a mapping, got {type(data).__name__}"
-        )
+        raise ValueError(f"Export policy root must be a mapping, got {type(data).__name__}")
     return {
         "version": data.get("version", "unknown"),
         "source_repo": data.get("source_repo", ""),
@@ -156,7 +151,7 @@ def load_export_policy(policy_path: Path) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def load_registry(repo_root: Path) -> Optional[Dict[str, Any]]:
+def load_registry(repo_root: Path) -> dict[str, Any] | None:
     """Load sot_registry.json if it exists, else return None."""
     p = repo_root / _REGISTRY_PATH
     if not p.is_file():
@@ -170,11 +165,11 @@ def load_registry(repo_root: Path) -> Optional[Dict[str, Any]]:
 
 
 def _check_forbidden_exports(
-    derivative_files: Set[str],
-    deny_globs: List[str],
-) -> List[Dict[str, Any]]:
+    derivative_files: set[str],
+    deny_globs: list[str],
+) -> list[dict[str, Any]]:
     """Check for files in derivative that match deny-globs (forbidden leakage)."""
-    findings: List[Dict[str, Any]] = []
+    findings: list[dict[str, Any]] = []
     for rel_path in sorted(derivative_files):
         if _matches_any_glob(rel_path, deny_globs):
             findings.append(
@@ -182,10 +177,7 @@ def _check_forbidden_exports(
                     "class": "forbidden_export",
                     "path": rel_path,
                     "severity": "critical",
-                    "detail": (
-                        f"Forbidden artifact leaked to derivative: {rel_path} "
-                        f"(matches deny-glob)"
-                    ),
+                    "detail": (f"Forbidden artifact leaked to derivative: {rel_path} (matches deny-glob)"),
                 }
             )
     return findings
@@ -195,9 +187,9 @@ def _check_contract_hash(
     canonical_root: Path,
     derivative_root: Path,
     contract_rel: str,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Check that the contract hash matches between canonical and derivative."""
-    findings: List[Dict[str, Any]] = []
+    findings: list[dict[str, Any]] = []
     canonical_contract = canonical_root / contract_rel
     derivative_contract = derivative_root / contract_rel
 
@@ -220,8 +212,7 @@ def _check_contract_hash(
                 "path": contract_rel,
                 "severity": "critical",
                 "detail": (
-                    f"Contract hash mismatch: canonical={canonical_hash[:16]}... "
-                    f"derivative={derivative_hash[:16]}..."
+                    f"Contract hash mismatch: canonical={canonical_hash[:16]}... derivative={derivative_hash[:16]}..."
                 ),
             }
         )
@@ -231,12 +222,12 @@ def _check_contract_hash(
 def _check_missing_expected_exports(
     canonical_root: Path,
     derivative_root: Path,
-    canonical_files: Set[str],
-    derivative_files: Set[str],
-    deny_globs: List[str],
-) -> List[Dict[str, Any]]:
+    canonical_files: set[str],
+    derivative_files: set[str],
+    deny_globs: list[str],
+) -> list[dict[str, Any]]:
     """Find files expected in derivative (not denied) that are missing."""
-    findings: List[Dict[str, Any]] = []
+    findings: list[dict[str, Any]] = []
 
     # Files that are in canonical, within expected derivative roots,
     # not denied, but absent from derivative.
@@ -256,9 +247,7 @@ def _check_missing_expected_exports(
                     "class": "missing_expected_export",
                     "path": rel_path,
                     "severity": "medium",
-                    "detail": (
-                        f"Expected public artifact missing from derivative: {rel_path}"
-                    ),
+                    "detail": (f"Expected public artifact missing from derivative: {rel_path}"),
                 }
             )
     return findings
@@ -267,11 +256,11 @@ def _check_missing_expected_exports(
 def _check_stale_bindings(
     canonical_root: Path,
     derivative_root: Path,
-    derivative_files: Set[str],
-) -> tuple[List[Dict[str, Any]], List[Dict[str, str]]]:
+    derivative_files: set[str],
+) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
     """Check for files where the derivative copy is older than the canonical."""
-    findings: List[Dict[str, Any]] = []
-    stale_bindings: List[Dict[str, str]] = []
+    findings: list[dict[str, Any]] = []
+    stale_bindings: list[dict[str, str]] = []
 
     for rel_path in sorted(derivative_files):
         canonical_file = canonical_root / rel_path
@@ -284,12 +273,8 @@ def _check_stale_bindings(
         derivative_mtime = derivative_file.stat().st_mtime
 
         if canonical_mtime > derivative_mtime:
-            canonical_ts = datetime.fromtimestamp(
-                canonical_mtime, tz=timezone.utc
-            ).strftime("%Y-%m-%dT%H:%M:%SZ")
-            derivative_ts = datetime.fromtimestamp(
-                derivative_mtime, tz=timezone.utc
-            ).strftime("%Y-%m-%dT%H:%M:%SZ")
+            canonical_ts = datetime.fromtimestamp(canonical_mtime, tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+            derivative_ts = datetime.fromtimestamp(derivative_mtime, tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
             # Also check if content actually differs
             if _sha256_file(canonical_file) != _sha256_file(derivative_file):
@@ -316,11 +301,11 @@ def _check_stale_bindings(
 
 
 def _check_unsanctioned_artifacts(
-    canonical_files: Set[str],
-    derivative_files: Set[str],
-) -> List[Dict[str, Any]]:
+    canonical_files: set[str],
+    derivative_files: set[str],
+) -> list[dict[str, Any]]:
     """Find files in derivative that have no canonical counterpart."""
-    findings: List[Dict[str, Any]] = []
+    findings: list[dict[str, Any]] = []
     # Well-known derivative-only files that are expected
     derivative_only_allowed = {
         "README.md",
@@ -345,19 +330,17 @@ def _check_unsanctioned_artifacts(
                 "class": "unsanctioned_public_artifact",
                 "path": rel_path,
                 "severity": "medium",
-                "detail": (
-                    f"Derivative contains artifact with no canonical source: {rel_path}"
-                ),
+                "detail": (f"Derivative contains artifact with no canonical source: {rel_path}"),
             }
         )
     return findings
 
 
 def _check_export_scope(
-    derivative_files: Set[str],
-) -> List[Dict[str, Any]]:
+    derivative_files: set[str],
+) -> list[dict[str, Any]]:
     """Check that derivative files are within allowed export roots."""
-    findings: List[Dict[str, Any]] = []
+    findings: list[dict[str, Any]] = []
     # Derivative-only top-level files are allowed
     derivative_only_allowed_prefixes = {
         "README.md",
@@ -383,9 +366,7 @@ def _check_export_scope(
                 "class": "export_scope_violation",
                 "path": rel_path,
                 "severity": "high",
-                "detail": (
-                    f"File in derivative outside allowed export roots: {rel_path}"
-                ),
+                "detail": (f"File in derivative outside allowed export roots: {rel_path}"),
             }
         )
     return findings
@@ -394,11 +375,11 @@ def _check_export_scope(
 def _check_registry_bindings(
     canonical_root: Path,
     derivative_root: Path,
-    canonical_registry: Optional[Dict[str, Any]],
-    derivative_registry: Optional[Dict[str, Any]],
-) -> tuple[List[Dict[str, Any]], str]:
+    canonical_registry: dict[str, Any] | None,
+    derivative_registry: dict[str, Any] | None,
+) -> tuple[list[dict[str, Any]], str]:
     """Check registry binding consistency between canonical and derivative."""
-    findings: List[Dict[str, Any]] = []
+    findings: list[dict[str, Any]] = []
 
     if canonical_registry is None:
         return findings, "unknown"
@@ -425,8 +406,7 @@ def _check_registry_bindings(
                 "path": _REGISTRY_PATH,
                 "severity": "medium",
                 "detail": (
-                    f"Registry schema version mismatch: "
-                    f"canonical={canonical_version}, derivative={derivative_version}"
+                    f"Registry schema version mismatch: canonical={canonical_version}, derivative={derivative_version}"
                 ),
             }
         )
@@ -434,14 +414,10 @@ def _check_registry_bindings(
 
     # Check that shared artifacts have matching hashes
     canonical_artifacts = {
-        a["path"]: a
-        for a in canonical_registry.get("roots", {}).get("sot_artifacts", [])
-        if "path" in a
+        a["path"]: a for a in canonical_registry.get("roots", {}).get("sot_artifacts", []) if "path" in a
     }
     derivative_artifacts = {
-        a["path"]: a
-        for a in derivative_registry.get("roots", {}).get("sot_artifacts", [])
-        if "path" in a
+        a["path"]: a for a in derivative_registry.get("roots", {}).get("sot_artifacts", []) if "path" in a
     }
 
     inconsistent = False
@@ -458,8 +434,7 @@ def _check_registry_bindings(
                     "path": path,
                     "severity": "medium",
                     "detail": (
-                        f"Registry hash mismatch for {path}: "
-                        f"canonical={c_hash[:16]}... derivative={d_hash[:16]}..."
+                        f"Registry hash mismatch for {path}: canonical={c_hash[:16]}... derivative={d_hash[:16]}..."
                     ),
                 }
             )
@@ -477,9 +452,9 @@ def _check_registry_bindings(
 def scan(
     canonical_root: str,
     derivative_root: str,
-    contract_rel: Optional[str] = None,
-    export_policy_rel: Optional[str] = None,
-) -> Dict[str, Any]:
+    contract_rel: str | None = None,
+    export_policy_rel: str | None = None,
+) -> dict[str, Any]:
     """Execute the open-core sync validation and return the result dict.
 
     Parameters
@@ -520,11 +495,7 @@ def scan(
     contract_sha256 = ""
     if contract_path.is_file():
         contract_data = _load_yaml(contract_path)
-        contract_version = (
-            contract_data.get("version", "unknown")
-            if isinstance(contract_data, dict)
-            else "unknown"
-        )
+        contract_version = contract_data.get("version", "unknown") if isinstance(contract_data, dict) else "unknown"
         contract_sha256 = _sha256_file(contract_path)
 
     # Collect all files
@@ -532,40 +503,26 @@ def scan(
     derivative_files = _collect_files(d_root)
 
     # Run all checks
-    all_findings: List[Dict[str, Any]] = []
+    all_findings: list[dict[str, Any]] = []
 
     # 1. Forbidden exports (deny-glob leakage)
-    all_findings.extend(
-        _check_forbidden_exports(derivative_files, deny_globs)
-    )
+    all_findings.extend(_check_forbidden_exports(derivative_files, deny_globs))
 
     # 2. Contract hash mismatch
-    all_findings.extend(
-        _check_contract_hash(c_root, d_root, contract_rel)
-    )
+    all_findings.extend(_check_contract_hash(c_root, d_root, contract_rel))
 
     # 3. Missing expected exports
-    all_findings.extend(
-        _check_missing_expected_exports(
-            c_root, d_root, canonical_files, derivative_files, deny_globs
-        )
-    )
+    all_findings.extend(_check_missing_expected_exports(c_root, d_root, canonical_files, derivative_files, deny_globs))
 
     # 4. Stale derivative bindings
-    stale_findings, stale_bindings = _check_stale_bindings(
-        c_root, d_root, derivative_files
-    )
+    stale_findings, stale_bindings = _check_stale_bindings(c_root, d_root, derivative_files)
     all_findings.extend(stale_findings)
 
     # 5. Unsanctioned public artifacts
-    all_findings.extend(
-        _check_unsanctioned_artifacts(canonical_files, derivative_files)
-    )
+    all_findings.extend(_check_unsanctioned_artifacts(canonical_files, derivative_files))
 
     # 6. Export scope violations
-    all_findings.extend(
-        _check_export_scope(derivative_files)
-    )
+    all_findings.extend(_check_export_scope(derivative_files))
 
     # 7. Registry binding consistency
     canonical_registry = load_registry(c_root)
@@ -579,23 +536,15 @@ def scan(
     allowed_exports = sorted(
         p
         for p in canonical_files
-        if p.split("/")[0] in _EXPECTED_DERIVATIVE_ROOTS
-        and not _matches_any_glob(p, deny_globs)
+        if p.split("/")[0] in _EXPECTED_DERIVATIVE_ROOTS and not _matches_any_glob(p, deny_globs)
     )
     actual_exports = sorted(derivative_files)
-    missing_exports = sorted(
-        p for p in allowed_exports if p not in derivative_files
-    )
-    forbidden_exports = sorted(
-        p for p in derivative_files if _matches_any_glob(p, deny_globs)
-    )
+    missing_exports = sorted(p for p in allowed_exports if p not in derivative_files)
+    forbidden_exports = sorted(p for p in derivative_files if _matches_any_glob(p, deny_globs))
 
     # Determine overall status
     has_critical = any(f["severity"] == "critical" for f in all_findings)
-    has_fail_class = any(
-        f["class"] in ("forbidden_export", "contract_hash_mismatch")
-        for f in all_findings
-    )
+    has_fail_class = any(f["class"] in ("forbidden_export", "contract_hash_mismatch") for f in all_findings)
     has_findings = len(all_findings) > 0
 
     if has_critical or has_fail_class:
@@ -608,9 +557,7 @@ def scan(
     # Build evidence hash
     manifest_data = json.dumps(
         {
-            "scan_time_utc": datetime.now(timezone.utc).strftime(
-                "%Y-%m-%dT%H:%M:%SZ"
-            ),
+            "scan_time_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "findings_count": len(all_findings),
             "status": status,
         },
@@ -619,9 +566,7 @@ def scan(
     evidence_sha256 = hashlib.sha256(manifest_data.encode("utf-8")).hexdigest()
 
     return {
-        "scan_time_utc": datetime.now(timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        ),
+        "scan_time_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "canonical_repo": c_root.name,
         "derivative_repo": d_root.name,
         "contract_path": contract_rel,
@@ -645,12 +590,9 @@ def scan(
 # ---------------------------------------------------------------------------
 
 
-def main(argv: Optional[List[str]] = None) -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
-        description=(
-            "Open-Core Derivation Sync Validator -- "
-            "read-only export compliance checker"
-        ),
+        description=("Open-Core Derivation Sync Validator -- read-only export compliance checker"),
     )
     parser.add_argument(
         "--canonical-root",
@@ -665,10 +607,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     parser.add_argument(
         "--contract",
         default=None,
-        help=(
-            "Relative path to sot_contract.yaml within canonical repo "
-            f"(default: {_DEFAULT_CONTRACT_PATH})"
-        ),
+        help=(f"Relative path to sot_contract.yaml within canonical repo (default: {_DEFAULT_CONTRACT_PATH})"),
     )
     parser.add_argument(
         "--export-policy",

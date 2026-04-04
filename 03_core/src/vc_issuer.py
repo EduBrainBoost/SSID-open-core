@@ -5,18 +5,18 @@ Issues credentials with selective disclosure support.
 stdlib-only, non-custodial, hash-only (no PII), fail-closed.
 """
 
+import base64
 import hashlib
 import hmac
 import json
 import time
-import base64
 import uuid
-from typing import Any, Dict, List, Optional
-
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _now_iso() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -41,13 +41,14 @@ def _build_sd_hash(claim_name: str, claim_value: Any, salt: str) -> str:
 # SD-JWT VC Issuance
 # ---------------------------------------------------------------------------
 
+
 def issue(
     issuer_did: str,
     subject_did: str,
-    claims: Dict[str, Any],
+    claims: dict[str, Any],
     *,
     credential_type: str = "VerifiableCredential",
-    selective_fields: Optional[List[str]] = None,
+    selective_fields: list[str] | None = None,
     signing_key_hex: str,
 ) -> dict:
     """
@@ -79,8 +80,8 @@ def issue(
     vc_id = f"urn:uuid:{uuid.uuid4()}"
 
     # Hash all claim values (non-custodial — no PII stored)
-    hashed_claims: Dict[str, str] = {}
-    disclosures: Dict[str, dict] = {}
+    hashed_claims: dict[str, str] = {}
+    disclosures: dict[str, dict] = {}
 
     for name, value in claims.items():
         value_hash = _sha256(json.dumps(value, separators=(",", ":")))

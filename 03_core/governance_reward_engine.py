@@ -7,20 +7,22 @@ amounts are proportional to computed governance activity scores.
 Registry import path (orchestrator):
     03_core.governance_reward_engine
 """
+
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from decimal import Decimal, ROUND_HALF_UP
-from enum import Enum
-from typing import Dict, List, Optional, Sequence
-
+from decimal import ROUND_HALF_UP, Decimal
+from enum import StrEnum
 
 # ---------------------------------------------------------------------------
 # Domain types
 # ---------------------------------------------------------------------------
 
-class GovernanceActivityType(str, Enum):
+
+class GovernanceActivityType(StrEnum):
     """Categories of governance activity that contribute to the activity score."""
+
     VOTE = "vote"
     PROPOSAL = "proposal"
     REVIEW = "review"
@@ -37,15 +39,14 @@ class GovernanceActivity:
             Defaults to 1.0.
         epoch: Optional epoch/period identifier the activity belongs to.
     """
+
     activity_type: GovernanceActivityType
     weight: float = 1.0
-    epoch: Optional[str] = None
+    epoch: str | None = None
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.weight <= 10.0:
-            raise ValueError(
-                f"activity weight must be in [0.0, 10.0], got {self.weight}"
-            )
+            raise ValueError(f"activity weight must be in [0.0, 10.0], got {self.weight}")
 
 
 @dataclass
@@ -57,9 +58,10 @@ class GovernanceParticipant:
         activities: List of governance activities performed.
         address: Optional settlement address / account reference.
     """
+
     participant_id: str
-    activities: List[GovernanceActivity] = field(default_factory=list)
-    address: Optional[str] = None
+    activities: list[GovernanceActivity] = field(default_factory=list)
+    address: str | None = None
 
 
 @dataclass
@@ -73,18 +75,19 @@ class GovernanceRewardResult:
         residual: Unallocated remainder due to rounding.
         epoch: Optional epoch/batch identifier.
     """
+
     pool_amount: Decimal
-    allocations: Dict[str, Decimal]
-    activity_scores: Dict[str, float]
+    allocations: dict[str, Decimal]
+    activity_scores: dict[str, float]
     residual: Decimal = Decimal("0")
-    epoch: Optional[str] = None
+    epoch: str | None = None
 
 
 # ---------------------------------------------------------------------------
 # Default activity type weights — how much each activity type contributes
 # ---------------------------------------------------------------------------
 
-DEFAULT_ACTIVITY_TYPE_WEIGHTS: Dict[GovernanceActivityType, float] = {
+DEFAULT_ACTIVITY_TYPE_WEIGHTS: dict[GovernanceActivityType, float] = {
     GovernanceActivityType.VOTE: 1.0,
     GovernanceActivityType.PROPOSAL: 5.0,
     GovernanceActivityType.REVIEW: 3.0,
@@ -95,6 +98,7 @@ DEFAULT_ACTIVITY_TYPE_WEIGHTS: Dict[GovernanceActivityType, float] = {
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
+
 
 class GovernanceRewardEngine:
     """Distributes governance participation rewards across SSID participants.
@@ -127,7 +131,7 @@ class GovernanceRewardEngine:
 
     def __init__(
         self,
-        activity_type_weights: Optional[Dict[GovernanceActivityType, float]] = None,
+        activity_type_weights: dict[GovernanceActivityType, float] | None = None,
     ) -> None:
         """Initialise the engine.
 
@@ -136,13 +140,11 @@ class GovernanceRewardEngine:
                 base weights. Falls back to ``DEFAULT_ACTIVITY_TYPE_WEIGHTS``
                 when not provided.
         """
-        self._activity_type_weights: Dict[GovernanceActivityType, float] = (
-            activity_type_weights
-            if activity_type_weights is not None
-            else DEFAULT_ACTIVITY_TYPE_WEIGHTS
+        self._activity_type_weights: dict[GovernanceActivityType, float] = (
+            activity_type_weights if activity_type_weights is not None else DEFAULT_ACTIVITY_TYPE_WEIGHTS
         )
         # Internal ledger: participant_id → list of activity records
-        self._activity_ledger: Dict[str, List[GovernanceActivity]] = {}
+        self._activity_ledger: dict[str, list[GovernanceActivity]] = {}
 
     # ------------------------------------------------------------------
     # Public API
@@ -152,8 +154,8 @@ class GovernanceRewardEngine:
         self,
         participants: Sequence[GovernanceParticipant],
         pool_amount: Decimal = Decimal("0"),
-        epoch: Optional[str] = None,
-    ) -> Dict[str, Decimal]:
+        epoch: str | None = None,
+    ) -> dict[str, Decimal]:
         """Calculate (but do not distribute) reward amounts for *participants*.
 
         Args:
@@ -172,11 +174,10 @@ class GovernanceRewardEngine:
         if not participants:
             raise ValueError("participants list must not be empty")
 
-        scores = {p.participant_id: self.get_activity_score(p.participant_id, p)
-                  for p in participants}
+        scores = {p.participant_id: self.get_activity_score(p.participant_id, p) for p in participants}
         total_score = sum(scores.values())
         quantize_unit = Decimal("0.000001")
-        rewards: Dict[str, Decimal] = {}
+        rewards: dict[str, Decimal] = {}
 
         for participant in participants:
             pid = participant.participant_id
@@ -184,9 +185,7 @@ class GovernanceRewardEngine:
                 rewards[pid] = Decimal("0")
             else:
                 ratio = Decimal(str(scores[pid] / total_score))
-                rewards[pid] = (pool_amount * ratio).quantize(
-                    quantize_unit, rounding=ROUND_HALF_UP
-                )
+                rewards[pid] = (pool_amount * ratio).quantize(quantize_unit, rounding=ROUND_HALF_UP)
 
         return rewards
 
@@ -194,7 +193,7 @@ class GovernanceRewardEngine:
         self,
         pool_amount: Decimal,
         participants: Sequence[GovernanceParticipant],
-        epoch: Optional[str] = None,
+        epoch: str | None = None,
     ) -> GovernanceRewardResult:
         """Distribute *pool_amount* governance rewards across *participants*.
 
@@ -215,11 +214,10 @@ class GovernanceRewardEngine:
         if not participants:
             raise ValueError("participants list must not be empty")
 
-        scores = {p.participant_id: self.get_activity_score(p.participant_id, p)
-                  for p in participants}
+        scores = {p.participant_id: self.get_activity_score(p.participant_id, p) for p in participants}
         total_score = sum(scores.values())
         quantize_unit = Decimal("0.000001")
-        allocations: Dict[str, Decimal] = {}
+        allocations: dict[str, Decimal] = {}
         allocated = Decimal("0")
 
         for participant in participants:
@@ -228,9 +226,7 @@ class GovernanceRewardEngine:
                 share = Decimal("0")
             else:
                 ratio = Decimal(str(scores[pid] / total_score))
-                share = (pool_amount * ratio).quantize(
-                    quantize_unit, rounding=ROUND_HALF_UP
-                )
+                share = (pool_amount * ratio).quantize(quantize_unit, rounding=ROUND_HALF_UP)
             allocations[pid] = share
             allocated += share
 
@@ -247,7 +243,7 @@ class GovernanceRewardEngine:
     def get_activity_score(
         self,
         participant_id: str,
-        participant: Optional[GovernanceParticipant] = None,
+        participant: GovernanceParticipant | None = None,
     ) -> float:
         """Compute the governance activity score for *participant_id*.
 
@@ -270,10 +266,7 @@ class GovernanceRewardEngine:
         else:
             activities = self._activity_ledger.get(participant_id, [])
 
-        return sum(
-            self._activity_type_weights.get(a.activity_type, 1.0) * a.weight
-            for a in activities
-        )
+        return sum(self._activity_type_weights.get(a.activity_type, 1.0) * a.weight for a in activities)
 
     def record_activity(
         self,

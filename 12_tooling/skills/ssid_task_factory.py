@@ -5,9 +5,7 @@ ensuring all required fields and scope constraints.
 """
 
 import hashlib
-import json
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
 
 from ._evidence import make_evidence, result
 
@@ -29,11 +27,11 @@ TASK_TEMPLATE = {
 
 def _generate_task_id(skill_id: str, target: str) -> str:
     """Generate a deterministic task ID from skill + target."""
-    raw = f"{skill_id}:{target}:{datetime.now(timezone.utc).isoformat()}"
+    raw = f"{skill_id}:{target}:{datetime.now(UTC).isoformat()}"
     return f"task-{hashlib.sha256(raw.encode()).hexdigest()[:12]}"
 
 
-def execute(context: Dict) -> Dict:
+def execute(context: dict) -> dict:
     """Create a task from template, or validate an existing task.
 
     For task creation, context must contain:
@@ -80,7 +78,7 @@ def execute(context: Dict) -> Dict:
         task["agent_group"] = agent_group
         task["priority"] = context.get("priority", "normal")
         task["timeout_seconds"] = context.get("timeout_seconds", 300)
-        task["created_at"] = datetime.now(timezone.utc).isoformat()
+        task["created_at"] = datetime.now(UTC).isoformat()
 
         details = {"task": task}
         ev = make_evidence(SKILL_ID, "PASS", details)
@@ -94,7 +92,7 @@ def execute(context: Dict) -> Dict:
             ev = make_evidence(SKILL_ID, "FAIL", {"reason": "task_payload must be dict"})
             return result("FAIL", ev, "task_payload must be a dict")
 
-        violations: List[str] = []
+        violations: list[str] = []
         for field in REQUIRED_TASK_FIELDS:
             if field not in payload or not payload[field]:
                 violations.append(f"missing: {field}")

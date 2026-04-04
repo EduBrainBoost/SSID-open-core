@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import time
+from datetime import UTC
 from pathlib import Path
 from typing import Any
 from urllib.error import URLError
@@ -175,11 +175,11 @@ def run_all(config: dict[str, Any]) -> dict[str, Any]:
 
 def build_payload(results: list[dict[str, Any]]) -> dict[str, Any]:
     """Build the evidence payload from results."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     return {
         "schema_version": "1.0",
-        "run_utc": datetime.now(timezone.utc).isoformat(),
+        "run_utc": datetime.now(UTC).isoformat(),
         "targets": results,
     }
 

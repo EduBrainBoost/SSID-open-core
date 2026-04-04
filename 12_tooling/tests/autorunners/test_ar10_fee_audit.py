@@ -17,10 +17,7 @@ def test_7_saeulen_sum_exactly_2_percent(tmp_path):
     """7-Säulen fee distribution must sum to exactly 2.00%."""
     out = tmp_path / "fee_check.json"
     r = subprocess.run(
-        ["python", str(FEE_SCRIPT),
-         "--policy", str(FEE_POLICY),
-         "--out", str(out)],
-        capture_output=True, text=True
+        ["python", str(FEE_SCRIPT), "--policy", str(FEE_POLICY), "--out", str(out)], capture_output=True, text=True
     )
     assert r.returncode == 0, r.stderr
     data = json.loads(out.read_text())
@@ -33,10 +30,7 @@ def test_subscription_50_30_10_10_model(tmp_path):
     """Subscription distribution must follow 50/30/10/10 model summing to 100%."""
     out = tmp_path / "sub_audit.json"
     r = subprocess.run(
-        ["python", str(SUB_SCRIPT),
-         "--policy", str(SUB_POLICY),
-         "--out", str(out)],
-        capture_output=True, text=True
+        ["python", str(SUB_SCRIPT), "--policy", str(SUB_POLICY), "--out", str(out)], capture_output=True, text=True
     )
     assert r.returncode == 0, r.stderr
     data = json.loads(out.read_text())
@@ -52,10 +46,7 @@ def test_pofi_formula_matches_sot(tmp_path):
     """POFI formula: log(activity+1)/log(rewards+10) must pass reference tests."""
     out = tmp_path / "pofi_check.json"
     r = subprocess.run(
-        ["python", str(POFI_SCRIPT),
-         "--policy", str(POFI_POLICY),
-         "--out", str(out)],
-        capture_output=True, text=True
+        ["python", str(POFI_SCRIPT), "--policy", str(POFI_POLICY), "--out", str(out)], capture_output=True, text=True
     )
     assert r.returncode == 0, r.stderr
     data = json.loads(out.read_text())
@@ -66,18 +57,15 @@ def test_pofi_formula_matches_sot(tmp_path):
     def pofi(a, r_val):
         return math.log(a + 1) / math.log(r_val + 10)
 
-    assert abs(pofi(0, 0) - 0.0) < 1e-9       # zero activity = 0
-    assert abs(pofi(9, 0) - 1.0) < 1e-9       # activity=9, rewards=0 = exactly 1.0
+    assert abs(pofi(0, 0) - 0.0) < 1e-9  # zero activity = 0
+    assert abs(pofi(9, 0) - 1.0) < 1e-9  # activity=9, rewards=0 = exactly 1.0
 
 
 def test_dao_params_within_governance_ranges(tmp_path):
     """DAO default parameters must all be within their defined policy ranges."""
     out = tmp_path / "dao_params.json"
     r = subprocess.run(
-        ["python", str(DAO_SCRIPT),
-         "--policy", str(SUB_POLICY),
-         "--out", str(out)],
-        capture_output=True, text=True
+        ["python", str(DAO_SCRIPT), "--policy", str(SUB_POLICY), "--out", str(out)], capture_output=True, text=True
     )
     assert r.returncode == 0, r.stderr
     data = json.loads(out.read_text())
@@ -88,6 +76,7 @@ def test_dao_params_within_governance_ranges(tmp_path):
 def test_quarterly_guard_correct(tmp_path):
     """Fee policy must include quarterly guard metadata."""
     import yaml
+
     pofi = yaml.safe_load(POFI_POLICY.read_text())
     qa = pofi.get("quarterly_audit", {})
     assert qa.get("required") is True
@@ -110,10 +99,7 @@ def test_fee_policy_fail_if_wrong_sum(tmp_path):
     )
     out = tmp_path / "bad_result.json"
     r = subprocess.run(
-        ["python", str(FEE_SCRIPT),
-         "--policy", str(bad_policy),
-         "--out", str(out)],
-        capture_output=True, text=True
+        ["python", str(FEE_SCRIPT), "--policy", str(bad_policy), "--out", str(out)], capture_output=True, text=True
     )
     assert r.returncode == 1
     data = json.loads(out.read_text())

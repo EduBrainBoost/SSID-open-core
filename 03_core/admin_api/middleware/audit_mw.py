@@ -7,8 +7,7 @@ import json
 import os
 import time
 import uuid
-from datetime import datetime, timezone
-
+from datetime import UTC, datetime
 
 EVIDENCE_PATH = os.environ.get(
     "ADMIN_EVIDENCE_PATH",
@@ -28,7 +27,7 @@ async def audit_middleware(request, call_next):
 
     event = {
         "event_id": f"evt_{uuid.uuid4().hex[:12]}",
-        "timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "method": request.method,
         "path": str(request.url.path),
         "status_code": response.status_code,

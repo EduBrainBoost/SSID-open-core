@@ -1,10 +1,13 @@
-﻿"""
+"""
 session_watchdog.py - T-018 Agent Session Watchdog Gate
 Hard TTL=65min, Orphan-Kill, Lock-File, SHA256-Logging
 psutil is optional - PID checks degrade gracefully without it.
 """
-import json, os, hashlib
-from datetime import datetime, timezone, timedelta
+
+import hashlib
+import json
+import os
+from datetime import UTC, datetime
 from pathlib import Path
 
 try:
@@ -18,11 +21,14 @@ LOCK_FILE = REPO_ROOT / "02_audit_logging" / "reports" / "session_watchdog.lock"
 REPORT_FILE = REPO_ROOT / "02_audit_logging" / "reports" / "agent_session_watchdog_report.json"
 HARD_TTL_MINUTES = 65
 
+
 def _sha256(data):
     return hashlib.sha256(data.encode()).hexdigest()
 
+
 def _now_iso():
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
+
 
 def _log_event(event_type, details):
     entry = {"timestamp": _now_iso(), "event": event_type, "details": details}
@@ -37,6 +43,7 @@ def _log_event(event_type, details):
     REPORT_FILE.parent.mkdir(parents=True, exist_ok=True)
     REPORT_FILE.write_text(json.dumps(report, indent=2))
 
+
 def _read_state():
     if not STATE_FILE.exists():
         return {}
@@ -45,9 +52,11 @@ def _read_state():
     except Exception:
         return {}
 
+
 def _write_state(state):
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     STATE_FILE.write_text(json.dumps(state, indent=2))
+
 
 def run_watchdog():
     """Main watchdog entrypoint. Returns result dict."""
@@ -93,7 +102,7 @@ def run_watchdog():
         if start_iso:
             try:
                 start = datetime.fromisoformat(start_iso)
-                elapsed = (datetime.now(timezone.utc) - start).total_seconds() / 60
+                elapsed = (datetime.now(UTC) - start).total_seconds() / 60
                 if elapsed > HARD_TTL_MINUTES:
                     _log_event("TTL_EXCEEDED", {"elapsed_minutes": round(elapsed, 1)})
                     _write_state({})
@@ -108,11 +117,13 @@ def run_watchdog():
     finally:
         LOCK_FILE.unlink(missing_ok=True)
 
+
 # alias
 run_preflight = run_watchdog
 
 if __name__ == "__main__":
     import sys
+
     result = run_watchdog()
     print(json.dumps(result))
     if result.get("status") == "ABORTED":

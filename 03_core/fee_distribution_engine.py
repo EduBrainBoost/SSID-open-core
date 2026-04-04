@@ -9,20 +9,21 @@ trails -- never stores or transfers actual funds.
 SoT v4.1.0 | ROOT-24-LOCK | Module: 03_core
 Evidence strategy: hash_manifest_only
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from decimal import Decimal, ROUND_HALF_UP
+from datetime import UTC, datetime
+from decimal import ROUND_HALF_UP, Decimal
 from enum import Enum
-from typing import Dict, List, Optional
 
 
 class StakeholderRole(Enum):
     """Roles that receive a share of fee distributions."""
+
     PLATFORM = "platform"
     OPERATOR = "operator"
     CREATOR = "creator"
@@ -35,6 +36,7 @@ class FeeAllocation:
 
     All monetary values are Decimal to avoid floating-point drift.
     """
+
     stakeholder_id: str
     role: StakeholderRole
     amount: Decimal
@@ -48,6 +50,7 @@ class DistributionResult:
 
     Contains allocations per stakeholder and hash-only evidence.
     """
+
     distribution_id: str
     timestamp: str
     gross_amount: Decimal
@@ -66,36 +69,31 @@ class TierRule:
         threshold_max: Maximum gross amount (exclusive), None = unbounded.
         splits: Mapping of StakeholderRole -> Decimal ratio.  Must sum to 1.
     """
+
     name: str
     threshold_min: Decimal
-    threshold_max: Optional[Decimal]
-    splits: Dict[StakeholderRole, Decimal]
+    threshold_max: Decimal | None
+    splits: dict[StakeholderRole, Decimal]
 
     def __post_init__(self) -> None:
         total = sum(self.splits.values())
         if total != Decimal("1"):
-            raise ValueError(
-                f"Tier '{self.name}' splits must sum to 1, got {total}"
-            )
+            raise ValueError(f"Tier '{self.name}' splits must sum to 1, got {total}")
         for role, ratio in self.splits.items():
             if ratio < Decimal("0"):
-                raise ValueError(
-                    f"Tier '{self.name}' has negative ratio for {role.value}"
-                )
+                raise ValueError(f"Tier '{self.name}' has negative ratio for {role.value}")
 
     def matches(self, amount: Decimal) -> bool:
         """Return True if *amount* falls within this tier's range."""
         if amount < self.threshold_min:
             return False
-        if self.threshold_max is not None and amount >= self.threshold_max:
-            return False
-        return True
+        return not (self.threshold_max is not None and amount >= self.threshold_max)
 
 
 # ---------------------------------------------------------------------------
 # Default tiers -- callers can override via FeeDistributionEngine.__init__
 # ---------------------------------------------------------------------------
-DEFAULT_TIERS: List[TierRule] = [
+DEFAULT_TIERS: list[TierRule] = [
     TierRule(
         name="micro",
         threshold_min=Decimal("0"),
@@ -148,8 +146,8 @@ class FeeDistributionEngine:
 
     def __init__(
         self,
-        tiers: Optional[List[TierRule]] = None,
-        stakeholder_ids: Optional[Dict[StakeholderRole, str]] = None,
+        tiers: list[TierRule] | None = None,
+        stakeholder_ids: dict[StakeholderRole, str] | None = None,
     ) -> None:
         self._tiers = tiers if tiers is not None else list(DEFAULT_TIERS)
         self._stakeholder_ids = stakeholder_ids or {
@@ -184,10 +182,15 @@ class FeeDistributionEngine:
         allocations, remainder = self._split(gross_amount, tier)
 
         dist_id = uuid.uuid4().hex[:16]
-        ts = datetime.now(timezone.utc).isoformat()
+        ts = datetime.now(UTC).isoformat()
 
         evidence_hash = self._hash_evidence(
-            dist_id, ts, gross_amount, allocations, remainder, tier.name,
+            dist_id,
+            ts,
+            gross_amount,
+            allocations,
+            remainder,
+            tier.name,
         )
 
         return DistributionResult(
@@ -199,7 +202,7 @@ class FeeDistributionEngine:
             remainder=remainder,
         )
 
-    def list_tiers(self) -> List[TierRule]:
+    def list_tiers(self) -> list[TierRule]:
         """Return a copy of the configured tiers."""
         return list(self._tiers)
 
@@ -213,11 +216,9 @@ class FeeDistributionEngine:
                 return tier
         raise ValueError(f"No tier matched amount {amount}")
 
-    def _split(
-        self, gross: Decimal, tier: TierRule
-    ) -> tuple:
+    def _split(self, gross: Decimal, tier: TierRule) -> tuple:
         """Return (allocations_list, remainder) with 2-decimal rounding."""
-        allocations: List[FeeAllocation] = []
+        allocations: list[FeeAllocation] = []
         allocated = Decimal("0")
 
         roles = sorted(tier.splits.keys(), key=lambda r: r.value)
@@ -244,7 +245,7 @@ class FeeDistributionEngine:
         dist_id: str,
         ts: str,
         gross: Decimal,
-        allocations: List[FeeAllocation],
+        allocations: list[FeeAllocation],
         remainder: Decimal,
         tier_name: str,
     ) -> str:

@@ -10,8 +10,8 @@ Rules:
 """
 
 import os
-import sys
 import re
+import sys
 
 # Directories to skip entirely (relative to repo root)
 SKIP_DIRS = {".ssid_sandbox", ".claude", "__pycache__", "scripts", "docs"}
@@ -61,6 +61,7 @@ def has_test_file(module_dir: str, stem: str) -> bool:
     governance_reward_engine.py (extract prefix: first word before _engine, _router, etc.)
     """
     from pathlib import Path
+
     tests_dir = Path(module_dir) / "tests"
     candidates = [
         tests_dir / f"test_{stem}.py",
@@ -70,7 +71,7 @@ def has_test_file(module_dir: str, stem: str) -> bool:
         return True
     for suffix in ["_engine", "_router", "_splitter", "_handler", "_distributor"]:
         if stem.endswith(suffix):
-            prefix = stem[:-len(suffix)]
+            prefix = stem[: -len(suffix)]
             test_file = tests_dir / f"test_{prefix}.py"
             if test_file.is_file():
                 return True

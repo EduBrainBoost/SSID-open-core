@@ -23,6 +23,7 @@ Usage:
     # Machine-readable JSON snapshot:
     python orchestrator_truth_gate.py --json
 """
+
 from __future__ import annotations
 
 import argparse
@@ -30,7 +31,7 @@ import json
 import subprocess
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -59,6 +60,7 @@ ACCEPTED_UNTRACKED_PREFIXES = (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _run(cmd: list[str], *, cwd: Path, check: bool = False) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, capture_output=True, text=True, cwd=str(cwd), check=check)
 
@@ -82,8 +84,7 @@ def _classify_untracked(files: list[str]) -> tuple[list[str], list[str]]:
         if is_accepted:
             continue
         is_policy_violation = any(
-            (pat.startswith("*") and f.endswith(pat[1:])) or pat in f
-            for pat in FAIL_UNTRACKED_PATTERNS
+            (pat.startswith("*") and f.endswith(pat[1:])) or pat in f for pat in FAIL_UNTRACKED_PATTERNS
         )
         if is_policy_violation:
             fail_list.append(f)
@@ -95,6 +96,7 @@ def _classify_untracked(files: list[str]) -> tuple[list[str], list[str]]:
 # ---------------------------------------------------------------------------
 # Truth Gate
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class TruthGateResult:
@@ -142,9 +144,7 @@ def _check_worktree(result: TruthGateResult, repo: str, local_path: Path) -> dic
 
     if unstaged or staged:
         result.fail(
-            f"{repo}: worktree dirty — "
-            f"{len(unstaged)} unstaged, {len(staged)} staged. "
-            f"Commit or stash before swarm."
+            f"{repo}: worktree dirty — {len(unstaged)} unstaged, {len(staged)} staged. Commit or stash before swarm."
         )
 
     # Step 5b: local HEAD ahead of origin/main
@@ -157,10 +157,7 @@ def _check_worktree(result: TruthGateResult, repo: str, local_path: Path) -> dic
     info["local_ahead_files"] = ahead_files
 
     if ahead_files:
-        result.fail(
-            f"{repo}: local HEAD ahead of origin/main by {len(ahead_files)} file(s). "
-            f"Push before swarm."
-        )
+        result.fail(f"{repo}: local HEAD ahead of origin/main by {len(ahead_files)} file(s). Push before swarm.")
 
     # Step 9: untracked classification
     r_status = _run(["git", "status", "--porcelain"], cwd=local_path)
@@ -174,10 +171,7 @@ def _check_worktree(result: TruthGateResult, repo: str, local_path: Path) -> dic
 
     if warn_untracked:
         # Non-policy untracked files: warn only (runtime noise, reports, etc.)
-        result.warn(
-            f"{repo}: {len(warn_untracked)} untracked file(s) (non-blocking): "
-            f"{warn_untracked[:3]}"
-        )
+        result.warn(f"{repo}: {len(warn_untracked)} untracked file(s) (non-blocking): {warn_untracked[:3]}")
 
     return info
 
@@ -188,8 +182,17 @@ def _check_open_prs(result: TruthGateResult, repos: list[str]) -> list[dict]:
 
     for repo in repos:
         r = _run(
-            ["gh", "pr", "list", "--state", "open", "--repo", repo,
-             "--json", "number,title,headRefName,mergeable,baseRefName,mergeStateStatus"],
+            [
+                "gh",
+                "pr",
+                "list",
+                "--state",
+                "open",
+                "--repo",
+                repo,
+                "--json",
+                "number,title,headRefName,mergeable,baseRefName,mergeStateStatus",
+            ],
             cwd=REPO_ROOT,
         )
         if r.returncode != 0:
@@ -208,11 +211,13 @@ def _check_open_prs(result: TruthGateResult, repos: list[str]) -> list[dict]:
             mergeable = pr.get("mergeable", "UNKNOWN")
 
             # Step 6: enrich with files
-            pr_view = _gh_json(
-                ["pr", "view", str(nr), "--repo", repo,
-                 "--json", "files,state,mergeStateStatus"],
-                cwd=REPO_ROOT,
-            ) or {}
+            pr_view = (
+                _gh_json(
+                    ["pr", "view", str(nr), "--repo", repo, "--json", "files,state,mergeStateStatus"],
+                    cwd=REPO_ROOT,
+                )
+                or {}
+            )
             pr_files = {f["path"] for f in pr_view.get("files", [])}
 
             # Step 7: file overlap vs origin/main (gh-only, works cross-repo)
@@ -221,21 +226,20 @@ def _check_open_prs(result: TruthGateResult, repos: list[str]) -> list[dict]:
                 result.warn(overlap_warning)
 
             if merge_state == "BLOCKED":
-                result.warn(
-                    f"PR #{nr} ({repo}) mergeStateStatus=BLOCKED — "
-                    f"resolve conflicts before swarm."
-                )
+                result.warn(f"PR #{nr} ({repo}) mergeStateStatus=BLOCKED — resolve conflicts before swarm.")
 
-            all_prs.append({
-                "repo": repo,
-                "number": nr,
-                "title": pr.get("title", ""),
-                "headRefName": head_ref,
-                "mergeable": mergeable,
-                "mergeStateStatus": merge_state,
-                "files_count": len(pr_files),
-                "files_sample": sorted(pr_files)[:5],
-            })
+            all_prs.append(
+                {
+                    "repo": repo,
+                    "number": nr,
+                    "title": pr.get("title", ""),
+                    "headRefName": head_ref,
+                    "mergeable": mergeable,
+                    "mergeStateStatus": merge_state,
+                    "files_count": len(pr_files),
+                    "files_sample": sorted(pr_files)[:5],
+                }
+            )
 
     return all_prs
 
@@ -249,16 +253,13 @@ def _detect_overlap(repo: str, pr_nr: int, pr_files: set[str], head_ref: str) ->
 
     # Get recent commits on main for that repo (last 20)
     r = _run(
-        ["gh", "api", f"repos/{repo}/commits",
-         "--jq", ".[].files[].filename",
-         "-f", "per_page=20"],
+        ["gh", "api", f"repos/{repo}/commits", "--jq", ".[].files[].filename", "-f", "per_page=20"],
         cwd=REPO_ROOT,
     )
     # Note: /commits endpoint doesn't include files; use compare instead
     # Use compare between PR head and main to find overlap
     r = _run(
-        ["gh", "api", f"repos/{repo}/compare/{head_ref}...main",
-         "--jq", ".files[].filename"],
+        ["gh", "api", f"repos/{repo}/compare/{head_ref}...main", "--jq", ".files[].filename"],
         cwd=REPO_ROOT,
     )
     if r.returncode != 0 or not r.stdout.strip():
@@ -282,15 +283,11 @@ def _check_planned_prs(result: TruthGateResult, planned: dict[str, list[int]]) -
     for repo, numbers in planned.items():
         for nr in numbers:
             r = _run(
-                ["gh", "pr", "view", str(nr), "--repo", repo,
-                 "--json", "state,title,mergedAt,closedAt,headRefName"],
+                ["gh", "pr", "view", str(nr), "--repo", repo, "--json", "state,title,mergedAt,closedAt,headRefName"],
                 cwd=REPO_ROOT,
             )
             if r.returncode != 0:
-                result.fail(
-                    f"Planned PR #{nr} ({repo}): cannot fetch live state — "
-                    f"{r.stderr.strip()[:80]}"
-                )
+                result.fail(f"Planned PR #{nr} ({repo}): cannot fetch live state — {r.stderr.strip()[:80]}")
                 continue
 
             try:
@@ -307,13 +304,15 @@ def _check_planned_prs(result: TruthGateResult, planned: dict[str, list[int]]) -
                     f"('{title[:50]}'). Remove from task list before swarm."
                 )
 
-            checked.append({
-                "repo": repo,
-                "number": nr,
-                "title": title,
-                "state": state,
-                "headRefName": info.get("headRefName", ""),
-            })
+            checked.append(
+                {
+                    "repo": repo,
+                    "number": nr,
+                    "title": title,
+                    "state": state,
+                    "headRefName": info.get("headRefName", ""),
+                }
+            )
 
     return checked
 
@@ -325,7 +324,7 @@ def run_truth_gate(
 ) -> TruthGateResult:
     result = TruthGateResult()
     snapshot: dict[str, Any] = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "worktree_checks": {},
         "open_prs": [],
         "planned_pr_checks": [],
@@ -359,6 +358,7 @@ def run_truth_gate(
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def _parse_repo_paths(raw: list[str]) -> dict[str, Path]:
     """Parse 'EduBrainBoost/SSID:/path/to/repo' entries."""
     out: dict[str, Path] = {}
@@ -390,27 +390,23 @@ def _parse_planned_prs(raw: list[str]) -> dict[str, list[int]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Orchestrator Pre-Run Truth Gate v2 — fail-closed"
-    )
+    parser = argparse.ArgumentParser(description="Orchestrator Pre-Run Truth Gate v2 — fail-closed")
+    parser.add_argument("--repos", nargs="*", default=DEFAULT_REPOS, help="GitHub repos to check for open PRs")
     parser.add_argument(
-        "--repos", nargs="*", default=DEFAULT_REPOS,
-        help="GitHub repos to check for open PRs"
-    )
-    parser.add_argument(
-        "--repo-paths", nargs="*", default=[],
+        "--repo-paths",
+        nargs="*",
+        default=[],
         metavar="REPO:PATH",
-        help="Local worktree paths per repo, e.g. EduBrainBoost/SSID:/path/to/ssid"
+        help="Local worktree paths per repo, e.g. EduBrainBoost/SSID:/path/to/ssid",
     )
     parser.add_argument(
-        "--planned-prs", nargs="*", default=[],
+        "--planned-prs",
+        nargs="*",
+        default=[],
         metavar="REPO:NR,NR",
-        help="Planned PR numbers to verify are not already merged, e.g. EduBrainBoost/SSID:110,111"
+        help="Planned PR numbers to verify are not already merged, e.g. EduBrainBoost/SSID:110,111",
     )
-    parser.add_argument(
-        "--json", dest="json_output", action="store_true",
-        help="Output machine-readable JSON snapshot"
-    )
+    parser.add_argument("--json", dest="json_output", action="store_true", help="Output machine-readable JSON snapshot")
     args = parser.parse_args(argv)
 
     # Defaults: if no --repo-paths given, use REPO_ROOT for the first repo
@@ -458,8 +454,10 @@ def main(argv: list[str] | None = None) -> int:
     if snap.get("open_prs"):
         print("\n[OPEN PRs]")
         for pr in snap["open_prs"]:
-            print(f"  #{pr['number']} [{pr.get('mergeStateStatus','?')}] "
-                  f"{pr['repo'].split('/')[-1]} — {pr['title'][:55]}")
+            print(
+                f"  #{pr['number']} [{pr.get('mergeStateStatus', '?')}] "
+                f"{pr['repo'].split('/')[-1]} — {pr['title'][:55]}"
+            )
 
     if snap.get("planned_pr_checks"):
         print("\n[PLANNED PR LIVE STATE]")

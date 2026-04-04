@@ -1,27 +1,27 @@
 """Tests for governance_reward_engine."""
+
 from __future__ import annotations
 
+import sys
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
-import sys
-from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from governance_reward_engine import (
-    GovernanceRewardEngine,
-    GovernanceParticipant,
-    GovernanceActivity,
-    GovernanceRewardResult,
-    GovernanceActivityType,
     DEFAULT_ACTIVITY_TYPE_WEIGHTS,
+    GovernanceActivity,
+    GovernanceActivityType,
+    GovernanceParticipant,
+    GovernanceRewardEngine,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 def _voter(pid: str) -> GovernanceParticipant:
     return GovernanceParticipant(
@@ -40,6 +40,7 @@ def _proposer(pid: str) -> GovernanceParticipant:
 # ---------------------------------------------------------------------------
 # GovernanceActivity validation
 # ---------------------------------------------------------------------------
+
 
 class TestGovernanceActivity:
     def test_valid_activity_default_weight(self) -> None:
@@ -66,6 +67,7 @@ class TestGovernanceActivity:
 # ---------------------------------------------------------------------------
 # get_activity_score
 # ---------------------------------------------------------------------------
+
 
 class TestGetActivityScore:
     def setup_method(self) -> None:
@@ -115,6 +117,7 @@ class TestGetActivityScore:
 # ---------------------------------------------------------------------------
 # distribute
 # ---------------------------------------------------------------------------
+
 
 class TestDistribute:
     def setup_method(self) -> None:
@@ -197,6 +200,7 @@ class TestDistribute:
 # calculate_rewards
 # ---------------------------------------------------------------------------
 
+
 class TestCalculateRewards:
     def setup_method(self) -> None:
         self.engine = GovernanceRewardEngine()
@@ -230,22 +234,19 @@ class TestCalculateRewards:
 # record_activity & ledger
 # ---------------------------------------------------------------------------
 
+
 class TestRecordActivity:
     def setup_method(self) -> None:
         self.engine = GovernanceRewardEngine()
 
     def test_record_increments_score(self) -> None:
-        self.engine.record_activity(
-            "alice", GovernanceActivity(GovernanceActivityType.VOTE)
-        )
+        self.engine.record_activity("alice", GovernanceActivity(GovernanceActivityType.VOTE))
         score = self.engine.get_activity_score("alice")
         assert score > 0.0
 
     def test_multiple_records_accumulate(self) -> None:
         for _ in range(3):
-            self.engine.record_activity(
-                "alice", GovernanceActivity(GovernanceActivityType.VOTE)
-            )
+            self.engine.record_activity("alice", GovernanceActivity(GovernanceActivityType.VOTE))
         score = self.engine.get_activity_score("alice")
         single = DEFAULT_ACTIVITY_TYPE_WEIGHTS[GovernanceActivityType.VOTE]
         assert score == pytest.approx(3 * single)

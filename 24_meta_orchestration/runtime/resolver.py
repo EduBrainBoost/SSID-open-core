@@ -1,20 +1,20 @@
 """
 SSIDCTL v2 Profile Resolver + Agent Resolution Engine.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, FrozenSet, List, Optional, Set
 
-from .loader import AgentDef, ProfileDef, RegistryBundle
+from .loader import AgentDef, RegistryBundle
 
 
 @dataclass
 class ResolutionResult:
     profile_id: str
-    resolved_agents: List[AgentDef]
-    resolved_ids: FrozenSet[str]
-    missing_deps: List[str]
+    resolved_agents: list[AgentDef]
+    resolved_ids: frozenset[str]
+    missing_deps: list[str]
     blocked: bool
     block_reason: str = ""
 
@@ -32,7 +32,7 @@ def resolve_profile(bundle: RegistryBundle, profile_id: str) -> ResolutionResult
         )
 
     profile = bundle.profiles[profile_id]
-    agent_ids: Set[str] = set()
+    agent_ids: set[str] = set()
 
     # Collect agent IDs from profile
     if profile.agents == ["*"]:
@@ -43,8 +43,8 @@ def resolve_profile(bundle: RegistryBundle, profile_id: str) -> ResolutionResult
         agent_ids.update(profile.phase_b_agents)
 
     # Resolve agents
-    resolved: List[AgentDef] = []
-    missing_agents: List[str] = []
+    resolved: list[AgentDef] = []
+    missing_agents: list[str] = []
     for aid in sorted(agent_ids):
         if aid in bundle.agents:
             resolved.append(bundle.agents[aid])
@@ -63,7 +63,7 @@ def resolve_profile(bundle: RegistryBundle, profile_id: str) -> ResolutionResult
 
     # Validate dependencies — deps must exist in the full registry (not just the profile)
     all_registry_ids = set(bundle.agents.keys())
-    missing_deps: List[str] = []
+    missing_deps: list[str] = []
     for agent in resolved:
         for dep in agent.depends_on:
             if dep not in all_registry_ids:
@@ -88,18 +88,16 @@ def resolve_profile(bundle: RegistryBundle, profile_id: str) -> ResolutionResult
     )
 
 
-def filter_by_repo_scope(
-    agents: List[AgentDef], repo: str
-) -> List[AgentDef]:
+def filter_by_repo_scope(agents: list[AgentDef], repo: str) -> list[AgentDef]:
     """Filter agents to those whose repo_scope includes the given repo."""
     return [a for a in agents if repo in a.repo_scope or "*" in a.repo_scope]
 
 
-def filter_by_level(agents: List[AgentDef], level: str) -> List[AgentDef]:
+def filter_by_level(agents: list[AgentDef], level: str) -> list[AgentDef]:
     return [a for a in agents if a.level == level]
 
 
-def get_activation_order(agents: List[AgentDef]) -> List[AgentDef]:
+def get_activation_order(agents: list[AgentDef]) -> list[AgentDef]:
     """Return agents in deterministic activation order: L0, L1, L2, L3, L4, L5."""
     level_order = {"L0": 0, "L1": 1, "L2": 2, "L3": 3, "L4": 4, "L5": 5}
     return sorted(agents, key=lambda a: (level_order.get(a.level, 99), a.agent_id))

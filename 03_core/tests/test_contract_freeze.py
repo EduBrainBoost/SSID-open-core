@@ -3,13 +3,12 @@
 P1 pre-merge validation: ensures the SsidRuntimeReport schema and golden files
 remain stable and backward-compatible.
 """
+
 from __future__ import annotations
 
 import json
 import sys
 from pathlib import Path
-
-import pytest
 
 # Locate the schema directory relative to this test file
 _SCHEMA_DIR = Path(__file__).resolve().parents[1] / "schema"
@@ -24,6 +23,7 @@ if str(_CORE_DIR) not in sys.path:
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _load_json(filename: str) -> dict:
     path = _SCHEMA_DIR / filename
     return json.loads(path.read_text(encoding="utf-8"))
@@ -32,6 +32,7 @@ def _load_json(filename: str) -> dict:
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 def test_schema_json_is_valid_json():
     """Schema file must be loadable as valid JSON."""
@@ -84,8 +85,7 @@ def test_golden_denied_has_deny_flow():
     """golden_denied.json must contain at least one flow with allow_or_deny=='deny' or status=='denied'."""
     data = _load_json("golden_denied.json")
     has_deny = any(
-        flow.get("allow_or_deny") == "deny" or flow.get("status") == "denied"
-        for flow in data["flow_statuses"]
+        flow.get("allow_or_deny") == "deny" or flow.get("status") == "denied" for flow in data["flow_statuses"]
     )
     assert has_deny, "golden_denied.json has no denied flow"
 
@@ -99,4 +99,5 @@ def test_schema_version_unchanged():
 def test_ems_contract_schema_version_matches_1_0_0():
     """SCHEMA_VERSION in ems_contract.py must be '1.0.0'."""
     from ems_contract import SCHEMA_VERSION
+
     assert SCHEMA_VERSION == "1.0.0"

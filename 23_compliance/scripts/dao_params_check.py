@@ -3,6 +3,7 @@
 Validates DAO governance parameters are within policy-defined ranges.
 Exits 0 (PASS) or 1 (FAIL_QA).
 """
+
 import argparse
 import json
 import sys
@@ -10,6 +11,7 @@ from pathlib import Path
 
 try:
     import yaml
+
     HAS_YAML = True
 except ImportError:
     HAS_YAML = False
@@ -25,9 +27,7 @@ def check_params(policy: dict, actual_params: dict | None = None) -> dict:
     failures = []
 
     # Use actual params if provided, otherwise validate defaults
-    params_to_check = actual_params or {
-        k: v.get("default") for k, v in dao_params_spec.items()
-    }
+    params_to_check = actual_params or {k: v.get("default") for k, v in dao_params_spec.items()}
 
     for param_name, spec in dao_params_spec.items():
         value = params_to_check.get(param_name)
@@ -42,8 +42,7 @@ def check_params(policy: dict, actual_params: dict | None = None) -> dict:
 
         min_val = spec.get("min")
         max_val = spec.get("max")
-        in_range = (min_val is None or value >= min_val) and \
-                   (max_val is None or value <= max_val)
+        in_range = (min_val is None or value >= min_val) and (max_val is None or value <= max_val)
 
         if not in_range:
             failures.append(param_name)

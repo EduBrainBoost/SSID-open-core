@@ -27,9 +27,9 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Embedded schema -- convergence_manifest_schema.json equivalent
@@ -68,36 +68,27 @@ class SchemaError(Exception):
     """Raised when scanner result does not conform to expected schema."""
 
 
-def validate_result(result: Dict[str, Any]) -> List[str]:
+def validate_result(result: dict[str, Any]) -> list[str]:
     """Validate a scanner result dict against the manifest schema.
 
     Returns a list of error strings. Empty list means valid.
     """
-    errors: List[str] = []
+    errors: list[str] = []
 
     # Required top-level fields and types
     for field, expected_type in _REQUIRED_FIELDS.items():
         if field not in result:
             errors.append(f"Missing required field: {field}")
         elif not isinstance(result[field], expected_type):
-            errors.append(
-                f"Field '{field}' must be {expected_type.__name__}, "
-                f"got {type(result[field]).__name__}"
-            )
+            errors.append(f"Field '{field}' must be {expected_type.__name__}, got {type(result[field]).__name__}")
 
     # Status enum
     if result.get("status") not in _VALID_STATUSES:
-        errors.append(
-            f"Field 'status' must be one of {_VALID_STATUSES}, "
-            f"got '{result.get('status')}'"
-        )
+        errors.append(f"Field 'status' must be one of {_VALID_STATUSES}, got '{result.get('status')}'")
 
     # Repo role enum
     if result.get("repo_role") not in _VALID_ROLES:
-        errors.append(
-            f"Field 'repo_role' must be one of {_VALID_ROLES}, "
-            f"got '{result.get('repo_role')}'"
-        )
+        errors.append(f"Field 'repo_role' must be one of {_VALID_ROLES}, got '{result.get('repo_role')}'")
 
     # drift_findings item schema
     for i, finding in enumerate(result.get("drift_findings", [])):
@@ -106,9 +97,7 @@ def validate_result(result: Dict[str, Any]) -> List[str]:
             continue
         missing_keys = _DRIFT_FINDING_REQUIRED - finding.keys()
         if missing_keys:
-            errors.append(
-                f"drift_findings[{i}] missing keys: {sorted(missing_keys)}"
-            )
+            errors.append(f"drift_findings[{i}] missing keys: {sorted(missing_keys)}")
 
     # blocked_operations item schema
     for i, op in enumerate(result.get("blocked_operations", [])):
@@ -117,9 +106,7 @@ def validate_result(result: Dict[str, Any]) -> List[str]:
             continue
         missing_keys = _BLOCKED_OP_REQUIRED - op.keys()
         if missing_keys:
-            errors.append(
-                f"blocked_operations[{i}] missing keys: {sorted(missing_keys)}"
-            )
+            errors.append(f"blocked_operations[{i}] missing keys: {sorted(missing_keys)}")
 
     # rule_count must be non-negative
     rc = result.get("rule_count")
@@ -134,23 +121,18 @@ def validate_result(result: Dict[str, Any]) -> List[str]:
 # ---------------------------------------------------------------------------
 
 
-def generate_manifest(result: Dict[str, Any]) -> str:
+def generate_manifest(result: dict[str, Any]) -> str:
     """Validate and return deterministic JSON string of the manifest.
 
     Raises SchemaError if validation fails.
     """
     errors = validate_result(result)
     if errors:
-        raise SchemaError(
-            "Scanner result failed schema validation:\n"
-            + "\n".join(f"  - {e}" for e in errors)
-        )
+        raise SchemaError("Scanner result failed schema validation:\n" + "\n".join(f"  - {e}" for e in errors))
 
     manifest = {
         "manifest_version": "1.0.0",
-        "generated_at_utc": datetime.now(timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        ),
+        "generated_at_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "scan_result": result,
     }
     return json.dumps(manifest, indent=2, sort_keys=True, ensure_ascii=False)
@@ -171,17 +153,17 @@ def _severity_icon(severity: str) -> str:
     }.get(severity.lower(), f"[{severity.upper()}]")
 
 
-def render_report(result: Dict[str, Any]) -> str:
+def render_report(result: dict[str, Any]) -> str:
     """Render a Markdown report from the scanner result."""
-    lines: List[str] = []
+    lines: list[str] = []
 
     status = result.get("status", "UNKNOWN")
     lines.append(f"# SoT Convergence Report -- {status}")
     lines.append("")
     lines.append("## Summary")
     lines.append("")
-    lines.append(f"| Field | Value |")
-    lines.append(f"|-------|-------|")
+    lines.append("| Field | Value |")
+    lines.append("|-------|-------|")
     lines.append(f"| Repo | `{result.get('repo_name', '?')}` |")
     lines.append(f"| Role | `{result.get('repo_role', '?')}` |")
     lines.append(f"| Scan time (UTC) | `{result.get('scan_time_utc', '?')}` |")
@@ -215,10 +197,7 @@ def render_report(result: Dict[str, Any]) -> str:
         lines.append("|---|-------|----------|------|--------|")
         for i, f in enumerate(findings, 1):
             sev = _severity_icon(f.get("severity", "?"))
-            lines.append(
-                f"| {i} | `{f.get('class', '?')}` | {sev} "
-                f"| `{f.get('path', '?')}` | {f.get('detail', '')} |"
-            )
+            lines.append(f"| {i} | `{f.get('class', '?')}` | {sev} | `{f.get('path', '?')}` | {f.get('detail', '')} |")
         lines.append("")
 
     # Blocked operations
@@ -236,10 +215,7 @@ def render_report(result: Dict[str, Any]) -> str:
         lines.append("")
 
     lines.append("---")
-    lines.append(
-        f"*Generated by convergence_manifest_gen.py at "
-        f"{datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}*"
-    )
+    lines.append(f"*Generated by convergence_manifest_gen.py at {datetime.now(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}*")
     lines.append("")
 
     return "\n".join(lines)
@@ -250,7 +226,7 @@ def render_report(result: Dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 
 
-def main(argv: Optional[List[str]] = None) -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="Convergence Manifest Generator",
     )
@@ -277,12 +253,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     args = parser.parse_args(argv)
 
     # Load input
-    if args.input:
-        result = json.loads(
-            Path(args.input).read_text(encoding="utf-8")
-        )
-    else:
-        result = json.load(sys.stdin)
+    result = json.loads(Path(args.input).read_text(encoding="utf-8")) if args.input else json.load(sys.stdin)
 
     # Generate manifest
     try:

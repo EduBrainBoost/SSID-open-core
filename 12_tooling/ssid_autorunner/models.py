@@ -1,11 +1,12 @@
-from enum import Enum
-from typing import Optional, List
-from pydantic import BaseModel, Field, field_validator
 import re
+from enum import StrEnum
+
+from pydantic import BaseModel, Field, field_validator
 
 VALID_AR_IDS = {f"AR-{i:02d}" for i in range(1, 11)}
 
-class StatusCode(str, Enum):
+
+class StatusCode(StrEnum):
     PASS = "PASS"
     FAIL_POLICY = "FAIL_POLICY"
     FAIL_SOT = "FAIL_SOT"
@@ -18,14 +19,17 @@ class StatusCode(str, Enum):
     FAIL_SHARD = "FAIL_SHARD"
     ERROR = "ERROR"
 
+
 class ScopeLock(BaseModel):
-    allowed_paths: List[str] = Field(default_factory=list)
-    forbidden_paths: List[str] = Field(default_factory=list)
+    allowed_paths: list[str] = Field(default_factory=list)
+    forbidden_paths: list[str] = Field(default_factory=list)
+
 
 class AgentTask(BaseModel):
     agent_id: str
     model: str = Field(pattern="^(opus|sonnet|haiku)$")
     max_tokens: int = 4096
+
 
 class AutoRunnerPayload(BaseModel):
     run_id: str = Field(pattern=r"^[0-9a-f-]{36}$")
@@ -35,8 +39,8 @@ class AutoRunnerPayload(BaseModel):
     branch: str = "main"
     commit_sha: str
     scope_lock: ScopeLock = Field(default_factory=ScopeLock)
-    agent_task: Optional[AgentTask] = None
-    opa_input_path: Optional[str] = None
+    agent_task: AgentTask | None = None
+    opa_input_path: str | None = None
     context: dict = Field(default_factory=dict)
 
     @field_validator("autorunner_id")

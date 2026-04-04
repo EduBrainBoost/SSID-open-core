@@ -13,6 +13,7 @@ Exit codes:
   0 = all scenarios completed within thresholds
   1 = one or more scenarios exceeded error/latency thresholds
 """
+
 from __future__ import annotations
 
 import argparse
@@ -24,14 +25,15 @@ import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any
 
 
 @dataclass
 class LoadTestScenario:
     """Definition of a single load test scenario."""
+
     name: str
     target_url: str
     concurrent_users: int = 5
@@ -52,6 +54,7 @@ class LoadTestScenario:
 @dataclass
 class RequestResult:
     """Result of a single HTTP request."""
+
     status_code: int
     latency_ms: float
     error: str = ""
@@ -61,6 +64,7 @@ class RequestResult:
 @dataclass
 class ScenarioResult:
     """Aggregate result of a load test scenario."""
+
     scenario_name: str
     total_requests: int = 0
     successful_requests: int = 0
@@ -75,16 +79,15 @@ class ScenarioResult:
     duration_seconds: float = 0.0
     requests_per_second: float = 0.0
     passed: bool = True
-    errors: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
-def _make_request(url: str, method: str = "GET",
-                  timeout: float = 10.0) -> RequestResult:
+def _make_request(url: str, method: str = "GET", timeout: float = 10.0) -> RequestResult:
     """Execute a single HTTP request and measure latency."""
-    ts = datetime.now(timezone.utc).isoformat()
+    ts = datetime.now(UTC).isoformat()
     start = time.monotonic()
     try:
         req = urllib.request.Request(url, method=method)
@@ -163,8 +166,7 @@ class LoadTestRunner:
                         try:
                             request_results.append(fut.result())
                         except Exception as exc:
-                            request_results.append(RequestResult(
-                                status_code=0, latency_ms=0, error=str(exc)))
+                            request_results.append(RequestResult(status_code=0, latency_ms=0, error=str(exc)))
                         done.append(fut)
                 for d in done:
                     futures.remove(d)
@@ -177,8 +179,7 @@ class LoadTestRunner:
                 try:
                     request_results.append(fut.result())
                 except Exception as exc:
-                    request_results.append(RequestResult(
-                        status_code=0, latency_ms=0, error=str(exc)))
+                    request_results.append(RequestResult(status_code=0, latency_ms=0, error=str(exc)))
 
         actual_duration = time.monotonic() - start_time
 
@@ -205,8 +206,10 @@ class LoadTestRunner:
             p99_latency_ms=round(_percentile(latencies, 99), 2) if latencies else 0.0,
             duration_seconds=round(actual_duration, 2),
             requests_per_second=round(total / actual_duration, 2) if actual_duration > 0 else 0.0,
-            passed=(error_rate <= scenario.max_error_rate and
-                    (_percentile(latencies, 95) <= scenario.max_p95_latency_ms if latencies else True)),
+            passed=(
+                error_rate <= scenario.max_error_rate
+                and (_percentile(latencies, 95) <= scenario.max_p95_latency_ms if latencies else True)
+            ),
             errors=errors[:10],  # cap error list
         )
 
@@ -224,7 +227,7 @@ class LoadTestRunner:
         """Generate a JSON-serializable report of all results."""
         all_passed = all(r.passed for r in self.results)
         return {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "overall_passed": all_passed,
             "scenarios_run": len(self.results),
             "scenarios_passed": sum(1 for r in self.results if r.passed),
@@ -236,21 +239,15 @@ class LoadTestRunner:
 # CLI
 # ----------------------------------------------------------------------
 
+
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="SSID Load Test Stub — lightweight HTTP load testing")
-    parser.add_argument("--target", type=str, default=None,
-                        help="Target URL to test")
-    parser.add_argument("--users", type=int, default=5,
-                        help="Number of concurrent users (default: 5)")
-    parser.add_argument("--duration", type=int, default=10,
-                        help="Test duration in seconds (default: 10)")
-    parser.add_argument("--config", type=str, default=None,
-                        help="Path to JSON config with scenario definitions")
-    parser.add_argument("--json", action="store_true",
-                        help="Output JSON report")
-    parser.add_argument("--output", type=str, default=None,
-                        help="Write report to file")
+    parser = argparse.ArgumentParser(description="SSID Load Test Stub — lightweight HTTP load testing")
+    parser.add_argument("--target", type=str, default=None, help="Target URL to test")
+    parser.add_argument("--users", type=int, default=5, help="Number of concurrent users (default: 5)")
+    parser.add_argument("--duration", type=int, default=10, help="Test duration in seconds (default: 10)")
+    parser.add_argument("--config", type=str, default=None, help="Path to JSON config with scenario definitions")
+    parser.add_argument("--json", action="store_true", help="Output JSON report")
+    parser.add_argument("--output", type=str, default=None, help="Write report to file")
     args = parser.parse_args(argv)
 
     runner = LoadTestRunner()
@@ -265,12 +262,14 @@ def main(argv: list[str] | None = None) -> int:
         for s in scenarios:
             runner.add_scenario(LoadTestScenario.from_dict(s))
     elif args.target:
-        runner.add_scenario(LoadTestScenario(
-            name="cli_scenario",
-            target_url=args.target,
-            concurrent_users=args.users,
-            duration_seconds=args.duration,
-        ))
+        runner.add_scenario(
+            LoadTestScenario(
+                name="cli_scenario",
+                target_url=args.target,
+                concurrent_users=args.users,
+                duration_seconds=args.duration,
+            )
+        )
     else:
         print("ERROR: provide --target or --config", file=sys.stderr)
         return 1
@@ -286,24 +285,29 @@ def main(argv: list[str] | None = None) -> int:
         for r in report["results"]:
             status = "PASS" if r["passed"] else "FAIL"
             lines.append(f"  [{status}] {r['scenario_name']}")
-            lines.append(f"    Requests: {r['total_requests']} total, "
-                         f"{r['successful_requests']} ok, {r['failed_requests']} failed")
-            lines.append(f"    Error rate: {r['error_rate']*100:.1f}%")
-            lines.append(f"    Latency: min={r['min_latency_ms']}ms, "
-                         f"mean={r['mean_latency_ms']}ms, "
-                         f"p95={r['p95_latency_ms']}ms, "
-                         f"p99={r['p99_latency_ms']}ms")
+            lines.append(
+                f"    Requests: {r['total_requests']} total, "
+                f"{r['successful_requests']} ok, {r['failed_requests']} failed"
+            )
+            lines.append(f"    Error rate: {r['error_rate'] * 100:.1f}%")
+            lines.append(
+                f"    Latency: min={r['min_latency_ms']}ms, "
+                f"mean={r['mean_latency_ms']}ms, "
+                f"p95={r['p95_latency_ms']}ms, "
+                f"p99={r['p99_latency_ms']}ms"
+            )
             lines.append(f"    Throughput: {r['requests_per_second']} req/s")
             lines.append("")
-        lines.append(f"Overall: {'PASS' if report['overall_passed'] else 'FAIL'} "
-                     f"({report['scenarios_passed']}/{report['scenarios_run']} passed)")
+        lines.append(
+            f"Overall: {'PASS' if report['overall_passed'] else 'FAIL'} "
+            f"({report['scenarios_passed']}/{report['scenarios_run']} passed)"
+        )
         output = "\n".join(lines)
 
     print(output)
 
     if args.output:
-        Path(args.output).write_text(
-            json.dumps(report, indent=2), encoding="utf-8")
+        Path(args.output).write_text(json.dumps(report, indent=2), encoding="utf-8")
         print(f"\nReport written to {args.output}")
 
     return 0 if report["overall_passed"] else 1

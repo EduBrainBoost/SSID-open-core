@@ -1,7 +1,7 @@
 import hashlib
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -16,7 +16,7 @@ from ems.services.sot_promotion_service import (
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _json_sha256(payload: dict[str, Any]) -> str:
@@ -81,9 +81,7 @@ def append_rollback_proposal(repo_root: Path, payload: dict[str, Any]) -> dict[s
     record = dict(payload)
     record.setdefault("proposal_id", f"RBP-{uuid.uuid4().hex[:12].upper()}")
     record.setdefault("created_at_utc", _utc_now_iso())
-    record["proposal_evidence_hash"] = _json_sha256(
-        {k: v for k, v in record.items() if k != "proposal_evidence_hash"}
-    )
+    record["proposal_evidence_hash"] = _json_sha256({k: v for k, v in record.items() if k != "proposal_evidence_hash"})
     try:
         _append_jsonl(_proposal_registry_path(repo_root), record)
     except Exception as exc:
@@ -127,9 +125,7 @@ def evaluate_and_build_rollback_proposal(
             item.get("current_active_version") == current_active_version
             and item.get("target_baseline_version") == target_baseline_version
         ):
-            raise ValueError(
-                "rollback_proposal_already_exists: matching pending proposal already exists"
-            )
+            raise ValueError("rollback_proposal_already_exists: matching pending proposal already exists")
 
     source_execution = _latest_successful_execution_for_current_version(repo_root, current_active_version)
     if source_execution is None:

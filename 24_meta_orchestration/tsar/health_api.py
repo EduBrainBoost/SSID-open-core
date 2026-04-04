@@ -1,19 +1,16 @@
 """TSAR Health API - Endpoint-ready functions for system health monitoring."""
 
-from typing import Dict, List, Optional
 from .tsar_engine import (
-    TSAREngine,
-    DetectedIssue,
     IssueSeverity,
     IssueType,
-    RemediationAction,
+    TSAREngine,
 )
 
 
 class HealthAPI:
     """API layer for TSAR health queries and remediation queue management."""
 
-    def __init__(self, engine: Optional[TSAREngine] = None):
+    def __init__(self, engine: TSAREngine | None = None):
         self.engine = engine or TSAREngine()
 
     def get_health(self) -> dict:
@@ -22,10 +19,10 @@ class HealthAPI:
 
     def get_issues(
         self,
-        severity: Optional[IssueSeverity] = None,
-        issue_type: Optional[IssueType] = None,
-        resolved: Optional[bool] = None,
-    ) -> List[dict]:
+        severity: IssueSeverity | None = None,
+        issue_type: IssueType | None = None,
+        resolved: bool | None = None,
+    ) -> list[dict]:
         """Return filtered list of detected issues."""
         filtered = self.engine.issues
         if severity is not None:
@@ -48,7 +45,7 @@ class HealthAPI:
             for i in filtered
         ]
 
-    def get_remediation_queue(self) -> List[dict]:
+    def get_remediation_queue(self) -> list[dict]:
         """Return issues pending remediation, ordered by severity."""
         severity_order = {
             IssueSeverity.CRITICAL: 0,

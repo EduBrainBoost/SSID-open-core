@@ -1,9 +1,12 @@
 """Tests for Fee Distribution Engine — Phase 4."""
-import sys
+
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from decimal import Decimal
+
 from fee_distribution_engine import FeeDistributionEngine
 
 
@@ -51,7 +54,7 @@ def test_zero_amount_rejected():
     engine = FeeDistributionEngine(circulating_supply=Decimal("1000000000"))
     try:
         engine.calculate_fee(Decimal("0"))
-        assert False, "Should have raised ValueError"
+        raise AssertionError("Should have raised ValueError")
     except ValueError:
         pass
     print("PASS: test_zero_amount_rejected")

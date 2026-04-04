@@ -4,6 +4,7 @@
 Uses solcx (py-solc-x) if available, otherwise basic syntax check.
 Part of GAP-002: Solidity Build/Test Tooling.
 """
+
 from __future__ import annotations
 
 import re

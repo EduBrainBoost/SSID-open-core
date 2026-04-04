@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ssidctl changeset -- Show current changesets and their status."""
+
 from __future__ import annotations
 
 import argparse
@@ -26,7 +27,10 @@ def _get_recent_commits(root: str, limit: int) -> list[dict[str, str]]:
     try:
         out = subprocess.run(
             ["git", "log", f"--max-count={limit}", "--pretty=format:%H|%ai|%s"],
-            capture_output=True, text=True, cwd=root, timeout=10,
+            capture_output=True,
+            text=True,
+            cwd=root,
+            timeout=10,
         )
         if out.returncode != 0:
             return []
@@ -37,11 +41,13 @@ def _get_recent_commits(root: str, limit: int) -> list[dict[str, str]]:
     for line in out.stdout.strip().splitlines():
         parts = line.split("|", 2)
         if len(parts) == 3:
-            changesets.append({
-                "sha": parts[0][:12],
-                "date": parts[1],
-                "message": parts[2],
-            })
+            changesets.append(
+                {
+                    "sha": parts[0][:12],
+                    "date": parts[1],
+                    "message": parts[2],
+                }
+            )
     return changesets
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ssidctl sot-diff -- Show SoT differences between baseline and current state."""
+
 from __future__ import annotations
 
 import argparse
@@ -53,7 +54,7 @@ def run(args: argparse.Namespace) -> int:
     if args.json_output:
         print(json.dumps(result, indent=2))
     else:
-        print(f"SoT Diff Report")
+        print("SoT Diff Report")
         print(f"  Root:     {repo_root}")
         print(f"  Baseline: {args.baseline or '(none)'}")
         print(f"  Status:   {result['status']}")

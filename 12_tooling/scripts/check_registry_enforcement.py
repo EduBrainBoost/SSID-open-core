@@ -11,8 +11,8 @@ Rules:
 """
 
 import os
-import sys
 import re
+import sys
 
 # Dirs/patterns to skip entirely
 SKIP_DIRS = {"__pycache__", "tests", ".ssid_sandbox", ".claude", "shards"}
@@ -75,7 +75,7 @@ def check_registry_entry(module_dir: str, py_stem: str) -> tuple[bool, str]:
         return False, "module.yaml missing"
 
     try:
-        with open(yaml_path, "r", encoding="utf-8") as fh:
+        with open(yaml_path, encoding="utf-8") as fh:
             content = fh.read()
     except OSError as exc:
         return False, f"Cannot read module.yaml: {exc}"
@@ -95,7 +95,7 @@ def main() -> int:
     module_dirs = find_module_dirs(REPO_ROOT)
 
     for module_dir in module_dirs:
-        mod_name = os.path.basename(module_dir)
+        os.path.basename(module_dir)
         py_files = get_productive_py_files(module_dir)
 
         for py_file in py_files:
@@ -106,7 +106,9 @@ def main() -> int:
                 rel = os.path.relpath(os.path.join(module_dir, py_file), REPO_ROOT).replace("\\", "/")
                 violations.append(f"  VIOLATION  {rel}  [{reason}]")
 
-    print(f"Registry Enforcement Check — scanned {checked} productive .py file(s) across {len(module_dirs)} module dirs")
+    print(
+        f"Registry Enforcement Check — scanned {checked} productive .py file(s) across {len(module_dirs)} module dirs"
+    )
     print()
 
     if violations:

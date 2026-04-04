@@ -12,6 +12,7 @@ All amounts are validated for conservation, fairness, and type correctness.
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import sys
@@ -23,15 +24,11 @@ import pytest
 # Ensure 03_core is importable regardless of working directory
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from fairness_engine import FairnessConstraint, FairnessEngine
 from fee_distribution_engine import (
     FeeDistributionEngine,
     FeeParticipant,
     ParticipantRole,
-)
-from subscription_revenue_distributor import (
-    RevenueParticipant,
-    SubscriptionRevenueDistributor,
-    SubscriptionTier,
 )
 from governance_reward_engine import (
     GovernanceActivity,
@@ -39,12 +36,16 @@ from governance_reward_engine import (
     GovernanceParticipant,
     GovernanceRewardEngine,
 )
-from fairness_engine import FairnessConstraint, FairnessEngine
-
+from subscription_revenue_distributor import (
+    RevenueParticipant,
+    SubscriptionRevenueDistributor,
+    SubscriptionTier,
+)
 
 # ---------------------------------------------------------------------------
 # Test 1: Fee distribution — single validator receives near-full amount
 # ---------------------------------------------------------------------------
+
 
 class TestFeeEngineBaseline:
     def test_single_validator_receives_nonzero(self) -> None:
@@ -65,9 +66,7 @@ class TestFeeEngineBaseline:
         total = Decimal("500.00")
         result = engine.distribute(total, participants)
         total_out = sum(result.allocations.values()) + result.residual
-        assert abs(total_out - total) < Decimal("0.001"), (
-            f"Fee not conserved: expected {total}, got {total_out}"
-        )
+        assert abs(total_out - total) < Decimal("0.001"), f"Fee not conserved: expected {total}, got {total_out}"
 
     def test_empty_participants_raises(self) -> None:
         """distribute must raise ValueError when participants list is empty."""
@@ -86,6 +85,7 @@ class TestFeeEngineBaseline:
 # ---------------------------------------------------------------------------
 # Test 2: Subscription revenue distributor — retention + distribution chain
 # ---------------------------------------------------------------------------
+
 
 class TestSubscriptionRevenueDistributor:
     def test_professional_tier_retention_is_twenty_percent(self) -> None:
@@ -130,16 +130,14 @@ class TestSubscriptionRevenueDistributor:
 # Test 3: Fee → Fairness cross-engine pipeline
 # ---------------------------------------------------------------------------
 
+
 class TestFeeToFairnessChain:
     def test_balanced_distribution_is_fair(self) -> None:
         """Equal-weight participants should produce a fair allocation (low Gini)."""
         fee_engine = FeeDistributionEngine()
         fairness_engine = FairnessEngine(FairnessConstraint(max_gini=0.5))
 
-        participants = [
-            FeeParticipant(f"v{i}", ParticipantRole.VALIDATOR, 1.0)
-            for i in range(4)
-        ]
+        participants = [FeeParticipant(f"v{i}", ParticipantRole.VALIDATOR, 1.0) for i in range(4)]
         result = fee_engine.distribute(Decimal("100.00"), participants)
 
         # Feed allocations to fairness engine (convert to float)
@@ -169,18 +167,25 @@ class TestFeeToFairnessChain:
 # Test 4: Governance reward engine — activity score proportionality
 # ---------------------------------------------------------------------------
 
+
 class TestGovernanceRewardEngine:
     def test_reward_conservation(self) -> None:
         """Sum of governance allocations + residual must equal pool_amount."""
         engine = GovernanceRewardEngine()
         participants = [
-            GovernanceParticipant("p1", activities=[
-                GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
-                GovernanceActivity(GovernanceActivityType.PROPOSAL, weight=1.0),
-            ]),
-            GovernanceParticipant("p2", activities=[
-                GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
-            ]),
+            GovernanceParticipant(
+                "p1",
+                activities=[
+                    GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
+                    GovernanceActivity(GovernanceActivityType.PROPOSAL, weight=1.0),
+                ],
+            ),
+            GovernanceParticipant(
+                "p2",
+                activities=[
+                    GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
+                ],
+            ),
         ]
         pool = Decimal("200.00")
         result = engine.distribute(pool_amount=pool, participants=participants)
@@ -192,14 +197,20 @@ class TestGovernanceRewardEngine:
         """The participant with more governance activities receives more reward."""
         engine = GovernanceRewardEngine()
         participants = [
-            GovernanceParticipant("active", activities=[
-                GovernanceActivity(GovernanceActivityType.PROPOSAL, weight=1.0),
-                GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
-                GovernanceActivity(GovernanceActivityType.REVIEW, weight=1.0),
-            ]),
-            GovernanceParticipant("passive", activities=[
-                GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
-            ]),
+            GovernanceParticipant(
+                "active",
+                activities=[
+                    GovernanceActivity(GovernanceActivityType.PROPOSAL, weight=1.0),
+                    GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
+                    GovernanceActivity(GovernanceActivityType.REVIEW, weight=1.0),
+                ],
+            ),
+            GovernanceParticipant(
+                "passive",
+                activities=[
+                    GovernanceActivity(GovernanceActivityType.VOTE, weight=1.0),
+                ],
+            ),
         ]
         result = engine.distribute(Decimal("100.00"), participants)
         assert result.allocations["active"] > result.allocations["passive"]
@@ -214,6 +225,7 @@ class TestGovernanceRewardEngine:
 # ---------------------------------------------------------------------------
 # Test 5: Role weight lookup
 # ---------------------------------------------------------------------------
+
 
 class TestRoleWeights:
     def test_validator_has_highest_default_weight(self) -> None:

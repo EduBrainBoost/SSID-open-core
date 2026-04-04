@@ -2,8 +2,8 @@
 
 import hashlib
 import json
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 
 def sha256_of(data: str) -> str:
@@ -14,15 +14,15 @@ def sha256_of(data: str) -> str:
 def make_evidence(
     skill_id: str,
     status: str,
-    details: Dict[str, Any],
-    file_affected: Optional[str] = None,
-    sha256_before: Optional[str] = None,
-    sha256_after: Optional[str] = None,
-) -> Dict[str, Any]:
+    details: dict[str, Any],
+    file_affected: str | None = None,
+    sha256_before: str | None = None,
+    sha256_after: str | None = None,
+) -> dict[str, Any]:
     """Build a standard SSID evidence record."""
     payload = json.dumps(details, sort_keys=True)
     return {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "skill_id": skill_id,
         "status": status,
         "details": details,
@@ -33,7 +33,7 @@ def make_evidence(
     }
 
 
-def result(status: str, evidence: Dict[str, Any], message: str = "") -> Dict[str, Any]:
+def result(status: str, evidence: dict[str, Any], message: str = "") -> dict[str, Any]:
     """Standard skill return value."""
     return {
         "status": status,

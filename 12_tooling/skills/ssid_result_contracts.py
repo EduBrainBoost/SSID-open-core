@@ -4,8 +4,6 @@ Validates that agent result payloads conform to the expected contract:
 required fields, correct types, evidence references present.
 """
 
-from typing import Any, Dict, List
-
 from ._evidence import make_evidence, result
 
 SKILL_ID = "ssid-result-contracts"
@@ -14,7 +12,7 @@ DEFAULT_REQUIRED_FIELDS = {"status", "evidence_ref"}
 VALID_STATUSES = {"PASS", "FAIL", "SKIP", "ERROR", "TIMEOUT"}
 
 
-def execute(context: Dict) -> Dict:
+def execute(context: dict) -> dict:
     """Validate a result payload against its contract.
 
     context must contain:
@@ -31,7 +29,7 @@ def execute(context: Dict) -> Dict:
     required = set(context.get("required_fields", DEFAULT_REQUIRED_FIELDS))
     statuses = set(context.get("valid_statuses", VALID_STATUSES))
 
-    violations: List[str] = []
+    violations: list[str] = []
 
     # Check required fields
     for field in required:

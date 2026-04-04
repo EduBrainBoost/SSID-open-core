@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ssidctl verification -- Run verification checks against the repository."""
+
 from __future__ import annotations
 
 import argparse
@@ -8,13 +9,30 @@ import sys
 from pathlib import Path
 
 CANONICAL_ROOTS: list[str] = [
-    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-    "05_documentation", "06_data_pipeline", "07_governance_legal",
-    "08_identity_score", "09_meta_identity", "10_interoperability",
-    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
-    "15_infra", "16_codex", "17_observability", "18_data_layer",
-    "19_adapters", "20_foundation", "21_post_quantum_crypto", "22_datasets",
-    "23_compliance", "24_meta_orchestration",
+    "01_ai_layer",
+    "02_audit_logging",
+    "03_core",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "12_tooling",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "16_codex",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
+    "23_compliance",
+    "24_meta_orchestration",
 ]
 
 
@@ -25,8 +43,9 @@ def build_parser(subparsers: argparse._SubParsersAction | None = None) -> argpar
     else:
         parser = argparse.ArgumentParser(prog="ssidctl verification", description=__doc__)
     parser.add_argument("--root", type=str, default=".", help="Repository root path")
-    parser.add_argument("--check", choices=["roots", "manifests", "all"], default="all",
-                        help="Which checks to run (default: all)")
+    parser.add_argument(
+        "--check", choices=["roots", "manifests", "all"], default="all", help="Which checks to run (default: all)"
+    )
     parser.add_argument("--json", dest="json_output", action="store_true", help="Output in JSON format")
     parser.set_defaults(func=run)
     return parser
@@ -63,10 +82,7 @@ def _check_manifests(repo_root: Path) -> dict[str, object]:
     for root_name in CANONICAL_ROOTS:
         root_dir = repo_root / root_name
         if root_dir.is_dir():
-            has_manifest = any(
-                (root_dir / m).exists()
-                for m in ("manifest.yaml", "manifest.json", "module.yaml")
-            )
+            has_manifest = any((root_dir / m).exists() for m in ("manifest.yaml", "manifest.json", "module.yaml"))
             if has_manifest:
                 found.append(root_name)
             else:

@@ -1,5 +1,7 @@
 """Tests for negative runtime report states — P5-PreMerge P2."""
+
 from __future__ import annotations
+
 import json
 import sys
 from pathlib import Path

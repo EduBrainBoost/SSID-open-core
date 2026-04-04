@@ -1,8 +1,9 @@
 """Basic tests for 12_tooling / 10_finanzen_banking."""
-import os
-import yaml
-import pytest
 
+import os
+
+import pytest
+import yaml
 
 SHARD_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHART_PATH = os.path.join(SHARD_DIR, "chart.yaml")
@@ -10,7 +11,7 @@ CHART_PATH = os.path.join(SHARD_DIR, "chart.yaml")
 
 @pytest.fixture
 def chart():
-    with open(CHART_PATH, "r", encoding="utf-8") as f:
+    with open(CHART_PATH, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -41,4 +42,4 @@ def test_version_present(chart):
 
 
 def test_shard_name_correct(chart):
-    assert chart.get("shard") == "10_finanzen_banking", f"shard must be 10_finanzen_banking"
+    assert chart.get("shard") == "10_finanzen_banking", "shard must be 10_finanzen_banking"

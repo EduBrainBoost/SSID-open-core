@@ -14,18 +14,18 @@ Exit codes:
   0 = PASS or WARN (all gates passed or only warnings)
   2 = FAIL         (at least one gate FAIL or fail-closed condition)
 """
+
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-import os
 import platform
 import subprocess
 import sys
 import time
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -37,28 +37,36 @@ if _cli_dir not in sys.path:
     sys.path.insert(0, _cli_dir)
 
 from cross_artifact_reference_audit import (  # noqa: E402
+    SOT_ARTIFACTS,
     AuditResult,
     Finding,
-    SOT_ARTIFACTS,
-    sha256_file,
-    run_audit as _xref_run_audit,
+)
+from cross_artifact_reference_audit import (
     generate_report as _xref_generate_report,
 )
-from sot_sync_guard import (  # noqa: E402
-    run_guard as _sync_run_guard,
-    generate_report as _sync_generate_report,
+from cross_artifact_reference_audit import (
+    run_audit as _xref_run_audit,
 )
 from sot_baseline_gate import (  # noqa: E402
-    build_baseline_snapshot,
-    load_baseline_snapshot,
-    load_change_intent,
-    compare_workspace_to_baseline,
-    evaluate_baseline_gate,
-    build_report_dict as _baseline_build_report_dict,
-    emit_reports as _baseline_emit_reports,
     DEFAULT_BASELINE_REL,
     DEFAULT_INTENT_REL,
     DEFAULT_OUTPUT_REL,
+    compare_workspace_to_baseline,
+    evaluate_baseline_gate,
+    load_baseline_snapshot,
+    load_change_intent,
+)
+from sot_baseline_gate import (
+    build_report_dict as _baseline_build_report_dict,
+)
+from sot_baseline_gate import (
+    emit_reports as _baseline_emit_reports,
+)
+from sot_sync_guard import (
+    generate_report as _sync_generate_report,
+)
+from sot_sync_guard import (  # noqa: E402
+    run_guard as _sync_run_guard,
 )
 
 EXIT_PASS = 0
@@ -93,12 +101,7 @@ CONVERGENCE_REPORT_MD = "reference_gates_convergence_report.md"
 # Helpers
 # ---------------------------------------------------------------------------
 def _utc_now_iso() -> str:
-    return (
-        datetime.now(timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _json_sha256(obj: Any) -> str:
@@ -160,11 +163,14 @@ def run_sot_validator(repo: Path, timeout_seconds: int | None = None) -> GateRes
     try:
         validator_script = Path(__file__).resolve().parent / "sot_validator.py"
         if not validator_script.exists():
-            findings_dicts.append(Finding(
-                "gate_execution_failed", "deny",
-                str(validator_script),
-                "sot_validator.py not found on disk",
-            ).to_dict())
+            findings_dicts.append(
+                Finding(
+                    "gate_execution_failed",
+                    "deny",
+                    str(validator_script),
+                    "sot_validator.py not found on disk",
+                ).to_dict()
+            )
             raise FileNotFoundError(str(validator_script))
 
         timeout = timeout_seconds if timeout_seconds else 120
@@ -190,52 +196,64 @@ def run_sot_validator(repo: Path, timeout_seconds: int | None = None) -> GateRes
                     for rid in rule_ids.split(","):
                         rid = rid.strip()
                         if rid:
-                            findings_dicts.append({
-                                "class": "sot_validation_failure",
-                                "severity": "deny",
-                                "path": "sot_validator",
-                                "detail": f"rule '{rid}' failed validation",
-                            })
+                            findings_dicts.append(
+                                {
+                                    "class": "sot_validation_failure",
+                                    "severity": "deny",
+                                    "path": "sot_validator",
+                                    "detail": f"rule '{rid}' failed validation",
+                                }
+                            )
                 elif line.startswith("INTERFEDERATION-SPEC-ONLY:"):
-                    findings_dicts.append({
-                        "class": "interfederation_path_violation",
+                    findings_dicts.append(
+                        {
+                            "class": "interfederation_path_violation",
+                            "severity": "deny",
+                            "path": "sot_validator",
+                            "detail": line,
+                        }
+                    )
+            if not findings_dicts:
+                findings_dicts.append(
+                    {
+                        "class": "sot_validation_failure",
                         "severity": "deny",
                         "path": "sot_validator",
-                        "detail": line,
-                    })
-            if not findings_dicts:
-                findings_dicts.append({
-                    "class": "sot_validation_failure",
+                        "detail": f"exit code 2; stdout: {stdout[:500]}",
+                    }
+                )
+        elif exit_code not in (0, 1, 2):
+            findings_dicts.append(
+                {
+                    "class": "gate_exitcode_unexpected",
                     "severity": "deny",
                     "path": "sot_validator",
-                    "detail": f"exit code 2; stdout: {stdout[:500]}",
-                })
-        elif exit_code not in (0, 1, 2):
-            findings_dicts.append({
-                "class": "gate_exitcode_unexpected",
-                "severity": "deny",
-                "path": "sot_validator",
-                "detail": f"unexpected exit code {exit_code}; stderr: {stderr[:500]}",
-            })
+                    "detail": f"unexpected exit code {exit_code}; stderr: {stderr[:500]}",
+                }
+            )
             exit_code = 2  # fail-closed
 
     except subprocess.TimeoutExpired:
-        findings_dicts.append({
-            "class": "gate_timeout",
-            "severity": "deny",
-            "path": "sot_validator",
-            "detail": f"sot_validator timed out after {timeout_seconds}s",
-        })
+        findings_dicts.append(
+            {
+                "class": "gate_timeout",
+                "severity": "deny",
+                "path": "sot_validator",
+                "detail": f"sot_validator timed out after {timeout_seconds}s",
+            }
+        )
         exit_code = 2
     except FileNotFoundError:
         exit_code = 2
     except Exception as exc:
-        findings_dicts.append({
-            "class": "gate_execution_failed",
-            "severity": "deny",
-            "path": "sot_validator",
-            "detail": f"unexpected error: {exc}",
-        })
+        findings_dicts.append(
+            {
+                "class": "gate_execution_failed",
+                "severity": "deny",
+                "path": "sot_validator",
+                "detail": f"unexpected error: {exc}",
+            }
+        )
         exit_code = 2
 
     t1 = time.monotonic()
@@ -295,12 +313,14 @@ def run_reference_audit(repo: Path) -> GateResult:
         report_path_json = str(json_path)
 
     except Exception as exc:
-        findings_dicts.append({
-            "class": "gate_execution_failed",
-            "severity": "deny",
-            "path": "cross_artifact_reference_audit",
-            "detail": f"unexpected error: {exc}",
-        })
+        findings_dicts.append(
+            {
+                "class": "gate_execution_failed",
+                "severity": "deny",
+                "path": "cross_artifact_reference_audit",
+                "detail": f"unexpected error: {exc}",
+            }
+        )
         exit_code = 2
 
     t1 = time.monotonic()
@@ -360,12 +380,14 @@ def run_sync_guard(repo: Path) -> GateResult:
         report_path_json = str(json_path)
 
     except Exception as exc:
-        findings_dicts.append({
-            "class": "gate_execution_failed",
-            "severity": "deny",
-            "path": "sot_sync_guard",
-            "detail": f"unexpected error: {exc}",
-        })
+        findings_dicts.append(
+            {
+                "class": "gate_execution_failed",
+                "severity": "deny",
+                "path": "sot_sync_guard",
+                "detail": f"unexpected error: {exc}",
+            }
+        )
         exit_code = 2
 
     t1 = time.monotonic()
@@ -418,19 +440,13 @@ def run_baseline_gate(repo: Path) -> GateResult:
 
         changed_artifacts: list[dict] = []
         if baseline is not None:
-            comparison_result, changed_artifacts = compare_workspace_to_baseline(
-                repo, baseline
-            )
+            comparison_result, changed_artifacts = compare_workspace_to_baseline(repo, baseline)
             for f in comparison_result.findings:
                 result.add(f)
 
-        decision = evaluate_baseline_gate(
-            repo, baseline, intent, changed_artifacts, result
-        )
+        decision = evaluate_baseline_gate(repo, baseline, intent, changed_artifacts, result)
 
-        report = _baseline_build_report_dict(
-            repo, decision, baseline, intent, changed_artifacts, result
-        )
+        report = _baseline_build_report_dict(repo, decision, baseline, intent, changed_artifacts, result)
 
         _baseline_emit_reports(report, output_dir)
 
@@ -449,12 +465,14 @@ def run_baseline_gate(repo: Path) -> GateResult:
         report_path_md = str(md_path) if md_path.exists() else None
 
     except Exception as exc:
-        findings_dicts.append({
-            "class": "gate_execution_failed",
-            "severity": "deny",
-            "path": "sot_baseline_gate",
-            "detail": f"unexpected error: {exc}",
-        })
+        findings_dicts.append(
+            {
+                "class": "gate_execution_failed",
+                "severity": "deny",
+                "path": "sot_baseline_gate",
+                "detail": f"unexpected error: {exc}",
+            }
+        )
         exit_code = 2
 
     t1 = time.monotonic()
@@ -584,9 +602,7 @@ def aggregate_gate_results(gate_results: list[dict]) -> dict:
     total_deny = sum(gr.get("findings_deny", 0) for gr in gate_results)
     total_warn = sum(gr.get("findings_warn", 0) for gr in gate_results)
     total_duration_ms = sum(gr.get("duration_ms", 0) for gr in gate_results)
-    total_artifacts = max(
-        (gr.get("artifacts_checked", 0) for gr in gate_results), default=0
-    )
+    total_artifacts = max((gr.get("artifacts_checked", 0) for gr in gate_results), default=0)
 
     gates_passed = [gr["gate_id"] for gr in gate_results if gr.get("decision") == "PASS"]
     gates_warned = [gr["gate_id"] for gr in gate_results if gr.get("decision") == "WARN"]
@@ -600,28 +616,34 @@ def aggregate_gate_results(gate_results: list[dict]) -> dict:
     convergence_findings: list[dict] = []
     for gr in gate_results:
         if not gr.get("evidence_hash"):
-            convergence_findings.append({
-                "class": "gate_evidence_missing",
-                "severity": "deny",
-                "path": gr.get("gate_id", "unknown"),
-                "detail": f"gate '{gr.get('gate_name', '?')}' has no evidence hash",
-            })
+            convergence_findings.append(
+                {
+                    "class": "gate_evidence_missing",
+                    "severity": "deny",
+                    "path": gr.get("gate_id", "unknown"),
+                    "detail": f"gate '{gr.get('gate_name', '?')}' has no evidence hash",
+                }
+            )
 
     if gates_failed:
-        convergence_findings.append({
-            "class": "convergence_fail_closed",
-            "severity": "deny",
-            "path": "convergence",
-            "detail": f"gate(s) failed: {', '.join(gates_failed)}",
-        })
+        convergence_findings.append(
+            {
+                "class": "convergence_fail_closed",
+                "severity": "deny",
+                "path": "convergence",
+                "detail": f"gate(s) failed: {', '.join(gates_failed)}",
+            }
+        )
 
     if gates_warned and not gates_failed:
-        convergence_findings.append({
-            "class": "convergence_warn_present",
-            "severity": "warn",
-            "path": "convergence",
-            "detail": f"gate(s) warned: {', '.join(gates_warned)}",
-        })
+        convergence_findings.append(
+            {
+                "class": "convergence_warn_present",
+                "severity": "warn",
+                "path": "convergence",
+                "detail": f"gate(s) warned: {', '.join(gates_warned)}",
+            }
+        )
 
     return {
         "report_type": "reference_gates_convergence",
@@ -688,8 +710,8 @@ def _render_markdown(report: dict) -> str:
     lines.append("")
     lines.append("## Executive Summary")
     lines.append("")
-    lines.append(f"| Field | Value |")
-    lines.append(f"|-------|-------|")
+    lines.append("| Field | Value |")
+    lines.append("|-------|-------|")
     lines.append(f"| Final Decision | **{decision}** |")
     lines.append(f"| Timestamp | {ts} |")
     lines.append(f"| Gates Executed | {totals.get('gates_executed', 0)} |")
@@ -800,8 +822,7 @@ def _render_markdown(report: dict) -> str:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="run_all_reference_gates.py",
-        description="Convergence orchestrator — runs all 4 SoT/reference gates "
-                    "and produces a unified report.",
+        description="Convergence orchestrator — runs all 4 SoT/reference gates and produces a unified report.",
     )
     parser.add_argument(
         "--repo-root",
@@ -836,8 +857,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--include",
         default=None,
-        help="comma-separated gate IDs to run (default: all). "
-             f"Available: {', '.join(GATE_ORDER)}",
+        help=f"comma-separated gate IDs to run (default: all). Available: {', '.join(GATE_ORDER)}",
     )
     parser.add_argument(
         "--timeout-seconds",
@@ -852,11 +872,7 @@ def main() -> int:
     args = parse_args()
 
     repo = Path(args.repo_root).resolve() if args.repo_root else _detect_repo_root()
-    output_dir = (
-        Path(args.output_dir)
-        if args.output_dir
-        else repo / "02_audit_logging" / "reports"
-    )
+    output_dir = Path(args.output_dir) if args.output_dir else repo / "02_audit_logging" / "reports"
 
     # --- --verify-only mode ---
     if args.verify_only:
@@ -874,14 +890,19 @@ def main() -> int:
                 json_ok = False
 
         if args.json:
-            print(json.dumps({
-                "verify_only": True,
-                "json_report_exists": json_ok,
-                "md_report_exists": md_ok,
-                "json_path": str(json_path),
-                "md_path": str(md_path),
-                "valid": json_ok and md_ok,
-            }, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "verify_only": True,
+                        "json_report_exists": json_ok,
+                        "md_report_exists": md_ok,
+                        "json_path": str(json_path),
+                        "md_path": str(md_path),
+                        "valid": json_ok and md_ok,
+                    },
+                    indent=2,
+                )
+            )
         else:
             status = "PASS" if (json_ok and md_ok) else "FAIL"
             print(f"Convergence Report Verification: {status}")
@@ -932,20 +953,26 @@ def main() -> int:
                 "artifacts_checked": 0,
                 "report_path_json": None,
                 "report_path_md": None,
-                "evidence_hash": _json_sha256([{
-                    "class": "gate_execution_failed",
-                    "severity": "deny",
-                    "path": gate_id,
-                    "detail": str(exc),
-                }]),
+                "evidence_hash": _json_sha256(
+                    [
+                        {
+                            "class": "gate_execution_failed",
+                            "severity": "deny",
+                            "path": gate_id,
+                            "detail": str(exc),
+                        }
+                    ]
+                ),
                 "started_at_utc": _utc_now_iso(),
                 "finished_at_utc": _utc_now_iso(),
-                "findings": [{
-                    "class": "gate_execution_failed",
-                    "severity": "deny",
-                    "path": gate_id,
-                    "detail": f"gate crashed: {exc}",
-                }],
+                "findings": [
+                    {
+                        "class": "gate_execution_failed",
+                        "severity": "deny",
+                        "path": gate_id,
+                        "detail": f"gate crashed: {exc}",
+                    }
+                ],
             }
 
         gate_results.append(normalized)
@@ -955,33 +982,41 @@ def main() -> int:
             # Add findings for skipped gates
             for skipped_id in gates_to_run:
                 if skipped_id not in [gr.get("gate_id") for gr in gate_results]:
-                    gate_results.append({
-                        "gate_id": skipped_id,
-                        "gate_name": GATE_NAMES.get(skipped_id, skipped_id),
-                        "decision": "FAIL",
-                        "exit_code": 2,
-                        "duration_ms": 0,
-                        "findings_total": 1,
-                        "findings_deny": 1,
-                        "findings_warn": 0,
-                        "artifacts_checked": 0,
-                        "report_path_json": None,
-                        "report_path_md": None,
-                        "evidence_hash": _json_sha256([{
-                            "class": "convergence_fail_closed",
-                            "severity": "deny",
-                            "path": skipped_id,
-                            "detail": "skipped due to --fail-fast after previous gate failure",
-                        }]),
-                        "started_at_utc": _utc_now_iso(),
-                        "finished_at_utc": _utc_now_iso(),
-                        "findings": [{
-                            "class": "convergence_fail_closed",
-                            "severity": "deny",
-                            "path": skipped_id,
-                            "detail": "skipped due to --fail-fast after previous gate failure",
-                        }],
-                    })
+                    gate_results.append(
+                        {
+                            "gate_id": skipped_id,
+                            "gate_name": GATE_NAMES.get(skipped_id, skipped_id),
+                            "decision": "FAIL",
+                            "exit_code": 2,
+                            "duration_ms": 0,
+                            "findings_total": 1,
+                            "findings_deny": 1,
+                            "findings_warn": 0,
+                            "artifacts_checked": 0,
+                            "report_path_json": None,
+                            "report_path_md": None,
+                            "evidence_hash": _json_sha256(
+                                [
+                                    {
+                                        "class": "convergence_fail_closed",
+                                        "severity": "deny",
+                                        "path": skipped_id,
+                                        "detail": "skipped due to --fail-fast after previous gate failure",
+                                    }
+                                ]
+                            ),
+                            "started_at_utc": _utc_now_iso(),
+                            "finished_at_utc": _utc_now_iso(),
+                            "findings": [
+                                {
+                                    "class": "convergence_fail_closed",
+                                    "severity": "deny",
+                                    "path": skipped_id,
+                                    "detail": "skipped due to --fail-fast after previous gate failure",
+                                }
+                            ],
+                        }
+                    )
             break
 
     # --- Aggregate ---
@@ -1005,23 +1040,26 @@ def main() -> int:
         print(_render_markdown(report))
     else:
         print(f"Reference Gates Convergence: {final_decision}")
-        print(f"  Gates: {totals['gates_executed']} executed, "
-              f"{totals['gates_passed']} passed, "
-              f"{totals['gates_warned']} warned, "
-              f"{totals['gates_failed']} failed")
-        print(f"  Findings: {totals['findings_total']} "
-              f"(deny={totals['findings_deny']}, warn={totals['findings_warn']})")
+        print(
+            f"  Gates: {totals['gates_executed']} executed, "
+            f"{totals['gates_passed']} passed, "
+            f"{totals['gates_warned']} warned, "
+            f"{totals['gates_failed']} failed"
+        )
+        print(
+            f"  Findings: {totals['findings_total']} (deny={totals['findings_deny']}, warn={totals['findings_warn']})"
+        )
         print(f"  Duration: {totals['total_duration_ms']} ms")
         print(f"  Evidence: {report['evidence_hash'][:16]}...")
         print()
 
         for gate in report.get("gates", []):
-            marker = {"PASS": "OK", "WARN": "!!", "FAIL": "XX"}.get(
-                gate.get("decision", "?"), "??"
+            marker = {"PASS": "OK", "WARN": "!!", "FAIL": "XX"}.get(gate.get("decision", "?"), "??")
+            print(
+                f"  [{marker}] {gate.get('gate_name', '?')}: {gate.get('decision', '?')} "
+                f"({gate.get('findings_total', 0)} findings, "
+                f"{gate.get('duration_ms', 0)} ms)"
             )
-            print(f"  [{marker}] {gate.get('gate_name', '?')}: {gate.get('decision', '?')} "
-                  f"({gate.get('findings_total', 0)} findings, "
-                  f"{gate.get('duration_ms', 0)} ms)")
 
         if aborted:
             print()

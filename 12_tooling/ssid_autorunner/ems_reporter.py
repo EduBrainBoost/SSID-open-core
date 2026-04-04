@@ -6,14 +6,14 @@ Usage:
 
 Uses only stdlib (urllib.request). Never raises. Timeout: 5 seconds.
 """
+
 from __future__ import annotations
 
 import json
-import socket
 import sys
 import urllib.request
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from urllib.error import URLError
 
 
@@ -46,11 +46,10 @@ def post_result(
         "run_id": run_id,
         "status": result.get("status", "UNKNOWN"),
         "commit_sha": commit_sha,
-        "ts": datetime.now(timezone.utc).isoformat(),
+        "ts": datetime.now(UTC).isoformat(),
         "findings": result.get("total_findings", result.get("findings", 0)),
         "summary": result.get("summary", ""),
-        **{k: v for k, v in result.items()
-           if k not in ("status", "total_findings", "findings", "summary")},
+        **{k: v for k, v in result.items() if k not in ("status", "total_findings", "findings", "summary")},
     }
 
     data = json.dumps(payload).encode("utf-8")
@@ -63,6 +62,6 @@ def post_result(
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return EMSReporterResult(sent=True, status_code=resp.status)
-    except (URLError, socket.timeout, OSError) as exc:
+    except (TimeoutError, URLError, OSError) as exc:
         print(f"[ems_reporter] WARNING: could not reach EMS at {endpoint}: {exc}", file=sys.stderr)
         return EMSReporterResult(sent=False, error=str(exc))

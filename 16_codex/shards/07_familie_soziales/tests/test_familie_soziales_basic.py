@@ -1,14 +1,15 @@
 """Basic conformance tests for 16_codex/07_familie_soziales."""
-import os
-import yaml
 
+import os
+
+import yaml
 
 SHARD_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHART_PATH = os.path.join(SHARD_DIR, "chart.yaml")
 
 
 def _load_chart():
-    with open(CHART_PATH, "r", encoding="utf-8") as fh:
+    with open(CHART_PATH, encoding="utf-8") as fh:
         return yaml.safe_load(fh)
 
 

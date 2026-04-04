@@ -1,9 +1,9 @@
 """Basic tests for Core / Kommunikation & Daten shard."""
+
 import os
 import unittest
 
 import yaml
-
 
 SHARD_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHART_PATH = os.path.join(SHARD_DIR, "chart.yaml")
@@ -14,7 +14,7 @@ class TestValidator04KommunikationDatenBasic(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with open(CHART_PATH, "r", encoding="utf-8") as fh:
+        with open(CHART_PATH, encoding="utf-8") as fh:
             cls.chart = yaml.safe_load(fh)
 
     def test_capabilities_not_empty(self):

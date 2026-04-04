@@ -2,7 +2,6 @@
 
 import pathlib
 import sys
-import time
 
 import pytest
 
@@ -18,13 +17,12 @@ from eu_gdpr import (
     ErasureStatus,
     GDPRComplianceEngine,
     LegalBasis,
-    PortabilityPackage,
 )
-
 
 # ------------------------------------------------------------------
 # ConsentRecord
 # ------------------------------------------------------------------
+
 
 class TestConsentRecord:
     def test_to_dict_roundtrip(self):
@@ -55,6 +53,7 @@ class TestConsentRecord:
 # Consent Management
 # ------------------------------------------------------------------
 
+
 class TestConsentManagement:
     def test_record_consent(self):
         engine = GDPRComplianceEngine()
@@ -69,10 +68,14 @@ class TestConsentManagement:
 
     def test_has_valid_consent_true(self):
         engine = GDPRComplianceEngine()
-        engine.record_consent(ConsentRecord(
-            subject_hash="u1", purpose="verify",
-            legal_basis=LegalBasis.CONSENT, granted=True,
-        ))
+        engine.record_consent(
+            ConsentRecord(
+                subject_hash="u1",
+                purpose="verify",
+                legal_basis=LegalBasis.CONSENT,
+                granted=True,
+            )
+        )
         assert engine.has_valid_consent("u1", "verify") is True
 
     def test_has_valid_consent_false_no_record(self):
@@ -81,51 +84,76 @@ class TestConsentManagement:
 
     def test_consent_revocation_latest_wins(self):
         engine = GDPRComplianceEngine()
-        engine.record_consent(ConsentRecord(
-            subject_hash="u1", purpose="ads",
-            legal_basis=LegalBasis.CONSENT, granted=True,
-            timestamp=1000.0,
-        ))
-        engine.record_consent(ConsentRecord(
-            subject_hash="u1", purpose="ads",
-            legal_basis=LegalBasis.CONSENT, granted=False,
-            timestamp=2000.0,
-        ))
+        engine.record_consent(
+            ConsentRecord(
+                subject_hash="u1",
+                purpose="ads",
+                legal_basis=LegalBasis.CONSENT,
+                granted=True,
+                timestamp=1000.0,
+            )
+        )
+        engine.record_consent(
+            ConsentRecord(
+                subject_hash="u1",
+                purpose="ads",
+                legal_basis=LegalBasis.CONSENT,
+                granted=False,
+                timestamp=2000.0,
+            )
+        )
         assert engine.has_valid_consent("u1", "ads") is False
 
     def test_consent_history(self):
         engine = GDPRComplianceEngine()
-        engine.record_consent(ConsentRecord(
-            subject_hash="u1", purpose="a",
-            legal_basis=LegalBasis.CONSENT, granted=True,
-        ))
-        engine.record_consent(ConsentRecord(
-            subject_hash="u1", purpose="b",
-            legal_basis=LegalBasis.CONTRACT, granted=True,
-        ))
+        engine.record_consent(
+            ConsentRecord(
+                subject_hash="u1",
+                purpose="a",
+                legal_basis=LegalBasis.CONSENT,
+                granted=True,
+            )
+        )
+        engine.record_consent(
+            ConsentRecord(
+                subject_hash="u1",
+                purpose="b",
+                legal_basis=LegalBasis.CONTRACT,
+                granted=True,
+            )
+        )
         history = engine.get_consent_history("u1")
         assert len(history) == 2
 
     def test_empty_subject_hash_raises(self):
         engine = GDPRComplianceEngine()
         with pytest.raises(ValueError):
-            engine.record_consent(ConsentRecord(
-                subject_hash="", purpose="x",
-                legal_basis=LegalBasis.CONSENT, granted=True,
-            ))
+            engine.record_consent(
+                ConsentRecord(
+                    subject_hash="",
+                    purpose="x",
+                    legal_basis=LegalBasis.CONSENT,
+                    granted=True,
+                )
+            )
 
     def test_empty_purpose_raises(self):
         engine = GDPRComplianceEngine()
         with pytest.raises(ValueError):
-            engine.record_consent(ConsentRecord(
-                subject_hash="u1", purpose="",
-                legal_basis=LegalBasis.CONSENT, granted=True,
-            ))
+            engine.record_consent(
+                ConsentRecord(
+                    subject_hash="u1",
+                    purpose="",
+                    legal_basis=LegalBasis.CONSENT,
+                    granted=True,
+                )
+            )
 
 
 # ------------------------------------------------------------------
 # Erasure (Right to be Forgotten)
 # ------------------------------------------------------------------
+
 
 class TestErasure:
     def test_request_erasure(self):
@@ -136,10 +164,14 @@ class TestErasure:
 
     def test_execute_erasure_completes(self):
         engine = GDPRComplianceEngine()
-        engine.record_consent(ConsentRecord(
-            subject_hash="u1", purpose="verify",
-            legal_basis=LegalBasis.CONSENT, granted=True,
-        ))
+        engine.record_consent(
+            ConsentRecord(
+                subject_hash="u1",
+                purpose="verify",
+                legal_basis=LegalBasis.CONSENT,
+                granted=True,
+            )
+        )
         engine.request_erasure(ErasureRequest(request_id="er1", subject_hash="u1"))
         result = engine.execute_erasure("er1")
         assert result.status == ErasureStatus.COMPLETED
@@ -189,6 +221,7 @@ class TestErasure:
 # Data Portability
 # ------------------------------------------------------------------
 
+
 class TestPortability:
     def test_generate_package(self):
         engine = GDPRComplianceEngine()
@@ -215,13 +248,18 @@ class TestPortability:
 # Evidence Generation
 # ------------------------------------------------------------------
 
+
 class TestEvidence:
     def test_generate_evidence(self):
         engine = GDPRComplianceEngine()
-        engine.record_consent(ConsentRecord(
-            subject_hash="u1", purpose="verify",
-            legal_basis=LegalBasis.CONSENT, granted=True,
-        ))
+        engine.record_consent(
+            ConsentRecord(
+                subject_hash="u1",
+                purpose="verify",
+                legal_basis=LegalBasis.CONSENT,
+                granted=True,
+            )
+        )
         evidence = engine.generate_compliance_evidence("u1")
         assert evidence["subject_hash"] == "u1"
         assert evidence["consent_count"] == 1

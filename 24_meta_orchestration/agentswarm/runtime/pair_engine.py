@@ -2,6 +2,7 @@
 AgentSwarm Pair Runtime Engine.
 Manages primary+sentinel pairs with heartbeat, takeover, state handoff, and evidence.
 """
+
 from __future__ import annotations
 
 import datetime as dt
@@ -9,10 +10,11 @@ import hashlib
 import json
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 
 class PairState(Enum):
@@ -35,7 +37,7 @@ class TakeoverReason(Enum):
 
 
 def _utc_now() -> str:
-    return dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _sha256(text: str) -> str:
@@ -55,7 +57,7 @@ class Heartbeat:
 class WorkerResult:
     agent_id: str
     status: str  # pass, fail, partial, blocked
-    output: Dict[str, Any] = field(default_factory=dict)
+    output: dict[str, Any] = field(default_factory=dict)
     evidence_hash: str = ""
     duration_ms: float = 0.0
     error: str = ""
@@ -68,19 +70,19 @@ class PairRun:
     state: PairState = PairState.IDLE
     primary_agent_id: str = ""
     sentinel_agent_id: str = ""
-    heartbeats: List[Heartbeat] = field(default_factory=list)
-    takeover_reason: Optional[TakeoverReason] = None
-    primary_result: Optional[WorkerResult] = None
-    sentinel_result: Optional[WorkerResult] = None
-    checkpoint: Dict[str, Any] = field(default_factory=dict)
-    events: List[Dict[str, Any]] = field(default_factory=list)
+    heartbeats: list[Heartbeat] = field(default_factory=list)
+    takeover_reason: TakeoverReason | None = None
+    primary_result: WorkerResult | None = None
+    sentinel_result: WorkerResult | None = None
+    checkpoint: dict[str, Any] = field(default_factory=dict)
+    events: list[dict[str, Any]] = field(default_factory=list)
     started_at: str = ""
     ended_at: str = ""
 
     def _event(self, event_type: str, detail: str = ""):
         self.events.append({"ts": _utc_now(), "event": event_type, "detail": detail})
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "pair_id": self.pair_id,
             "run_id": self.run_id,
@@ -109,7 +111,7 @@ class PairEngine:
         heartbeat_interval_ms: int = 30000,
         heartbeat_max_missed: int = 3,
         max_runtime_seconds: int = 300,
-        evidence_dir: Optional[Path] = None,
+        evidence_dir: Path | None = None,
     ):
         self.pair_id = pair_id
         self.primary_id = primary_agent_id
@@ -123,7 +125,7 @@ class PairEngine:
         self,
         primary_fn: Callable[[PairRun], WorkerResult],
         sentinel_fn: Callable[[PairRun], WorkerResult],
-        task_input: Optional[Dict] = None,
+        task_input: dict | None = None,
     ) -> PairRun:
         """Execute the pair: primary runs, sentinel monitors and can takeover."""
         run = PairRun(
@@ -200,9 +202,7 @@ class PairEngine:
             else:
                 run.state = PairState.FAILED
         except Exception as exc:
-            run.sentinel_result = WorkerResult(
-                agent_id=self.sentinel_id, status="fail", error=str(exc)
-            )
+            run.sentinel_result = WorkerResult(agent_id=self.sentinel_id, status="fail", error=str(exc))
             run.state = PairState.FAILED
             run._event("SENTINEL_EXCEPTION", str(exc))
 
@@ -263,6 +263,4 @@ class PairEngine:
             "sealed_at": _utc_now(),
         }
         (self.evidence_dir / f"{run.run_id}.json").write_text(data, encoding="utf-8")
-        (self.evidence_dir / f"{run.run_id}.seal.json").write_text(
-            json.dumps(manifest, indent=2), encoding="utf-8"
-        )
+        (self.evidence_dir / f"{run.run_id}.seal.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")

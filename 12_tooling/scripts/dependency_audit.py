@@ -7,6 +7,7 @@ replacement for full CVE scanning (which runs in CI via dependency_scan.yml).
 
 SoT v4.1.0 | ROOT-24-LOCK | Classification: Security
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -20,12 +21,24 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Patterns that indicate insecure dependency specifications
 INSECURE_PATTERNS = [
-    {"name": "unpinned_dependency", "regex": r"^[a-zA-Z][\w.-]+\s*$", "severity": "warning",
-     "description": "Dependency without version pin"},
-    {"name": "git_dependency", "regex": r"git\+https?://", "severity": "warning",
-     "description": "Git URL dependency (not reproducible)"},
-    {"name": "http_dependency", "regex": r"^https?://", "severity": "high",
-     "description": "Direct HTTP URL dependency (integrity risk)"},
+    {
+        "name": "unpinned_dependency",
+        "regex": r"^[a-zA-Z][\w.-]+\s*$",
+        "severity": "warning",
+        "description": "Dependency without version pin",
+    },
+    {
+        "name": "git_dependency",
+        "regex": r"git\+https?://",
+        "severity": "warning",
+        "description": "Git URL dependency (not reproducible)",
+    },
+    {
+        "name": "http_dependency",
+        "regex": r"^https?://",
+        "severity": "high",
+        "description": "Direct HTTP URL dependency (integrity risk)",
+    },
 ]
 
 REQUIREMENTS_FILES = [
@@ -48,14 +61,16 @@ def audit_file(filepath: Path) -> list[dict]:
 
         for pattern in INSECURE_PATTERNS:
             if re.match(pattern["regex"], stripped):
-                findings.append({
-                    "file": str(filepath.relative_to(REPO_ROOT)),
-                    "line": lineno,
-                    "content": stripped,
-                    "pattern": pattern["name"],
-                    "severity": pattern["severity"],
-                    "description": pattern["description"],
-                })
+                findings.append(
+                    {
+                        "file": str(filepath.relative_to(REPO_ROOT)),
+                        "line": lineno,
+                        "content": stripped,
+                        "pattern": pattern["name"],
+                        "severity": pattern["severity"],
+                        "description": pattern["description"],
+                    }
+                )
 
     return findings
 

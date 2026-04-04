@@ -8,28 +8,28 @@ Automated backup orchestration with cron-like scheduler.
 
 SoT v4.1.0 | Classification: Infrastructure Automation
 """
+
 import asyncio
 import hashlib
 import json
 import logging
-import os
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
 
-class BackupStrategy(str, Enum):
+class BackupStrategy(StrEnum):
     FULL = "full"
     INCREMENTAL = "incremental"
     DIFFERENTIAL = "differential"
 
 
-class JobStatus(str, Enum):
+class JobStatus(StrEnum):
     SCHEDULED = "scheduled"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -39,6 +39,7 @@ class JobStatus(str, Enum):
 @dataclass
 class BackupJob:
     """Backup job definition."""
+
     job_id: str
     target_root: str
     strategy: BackupStrategy
@@ -48,11 +49,11 @@ class BackupJob:
     timeout_seconds: int
 
     status: JobStatus = JobStatus.SCHEDULED
-    started_at: Optional[float] = None
-    completed_at: Optional[float] = None
+    started_at: float | None = None
+    completed_at: float | None = None
     size_bytes: int = 0
-    evidence_hash: Optional[str] = None
-    error: Optional[str] = None
+    evidence_hash: str | None = None
+    error: str | None = None
     attempt: int = 0
     max_attempts: int = 3
 
@@ -60,6 +61,7 @@ class BackupJob:
 @dataclass
 class BackupManifest:
     """Backup manifest entry."""
+
     backup_id: str
     root: str
     strategy: str
@@ -96,7 +98,7 @@ class CronScheduler:
             try:
                 target_hour = int(hour_spec)
                 target_minute = int(minute_spec)
-                return (now.hour == target_hour and now.minute == target_minute)
+                return now.hour == target_hour and now.minute == target_minute
             except ValueError:
                 return False
         return False
@@ -121,12 +123,8 @@ class BackupAutomationDaemon:
         logger = logging.getLogger("backup_daemon")
         logger.setLevel(logging.INFO)
 
-        handler = logging.FileHandler(
-            self.evidence_base / f"daemon_{datetime.now():%Y%m%d_%H%M%S}.log"
-        )
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        handler = logging.FileHandler(self.evidence_base / f"daemon_{datetime.now():%Y%m%d_%H%M%S}.log")
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         return logger
@@ -134,7 +132,7 @@ class BackupAutomationDaemon:
     def load_config(self) -> bool:
         """Load backup automation config."""
         try:
-            with open(self.config_path, "r") as f:
+            with open(self.config_path) as f:
                 self.config = yaml.safe_load(f)
 
             # Extract allowed roots from config
@@ -169,8 +167,7 @@ class BackupAutomationDaemon:
         now = datetime.utcnow()
         due = []
         for job in self.jobs.values():
-            if (job.status == JobStatus.SCHEDULED
-                    and self.scheduler.is_due(job.schedule, now)):
+            if job.status == JobStatus.SCHEDULED and self.scheduler.is_due(job.schedule, now):
                 due.append(job)
         return due
 
@@ -198,14 +195,10 @@ class BackupAutomationDaemon:
             await asyncio.sleep(0.1)
 
             # Generate mock backup content hash
-            backup_id = hashlib.sha256(
-                f"{job.job_id}:{time.time_ns()}".encode()
-            ).hexdigest()[:16]
+            backup_id = hashlib.sha256(f"{job.job_id}:{time.time_ns()}".encode()).hexdigest()[:16]
 
             job.size_bytes = 1024 * 1024  # Mock: 1 MB
-            job.evidence_hash = hashlib.sha256(
-                f"{backup_id}:{job.target_root}".encode()
-            ).hexdigest()
+            job.evidence_hash = hashlib.sha256(f"{backup_id}:{job.target_root}".encode()).hexdigest()
 
             job.status = JobStatus.COMPLETED
             job.completed_at = time.time()
@@ -237,9 +230,7 @@ class BackupAutomationDaemon:
 
             if job.attempt < job.max_attempts:
                 job.status = JobStatus.SCHEDULED
-                self.logger.info(
-                    f"Job {job.job_id} rescheduled (attempt {job.attempt}/{job.max_attempts})"
-                )
+                self.logger.info(f"Job {job.job_id} rescheduled (attempt {job.attempt}/{job.max_attempts})")
                 return False
             return False
 
@@ -255,10 +246,7 @@ class BackupAutomationDaemon:
             "manifest": asdict(manifest),
         }
 
-        evidence_file = (
-            self.evidence_base
-            / f"backup_{manifest.backup_id}.jsonl"
-        )
+        evidence_file = self.evidence_base / f"backup_{manifest.backup_id}.jsonl"
 
         with open(evidence_file, "a") as f:
             f.write(json.dumps(evidence) + "\n")
@@ -275,9 +263,7 @@ class BackupAutomationDaemon:
                     tasks = [self.execute_job(job) for job in due_jobs]
                     results = await asyncio.gather(*tasks)
                     success = sum(1 for r in results if r)
-                    self.logger.info(
-                        f"Jobs completed: {success}/{len(due_jobs)} successful"
-                    )
+                    self.logger.info(f"Jobs completed: {success}/{len(due_jobs)} successful")
 
                 await asyncio.sleep(interval_seconds)
         except KeyboardInterrupt:

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ssidctl federation -- Show federation status."""
+
 from __future__ import annotations
 
 import argparse

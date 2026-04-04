@@ -3,15 +3,15 @@ import importlib
 import json
 import sys
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from ems.services.sot_promotion_rollback_guard import evaluate_rollback_guard
 from ems.services.sot_incident_freeze_governance import (
     FreezeGovernanceError,
     evaluate_promotion_freeze_gate,
 )
+from ems.services.sot_promotion_rollback_guard import evaluate_rollback_guard
 from ems.services.sot_promotion_service import (
     RegistryConsistencyError,
     _candidate_registry_path,
@@ -19,9 +19,10 @@ from ems.services.sot_promotion_service import (
     _read_jsonl,
     get_candidate,
     list_operator_approvals,
+)
+from ems.services.sot_promotion_service import (
     load_active_baseline_state as load_current_active_state,
 )
-
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[4]
 _CLI_ROOT = _PROJECT_ROOT / "12_tooling" / "cli"
@@ -74,7 +75,7 @@ def _finding(finding_code: str, severity: str, path: str, detail: str) -> dict[s
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _json_sha256(payload: dict[str, Any]) -> str:
@@ -262,9 +263,7 @@ def validate_rollback_guard(
 def resolve_candidate_approval(repo_root: Path, candidate_id: str) -> dict[str, Any]:
     approvals = list_operator_approvals(repo_root)
     matching = [
-        item
-        for item in approvals
-        if item.get("candidate_id") == candidate_id and item.get("decision") == "approve"
+        item for item in approvals if item.get("candidate_id") == candidate_id and item.get("decision") == "approve"
     ]
     if not matching:
         raise ExecutionHandoffError(
@@ -407,9 +406,7 @@ def validate_execution_preconditions(repo_root: Path, candidate_id: str) -> dict
             f"target version {target_version} must move forward from {current_version}",
         )
     pre_block_findings = _RELEASE_BLOCKER.validate_active_baseline_state(active_state)
-    pre_block_findings.extend(
-        _RELEASE_BLOCKER.validate_release_readiness(repo_root, active_state, snapshot)
-    )
+    pre_block_findings.extend(_RELEASE_BLOCKER.validate_release_readiness(repo_root, active_state, snapshot))
     if pre_block_findings:
         raise ExecutionHandoffError(
             "candidate_execution_precondition_failed",

@@ -6,15 +6,16 @@ Writes test_report.md to the audit logging directory.
 
 Exit code 0 on full PASS, 1 on any FAIL.
 """
+
 from __future__ import annotations
 
 import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 try:
     from web3 import Web3  # noqa: F401 — validate web3 is importable
@@ -22,7 +23,7 @@ except ImportError:
     print("ERROR: web3 package is not installed. Run: pip install web3")
     sys.exit(1)
 
-from deploy_testnet import deploy, redact_address
+from deploy_testnet import deploy
 from verify_testnet import verify
 
 __all__ = ["run_e2e"]
@@ -32,12 +33,7 @@ __all__ = ["run_e2e"]
 # ---------------------------------------------------------------------------
 
 REPO_ROOT: Path = Path(__file__).resolve().parents[4]
-AUDIT_DIR: Path = (
-    REPO_ROOT
-    / "02_audit_logging"
-    / "agent_runs"
-    / "PH3_IMPL_SCRIPTS_002"
-)
+AUDIT_DIR: Path = REPO_ROOT / "02_audit_logging" / "agent_runs" / "PH3_IMPL_SCRIPTS_002"
 
 
 # ---------------------------------------------------------------------------
@@ -47,9 +43,9 @@ AUDIT_DIR: Path = (
 
 def _read_env() -> tuple:
     """Read required environment variables. Exits on missing values."""
-    rpc_url: Optional[str] = os.environ.get("RPC_URL")
-    chain_id_str: Optional[str] = os.environ.get("CHAIN_ID")
-    private_key: Optional[str] = os.environ.get("PRIVATE_KEY")
+    rpc_url: str | None = os.environ.get("RPC_URL")
+    chain_id_str: str | None = os.environ.get("CHAIN_ID")
+    private_key: str | None = os.environ.get("PRIVATE_KEY")
 
     missing = []
     if not rpc_url:
@@ -73,8 +69,8 @@ def _read_env() -> tuple:
 
 
 def _write_test_report(
-    deploy_result: Optional[Dict[str, Any]],
-    verify_result: Optional[Dict[str, Any]],
+    deploy_result: dict[str, Any] | None,
+    verify_result: dict[str, Any] | None,
     overall: str,
     elapsed: float,
     chain_id: int,
@@ -83,7 +79,7 @@ def _write_test_report(
     os.makedirs(AUDIT_DIR, exist_ok=True)
     output_path: Path = AUDIT_DIR / "test_report.md"
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     deploy_status = "PASS" if deploy_result else "FAIL"
     verify_status = verify_result.get("result", "FAIL") if verify_result else "SKIP"
     contract_addr = deploy_result.get("contract_address", "N/A") if deploy_result else "N/A"
@@ -100,16 +96,16 @@ def _write_test_report(
         "",
         "## Deploy",
         "",
-        f"| Field | Value |",
-        f"|-------|-------|",
+        "| Field | Value |",
+        "|-------|-------|",
         f"| Status | {deploy_status} |",
         f"| Contract | {contract_addr} |",
         f"| TX Hash | {deploy_tx} |",
         "",
         "## Verify",
         "",
-        f"| Field | Value |",
-        f"|-------|-------|",
+        "| Field | Value |",
+        "|-------|-------|",
         f"| Status | {verify_status} |",
         f"| TX Hashes | {', '.join(verify_txs) if verify_txs else 'N/A'} |",
         "",
@@ -147,8 +143,8 @@ def run_e2e(
         "PASS" or "FAIL".
     """
     start = time.monotonic()
-    deploy_result: Optional[Dict[str, Any]] = None
-    verify_result: Optional[Dict[str, Any]] = None
+    deploy_result: dict[str, Any] | None = None
+    verify_result: dict[str, Any] | None = None
 
     # --- Step 1: Deploy ---
     print("=" * 60)

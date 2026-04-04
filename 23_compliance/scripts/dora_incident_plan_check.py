@@ -3,19 +3,38 @@
 Check all 24 SSID roots for presence of docs/incident_response_plan.md.
 Exits 0 if all present; exits 1 if any root missing (FAIL_DORA).
 """
+
 import argparse
 import json
 import sys
+from datetime import UTC
 from pathlib import Path
 
 ALL_24_ROOTS = [
-    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-    "05_documentation", "06_data_pipeline", "07_governance_legal",
-    "08_identity_score", "09_meta_identity", "10_interoperability",
-    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
-    "15_infra", "16_codex", "17_observability", "18_data_layer",
-    "19_adapters", "20_foundation", "21_post_quantum_crypto",
-    "22_datasets", "23_compliance", "24_meta_orchestration",
+    "01_ai_layer",
+    "02_audit_logging",
+    "03_core",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "12_tooling",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "16_codex",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
+    "23_compliance",
+    "24_meta_orchestration",
 ]
 
 
@@ -89,10 +108,7 @@ def main() -> None:
     repo_root = Path(args.repo_root)
     result = check_roots(repo_root, args.roots, args.required_file)
     result["template"] = args.template
-    result["status"] = (
-        "PASS" if not result["missing"] and not result["present_but_empty"]
-        else "FAIL_DORA"
-    )
+    result["status"] = "PASS" if not result["missing"] and not result["present_but_empty"] else "FAIL_DORA"
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -105,15 +121,18 @@ def main() -> None:
 
     if args.ems_url:
         try:
-            import sys as _sys
             import os as _os
-            _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), '..', '..', '12_tooling'))
+            import sys as _sys
+
+            _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), "..", "..", "12_tooling"))
+            from datetime import datetime as _dt
+
             from ssid_autorunner.ems_reporter import post_result
-            from datetime import datetime as _dt, timezone as _tz
+
             post_result(
                 ems_url=args.ems_url,
                 ar_id="AR-04",
-                run_id=args.run_id or f"CI-AR-04-{_dt.now(_tz.utc).strftime('%Y%m%dT%H%M%S')}",
+                run_id=args.run_id or f"CI-AR-04-{_dt.now(UTC).strftime('%Y%m%dT%H%M%S')}",
                 result=result,
                 commit_sha=args.commit_sha,
             )

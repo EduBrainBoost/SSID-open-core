@@ -1,10 +1,12 @@
 """Tests for P4.1 + P4.2: ssid_flows.py — PolicyEnforcer injection + Evidence contract."""
+
 from __future__ import annotations
 
 import json
 import sys
 from decimal import Decimal
 from pathlib import Path
+
 import pytest
 
 # Ensure 03_core is on the path
@@ -14,26 +16,26 @@ sys.path.insert(0, str(_CORE))
 sys.path.insert(0, str(_REPO / "08_identity_score"))
 sys.path.insert(0, str(_REPO / "02_audit_logging"))
 
+from fee_distribution_engine import FeeParticipant, ParticipantRole
+from flow_evidence import FlowEvidence
+from governance_reward_engine import GovernanceActivity, GovernanceActivityType, GovernanceParticipant
+from license_fee_splitter import LicenseType
+from policy_enforcer import PolicyViolationError
+from reward_handler import RewardAction, RewardEvent
 from ssid_flows import (
-    run_subscription_revenue_flow,
-    run_license_fee_flow,
-    run_reward_governance_flow,
-    SubscriptionFlowResult,
     LicenseFeeFlowResult,
     RewardGovernanceFlowResult,
+    SubscriptionFlowResult,
+    run_license_fee_flow,
+    run_reward_governance_flow,
+    run_subscription_revenue_flow,
 )
 from subscription_revenue_distributor import RevenueParticipant, SubscriptionTier
-from fee_distribution_engine import FeeParticipant, ParticipantRole
-from license_fee_splitter import LicenseType
-from governance_reward_engine import GovernanceParticipant, GovernanceActivity, GovernanceActivityType
-from reward_handler import RewardEvent, RewardAction
-from policy_enforcer import PolicyEnforcer, PolicyViolationError
-from flow_evidence import FlowEvidence
-
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
 # ---------------------------------------------------------------------------
+
 
 def _make_revenue_participants():
     return [
@@ -67,8 +69,8 @@ def _make_reward_events():
 # TestSubscriptionFlow
 # ---------------------------------------------------------------------------
 
-class TestSubscriptionFlow:
 
+class TestSubscriptionFlow:
     def test_returns_flow_result_with_evidence(self):
         result = run_subscription_revenue_flow(
             gross_revenue=Decimal("1000.00"),
@@ -114,8 +116,8 @@ class TestSubscriptionFlow:
 # TestLicenseFeeFlow
 # ---------------------------------------------------------------------------
 
-class TestLicenseFeeFlow:
 
+class TestLicenseFeeFlow:
     def test_returns_flow_result(self):
         result = run_license_fee_flow(
             amount=Decimal("200.00"),
@@ -134,14 +136,22 @@ class TestLicenseFeeFlow:
         )
         d = result.evidence.to_dict()
         required_keys = {
-            "flow_id", "flow_name", "input_hash", "output_hash",
-            "policy_decisions", "allow_or_deny", "proof_hash",
-            "timestamp_utc", "module_versions", "determinism_hash",
+            "flow_id",
+            "flow_name",
+            "input_hash",
+            "output_hash",
+            "policy_decisions",
+            "allow_or_deny",
+            "proof_hash",
+            "timestamp_utc",
+            "module_versions",
+            "determinism_hash",
         }
         assert required_keys.issubset(d.keys())
 
     def test_validator_share_distributed(self):
         from license_fee_splitter import SplitRecipient
+
         result = run_license_fee_flow(
             amount=Decimal("400.00"),
             license_type=LicenseType.ENTERPRISE,
@@ -167,8 +177,8 @@ class TestLicenseFeeFlow:
 # TestRewardGovernanceFlow
 # ---------------------------------------------------------------------------
 
-class TestRewardGovernanceFlow:
 
+class TestRewardGovernanceFlow:
     def test_returns_flow_result(self):
         result = run_reward_governance_flow(
             reward_events=_make_reward_events(),

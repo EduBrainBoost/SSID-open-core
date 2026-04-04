@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ssidctl governance -- Show governance status and open approvals."""
+
 from __future__ import annotations
 
 import argparse
@@ -49,8 +50,8 @@ def run(args: argparse.Namespace) -> int:
         print(f"  Root:              {repo_root}")
         print(f"  Governance Dir:    {'found' if governance_dir.is_dir() else 'MISSING'}")
         print(f"  Policies Found:    {len(policies_found)}")
-        print(f"  Open Approvals:    0")
-        print(f"  Status:            compliant")
+        print("  Open Approvals:    0")
+        print("  Status:            compliant")
         if args.verbose and policies_found:
             print("  Policies:")
             for p in policies_found:

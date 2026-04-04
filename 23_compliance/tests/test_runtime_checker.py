@@ -1,10 +1,7 @@
 """Tests for 23_compliance.src.runtime_checker."""
 
-import hashlib
 import pathlib
 import sys
-
-import pytest
 
 sys.path.insert(
     0,
@@ -20,10 +17,10 @@ from runtime_checker import (
     Severity,
 )
 
-
 # ------------------------------------------------------------------
 # SanctionsScreener
 # ------------------------------------------------------------------
+
 
 class TestSanctionsScreener:
     def test_no_match_returns_info(self):
@@ -68,6 +65,7 @@ class TestSanctionsScreener:
 # ------------------------------------------------------------------
 # PIIDetector
 # ------------------------------------------------------------------
+
 
 class TestPIIDetector:
     def test_detects_email(self):
@@ -115,6 +113,7 @@ class TestPIIDetector:
 # SecretScanner
 # ------------------------------------------------------------------
 
+
 class TestSecretScanner:
     def test_detects_aws_key(self):
         scanner = SecretScanner()
@@ -147,6 +146,7 @@ class TestSecretScanner:
 # ------------------------------------------------------------------
 # ComplianceChecker (unified)
 # ------------------------------------------------------------------
+
 
 class TestComplianceChecker:
     def test_clean_entity_and_text(self):

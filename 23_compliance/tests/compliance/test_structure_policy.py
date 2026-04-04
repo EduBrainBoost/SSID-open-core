@@ -2,9 +2,9 @@
 Source: 23_compliance/policies/structure/structure_policy.rego
 Phase 4 — A02_A03_COMPLETION
 """
+
 import os
 import sys
-import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../23_compliance/validators"))
 from validate_structure_policy import validate_structure_policy

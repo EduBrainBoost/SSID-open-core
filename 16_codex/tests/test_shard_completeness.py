@@ -5,6 +5,7 @@ Validates that all 16 canonical shards exist with required artifacts
 (chart.yaml, manifest.yaml) and that chart.yaml is parsable with
 non-empty capabilities.
 """
+
 from pathlib import Path
 
 import pytest

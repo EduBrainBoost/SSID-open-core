@@ -14,18 +14,18 @@ import hashlib
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
-
+from typing import Any
 
 # ======================================================================
 # Enums
 # ======================================================================
 
+
 class Region(Enum):
     EU = "eu"
     EEA = "eea"
     UK = "uk"
-    CH = "ch"       # Switzerland
+    CH = "ch"  # Switzerland
     APAC = "apac"
     AMERICAS = "americas"
 
@@ -46,28 +46,29 @@ class RegulationDomain(Enum):
 class CoverageLevel(Enum):
     """How well SSID covers a regulatory requirement."""
 
-    FULL = "full"               # Fully addressed
-    PARTIAL = "partial"         # Addressed with known gaps
-    PLANNED = "planned"         # On roadmap, not yet implemented
-    NOT_APPLICABLE = "n_a"      # Regulation does not apply to SSID
-    GAP = "gap"                 # Not addressed, action required
+    FULL = "full"  # Fully addressed
+    PARTIAL = "partial"  # Addressed with known gaps
+    PLANNED = "planned"  # On roadmap, not yet implemented
+    NOT_APPLICABLE = "n_a"  # Regulation does not apply to SSID
+    GAP = "gap"  # Not addressed, action required
 
 
 # ======================================================================
 # Data Models
 # ======================================================================
 
+
 @dataclass(frozen=True)
 class RegulatoryRequirement:
     """A single regulatory requirement for a jurisdiction."""
 
-    regulation_id: str          # e.g. "GDPR", "MiCA", "AMLD6"
-    article: str                # e.g. "Art. 17"
+    regulation_id: str  # e.g. "GDPR", "MiCA", "AMLD6"
+    article: str  # e.g. "Art. 17"
     description: str
     domain: RegulationDomain
     mandatory: bool = True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "regulation_id": self.regulation_id,
             "article": self.article,
@@ -81,19 +82,19 @@ class RegulatoryRequirement:
 class JurisdictionMapping:
     """Maps a jurisdiction to its applicable requirements and SSID coverage."""
 
-    jurisdiction: str           # ISO 3166-1 alpha-2 or region code
+    jurisdiction: str  # ISO 3166-1 alpha-2 or region code
     region: Region
-    requirements: FrozenSet[RegulatoryRequirement]
-    coverage: Dict[str, CoverageLevel]  # regulation_id → coverage level
+    requirements: frozenset[RegulatoryRequirement]
+    coverage: dict[str, CoverageLevel]  # regulation_id → coverage level
 
     def gap_count(self) -> int:
         return sum(
-            1 for req in self.requirements
-            if req.mandatory
-            and self.coverage.get(req.regulation_id) == CoverageLevel.GAP
+            1
+            for req in self.requirements
+            if req.mandatory and self.coverage.get(req.regulation_id) == CoverageLevel.GAP
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "jurisdiction": self.jurisdiction,
             "region": self.region.value,
@@ -112,8 +113,8 @@ class GapAnalysisResult:
     mandatory_requirements: int
     full_coverage: int
     partial_coverage: int
-    gaps: List[RegulatoryRequirement]
-    planned: List[RegulatoryRequirement]
+    gaps: list[RegulatoryRequirement]
+    planned: list[RegulatoryRequirement]
     evidence_hash: str = ""
     analysed_at: float = field(default_factory=time.time)
 
@@ -123,7 +124,7 @@ class GapAnalysisResult:
             return 1.0
         return self.full_coverage / self.mandatory_requirements
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "jurisdiction": self.jurisdiction,
             "total_requirements": self.total_requirements,
@@ -144,53 +145,93 @@ class GapAnalysisResult:
 # ======================================================================
 
 # EU/EEA requirements applicable to SSID
-_EU_REQUIREMENTS: FrozenSet[RegulatoryRequirement] = frozenset({
-    RegulatoryRequirement("GDPR", "Art. 5-11", "Lawful processing & data subject rights", RegulationDomain.DATA_PROTECTION),
-    RegulatoryRequirement("GDPR_ERASURE", "Art. 17", "Right to erasure", RegulationDomain.DATA_PROTECTION),
-    RegulatoryRequirement("GDPR_PORTABILITY", "Art. 20", "Data portability", RegulationDomain.DATA_PROTECTION),
-    RegulatoryRequirement("MiCA", "Art. 3-15", "Crypto-asset classification & whitepaper", RegulationDomain.CRYPTO_ASSETS),
-    RegulatoryRequirement("AMLD6", "Art. 1-5", "AML obligations for crypto-asset service providers", RegulationDomain.AML_KYC),
-    RegulatoryRequirement("eIDAS2", "Art. 1-12", "EU Digital Identity Wallet interoperability", RegulationDomain.DIGITAL_IDENTITY),
-    RegulatoryRequirement("DORA", "Art. 1-10", "Digital operational resilience", RegulationDomain.CYBERSECURITY),
-    RegulatoryRequirement("AI_ACT", "Art. 6-52", "AI system risk classification", RegulationDomain.AI_GOVERNANCE),
-    RegulatoryRequirement("NIS2", "Art. 1-8", "Network and information security", RegulationDomain.CYBERSECURITY),
-})
+_EU_REQUIREMENTS: frozenset[RegulatoryRequirement] = frozenset(
+    {
+        RegulatoryRequirement(
+            "GDPR", "Art. 5-11", "Lawful processing & data subject rights", RegulationDomain.DATA_PROTECTION
+        ),
+        RegulatoryRequirement("GDPR_ERASURE", "Art. 17", "Right to erasure", RegulationDomain.DATA_PROTECTION),
+        RegulatoryRequirement("GDPR_PORTABILITY", "Art. 20", "Data portability", RegulationDomain.DATA_PROTECTION),
+        RegulatoryRequirement(
+            "MiCA", "Art. 3-15", "Crypto-asset classification & whitepaper", RegulationDomain.CRYPTO_ASSETS
+        ),
+        RegulatoryRequirement(
+            "AMLD6", "Art. 1-5", "AML obligations for crypto-asset service providers", RegulationDomain.AML_KYC
+        ),
+        RegulatoryRequirement(
+            "eIDAS2", "Art. 1-12", "EU Digital Identity Wallet interoperability", RegulationDomain.DIGITAL_IDENTITY
+        ),
+        RegulatoryRequirement("DORA", "Art. 1-10", "Digital operational resilience", RegulationDomain.CYBERSECURITY),
+        RegulatoryRequirement("AI_ACT", "Art. 6-52", "AI system risk classification", RegulationDomain.AI_GOVERNANCE),
+        RegulatoryRequirement("NIS2", "Art. 1-8", "Network and information security", RegulationDomain.CYBERSECURITY),
+    }
+)
 
 # UK requirements
-_UK_REQUIREMENTS: FrozenSet[RegulatoryRequirement] = frozenset({
-    RegulatoryRequirement("UK_GDPR", "Part 2-4", "UK data protection post-Brexit", RegulationDomain.DATA_PROTECTION),
-    RegulatoryRequirement("UK_FCA_CRYPTO", "PS23/6", "FCA crypto-asset promotions rules", RegulationDomain.CRYPTO_ASSETS),
-    RegulatoryRequirement("UK_MLR", "Reg. 2017/692", "Money Laundering Regulations", RegulationDomain.AML_KYC),
-    RegulatoryRequirement("UK_DIAT", "2025 Order", "Digital identity & attributes trust framework", RegulationDomain.DIGITAL_IDENTITY),
-})
+_UK_REQUIREMENTS: frozenset[RegulatoryRequirement] = frozenset(
+    {
+        RegulatoryRequirement(
+            "UK_GDPR", "Part 2-4", "UK data protection post-Brexit", RegulationDomain.DATA_PROTECTION
+        ),
+        RegulatoryRequirement(
+            "UK_FCA_CRYPTO", "PS23/6", "FCA crypto-asset promotions rules", RegulationDomain.CRYPTO_ASSETS
+        ),
+        RegulatoryRequirement("UK_MLR", "Reg. 2017/692", "Money Laundering Regulations", RegulationDomain.AML_KYC),
+        RegulatoryRequirement(
+            "UK_DIAT", "2025 Order", "Digital identity & attributes trust framework", RegulationDomain.DIGITAL_IDENTITY
+        ),
+    }
+)
 
 # Switzerland
-_CH_REQUIREMENTS: FrozenSet[RegulatoryRequirement] = frozenset({
-    RegulatoryRequirement("CH_DSG", "nDSG 2023", "Swiss Federal Data Protection Act", RegulationDomain.DATA_PROTECTION),
-    RegulatoryRequirement("CH_DLT", "DLT Act 2021", "DLT trading facility framework", RegulationDomain.CRYPTO_ASSETS),
-    RegulatoryRequirement("CH_AMLA", "AMLA 2023", "Anti-money laundering act", RegulationDomain.AML_KYC),
-})
+_CH_REQUIREMENTS: frozenset[RegulatoryRequirement] = frozenset(
+    {
+        RegulatoryRequirement(
+            "CH_DSG", "nDSG 2023", "Swiss Federal Data Protection Act", RegulationDomain.DATA_PROTECTION
+        ),
+        RegulatoryRequirement(
+            "CH_DLT", "DLT Act 2021", "DLT trading facility framework", RegulationDomain.CRYPTO_ASSETS
+        ),
+        RegulatoryRequirement("CH_AMLA", "AMLA 2023", "Anti-money laundering act", RegulationDomain.AML_KYC),
+    }
+)
 
 # APAC representative requirements
-_APAC_REQUIREMENTS: FrozenSet[RegulatoryRequirement] = frozenset({
-    RegulatoryRequirement("SG_PSA", "PSN02/2024", "Singapore Payment Services Act — DPT", RegulationDomain.CRYPTO_ASSETS),
-    RegulatoryRequirement("HK_VATP", "SFC VATP", "Hong Kong virtual asset trading platform licensing", RegulationDomain.CRYPTO_ASSETS),
-    RegulatoryRequirement("JP_PSA", "2023 Amend.", "Japan Payment Services Act — stablecoins", RegulationDomain.CRYPTO_ASSETS),
-    RegulatoryRequirement("AU_AUSTRAC", "DCE Reg.", "Australia digital currency exchange registration", RegulationDomain.AML_KYC),
-    RegulatoryRequirement("SG_PDPA", "PDPA 2012", "Singapore Personal Data Protection Act", RegulationDomain.DATA_PROTECTION),
-})
+_APAC_REQUIREMENTS: frozenset[RegulatoryRequirement] = frozenset(
+    {
+        RegulatoryRequirement(
+            "SG_PSA", "PSN02/2024", "Singapore Payment Services Act — DPT", RegulationDomain.CRYPTO_ASSETS
+        ),
+        RegulatoryRequirement(
+            "HK_VATP", "SFC VATP", "Hong Kong virtual asset trading platform licensing", RegulationDomain.CRYPTO_ASSETS
+        ),
+        RegulatoryRequirement(
+            "JP_PSA", "2023 Amend.", "Japan Payment Services Act — stablecoins", RegulationDomain.CRYPTO_ASSETS
+        ),
+        RegulatoryRequirement(
+            "AU_AUSTRAC", "DCE Reg.", "Australia digital currency exchange registration", RegulationDomain.AML_KYC
+        ),
+        RegulatoryRequirement(
+            "SG_PDPA", "PDPA 2012", "Singapore Personal Data Protection Act", RegulationDomain.DATA_PROTECTION
+        ),
+    }
+)
 
 # Americas representative requirements
-_AMERICAS_REQUIREMENTS: FrozenSet[RegulatoryRequirement] = frozenset({
-    RegulatoryRequirement("US_OFAC", "31 CFR 501", "OFAC sanctions compliance", RegulationDomain.AML_KYC),
-    RegulatoryRequirement("US_BSA", "31 USC 5311", "Bank Secrecy Act — AML/KYC", RegulationDomain.AML_KYC),
-    RegulatoryRequirement("US_IRS_1099DA", "IRS Final", "Digital asset reporting (1099-DA)", RegulationDomain.FINANCIAL_SERVICES),
-    RegulatoryRequirement("CA_FINTRAC", "LVCTR", "Canadian AML/ATF for virtual currency", RegulationDomain.AML_KYC),
-    RegulatoryRequirement("BR_LGPD", "Lei 13.709", "Brazilian data protection", RegulationDomain.DATA_PROTECTION),
-})
+_AMERICAS_REQUIREMENTS: frozenset[RegulatoryRequirement] = frozenset(
+    {
+        RegulatoryRequirement("US_OFAC", "31 CFR 501", "OFAC sanctions compliance", RegulationDomain.AML_KYC),
+        RegulatoryRequirement("US_BSA", "31 USC 5311", "Bank Secrecy Act — AML/KYC", RegulationDomain.AML_KYC),
+        RegulatoryRequirement(
+            "US_IRS_1099DA", "IRS Final", "Digital asset reporting (1099-DA)", RegulationDomain.FINANCIAL_SERVICES
+        ),
+        RegulatoryRequirement("CA_FINTRAC", "LVCTR", "Canadian AML/ATF for virtual currency", RegulationDomain.AML_KYC),
+        RegulatoryRequirement("BR_LGPD", "Lei 13.709", "Brazilian data protection", RegulationDomain.DATA_PROTECTION),
+    }
+)
 
 # Default region → requirements mapping
-DEFAULT_REGION_REQUIREMENTS: Dict[Region, FrozenSet[RegulatoryRequirement]] = {
+DEFAULT_REGION_REQUIREMENTS: dict[Region, frozenset[RegulatoryRequirement]] = {
     Region.EU: _EU_REQUIREMENTS,
     Region.EEA: _EU_REQUIREMENTS,  # EEA adopts EU regulations
     Region.UK: _UK_REQUIREMENTS,
@@ -200,7 +241,7 @@ DEFAULT_REGION_REQUIREMENTS: Dict[Region, FrozenSet[RegulatoryRequirement]] = {
 }
 
 # Default SSID coverage — reflects current implementation state
-DEFAULT_SSID_COVERAGE: Dict[str, CoverageLevel] = {
+DEFAULT_SSID_COVERAGE: dict[str, CoverageLevel] = {
     # EU
     "GDPR": CoverageLevel.FULL,
     "GDPR_ERASURE": CoverageLevel.FULL,
@@ -239,6 +280,7 @@ DEFAULT_SSID_COVERAGE: Dict[str, CoverageLevel] = {
 # Regulatory Coverage Matrix
 # ======================================================================
 
+
 class RegulatoryCoverageMatrix:
     """Regulatory coverage matrix across all target jurisdictions.
 
@@ -248,10 +290,10 @@ class RegulatoryCoverageMatrix:
 
     def __init__(
         self,
-        coverage: Optional[Dict[str, CoverageLevel]] = None,
+        coverage: dict[str, CoverageLevel] | None = None,
     ) -> None:
         self._coverage = dict(coverage or DEFAULT_SSID_COVERAGE)
-        self._mappings: Dict[str, JurisdictionMapping] = {}
+        self._mappings: dict[str, JurisdictionMapping] = {}
 
     # ------------------------------------------------------------------
     # Mapping Management
@@ -261,14 +303,11 @@ class RegulatoryCoverageMatrix:
         self,
         jurisdiction: str,
         region: Region,
-        requirements: Optional[Set[RegulatoryRequirement]] = None,
+        requirements: set[RegulatoryRequirement] | None = None,
     ) -> JurisdictionMapping:
         """Register a jurisdiction with its requirements."""
         reqs = frozenset(requirements or DEFAULT_REGION_REQUIREMENTS.get(region, frozenset()))
-        coverage_slice = {
-            req.regulation_id: self._coverage.get(req.regulation_id, CoverageLevel.GAP)
-            for req in reqs
-        }
+        coverage_slice = {req.regulation_id: self._coverage.get(req.regulation_id, CoverageLevel.GAP) for req in reqs}
         mapping = JurisdictionMapping(
             jurisdiction=jurisdiction,
             region=region,
@@ -278,10 +317,10 @@ class RegulatoryCoverageMatrix:
         self._mappings[jurisdiction] = mapping
         return mapping
 
-    def get_jurisdiction(self, jurisdiction: str) -> Optional[JurisdictionMapping]:
+    def get_jurisdiction(self, jurisdiction: str) -> JurisdictionMapping | None:
         return self._mappings.get(jurisdiction)
 
-    def list_jurisdictions(self) -> List[str]:
+    def list_jurisdictions(self) -> list[str]:
         return sorted(self._mappings.keys())
 
     # ------------------------------------------------------------------
@@ -318,8 +357,8 @@ class RegulatoryCoverageMatrix:
             raise KeyError(f"Unknown jurisdiction: {jurisdiction}")
 
         mandatory_reqs = [r for r in mapping.requirements if r.mandatory]
-        gaps: List[RegulatoryRequirement] = []
-        planned: List[RegulatoryRequirement] = []
+        gaps: list[RegulatoryRequirement] = []
+        planned: list[RegulatoryRequirement] = []
         full = 0
         partial = 0
 
@@ -334,10 +373,7 @@ class RegulatoryCoverageMatrix:
             elif level == CoverageLevel.GAP:
                 gaps.append(req)
 
-        evidence_payload = (
-            f"{jurisdiction}:{len(mandatory_reqs)}:{full}:{partial}:"
-            f"{len(gaps)}:{time.time()}"
-        )
+        evidence_payload = f"{jurisdiction}:{len(mandatory_reqs)}:{full}:{partial}:{len(gaps)}:{time.time()}"
         evidence_hash = hashlib.sha256(evidence_payload.encode()).hexdigest()
 
         return GapAnalysisResult(
@@ -351,18 +387,15 @@ class RegulatoryCoverageMatrix:
             evidence_hash=evidence_hash,
         )
 
-    def analyse_all_gaps(self) -> Dict[str, GapAnalysisResult]:
+    def analyse_all_gaps(self) -> dict[str, GapAnalysisResult]:
         """Run gap analysis across all registered jurisdictions."""
-        return {
-            jur: self.analyse_gaps(jur)
-            for jur in self._mappings
-        }
+        return {jur: self.analyse_gaps(jur) for jur in self._mappings}
 
     # ------------------------------------------------------------------
     # Summary
     # ------------------------------------------------------------------
 
-    def coverage_summary(self) -> Dict[str, Any]:
+    def coverage_summary(self) -> dict[str, Any]:
         """Produce a summary of coverage across all jurisdictions."""
         all_gaps = self.analyse_all_gaps()
         total_mandatory = sum(r.mandatory_requirements for r in all_gaps.values())
@@ -374,14 +407,12 @@ class RegulatoryCoverageMatrix:
             "total_mandatory_requirements": total_mandatory,
             "total_full_coverage": total_full,
             "total_gaps": total_gaps,
-            "per_jurisdiction": {
-                jur: result.to_dict() for jur, result in all_gaps.items()
-            },
+            "per_jurisdiction": {jur: result.to_dict() for jur, result in all_gaps.items()},
         }
 
-    def get_regions_with_gaps(self) -> List[Tuple[str, int]]:
+    def get_regions_with_gaps(self) -> list[tuple[str, int]]:
         """Return jurisdictions that have mandatory gaps, sorted by gap count."""
-        results: List[Tuple[str, int]] = []
+        results: list[tuple[str, int]] = []
         for jur, mapping in self._mappings.items():
             gc = mapping.gap_count()
             if gc > 0:

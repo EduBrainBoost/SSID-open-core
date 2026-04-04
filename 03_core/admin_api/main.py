@@ -29,6 +29,7 @@ app.add_middleware(
 
 # --- Health endpoint ---
 
+
 @app.get("/health")
 async def health():
     return {
@@ -39,6 +40,7 @@ async def health():
 
 
 # --- Router registration ---
+
 
 def _try_import(module_path: str, attr: str = "router"):
     try:
@@ -60,8 +62,8 @@ _ROUTES = {
 
 # Note: Python cannot import modules starting with digits directly.
 # Use sys.path manipulation or run from repo root with PYTHONPATH set.
-import sys
 import os
+import sys
 
 _repo_root = os.environ.get("SSID_REPO", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if _repo_root not in sys.path:
@@ -75,6 +77,7 @@ for name, mod_path in _ROUTES.items():
 # Audit middleware (optional, fail-open for dev)
 try:
     from importlib import import_module
+
     _audit_mod = import_module("03_core.admin_api.middleware.audit_mw")
     app.middleware("http")(_audit_mod.audit_middleware)
 except Exception:

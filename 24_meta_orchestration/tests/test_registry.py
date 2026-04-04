@@ -7,6 +7,7 @@ Covers:
   - agents_manifest.json structure
   - endpoints.yaml loadability
 """
+
 from __future__ import annotations
 
 import json
@@ -75,18 +76,33 @@ class TestShardsRegistry:
 
     def test_all_root_ids_in_root24_lock(self, shards_registry):
         canonical = {
-            "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-            "05_documentation", "06_data_pipeline", "07_governance_legal",
-            "08_identity_score", "09_meta_identity", "10_interoperability",
-            "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
-            "15_infra", "16_codex", "17_observability", "18_data_layer",
-            "19_adapters", "20_foundation", "21_post_quantum_crypto", "22_datasets",
-            "23_compliance", "24_meta_orchestration",
+            "01_ai_layer",
+            "02_audit_logging",
+            "03_core",
+            "04_deployment",
+            "05_documentation",
+            "06_data_pipeline",
+            "07_governance_legal",
+            "08_identity_score",
+            "09_meta_identity",
+            "10_interoperability",
+            "11_test_simulation",
+            "12_tooling",
+            "13_ui_layer",
+            "14_zero_time_auth",
+            "15_infra",
+            "16_codex",
+            "17_observability",
+            "18_data_layer",
+            "19_adapters",
+            "20_foundation",
+            "21_post_quantum_crypto",
+            "22_datasets",
+            "23_compliance",
+            "24_meta_orchestration",
         }
         for entry in shards_registry["shards"]:
-            assert entry["root_id"] in canonical, (
-                f"Shard root_id '{entry['root_id']}' not in ROOT-24-LOCK"
-            )
+            assert entry["root_id"] in canonical, f"Shard root_id '{entry['root_id']}' not in ROOT-24-LOCK"
 
     def test_no_duplicate_shard_keys(self, shards_registry):
         seen: set = set()
@@ -112,9 +128,7 @@ class TestExecutionIndex:
         assert isinstance(execution_index["entries"], list)
 
     def test_repo_field_is_ssid(self, execution_index):
-        assert execution_index.get("repo") == "SSID", (
-            "execution_index.json 'repo' field should be 'SSID'"
-        )
+        assert execution_index.get("repo") == "SSID", "execution_index.json 'repo' field should be 'SSID'"
 
     def test_scope_field_present_if_v2(self, execution_index):
         """scope field is present in execution_index v2.0; v1.0 may omit it."""
@@ -201,6 +215,4 @@ class TestEndpointsYaml:
 
     def test_no_placeholder_content(self):
         content = (REGISTRY_DIR / "endpoints.yaml").read_text(encoding="utf-8")
-        assert "PLACEHOLDER" not in content.upper(), (
-            "endpoints.yaml still contains placeholder content"
-        )
+        assert "PLACEHOLDER" not in content.upper(), "endpoints.yaml still contains placeholder content"

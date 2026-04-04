@@ -5,6 +5,7 @@ Scans import statements across the 24 root modules to detect circular
 dependency chains that would compromise architectural integrity.
 A circular dependency is defined as A -> B -> ... -> A at the root-module level.
 """
+
 from __future__ import annotations
 
 import ast

@@ -9,34 +9,35 @@ This file is retained for reference only (SAFE-FIX: additive, not deleted).
 
 Generates a CycloneDX-compliant Software Bill of Materials.
 """
+
 import warnings
+
 warnings.warn(
     "sbom_generator.py is deprecated. Use 12_tooling/supply_chain/sbom_export.py instead.",
     DeprecationWarning,
     stacklevel=2,
 )
+import contextlib
 import json
 import subprocess
 import sys
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-import uuid
 
 
 def extract_dependencies() -> dict[str, Any]:
     """Extract Python dependencies."""
     packages = {}
 
-    try:
-        result = subprocess.run(
+    with contextlib.suppress(Exception):
+        subprocess.run(
             [sys.executable, "-m", "pip", "show", "-f", "pytest"],
             capture_output=True,
             text=True,
             timeout=10,
         )
-    except Exception:
-        pass
 
     return packages
 
@@ -131,10 +132,7 @@ def main():
         "sbom_version": sbom["specVersion"],
         "components_count": len(sbom["components"]),
         "generated_at": sbom["metadata"]["timestamp"],
-        "components_summary": [
-            {"name": c["name"], "version": c["version"]}
-            for c in sbom["components"]
-        ],
+        "components_summary": [{"name": c["name"], "version": c["version"]} for c in sbom["components"]],
     }
 
     manifest_file = Path("sbom/manifest.json")

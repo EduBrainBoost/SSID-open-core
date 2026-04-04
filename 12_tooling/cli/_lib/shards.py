@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Shared shard scanning, parsing, and validation primitives."""
+
 from __future__ import annotations
 
 import json
@@ -57,11 +58,7 @@ PII_DENY_KEYS: list[str] = [
 
 def find_roots(repo_root: Path) -> list[Path]:
     """Return all 24 canonical root directories (sorted)."""
-    return sorted(
-        repo_root / name
-        for name in ROOTS_24
-        if (repo_root / name).is_dir()
-    )
+    return sorted(repo_root / name for name in ROOTS_24 if (repo_root / name).is_dir())
 
 
 def find_shards(root_path: Path) -> list[Path]:

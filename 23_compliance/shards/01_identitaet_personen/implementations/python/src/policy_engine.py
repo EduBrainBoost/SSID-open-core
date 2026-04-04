@@ -7,11 +7,11 @@ Enforces SSID core policies at runtime:
 - non_custodial: No custody operations
 - jurisdiction: Blocked jurisdictions
 """
+
 import hashlib
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 
 @dataclass
@@ -29,10 +29,21 @@ class PolicyEngine:
     BLOCKED_JURISDICTIONS = {"IR", "KP", "SY", "CU"}
 
     PII_PATTERNS = {
-        "email", "phone", "phone_number", "address", "street",
-        "date_of_birth", "dateOfBirth", "ssn", "social_security",
-        "passport_number", "national_id", "first_name", "last_name",
-        "full_name", "name",
+        "email",
+        "phone",
+        "phone_number",
+        "address",
+        "street",
+        "date_of_birth",
+        "dateOfBirth",
+        "ssn",
+        "social_security",
+        "passport_number",
+        "national_id",
+        "first_name",
+        "last_name",
+        "full_name",
+        "name",
     }
 
     def __init__(self):
@@ -43,9 +54,7 @@ class PolicyEngine:
         """Verify no PII fields exist in payload."""
         self._checks_performed += 1
         violations = []
-        payload_hash = hashlib.sha256(
-            json.dumps(payload, sort_keys=True).encode()
-        ).hexdigest()
+        payload_hash = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
         found_pii = self._scan_for_pii(payload)
         for field_path in found_pii:
@@ -54,7 +63,7 @@ class PolicyEngine:
                 description=f"PII field detected: {field_path}",
                 severity="CRITICAL",
                 payload_hash=payload_hash,
-                timestamp_utc=datetime.now(timezone.utc).isoformat(),
+                timestamp_utc=datetime.now(UTC).isoformat(),
             )
             violations.append(v)
             self._violations.append(v)
@@ -73,10 +82,8 @@ class PolicyEngine:
                 policy_id="non_custodial",
                 description=f"Custody operation attempted: {op_type}",
                 severity="CRITICAL",
-                payload_hash=hashlib.sha256(
-                    json.dumps(operation, sort_keys=True).encode()
-                ).hexdigest(),
-                timestamp_utc=datetime.now(timezone.utc).isoformat(),
+                payload_hash=hashlib.sha256(json.dumps(operation, sort_keys=True).encode()).hexdigest(),
+                timestamp_utc=datetime.now(UTC).isoformat(),
             )
             violations.append(v)
             self._violations.append(v)
@@ -94,7 +101,7 @@ class PolicyEngine:
                 description=f"Blocked jurisdiction: {country_code}",
                 severity="CRITICAL",
                 payload_hash=hashlib.sha256(country_code.encode()).hexdigest(),
-                timestamp_utc=datetime.now(timezone.utc).isoformat(),
+                timestamp_utc=datetime.now(UTC).isoformat(),
             )
             violations.append(v)
             self._violations.append(v)
@@ -112,10 +119,9 @@ class PolicyEngine:
             "allowed": len(all_violations) == 0,
             "violations_count": len(all_violations),
             "violations": [
-                {"policy": v.policy_id, "description": v.description, "severity": v.severity}
-                for v in all_violations
+                {"policy": v.policy_id, "description": v.description, "severity": v.severity} for v in all_violations
             ],
-            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            "timestamp_utc": datetime.now(UTC).isoformat(),
         }
 
     def _scan_for_pii(self, obj: dict, prefix: str = "") -> list[str]:

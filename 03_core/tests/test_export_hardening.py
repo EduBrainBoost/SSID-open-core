@@ -1,12 +1,12 @@
 """Tests for deterministic export hardening — P5-PreMerge P3."""
+
 from __future__ import annotations
+
 import hashlib
 import json
 import sys
 import tempfile
 from pathlib import Path
-
-import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -82,7 +82,8 @@ def test_canonical_json_no_spaces_in_separators():
 
 def test_two_reports_have_different_timestamps():
     """Generate 2 reports — both generated_at values must be valid ISO-8601 strings."""
-    from datetime import datetime, timezone
+    from datetime import datetime
+
     reporter = SsidRuntimeReporter()
     r1 = reporter.generate_report()
     r2 = reporter.generate_report()

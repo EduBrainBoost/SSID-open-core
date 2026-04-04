@@ -4,8 +4,7 @@ Reads real registry/evidence data instead of hardcoded status.
 """
 
 import hashlib
-import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -21,7 +20,7 @@ def _load_config() -> dict:
     """Load health_config.yaml."""
     if not _CONFIG_PATH.exists():
         raise FileNotFoundError(f"Health config not found: {_CONFIG_PATH}")
-    with open(_CONFIG_PATH, "r", encoding="utf-8") as fh:
+    with open(_CONFIG_PATH, encoding="utf-8") as fh:
         return yaml.safe_load(fh)
 
 
@@ -92,6 +91,6 @@ def check_health(root_type: str = "default") -> dict[str, Any]:
         "passed": passed,
         "total": total,
         "percent": round(pct, 1),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "root_type": root_type,
     }

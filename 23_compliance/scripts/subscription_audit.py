@@ -4,6 +4,7 @@ Validates subscription revenue distribution sums to exactly 100%
 with the 50/30/10/10 model per SoT.
 Exits 0 (PASS) or 1 (FAIL_POLICY).
 """
+
 import argparse
 import json
 import sys
@@ -11,6 +12,7 @@ from pathlib import Path
 
 try:
     import yaml
+
     HAS_YAML = True
 except ImportError:
     HAS_YAML = False
@@ -33,11 +35,13 @@ def audit_subscription(policy: dict) -> dict:
     for key, expected_pct in EXPECTED_DISTRIBUTION.items():
         actual = distribution.get(key, {}).get("percent")
         if actual != expected_pct:
-            mismatches.append({
-                "key": key,
-                "expected": expected_pct,
-                "actual": actual,
-            })
+            mismatches.append(
+                {
+                    "key": key,
+                    "expected": expected_pct,
+                    "actual": actual,
+                }
+            )
 
     sum_correct = total == expected_sum
     model_correct = len(mismatches) == 0
@@ -70,10 +74,7 @@ def main() -> None:
 
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(result, indent=2))
-    print(
-        f"Subscription audit: status={result['status']}, "
-        f"sum={result['total_percent']}% (expected 100%)"
-    )
+    print(f"Subscription audit: status={result['status']}, sum={result['total_percent']}% (expected 100%)")
 
     sys.exit(0 if result["status"] == "PASS" else 1)
 

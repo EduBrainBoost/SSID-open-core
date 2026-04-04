@@ -5,13 +5,13 @@ Root: 24_meta_orchestration | Shard: 01_identitaet_personen
 Central task intake, orchestration, run tracking, evidence collection.
 EMS-first: all SSID operations are EMS-initiated and EMS-verified.
 """
+
 import hashlib
 import json
 import uuid
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Optional
 
 
 class TaskStatus(Enum):
@@ -39,11 +39,11 @@ class EMSTask:
     shard_id: str
     status: TaskStatus
     created_at: str
-    assigned_agent: Optional[str] = None
-    started_at: Optional[str] = None
-    completed_at: Optional[str] = None
-    evidence_hash: Optional[str] = None
-    result: Optional[dict] = None
+    assigned_agent: str | None = None
+    started_at: str | None = None
+    completed_at: str | None = None
+    evidence_hash: str | None = None
+    result: dict | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -68,9 +68,9 @@ class RunRecord:
     agent_id: str
     status: RunStatus
     started_at: str
-    completed_at: Optional[str] = None
-    output_hash: Optional[str] = None
-    duration_ms: Optional[int] = None
+    completed_at: str | None = None
+    output_hash: str | None = None
+    duration_ms: int | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -93,9 +93,7 @@ class EMSOrchestrator:
         self._runs: dict[str, RunRecord] = {}
         self._run_ledger: list[dict] = []
 
-    def create_task(
-        self, title: str, scope: str, root_id: str, shard_id: str
-    ) -> EMSTask:
+    def create_task(self, title: str, scope: str, root_id: str, shard_id: str) -> EMSTask:
         task_id = f"ems-task-{uuid.uuid4().hex[:12]}"
         task = EMSTask(
             task_id=task_id,
@@ -104,7 +102,7 @@ class EMSOrchestrator:
             root_id=root_id,
             shard_id=shard_id,
             status=TaskStatus.PENDING,
-            created_at=datetime.now(timezone.utc).isoformat(),
+            created_at=datetime.now(UTC).isoformat(),
         )
         self._tasks[task_id] = task
         return task
@@ -115,7 +113,7 @@ class EMSOrchestrator:
             raise ValueError(f"Task not found: {task_id}")
         task.assigned_agent = agent_id
         task.status = TaskStatus.IN_PROGRESS
-        task.started_at = datetime.now(timezone.utc).isoformat()
+        task.started_at = datetime.now(UTC).isoformat()
         return task
 
     def start_run(self, task_id: str, agent_id: str) -> RunRecord:
@@ -125,7 +123,7 @@ class EMSOrchestrator:
             task_id=task_id,
             agent_id=agent_id,
             status=RunStatus.RUNNING,
-            started_at=datetime.now(timezone.utc).isoformat(),
+            started_at=datetime.now(UTC).isoformat(),
         )
         self._runs[run_id] = run
         return run
@@ -135,12 +133,10 @@ class EMSOrchestrator:
         if not run:
             raise ValueError(f"Run not found: {run_id}")
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         run.status = RunStatus.SUCCESS if success else RunStatus.FAILURE
         run.completed_at = now
-        run.output_hash = hashlib.sha256(
-            json.dumps(output, sort_keys=True).encode()
-        ).hexdigest()
+        run.output_hash = hashlib.sha256(json.dumps(output, sort_keys=True).encode()).hexdigest()
 
         self._run_ledger.append(run.to_dict())
 
@@ -162,10 +158,10 @@ class EMSOrchestrator:
             "task_id": task_id,
             "action": "emergency_stop",
             "reason": reason,
-            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            "timestamp_utc": datetime.now(UTC).isoformat(),
         }
 
-    def get_task(self, task_id: str) -> Optional[EMSTask]:
+    def get_task(self, task_id: str) -> EMSTask | None:
         return self._tasks.get(task_id)
 
     def get_active_tasks(self) -> list[EMSTask]:

@@ -1,7 +1,9 @@
 """Basic chart.yaml validation for 24_meta_orchestration/07_familie_soziales."""
+
 import os
-import yaml
+
 import pytest
+import yaml
 
 SHARD_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHART_PATH = os.path.join(SHARD_DIR, "chart.yaml")
@@ -10,7 +12,7 @@ CHART_PATH = os.path.join(SHARD_DIR, "chart.yaml")
 @pytest.fixture
 def chart():
     """Load chart.yaml via safe_load."""
-    with open(CHART_PATH, "r", encoding="utf-8") as f:
+    with open(CHART_PATH, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 

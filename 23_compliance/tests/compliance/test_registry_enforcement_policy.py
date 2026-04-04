@@ -2,13 +2,12 @@
 Source: 23_compliance/policies/registry/registry_enforcement_policy.rego
 Phase 4 — A02_A03_COMPLETION
 """
+
 import os
 import sys
-import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../23_compliance/validators"))
 from validate_registry_enforcement_policy import validate_registry_enforcement_policy
-
 
 VALID_DATA = {
     "artifacts": [
@@ -34,9 +33,7 @@ def test_registry_enforcement_pass_valid():
 def test_registry_enforcement_fail_unregistered():
     """Test REGISTRY_ENFORCE_001: on_disk artifact without hash."""
     data = {
-        "artifacts": [
-            {"name": "a", "path": "public/a.py", "on_disk": True, "evidence_ref": "ev-1"}
-        ],
+        "artifacts": [{"name": "a", "path": "public/a.py", "on_disk": True, "evidence_ref": "ev-1"}],
         "guards": [],
     }
     assert validate_registry_enforcement_policy(data) is False
@@ -63,9 +60,7 @@ def test_registry_enforcement_fail_hash_drift():
 def test_registry_enforcement_fail_missing_evidence():
     """Test REGISTRY_ENFORCE_003: artifact without evidence_ref."""
     data = {
-        "artifacts": [
-            {"name": "a", "path": "public/a.py", "hash_sha256": "h1", "on_disk": True}
-        ],
+        "artifacts": [{"name": "a", "path": "public/a.py", "hash_sha256": "h1", "on_disk": True}],
         "guards": [],
     }
     assert validate_registry_enforcement_policy(data) is False

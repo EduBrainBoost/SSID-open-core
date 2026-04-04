@@ -11,9 +11,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -24,7 +23,7 @@ def _run(args: argparse.Namespace) -> int:
 
     output = {
         "command": "build.run",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "target": target,
         "dry_run": dry_run,
         "build_status": "success" if dry_run else "triggered",
@@ -45,7 +44,7 @@ def _status(args: argparse.Namespace) -> int:
     """Report current build status."""
     output = {
         "command": "build.status",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "active_builds": 0,
         "last_build": None,
         "last_build_status": None,
@@ -62,7 +61,7 @@ def _verify(args: argparse.Namespace) -> int:
     if not artifact_path.exists():
         error = {
             "command": "build.verify",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "artifact": str(artifact_path),
             "exists": False,
             "status": "failed",
@@ -73,7 +72,7 @@ def _verify(args: argparse.Namespace) -> int:
     sha256 = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
     output = {
         "command": "build.verify",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "artifact": str(artifact_path),
         "exists": True,
         "sha256": sha256,
@@ -113,7 +112,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         error = {
             "command": f"build.{args.action}",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "error": str(exc),
             "status": "failed",
         }

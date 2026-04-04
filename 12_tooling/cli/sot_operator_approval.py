@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Operator approval workflow for promotion candidates."""
+
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -22,7 +23,7 @@ REPORT_MD = "sot_operator_approval_report.md"
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _json_sha256(payload: Any) -> str:
@@ -55,17 +56,33 @@ def _latest_candidate_states(records: list[dict]) -> dict[str, dict]:
 
 def resolve_candidate(records: list[dict], candidate_id: str) -> tuple[dict | None, list[dict[str, str]]]:
     if not records:
-        return None, [_finding("candidate_registry_missing", "deny", DEFAULT_CANDIDATE_REGISTRY, "candidate registry is missing or empty")]
+        return None, [
+            _finding(
+                "candidate_registry_missing",
+                "deny",
+                DEFAULT_CANDIDATE_REGISTRY,
+                "candidate registry is missing or empty",
+            )
+        ]
     latest = _latest_candidate_states(records)
     record = latest.get(candidate_id)
     if record is not None:
         if record.get("status") != "pending":
-            return None, [_finding("candidate_not_pending", "deny", candidate_id, f"candidate status is '{record.get('status')}', expected pending")]
+            return None, [
+                _finding(
+                    "candidate_not_pending",
+                    "deny",
+                    candidate_id,
+                    f"candidate status is '{record.get('status')}', expected pending",
+                )
+            ]
         return record, []
     return None, [_finding("candidate_not_found", "deny", candidate_id, "candidate_id not found in registry")]
 
 
-def build_approval_from_candidate(candidate: dict, approved_by: str, reason: str, repo_root: Path, output_dir: Path) -> tuple[dict, Path]:
+def build_approval_from_candidate(
+    candidate: dict, approved_by: str, reason: str, repo_root: Path, output_dir: Path
+) -> tuple[dict, Path]:
     approval = {
         "approval_id": f"APR-{candidate['candidate_id']}",
         "created_at_utc": _utc_now_iso(),
@@ -122,7 +139,9 @@ def emit_operator_approval_report(report: dict[str, Any], output_dir: Path) -> t
     ]
     if report["findings"]:
         for index, finding in enumerate(report["findings"], start=1):
-            lines.append(f"| {index} | `{finding['finding_code']}` | {finding['severity']} | `{finding['path']}` | {finding['detail']} |")
+            lines.append(
+                f"| {index} | `{finding['finding_code']}` | {finding['severity']} | `{finding['path']}` | {finding['detail']} |"
+            )
     else:
         lines.append("| 1 | `none` | info | `-` | No findings |")
     md_path.write_text("\n".join(lines), encoding="utf-8")
@@ -151,7 +170,9 @@ def run(args: argparse.Namespace) -> int:
     approval_log = repo_root / DEFAULT_APPROVAL_LOG
     records = load_candidate_registry(candidate_registry)
     findings: list[dict[str, str]] = []
-    action = "list-pending" if args.list_pending else "approve" if args.approve else "reject" if args.reject else "invalid"
+    action = (
+        "list-pending" if args.list_pending else "approve" if args.approve else "reject" if args.reject else "invalid"
+    )
     pending = [record for record in _latest_candidate_states(records).values() if record.get("status") == "pending"]
     approval_file_path: Path | None = None
     decision_log_entry: dict[str, Any] | None = None
@@ -160,7 +181,9 @@ def run(args: argparse.Namespace) -> int:
         decision = "PASS"
     else:
         if not args.approve and not args.reject:
-            findings.append(_finding("operator_decision_invalid", "deny", "action", "either --approve or --reject is required"))
+            findings.append(
+                _finding("operator_decision_invalid", "deny", "action", "either --approve or --reject is required")
+            )
         if not args.candidate_id:
             findings.append(_finding("candidate_not_found", "deny", "candidate_id", "candidate_id is required"))
         if not args.approved_by:
@@ -173,11 +196,22 @@ def run(args: argparse.Namespace) -> int:
             decision = "FAIL" if findings else "PASS"
             if decision == "PASS":
                 if args.approve:
-                    approval_payload, approval_file_path = build_approval_from_candidate(candidate, args.approved_by, args.reason or candidate["reason"], repo_root, output_dir)
+                    approval_payload, approval_file_path = build_approval_from_candidate(
+                        candidate, args.approved_by, args.reason or candidate["reason"], repo_root, output_dir
+                    )
                     try:
-                        approval_file_path.write_text(json.dumps(approval_payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+                        approval_file_path.write_text(
+                            json.dumps(approval_payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+                        )
                     except Exception as exc:
-                        findings.append(_finding("approval_artifact_write_failed", "deny", str(approval_file_path), f"failed to write approval artifact: {exc}"))
+                        findings.append(
+                            _finding(
+                                "approval_artifact_write_failed",
+                                "deny",
+                                str(approval_file_path),
+                                f"failed to write approval artifact: {exc}",
+                            )
+                        )
                         decision = "FAIL"
                 decision_log_entry = {
                     "decision_id": f"DEC-{uuid.uuid4().hex[:12].upper()}",
@@ -189,7 +223,9 @@ def run(args: argparse.Namespace) -> int:
                     "approval_file": str(approval_file_path) if approval_file_path else None,
                     "decision_evidence_hash": "",
                 }
-                decision_log_entry["decision_evidence_hash"] = _json_sha256({k: v for k, v in decision_log_entry.items() if k != "decision_evidence_hash"})
+                decision_log_entry["decision_evidence_hash"] = _json_sha256(
+                    {k: v for k, v in decision_log_entry.items() if k != "decision_evidence_hash"}
+                )
                 if decision == "PASS":
                     try:
                         append_operator_decision(approval_log, decision_log_entry)
@@ -199,11 +235,25 @@ def run(args: argparse.Namespace) -> int:
                             "approved" if args.approve else "rejected",
                         )
                     except Exception as exc:
-                        findings.append(_finding("operator_approval_log_write_failed", "deny", str(approval_log), f"failed to append operator decision: {exc}"))
+                        findings.append(
+                            _finding(
+                                "operator_approval_log_write_failed",
+                                "deny",
+                                str(approval_log),
+                                f"failed to append operator decision: {exc}",
+                            )
+                        )
                         decision = "FAIL"
 
     if decision == "FAIL":
-        findings.append(_finding("operator_approval_fail_closed", "deny", str(repo_root), "operator approval workflow failed closed due to blocking inconsistencies"))
+        findings.append(
+            _finding(
+                "operator_approval_fail_closed",
+                "deny",
+                str(repo_root),
+                "operator approval workflow failed closed due to blocking inconsistencies",
+            )
+        )
 
     report = {
         "audit_type": "sot_operator_approval",

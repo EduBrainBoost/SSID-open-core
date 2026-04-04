@@ -4,6 +4,7 @@
 Covers tiered distribution, edge cases, evidence hashing,
 and non-custodial invariants.
 """
+
 from __future__ import annotations
 
 import sys
@@ -16,18 +17,15 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fee_distribution_engine import (
-    DEFAULT_TIERS,
-    DistributionResult,
-    FeeAllocation,
     FeeDistributionEngine,
     StakeholderRole,
     TierRule,
 )
 
-
 # -----------------------------------------------------------------------
 # Fixtures
 # -----------------------------------------------------------------------
+
 
 @pytest.fixture
 def engine() -> FeeDistributionEngine:
@@ -55,6 +53,7 @@ def custom_engine() -> FeeDistributionEngine:
 # -----------------------------------------------------------------------
 # Basic distribution tests
 # -----------------------------------------------------------------------
+
 
 class TestBasicDistribution:
     def test_micro_tier_selected(self, engine: FeeDistributionEngine) -> None:
@@ -88,9 +87,7 @@ class TestBasicDistribution:
             StakeholderRole.RESERVE,
         }
 
-    def test_allocations_sum_close_to_gross(
-        self, engine: FeeDistributionEngine
-    ) -> None:
+    def test_allocations_sum_close_to_gross(self, engine: FeeDistributionEngine) -> None:
         result = engine.calculate(Decimal("999.99"))
         total_allocated = sum(a.amount for a in result.allocations)
         assert abs(result.gross_amount - total_allocated - result.remainder) < Decimal("0.01")
@@ -99,6 +96,7 @@ class TestBasicDistribution:
 # -----------------------------------------------------------------------
 # Custom / flat tier tests
 # -----------------------------------------------------------------------
+
 
 class TestCustomTier:
     def test_flat_split_100(self, custom_engine: FeeDistributionEngine) -> None:
@@ -109,9 +107,7 @@ class TestCustomTier:
         assert amounts[StakeholderRole.CREATOR] == Decimal("15.00")
         assert amounts[StakeholderRole.RESERVE] == Decimal("5.00")
 
-    def test_flat_split_odd_amount(
-        self, custom_engine: FeeDistributionEngine
-    ) -> None:
+    def test_flat_split_odd_amount(self, custom_engine: FeeDistributionEngine) -> None:
         result = custom_engine.calculate(Decimal("33.33"))
         total_allocated = sum(a.amount for a in result.allocations)
         # Total allocated + remainder must equal gross
@@ -121,6 +117,7 @@ class TestCustomTier:
 # -----------------------------------------------------------------------
 # Edge cases
 # -----------------------------------------------------------------------
+
 
 class TestEdgeCases:
     def test_zero_amount(self, engine: FeeDistributionEngine) -> None:
@@ -141,6 +138,7 @@ class TestEdgeCases:
 # -----------------------------------------------------------------------
 # Evidence / hash tests
 # -----------------------------------------------------------------------
+
 
 class TestEvidence:
     def test_evidence_hash_is_sha256(self, engine: FeeDistributionEngine) -> None:
@@ -164,6 +162,7 @@ class TestEvidence:
 # -----------------------------------------------------------------------
 # TierRule validation
 # -----------------------------------------------------------------------
+
 
 class TestTierRule:
     def test_splits_must_sum_to_one(self) -> None:

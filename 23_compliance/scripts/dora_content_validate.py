@@ -3,6 +3,7 @@
 Validate content quality of incident response plans.
 Checks: minimum section count, non-empty content.
 """
+
 import argparse
 import json
 import sys
@@ -73,8 +74,7 @@ def main() -> None:
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(result, indent=2))
-    print(f"DORA content validation: status={result['status']}, "
-          f"fail_policy={result['fail_policy_roots']}")
+    print(f"DORA content validation: status={result['status']}, fail_policy={result['fail_policy_roots']}")
 
     sys.exit(0 if result["status"] == "PASS" else 1)
 

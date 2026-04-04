@@ -1,5 +1,7 @@
 """Tests for PolicyEnforcer — P3.2 Runtime Policy Enforcement."""
+
 from __future__ import annotations
+
 import sys
 from decimal import Decimal
 from pathlib import Path
@@ -9,14 +11,18 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from policy_enforcer import (
-    PolicyAction, PolicyDecision, PolicyEnforcer, PolicyRule,
-    PolicyRuleType, PolicyViolationError,
+    PolicyAction,
+    PolicyDecision,
+    PolicyEnforcer,
+    PolicyRule,
+    PolicyRuleType,
+    PolicyViolationError,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def enforcer() -> PolicyEnforcer:
@@ -26,6 +32,7 @@ def enforcer() -> PolicyEnforcer:
 # ---------------------------------------------------------------------------
 # Fee distribution tests
 # ---------------------------------------------------------------------------
+
 
 def test_fee_distribution_allow_valid(enforcer: PolicyEnforcer) -> None:
     """Positive fee with 1 participant should be ALLOW."""
@@ -59,6 +66,7 @@ def test_fee_distribution_deny_no_participants(enforcer: PolicyEnforcer) -> None
 # Reward distribution tests
 # ---------------------------------------------------------------------------
 
+
 def test_reward_distribution_allow_valid(enforcer: PolicyEnforcer) -> None:
     """Non-negative pool with 1+ participant should be ALLOW."""
     decision = enforcer.check_reward_distribution(Decimal("1000"), ["bob"])
@@ -84,6 +92,7 @@ def test_reward_distribution_deny_no_participants(enforcer: PolicyEnforcer) -> N
 # Fee proof tests
 # ---------------------------------------------------------------------------
 
+
 def test_fee_proof_allow_valid(enforcer: PolicyEnforcer) -> None:
     """Positive amount with known currency should be ALLOW."""
     decision = enforcer.check_fee_proof(50.0, "USD")
@@ -108,6 +117,7 @@ def test_fee_proof_deny_invalid_currency(enforcer: PolicyEnforcer) -> None:
 # ---------------------------------------------------------------------------
 # Audit log tests
 # ---------------------------------------------------------------------------
+
 
 def test_audit_log_records_decisions(enforcer: PolicyEnforcer) -> None:
     """After 3 checks, audit log must have exactly 3 entries."""
@@ -141,6 +151,7 @@ def test_export_evidence_json_safe(enforcer: PolicyEnforcer) -> None:
 # PolicyViolationError tests
 # ---------------------------------------------------------------------------
 
+
 def test_policy_violation_error_has_decision(enforcer: PolicyEnforcer) -> None:
     """PolicyViolationError must carry the original PolicyDecision."""
     decision = enforcer.check_fee_distribution(Decimal("-1"), [])
@@ -160,6 +171,7 @@ def test_decision_allowed_property() -> None:
 # ---------------------------------------------------------------------------
 # Custom rules tests
 # ---------------------------------------------------------------------------
+
 
 def test_custom_rules_override_defaults() -> None:
     """Custom MAX_FEE of 100 should DENY a fee of 101."""

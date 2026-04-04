@@ -16,12 +16,12 @@ import hashlib
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, FrozenSet, List, Optional, Set
-
+from typing import Any
 
 # ======================================================================
 # Legal Basis & Consent
 # ======================================================================
+
 
 class LegalBasis(Enum):
     """GDPR Article 6 — lawful bases for processing."""
@@ -55,14 +55,14 @@ class ErasureStatus(Enum):
 class ConsentRecord:
     """Immutable record of consent — stores only hashes, never raw PII."""
 
-    subject_hash: str          # SHA-256 of data subject identifier
-    purpose: str               # e.g. "identity_verification"
+    subject_hash: str  # SHA-256 of data subject identifier
+    purpose: str  # e.g. "identity_verification"
     legal_basis: LegalBasis
     granted: bool
     timestamp: float = field(default_factory=time.time)
-    evidence_hash: str = ""    # SHA-256 of the consent artefact
+    evidence_hash: str = ""  # SHA-256 of the consent artefact
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "subject_hash": self.subject_hash,
             "purpose": self.purpose,
@@ -81,10 +81,10 @@ class ErasureRequest:
     subject_hash: str
     requested_at: float = field(default_factory=time.time)
     status: ErasureStatus = ErasureStatus.PENDING
-    completed_at: Optional[float] = None
+    completed_at: float | None = None
     evidence_hash: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "request_id": self.request_id,
             "subject_hash": self.subject_hash,
@@ -100,11 +100,11 @@ class PortabilityPackage:
     """Data portability (Art. 20) export manifest — hash references only."""
 
     subject_hash: str
-    data_categories: FrozenSet[DataCategory]
-    export_hash: str           # SHA-256 of the exported package
+    data_categories: frozenset[DataCategory]
+    export_hash: str  # SHA-256 of the exported package
     generated_at: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "subject_hash": self.subject_hash,
             "data_categories": sorted(c.value for c in self.data_categories),
@@ -133,9 +133,9 @@ class GDPRComplianceEngine:
     """
 
     def __init__(self) -> None:
-        self._consents: Dict[str, List[ConsentRecord]] = {}  # subject_hash → records
-        self._erasure_requests: Dict[str, ErasureRequest] = {}  # request_id → request
-        self._rotated_hashes: Dict[str, str] = {}  # old_hash → new_hash
+        self._consents: dict[str, list[ConsentRecord]] = {}  # subject_hash → records
+        self._erasure_requests: dict[str, ErasureRequest] = {}  # request_id → request
+        self._rotated_hashes: dict[str, str] = {}  # old_hash → new_hash
 
     # ------------------------------------------------------------------
     # Consent Management
@@ -164,7 +164,7 @@ class GDPRComplianceEngine:
         latest = max(relevant, key=lambda r: r.timestamp)
         return latest.granted
 
-    def get_consent_history(self, subject_hash: str) -> List[ConsentRecord]:
+    def get_consent_history(self, subject_hash: str) -> list[ConsentRecord]:
         """Return full consent history for audit (all purposes)."""
         return list(self._consents.get(subject_hash, []))
 
@@ -195,12 +195,8 @@ class GDPRComplianceEngine:
 
         old_hash = req.subject_hash
         # Rotate: derive a new hash so old identifier can no longer be linked
-        rotation_salt = hashlib.sha256(
-            f"{old_hash}:{time.time()}:erasure".encode()
-        ).hexdigest()
-        new_hash = hashlib.sha256(
-            f"{old_hash}:{rotation_salt}".encode()
-        ).hexdigest()
+        rotation_salt = hashlib.sha256(f"{old_hash}:{time.time()}:erasure".encode()).hexdigest()
+        new_hash = hashlib.sha256(f"{old_hash}:{rotation_salt}".encode()).hexdigest()
 
         self._rotated_hashes[old_hash] = new_hash
 
@@ -209,9 +205,7 @@ class GDPRComplianceEngine:
             self._consents[new_hash] = self._consents.pop(old_hash)
 
         now = time.time()
-        evidence = hashlib.sha256(
-            f"erasure:{request_id}:{now}".encode()
-        ).hexdigest()
+        evidence = hashlib.sha256(f"erasure:{request_id}:{now}".encode()).hexdigest()
 
         completed = ErasureRequest(
             request_id=req.request_id,
@@ -240,7 +234,7 @@ class GDPRComplianceEngine:
     def generate_portability_package(
         self,
         subject_hash: str,
-        categories: Optional[Set[DataCategory]] = None,
+        categories: set[DataCategory] | None = None,
     ) -> PortabilityPackage:
         """Generate a portability manifest for the data subject.
 
@@ -261,20 +255,12 @@ class GDPRComplianceEngine:
     # Evidence Generation
     # ------------------------------------------------------------------
 
-    def generate_compliance_evidence(self, subject_hash: str) -> Dict[str, Any]:
+    def generate_compliance_evidence(self, subject_hash: str) -> dict[str, Any]:
         """Produce a hash-based evidence bundle for audit."""
         consent_records = self.get_consent_history(subject_hash)
-        erasure_reqs = [
-            r for r in self._erasure_requests.values()
-            if r.subject_hash == subject_hash
-        ]
+        erasure_reqs = [r for r in self._erasure_requests.values() if r.subject_hash == subject_hash]
 
-        bundle_payload = (
-            f"{subject_hash}:"
-            f"{len(consent_records)}:"
-            f"{len(erasure_reqs)}:"
-            f"{time.time()}"
-        )
+        bundle_payload = f"{subject_hash}:{len(consent_records)}:{len(erasure_reqs)}:{time.time()}"
         bundle_hash = hashlib.sha256(bundle_payload.encode()).hexdigest()
 
         return {

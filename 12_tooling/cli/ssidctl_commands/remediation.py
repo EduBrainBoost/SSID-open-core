@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ssidctl remediation -- List open remediation tasks."""
+
 from __future__ import annotations
 
 import argparse
@@ -35,12 +36,14 @@ def _scan_remediation_markers(repo_root: Path) -> list[dict[str, str]]:
         for i, line in enumerate(content.splitlines(), 1):
             for marker in ("REMEDIATION:", "FIXME:", "TODO:"):
                 if marker in line:
-                    tasks.append({
-                        "file": str(py_file.relative_to(repo_root)),
-                        "line": str(i),
-                        "marker": marker.rstrip(":"),
-                        "text": line.strip()[:120],
-                    })
+                    tasks.append(
+                        {
+                            "file": str(py_file.relative_to(repo_root)),
+                            "line": str(i),
+                            "marker": marker.rstrip(":"),
+                            "text": line.strip()[:120],
+                        }
+                    )
     return tasks
 
 

@@ -18,6 +18,7 @@ Usage:
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import argparse
@@ -25,10 +26,9 @@ import json
 import re
 import sys
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-
 
 # ---------------------------------------------------------------------------
 # Risk classification helpers
@@ -51,44 +51,73 @@ def _risk_label(level: int) -> str:
 #: Each tuple: (framework_hint, compiled_pattern, capture_group_for_path)
 _ENDPOINT_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     # FastAPI / Starlette / Flask decorators
-    ("http",  re.compile(r'@(?:app|router)\.(get|post|put|patch|delete|head|options)\s*\(\s*["\']([^"\']+)["\']', re.IGNORECASE)),
+    (
+        "http",
+        re.compile(
+            r'@(?:app|router)\.(get|post|put|patch|delete|head|options)\s*\(\s*["\']([^"\']+)["\']', re.IGNORECASE
+        ),
+    ),
     # Django URL patterns
-    ("http",  re.compile(r'path\s*\(\s*["\']([^"\']+)["\']', re.IGNORECASE)),
-    ("http",  re.compile(r're_path\s*\(\s*["\']([^"\']+)["\']', re.IGNORECASE)),
+    ("http", re.compile(r'path\s*\(\s*["\']([^"\']+)["\']', re.IGNORECASE)),
+    ("http", re.compile(r're_path\s*\(\s*["\']([^"\']+)["\']', re.IGNORECASE)),
     # Express.js (JavaScript/TypeScript)
-    ("http",  re.compile(r'(?:app|router)\.(get|post|put|patch|delete)\s*\(\s*["\']([^"\']+)["\']', re.IGNORECASE)),
+    ("http", re.compile(r'(?:app|router)\.(get|post|put|patch|delete)\s*\(\s*["\']([^"\']+)["\']', re.IGNORECASE)),
     # gRPC service definitions
-    ("grpc",  re.compile(r'\brpc\s+(\w+)\s*\(', re.IGNORECASE)),
+    ("grpc", re.compile(r"\brpc\s+(\w+)\s*\(", re.IGNORECASE)),
     # WebSocket upgrades
-    ("ws",    re.compile(r'WebSocket\s*\(|@websocket\s*\(|ws://', re.IGNORECASE)),
+    ("ws", re.compile(r"WebSocket\s*\(|@websocket\s*\(|ws://", re.IGNORECASE)),
     # GraphQL schema type definitions
-    ("graphql", re.compile(r'\btype\s+(?:Query|Mutation|Subscription)\s*\{', re.IGNORECASE)),
+    ("graphql", re.compile(r"\btype\s+(?:Query|Mutation|Subscription)\s*\{", re.IGNORECASE)),
 ]
 
 #: Patterns that reveal explicit port numbers.
 _PORT_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
-    ("explicit_bind", re.compile(r'(?:listen|bind|port)\s*[=:({]\s*(\d{2,5})', re.IGNORECASE)),
-    ("env_port",      re.compile(r'(?:PORT|LISTEN_PORT|HTTP_PORT|GRPC_PORT)\s*[=:]\s*(\d{2,5})')),
-    ("uvicorn_port",  re.compile(r'--port\s+(\d{2,5})')),
-    ("docker_expose", re.compile(r'^EXPOSE\s+(\d{2,5})', re.MULTILINE)),
+    ("explicit_bind", re.compile(r"(?:listen|bind|port)\s*[=:({]\s*(\d{2,5})", re.IGNORECASE)),
+    ("env_port", re.compile(r"(?:PORT|LISTEN_PORT|HTTP_PORT|GRPC_PORT)\s*[=:]\s*(\d{2,5})")),
+    ("uvicorn_port", re.compile(r"--port\s+(\d{2,5})")),
+    ("docker_expose", re.compile(r"^EXPOSE\s+(\d{2,5})", re.MULTILINE)),
 ]
 
 #: Known high-risk external dependency patterns.
-_HIGH_RISK_DEP_PREFIXES = frozenset({
-    "boto3", "botocore", "paramiko", "fabric", "cryptography",
-    "pycrypto", "Crypto", "httpx", "aiohttp", "requests", "urllib3",
-    "ldap3", "pyotp", "authlib", "jwt", "itsdangerous",
-    "sqlalchemy", "tortoise-orm", "motor", "pymongo", "psycopg",
-    "redis", "celery", "kombu", "pika",  # message queues
-    "kubernetes", "docker", "ansible",
-})
+_HIGH_RISK_DEP_PREFIXES = frozenset(
+    {
+        "boto3",
+        "botocore",
+        "paramiko",
+        "fabric",
+        "cryptography",
+        "pycrypto",
+        "Crypto",
+        "httpx",
+        "aiohttp",
+        "requests",
+        "urllib3",
+        "ldap3",
+        "pyotp",
+        "authlib",
+        "jwt",
+        "itsdangerous",
+        "sqlalchemy",
+        "tortoise-orm",
+        "motor",
+        "pymongo",
+        "psycopg",
+        "redis",
+        "celery",
+        "kombu",
+        "pika",  # message queues
+        "kubernetes",
+        "docker",
+        "ansible",
+    }
+)
 
 #: Patterns for external API call detection.
 _EXTERNAL_CALL_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r'https?://[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}(?:/[^\s"\']*)?'),
-    re.compile(r'(?:requests|httpx|aiohttp)\s*\.\s*(?:get|post|put|patch|delete|request)\s*\('),
+    re.compile(r"(?:requests|httpx|aiohttp)\s*\.\s*(?:get|post|put|patch|delete|request)\s*\("),
     re.compile(r'fetch\s*\(\s*["\']https?://'),
-    re.compile(r'axios\s*\.\s*(?:get|post|put|patch|delete)\s*\('),
+    re.compile(r"axios\s*\.\s*(?:get|post|put|patch|delete)\s*\("),
 ]
 
 
@@ -96,16 +125,17 @@ _EXTERNAL_CALL_PATTERNS: list[re.Pattern[str]] = [
 # Data types
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class EndpointEntry:
     """A discovered HTTP, RPC, WS, or GraphQL endpoint."""
 
     file_path: str
     line_number: int
-    method: str          # HTTP method, "rpc", "ws", "graphql", or "unknown"
-    path: str            # Route path or method name
-    framework: str       # "http" | "grpc" | "ws" | "graphql"
-    risk_level: str      # "critical" | "high" | "medium" | "low" | "info"
+    method: str  # HTTP method, "rpc", "ws", "graphql", or "unknown"
+    path: str  # Route path or method name
+    framework: str  # "http" | "grpc" | "ws" | "graphql"
+    risk_level: str  # "critical" | "high" | "medium" | "low" | "info"
     notes: str = ""
 
 
@@ -116,7 +146,7 @@ class PortEntry:
     file_path: str
     line_number: int
     port: int
-    binding_type: str    # e.g. "explicit_bind", "env_port", "docker_expose"
+    binding_type: str  # e.g. "explicit_bind", "env_port", "docker_expose"
     risk_level: str
     notes: str = ""
 
@@ -127,7 +157,7 @@ class DependencyEntry:
 
     name: str
     version: str
-    ecosystem: str       # "pypi" | "npm" | "unknown"
+    ecosystem: str  # "pypi" | "npm" | "unknown"
     risk_level: str
     notes: str = ""
 
@@ -138,7 +168,7 @@ class ExternalCallEntry:
 
     file_path: str
     line_number: int
-    target: str          # URL or pattern excerpt
+    target: str  # URL or pattern excerpt
     risk_level: str
     notes: str = ""
 
@@ -172,6 +202,7 @@ class AttackSurfaceReport:
 # Risk classification logic
 # ---------------------------------------------------------------------------
 
+
 def _endpoint_risk(method: str, path: str) -> str:
     """Assign a risk level to an endpoint based on method and path."""
     m = method.lower()
@@ -193,17 +224,17 @@ def _endpoint_risk(method: str, path: str) -> str:
 
 def _port_risk(port: int) -> str:
     """Classify a port number by risk."""
-    if port in (22, 23, 3389, 5900):   # SSH, Telnet, RDP, VNC
+    if port in (22, 23, 3389, 5900):  # SSH, Telnet, RDP, VNC
         return "critical"
     if port in (25, 110, 143, 587, 993, 995):  # Mail
         return "high"
     if port in (80, 8080, 3000, 4000, 5000, 5173, 8000, 8888):  # HTTP
         return "medium"
-    if port in (443, 8443):             # HTTPS
+    if port in (443, 8443):  # HTTPS
         return "low"
     if port in (5432, 3306, 27017, 6379, 9200, 5601):  # DB / Cache / Search
         return "high"
-    if 1 <= port <= 1023:               # Well-known privileged ports
+    if 1 <= port <= 1023:  # Well-known privileged ports
         return "high"
     return "medium"
 
@@ -222,6 +253,7 @@ def _dep_risk(name: str) -> str:
 # Core mapper
 # ---------------------------------------------------------------------------
 
+
 class AttackSurfaceMapper:
     """Map the attack surface of an SSID repository or individual root.
 
@@ -230,12 +262,29 @@ class AttackSurfaceMapper:
         max_file_size: Files larger than this (bytes) are skipped.
     """
 
-    _SKIP_EXTENSIONS = frozenset({
-        ".pyc", ".pyo", ".so", ".dll", ".exe", ".bin",
-        ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico",
-        ".pdf", ".zip", ".tar", ".gz",
-        ".whl", ".egg", ".lock",
-    })
+    _SKIP_EXTENSIONS = frozenset(
+        {
+            ".pyc",
+            ".pyo",
+            ".so",
+            ".dll",
+            ".exe",
+            ".bin",
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".gif",
+            ".bmp",
+            ".ico",
+            ".pdf",
+            ".zip",
+            ".tar",
+            ".gz",
+            ".whl",
+            ".egg",
+            ".lock",
+        }
+    )
 
     def __init__(
         self,
@@ -297,16 +346,16 @@ class AttackSurfaceMapper:
                     groups = match.groups()
                     if framework == "http" and len(groups) >= 2:
                         method = groups[0].upper() if groups[0] else "GET"
-                        route  = groups[1] if len(groups) > 1 else groups[0]
+                        route = groups[1] if len(groups) > 1 else groups[0]
                     elif framework == "grpc" and groups:
                         method = "rpc"
-                        route  = groups[0]
+                        route = groups[0]
                     elif framework in ("ws", "graphql"):
                         method = framework
-                        route  = match.group(0)[:60]
+                        route = match.group(0)[:60]
                     else:
                         method = "unknown"
-                        route  = groups[0] if groups else match.group(0)[:60]
+                        route = groups[0] if groups else match.group(0)[:60]
 
                     entry = EndpointEntry(
                         file_path=str(path),
@@ -396,15 +445,13 @@ class AttackSurfaceMapper:
         Returns:
             AttackSurfaceReport populated from all map_* calls so far.
         """
-        all_items: list[Any] = (
-            self._endpoints + self._ports + self._dependencies + self._external_calls
-        )
+        all_items: list[Any] = self._endpoints + self._ports + self._dependencies + self._external_calls
         critical = sum(1 for i in all_items if getattr(i, "risk_level", "") == "critical")
-        high     = sum(1 for i in all_items if getattr(i, "risk_level", "") == "high")
-        medium   = sum(1 for i in all_items if getattr(i, "risk_level", "") == "medium")
+        high = sum(1 for i in all_items if getattr(i, "risk_level", "") == "high")
+        medium = sum(1 for i in all_items if getattr(i, "risk_level", "") == "medium")
 
         return AttackSurfaceReport(
-            generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            generated_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             root_path="(multiple)" if not self._endpoints else self._endpoints[0].file_path,
             endpoints=list(self._endpoints),
             ports=list(self._ports),
@@ -465,13 +512,15 @@ class AttackSurfaceMapper:
                     if key in seen_ports:
                         continue
                     seen_ports.add(key)
-                    self._ports.append(PortEntry(
-                        file_path=str(path),
-                        line_number=lineno,
-                        port=port,
-                        binding_type=binding_type,
-                        risk_level=_port_risk(port),
-                    ))
+                    self._ports.append(
+                        PortEntry(
+                            file_path=str(path),
+                            line_number=lineno,
+                            port=port,
+                            binding_type=binding_type,
+                            risk_level=_port_risk(port),
+                        )
+                    )
                     break
 
     def _scan_external_calls(self, root_dir: Path) -> None:
@@ -496,12 +545,14 @@ class AttackSurfaceMapper:
                     # Skip internal / localhost URLs
                     if any(h in target for h in ("localhost", "127.0.0.1", "0.0.0.0")):
                         break
-                    self._external_calls.append(ExternalCallEntry(
-                        file_path=str(path),
-                        line_number=lineno,
-                        target=target,
-                        risk_level="medium",
-                    ))
+                    self._external_calls.append(
+                        ExternalCallEntry(
+                            file_path=str(path),
+                            line_number=lineno,
+                            target=target,
+                            risk_level="medium",
+                        )
+                    )
                     break
 
 
@@ -509,17 +560,16 @@ class AttackSurfaceMapper:
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def main(argv: list[str] | None = None) -> int:
     """Entry point."""
     parser = argparse.ArgumentParser(description="SSID Attack Surface Mapper")
-    parser.add_argument("--root", type=Path, required=True,
-                        help="Root directory to scan (SSID repo root or individual root)")
-    parser.add_argument("--output", "-o", type=Path, default=None,
-                        help="Write JSON report to this path")
-    parser.add_argument("--report-only", action="store_true",
-                        help="Print summary only, not full report")
-    parser.add_argument("--fail-on-critical", action="store_true",
-                        help="Exit non-zero if critical items are found")
+    parser.add_argument(
+        "--root", type=Path, required=True, help="Root directory to scan (SSID repo root or individual root)"
+    )
+    parser.add_argument("--output", "-o", type=Path, default=None, help="Write JSON report to this path")
+    parser.add_argument("--report-only", action="store_true", help="Print summary only, not full report")
+    parser.add_argument("--fail-on-critical", action="store_true", help="Exit non-zero if critical items are found")
     args = parser.parse_args(argv)
 
     mapper = AttackSurfaceMapper()

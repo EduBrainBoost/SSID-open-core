@@ -11,24 +11,25 @@ Implements the canonical 3% fee model:
 Non-custodial: All fee routing via smart contract logic.
 No manual intervention.
 """
+
 import hashlib
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from decimal import Decimal, ROUND_DOWN
-from typing import Optional
+from datetime import UTC, datetime
+from decimal import ROUND_DOWN, Decimal
 
 
 @dataclass
 class FeeAllocation:
     """Result of a fee distribution calculation."""
+
     transaction_amount: Decimal
     total_fee: Decimal
     dev_reward: Decimal
     treasury_share: Decimal
     burn_amount: Decimal
     treasury_net: Decimal
-    timestamp_utc: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp_utc: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     def to_dict(self) -> dict:
         return {
@@ -42,20 +43,18 @@ class FeeAllocation:
         }
 
     def evidence_hash(self) -> str:
-        return hashlib.sha256(
-            json.dumps(self.to_dict(), sort_keys=True).encode()
-        ).hexdigest()
+        return hashlib.sha256(json.dumps(self.to_dict(), sort_keys=True).encode()).hexdigest()
 
 
 class FeeDistributionEngine:
     """Canonical SSID fee distribution per Tier-0 SoT."""
 
-    TOTAL_FEE_RATE = Decimal("0.03")       # 3%
-    DEV_FEE_RATE = Decimal("0.01")         # 1% of transaction
-    TREASURY_FEE_RATE = Decimal("0.02")    # 2% of transaction
-    BURN_RATE = Decimal("0.50")            # 50% of treasury share
-    DAILY_BURN_CAP_RATE = Decimal("0.005") # 0.5% of circulating supply
-    MONTHLY_BURN_CAP_RATE = Decimal("0.02") # 2% of circulating supply
+    TOTAL_FEE_RATE = Decimal("0.03")  # 3%
+    DEV_FEE_RATE = Decimal("0.01")  # 1% of transaction
+    TREASURY_FEE_RATE = Decimal("0.02")  # 2% of transaction
+    BURN_RATE = Decimal("0.50")  # 50% of treasury share
+    DAILY_BURN_CAP_RATE = Decimal("0.005")  # 0.5% of circulating supply
+    MONTHLY_BURN_CAP_RATE = Decimal("0.02")  # 2% of circulating supply
 
     def __init__(self, circulating_supply: Decimal):
         self.circulating_supply = circulating_supply
@@ -71,18 +70,12 @@ class FeeDistributionEngine:
         if transaction_amount <= 0:
             raise ValueError("Transaction amount must be positive")
 
-        total_fee = (transaction_amount * self.TOTAL_FEE_RATE).quantize(
-            Decimal("0.00000001"), rounding=ROUND_DOWN
-        )
-        dev_reward = (transaction_amount * self.DEV_FEE_RATE).quantize(
-            Decimal("0.00000001"), rounding=ROUND_DOWN
-        )
+        total_fee = (transaction_amount * self.TOTAL_FEE_RATE).quantize(Decimal("0.00000001"), rounding=ROUND_DOWN)
+        dev_reward = (transaction_amount * self.DEV_FEE_RATE).quantize(Decimal("0.00000001"), rounding=ROUND_DOWN)
         treasury_share = total_fee - dev_reward
 
         # Calculate burn with caps
-        raw_burn = (treasury_share * self.BURN_RATE).quantize(
-            Decimal("0.00000001"), rounding=ROUND_DOWN
-        )
+        raw_burn = (treasury_share * self.BURN_RATE).quantize(Decimal("0.00000001"), rounding=ROUND_DOWN)
         daily_cap = self.circulating_supply * self.DAILY_BURN_CAP_RATE
         monthly_cap = self.circulating_supply * self.MONTHLY_BURN_CAP_RATE
 

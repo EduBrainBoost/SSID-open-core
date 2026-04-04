@@ -14,10 +14,10 @@ This enables:
 - Composability: guards can be chained with accumulated findings
 - Observability: findings feed into 17_observability metrics
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Tuple
 
 
 class BaseGuard(ABC):
@@ -37,7 +37,7 @@ class BaseGuard(ABC):
     """
 
     @abstractmethod
-    def validate(self, data: dict) -> Tuple[bool, List[str]]:
+    def validate(self, data: dict) -> tuple[bool, list[str]]:
         """Validate data and return structured result.
 
         Args:
@@ -50,7 +50,7 @@ class BaseGuard(ABC):
         """
         ...
 
-    def validate_strict(self, data: dict) -> Tuple[bool, List[str]]:
+    def validate_strict(self, data: dict) -> tuple[bool, list[str]]:
         """Validate and raise on failure. Convenience wrapper.
 
         Raises:
@@ -73,10 +73,7 @@ class BaseGuard(ABC):
 class GuardValidationError(Exception):
     """Raised when a guard validation fails in strict mode."""
 
-    def __init__(self, guard: str, findings: List[str]) -> None:
+    def __init__(self, guard: str, findings: list[str]) -> None:
         self.guard = guard
         self.findings = findings
-        super().__init__(
-            f"Guard '{guard}' failed with {len(findings)} finding(s): "
-            + "; ".join(findings)
-        )
+        super().__init__(f"Guard '{guard}' failed with {len(findings)} finding(s): " + "; ".join(findings))

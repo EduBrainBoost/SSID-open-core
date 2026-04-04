@@ -4,6 +4,7 @@
 Verifies that each root-level engine file exists, is importable as a
 Python module, and that core business logic produces correct results.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -29,9 +30,7 @@ def _is_valid_python(module_path: Path) -> bool:
 def _load_module(module_path: Path):
     """Load and return a Python module from *module_path*."""
     if not _is_valid_python(module_path):
-        pytest.skip(
-            f"{module_path.name} contains placeholder text (not valid Python yet)"
-        )
+        pytest.skip(f"{module_path.name} contains placeholder text (not valid Python yet)")
     spec = importlib.util.spec_from_file_location(module_path.stem, module_path)
     if spec is None or spec.loader is None:
         return None
@@ -93,9 +92,7 @@ class TestFairnessEngine:
         with pytest.raises(ValueError, match="At least 2 groups"):
             engine.evaluate(
                 model_id="m",
-                group_outcomes=[
-                    mod.GroupOutcome(group_id="g1", total=10, positive=5, negative=5)
-                ],
+                group_outcomes=[mod.GroupOutcome(group_id="g1", total=10, positive=5, negative=5)],
             )
 
     def test_evidence_hash_is_deterministic(self) -> None:
@@ -150,9 +147,7 @@ class TestFeeDistributionEngine:
         mod = _load_module(self.ENGINE)
         engine = mod.FeeDistributionEngine()
         result = engine.calculate(Decimal("50000"))
-        assert any(
-            a.tier_name == "enterprise" for a in result.allocations
-        ), "Expected enterprise tier for amount 50000"
+        assert any(a.tier_name == "enterprise" for a in result.allocations), "Expected enterprise tier for amount 50000"
 
     def test_negative_amount_raises(self) -> None:
         mod = _load_module(self.ENGINE)
@@ -247,9 +242,9 @@ class TestSubscriptionRevenueDistributor:
         )
         core_alloc = next(a for a in result.allocations if a.root_name == "03_core")
         other_allocs = [a for a in result.allocations if a.root_name != "03_core"]
-        assert all(
-            core_alloc.amount >= a.amount for a in other_allocs
-        ), "03_core should have the highest share per default ratios"
+        assert all(core_alloc.amount >= a.amount for a in other_allocs), (
+            "03_core should have the highest share per default ratios"
+        )
 
     def test_evidence_hash_sha256(self) -> None:
         mod = _load_module(self.ENGINE)

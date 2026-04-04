@@ -4,8 +4,6 @@ import pathlib
 import sys
 import time
 
-import pytest
-
 sys.path.insert(
     0,
     str(pathlib.Path(__file__).resolve().parent.parent / "jurisdictions"),
@@ -13,20 +11,19 @@ sys.path.insert(
 
 from global_sanctions import (
     BLACKLISTED_JURISDICTIONS,
-    GlobalSanctionsEngine,
     HIGH_RISK_JURISDICTIONS,
     MAX_STALENESS_SECONDS,
+    GlobalSanctionsEngine,
     RiskLevel,
     SanctionsListMetadata,
     SanctionsListSource,
-    ScreeningReport,
     ScreeningResult,
 )
-
 
 # ------------------------------------------------------------------
 # List Management
 # ------------------------------------------------------------------
+
 
 class TestListManagement:
     def test_load_list(self):
@@ -71,6 +68,7 @@ class TestListManagement:
 # ------------------------------------------------------------------
 # Entity Screening
 # ------------------------------------------------------------------
+
 
 class TestEntityScreening:
     def test_no_lists_loaded_blocks(self):
@@ -138,6 +136,7 @@ class TestEntityScreening:
 # Jurisdiction Screening
 # ------------------------------------------------------------------
 
+
 class TestJurisdictionScreening:
     def test_blacklisted_blocks(self):
         engine = GlobalSanctionsEngine()
@@ -180,6 +179,7 @@ class TestJurisdictionScreening:
 # Full Screening (Entity + Jurisdiction)
 # ------------------------------------------------------------------
 
+
 class TestFullScreening:
     def test_combined_reports(self):
         engine = GlobalSanctionsEngine()
@@ -208,6 +208,7 @@ class TestFullScreening:
 # ------------------------------------------------------------------
 # Staleness Enforcement
 # ------------------------------------------------------------------
+
 
 class TestStaleness:
     def test_fresh_list_not_stale(self):

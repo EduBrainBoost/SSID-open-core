@@ -1,25 +1,24 @@
 """In-memory key-value store with TTL and capacity limits."""
+
 from __future__ import annotations
 
 import datetime as dt
 import threading
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 
 @dataclass
 class SessionMemory:
     """Snapshot of a memory session's entries."""
 
-    entries: Dict[str, Any] = field(default_factory=dict)
-    created_at: str = field(default_factory=lambda: (
-        dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
-        .isoformat().replace("+00:00", "Z")
-    ))
-    last_accessed: str = field(default_factory=lambda: (
-        dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
-        .isoformat().replace("+00:00", "Z")
-    ))
+    entries: dict[str, Any] = field(default_factory=dict)
+    created_at: str = field(
+        default_factory=lambda: dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    )
+    last_accessed: str = field(
+        default_factory=lambda: dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    )
 
 
 class MemoryManager:
@@ -40,18 +39,18 @@ class MemoryManager:
     ) -> None:
         self._max_entries = max_entries
         self._default_ttl = default_ttl_seconds
-        self._store: Dict[str, Tuple[Any, float]] = {}  # key -> (value, expires_ts)
-        self._insertion_order: List[str] = []
+        self._store: dict[str, tuple[Any, float]] = {}  # key -> (value, expires_ts)
+        self._insertion_order: list[str] = []
         self._lock = threading.Lock()
 
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
 
-    def put(self, key: str, value: Any, ttl_seconds: Optional[int] = None) -> None:
+    def put(self, key: str, value: Any, ttl_seconds: int | None = None) -> None:
         """Store a value. Evicts oldest entry if at capacity."""
         ttl = ttl_seconds if ttl_seconds is not None else self._default_ttl
-        expires = dt.datetime.now(dt.timezone.utc).timestamp() + ttl
+        expires = dt.datetime.now(dt.UTC).timestamp() + ttl
         with self._lock:
             if key in self._store:
                 self._insertion_order.remove(key)
@@ -59,14 +58,14 @@ class MemoryManager:
             self._insertion_order.append(key)
             self._evict_if_needed()
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Retrieve a value. Returns None if missing or expired."""
         with self._lock:
             entry = self._store.get(key)
             if entry is None:
                 return None
             value, expires = entry
-            now = dt.datetime.now(dt.timezone.utc).timestamp()
+            now = dt.datetime.now(dt.UTC).timestamp()
             if now > expires:
                 self._remove_key(key)
                 return None
@@ -80,9 +79,9 @@ class MemoryManager:
     def snapshot(self) -> SessionMemory:
         """Return a SessionMemory snapshot of all non-expired entries."""
         with self._lock:
-            now = dt.datetime.now(dt.timezone.utc).timestamp()
-            live: Dict[str, Any] = {}
-            expired_keys: List[str] = []
+            now = dt.datetime.now(dt.UTC).timestamp()
+            live: dict[str, Any] = {}
+            expired_keys: list[str] = []
             for k, (v, exp) in self._store.items():
                 if now > exp:
                     expired_keys.append(k)

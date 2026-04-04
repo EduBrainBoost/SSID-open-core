@@ -4,11 +4,10 @@
 Verifies L3 scaffold invariants: required directories, README, module.yaml.
 No scores — PASS/FAIL + findings only.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
-
-import pytest
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 ROOT_NAME = ROOT_DIR.name
@@ -45,12 +44,29 @@ def test_shards_dir_exists() -> None:
 def test_no_root24_violation() -> None:
     """Root name MUST be in the canonical ROOT-24-LOCK list."""
     canonical = [
-        "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
-        "05_documentation", "06_data_pipeline", "07_governance_legal",
-        "08_identity_score", "09_meta_identity", "10_interoperability",
-        "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
-        "15_infra", "16_codex", "17_observability", "18_data_layer",
-        "19_adapters", "20_foundation", "21_post_quantum_crypto", "22_datasets",
-        "23_compliance", "24_meta_orchestration",
+        "01_ai_layer",
+        "02_audit_logging",
+        "03_core",
+        "04_deployment",
+        "05_documentation",
+        "06_data_pipeline",
+        "07_governance_legal",
+        "08_identity_score",
+        "09_meta_identity",
+        "10_interoperability",
+        "11_test_simulation",
+        "12_tooling",
+        "13_ui_layer",
+        "14_zero_time_auth",
+        "15_infra",
+        "16_codex",
+        "17_observability",
+        "18_data_layer",
+        "19_adapters",
+        "20_foundation",
+        "21_post_quantum_crypto",
+        "22_datasets",
+        "23_compliance",
+        "24_meta_orchestration",
     ]
     assert ROOT_NAME in canonical, f"{ROOT_NAME} not in ROOT-24-LOCK"

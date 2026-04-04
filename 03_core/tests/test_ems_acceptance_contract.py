@@ -3,6 +3,7 @@
 Tests the EmsConsumer (reference implementation of what EMS does after PR#127 merge)
 against golden files and edge cases.
 """
+
 from __future__ import annotations
 
 import json
@@ -19,6 +20,7 @@ GOLDEN_DEGRADED = SCHEMA_DIR / "golden_degraded.json"
 @pytest.fixture
 def consumer():
     from consumer_simulator import EmsConsumer
+
     return EmsConsumer()
 
 
@@ -39,6 +41,7 @@ def degraded_report():
 
 # --- Scenario 1: healthy report accepted ---
 
+
 def test_healthy_report_accepted(consumer, healthy_report):
     result = consumer.consume(healthy_report)
     assert result.exit_code == 0  # EXIT_HEALTHY
@@ -57,6 +60,7 @@ def test_healthy_report_from_file(consumer):
 
 # --- Scenario 2: denied report accepted and correctly classified ---
 
+
 def test_denied_report_accepted(consumer, denied_report):
     result = consumer.consume(denied_report)
     assert result.exit_code == 1  # EXIT_DENIED
@@ -73,12 +77,18 @@ def test_denied_report_from_file(consumer):
 
 # --- Scenario 3: degraded report accepted and correctly classified ---
 
+
 def test_degraded_report_accepted(consumer, degraded_report):
     result = consumer.consume(degraded_report)
     assert result.exit_code == 2  # EXIT_DEGRADED
     assert result.overall_classification == "degraded"
     assert result.contract_status == "valid"
-    assert result.module_summary.degraded >= 1 or result.module_summary.offline >= 1 or result.flow_summary.error >= 1 or result.flow_summary.degraded >= 1
+    assert (
+        result.module_summary.degraded >= 1
+        or result.module_summary.offline >= 1
+        or result.flow_summary.error >= 1
+        or result.flow_summary.degraded >= 1
+    )
 
 
 def test_degraded_report_from_file(consumer):
@@ -87,6 +97,7 @@ def test_degraded_report_from_file(consumer):
 
 
 # --- Scenario 4: invalid schema rejected ---
+
 
 def test_invalid_schema_rejected(consumer, healthy_report):
     # Remove a required field
@@ -108,6 +119,7 @@ def test_completely_invalid_json_rejected(consumer, tmp_path):
 
 # --- Scenario 5: wrong schema_version rejected ---
 
+
 def test_wrong_major_version_rejected(consumer, healthy_report):
     bad = dict(healthy_report)
     bad["schema_version"] = "2.0.0"  # MAJOR mismatch
@@ -125,6 +137,7 @@ def test_non_semver_version_rejected(consumer, healthy_report):
 
 
 # --- Scenario 6: missing required fields rejected ---
+
 
 def test_missing_schema_version_rejected(consumer, healthy_report):
     bad = dict(healthy_report)
@@ -149,6 +162,7 @@ def test_empty_report_rejected(consumer):
 
 
 # --- Scenario 7: hash/proof format violations flagged ---
+
 
 def test_unknown_flow_status_flagged(consumer, healthy_report):
     """Unknown flow status should produce a warning in errors, but not crash."""

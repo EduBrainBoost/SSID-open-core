@@ -5,7 +5,7 @@ Validates fee consistency between Core validators and Foundation tokenomics.
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -25,7 +25,8 @@ def _load_yaml_safe(path: Path) -> dict | None:
         return None
     try:
         import yaml
-        with open(path, "r", encoding="utf-8") as fh:
+
+        with open(path, encoding="utf-8") as fh:
             return yaml.safe_load(fh) or {}
     except Exception:
         return None
@@ -52,5 +53,5 @@ def validate_fee_consistency() -> dict[str, Any]:
         "consistent": consistent,
         "issues": issues,
         "evidence_sha256": _sha256(json.dumps(issues, sort_keys=True)),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }

@@ -11,10 +11,7 @@ def test_all_24_roots_checked(tmp_path):
     """Script must check exactly 24 roots in its default run."""
     out = tmp_path / "dora_check.json"
     r = subprocess.run(
-        ["python", str(CHECK_SCRIPT),
-         "--repo-root", str(SSID_ROOT),
-         "--out", str(out)],
-        capture_output=True, text=True
+        ["python", str(CHECK_SCRIPT), "--repo-root", str(SSID_ROOT), "--out", str(out)], capture_output=True, text=True
     )
     # May exit 1 (some roots missing IRP) — schema must still be valid
     assert r.returncode in (0, 1), r.stderr
@@ -32,11 +29,9 @@ def test_missing_plan_detected(tmp_path):
     # No docs/incident_response_plan.md created
     out = tmp_path / "dora.json"
     r = subprocess.run(
-        ["python", str(CHECK_SCRIPT),
-         "--repo-root", str(tmp_path),
-         "--roots", "01_ai_layer",
-         "--out", str(out)],
-        capture_output=True, text=True
+        ["python", str(CHECK_SCRIPT), "--repo-root", str(tmp_path), "--roots", "01_ai_layer", "--out", str(out)],
+        capture_output=True,
+        text=True,
     )
     assert r.returncode == 1  # FAIL_DORA
     data = json.loads(out.read_text())
@@ -52,11 +47,9 @@ def test_existing_plan_not_overwritten(tmp_path):
     plan.write_text("# IRP\n## Section 1\n## Section 2\n## Section 3\n## Section 4\n## Section 5\n")
     out = tmp_path / "dora.json"
     r = subprocess.run(
-        ["python", str(CHECK_SCRIPT),
-         "--repo-root", str(tmp_path),
-         "--roots", "03_core",
-         "--out", str(out)],
-        capture_output=True, text=True
+        ["python", str(CHECK_SCRIPT), "--repo-root", str(tmp_path), "--roots", "03_core", "--out", str(out)],
+        capture_output=True,
+        text=True,
     )
     assert r.returncode == 0
     data = json.loads(out.read_text())
@@ -72,20 +65,35 @@ def test_empty_plan_triggers_fail_policy(tmp_path):
     (root_dir / "incident_response_plan.md").write_text("")  # empty
     out_check = tmp_path / "check.json"
     subprocess.run(
-        ["python", str(CHECK_SCRIPT),
-         "--repo-root", str(tmp_path),
-         "--roots", "02_audit_logging",
-         "--out", str(out_check)],
-        capture_output=True, text=True
+        [
+            "python",
+            str(CHECK_SCRIPT),
+            "--repo-root",
+            str(tmp_path),
+            "--roots",
+            "02_audit_logging",
+            "--out",
+            str(out_check),
+        ],
+        capture_output=True,
+        text=True,
     )
     out_val = tmp_path / "validation.json"
     r = subprocess.run(
-        ["python", str(VALIDATE_SCRIPT),
-         "--results", str(out_check),
-         "--min-sections", "5",
-         "--repo-root", str(tmp_path),
-         "--out", str(out_val)],
-        capture_output=True, text=True
+        [
+            "python",
+            str(VALIDATE_SCRIPT),
+            "--results",
+            str(out_check),
+            "--min-sections",
+            "5",
+            "--repo-root",
+            str(tmp_path),
+            "--out",
+            str(out_val),
+        ],
+        capture_output=True,
+        text=True,
     )
     assert r.returncode == 1  # FAIL_POLICY
     data = json.loads(out_val.read_text())

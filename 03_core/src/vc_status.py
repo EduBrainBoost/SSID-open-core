@@ -7,13 +7,11 @@ stdlib-only, fail-closed, non-custodial.
 
 import hashlib
 import time
-from typing import Dict, Set
-
 
 # ---------------------------------------------------------------------------
 # In-memory revocation registry
 # ---------------------------------------------------------------------------
-_revoked: Dict[str, dict] = {}   # vc_id -> revocation record
+_revoked: dict[str, dict] = {}  # vc_id -> revocation record
 
 
 def _now_iso() -> str:
@@ -23,6 +21,7 @@ def _now_iso() -> str:
 # ---------------------------------------------------------------------------
 # Operations
 # ---------------------------------------------------------------------------
+
 
 def revoke(vc_id: str, reason: str = "unspecified") -> dict:
     """

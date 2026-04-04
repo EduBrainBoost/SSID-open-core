@@ -5,14 +5,13 @@ and no foreign locks are active.
 """
 
 import os
-from typing import Dict
 
 from ._evidence import make_evidence, result
 
 SKILL_ID = "ssid-branch-worktree-lock"
 
 
-def execute(context: Dict) -> Dict:
+def execute(context: dict) -> dict:
     """Check branch/worktree isolation via lock files.
 
     context must contain:

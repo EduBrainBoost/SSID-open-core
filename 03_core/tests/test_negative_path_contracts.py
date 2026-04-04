@@ -14,30 +14,32 @@ Tests cover all 7 contract violation categories:
 - policy custom-rule reject
 - orphan evidence / missing proof reject
 """
+
 from __future__ import annotations
-import sys
+
 import hashlib
 import json
-from decimal import Decimal, InvalidOperation
+import sys
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from policy_enforcer import (
-    PolicyAction, PolicyDecision, PolicyEnforcer, PolicyRule,
-    PolicyRuleType, PolicyViolationError,
-)
 from fee_distribution_engine import FeeDistributionEngine, FeeParticipant, ParticipantRole
-from governance_reward_engine import (
-    GovernanceRewardEngine, GovernanceParticipant, GovernanceActivity, GovernanceActivityType
+from governance_reward_engine import GovernanceActivity, GovernanceActivityType, GovernanceParticipant
+from policy_enforcer import (
+    PolicyAction,
+    PolicyEnforcer,
+    PolicyRule,
+    PolicyRuleType,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def canonical_hash(data: dict) -> str:
     normalized = {k: str(v) for k, v in sorted(data.items())}
@@ -63,6 +65,7 @@ def _make_governance_participant(pid: str = "g1") -> GovernanceParticipant:
 # ---------------------------------------------------------------------------
 # TestInvalidFeeDistribution
 # ---------------------------------------------------------------------------
+
 
 class TestInvalidFeeDistribution:
     """3 tests for invalid fee distribution inputs."""
@@ -95,6 +98,7 @@ class TestInvalidFeeDistribution:
 # TestInvalidRewardDistribution
 # ---------------------------------------------------------------------------
 
+
 class TestInvalidRewardDistribution:
     """2 tests for invalid reward distribution inputs."""
 
@@ -115,6 +119,7 @@ class TestInvalidRewardDistribution:
 # ---------------------------------------------------------------------------
 # TestInvalidProofGeneration
 # ---------------------------------------------------------------------------
+
 
 class TestInvalidProofGeneration:
     """3 tests for invalid proof generation inputs."""
@@ -143,6 +148,7 @@ class TestInvalidProofGeneration:
 # TestDoubleRunConflict
 # ---------------------------------------------------------------------------
 
+
 class TestDoubleRunConflict:
     """2 tests proving replay with conflicting inputs is detectable via canonical hash."""
 
@@ -161,6 +167,7 @@ class TestDoubleRunConflict:
 # ---------------------------------------------------------------------------
 # TestMalformedInputs
 # ---------------------------------------------------------------------------
+
 
 class TestMalformedInputs:
     """3 tests for malformed / boundary inputs."""
@@ -188,6 +195,7 @@ class TestMalformedInputs:
 # ---------------------------------------------------------------------------
 # TestCustomRuleReject
 # ---------------------------------------------------------------------------
+
 
 class TestCustomRuleReject:
     """2 tests for custom-rule overrides."""
@@ -220,6 +228,7 @@ class TestCustomRuleReject:
 # ---------------------------------------------------------------------------
 # TestOrphanEvidenceReject
 # ---------------------------------------------------------------------------
+
 
 class TestOrphanEvidenceReject:
     """2 tests for orphan evidence and audit log capture."""

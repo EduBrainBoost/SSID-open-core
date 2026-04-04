@@ -11,8 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
-
+from datetime import UTC, datetime
 
 RELEASE_GATES = [
     "tests_pass",
@@ -41,7 +40,7 @@ def _check(args: argparse.Namespace) -> int:
 
     output = {
         "command": "release.check",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "version": version,
         "gates_total": len(RELEASE_GATES),
         "gates_pass": sum(1 for r in gate_results.values() if r["status"] == "pass"),
@@ -62,7 +61,7 @@ def _gate(args: argparse.Namespace) -> int:
     if gate_name not in RELEASE_GATES:
         error = {
             "command": "release.gate",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "gate": gate_name,
             "error": f"Unknown gate. Known: {RELEASE_GATES}",
             "status": "failed",
@@ -72,7 +71,7 @@ def _gate(args: argparse.Namespace) -> int:
 
     output = {
         "command": "release.gate",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "gate": gate_name,
         "result": "not_evaluated",
         "note": "Single gate stub — requires live evaluation",
@@ -85,7 +84,7 @@ def _status(args: argparse.Namespace) -> int:
     """Report release worker status."""
     output = {
         "command": "release.status",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "defined_gates": RELEASE_GATES,
         "gate_count": len(RELEASE_GATES),
         "last_release": None,
@@ -123,7 +122,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         error = {
             "command": f"release.{args.action}",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "error": str(exc),
             "status": "failed",
         }

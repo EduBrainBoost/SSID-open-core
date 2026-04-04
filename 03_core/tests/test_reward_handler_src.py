@@ -1,4 +1,5 @@
 """Functional tests for 03_core/src/reward_handler.py."""
+
 from __future__ import annotations
 
 import sys
@@ -12,10 +13,10 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from reward_handler import (  # type: ignore[import]
-    RewardHandler,
-    RewardEvent,
-    RewardAction,
     DEFAULT_REWARD_SCHEDULE,
+    RewardAction,
+    RewardEvent,
+    RewardHandler,
 )
 
 
@@ -29,27 +30,17 @@ class TestRewardHandlerCalculate:
         assert alloc.final_reward == DEFAULT_REWARD_SCHEDULE[RewardAction.GOVERNANCE_VOTE]
 
     def test_quality_score_scales_reward(self):
-        full = self.handler.calculate(
-            RewardEvent("e1", "alice", RewardAction.DATA_PROVISION, 1.0)
-        )
-        half = self.handler.calculate(
-            RewardEvent("e2", "alice", RewardAction.DATA_PROVISION, 0.5)
-        )
+        full = self.handler.calculate(RewardEvent("e1", "alice", RewardAction.DATA_PROVISION, 1.0))
+        half = self.handler.calculate(RewardEvent("e2", "alice", RewardAction.DATA_PROVISION, 0.5))
         assert abs(float(full.final_reward) - float(half.final_reward) * 2) < 0.001
 
     def test_quantity_multiplies_base(self):
-        single = self.handler.calculate(
-            RewardEvent("e1", "alice", RewardAction.IDENTITY_VERIFICATION, 1.0, quantity=1)
-        )
-        triple = self.handler.calculate(
-            RewardEvent("e2", "alice", RewardAction.IDENTITY_VERIFICATION, 1.0, quantity=3)
-        )
+        single = self.handler.calculate(RewardEvent("e1", "alice", RewardAction.IDENTITY_VERIFICATION, 1.0, quantity=1))
+        triple = self.handler.calculate(RewardEvent("e2", "alice", RewardAction.IDENTITY_VERIFICATION, 1.0, quantity=3))
         assert abs(float(triple.final_reward) - float(single.final_reward) * 3) < 0.001
 
     def test_zero_quality_yields_zero_reward(self):
-        alloc = self.handler.calculate(
-            RewardEvent("e1", "alice", RewardAction.STAKING, 0.0)
-        )
+        alloc = self.handler.calculate(RewardEvent("e1", "alice", RewardAction.STAKING, 0.0))
         assert alloc.final_reward == Decimal("0")
 
     def test_invalid_quality_score_raises(self):

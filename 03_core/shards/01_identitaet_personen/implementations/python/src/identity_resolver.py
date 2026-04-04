@@ -4,10 +4,10 @@ Root: 03_core | Shard: 01_identitaet_personen
 
 Resolves DIDs, validates DID Documents, enforces non-custodial policy.
 """
+
 import hashlib
 import json
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 
 class IdentityResolver:
@@ -23,14 +23,12 @@ class IdentityResolver:
         if not validation["valid"]:
             raise ValueError(f"DID Document validation failed: {validation['errors']}")
 
-        doc_hash = hashlib.sha256(
-            json.dumps(did_document, sort_keys=True).encode()
-        ).hexdigest()
+        doc_hash = hashlib.sha256(json.dumps(did_document, sort_keys=True).encode()).hexdigest()
 
         self._registry[did] = {
             "document": did_document,
             "content_hash": doc_hash,
-            "registered_at": datetime.now(timezone.utc).isoformat(),
+            "registered_at": datetime.now(UTC).isoformat(),
             "version": did_document.get("versionId", 1),
         }
 
@@ -41,7 +39,7 @@ class IdentityResolver:
             "timestamp_utc": self._registry[did]["registered_at"],
         }
 
-    def resolve(self, did: str) -> Optional[dict]:
+    def resolve(self, did: str) -> dict | None:
         """Resolve a DID to its DID Document."""
         entry = self._registry.get(did)
         if entry is None:
@@ -62,9 +60,7 @@ class IdentityResolver:
         if entry is None:
             return {"did": did, "integrity": "NOT_FOUND"}
 
-        current_hash = hashlib.sha256(
-            json.dumps(entry["document"], sort_keys=True).encode()
-        ).hexdigest()
+        current_hash = hashlib.sha256(json.dumps(entry["document"], sort_keys=True).encode()).hexdigest()
 
         return {
             "did": did,
@@ -97,12 +93,14 @@ class IdentityResolver:
         return {"valid": len(errors) == 0, "errors": errors}
 
     def _log_resolution(self, did: str, success: bool, reason: str = "") -> None:
-        self._resolution_log.append({
-            "did": did,
-            "success": success,
-            "reason": reason,
-            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        })
+        self._resolution_log.append(
+            {
+                "did": did,
+                "success": success,
+                "reason": reason,
+                "timestamp_utc": datetime.now(UTC).isoformat(),
+            }
+        )
 
     @property
     def resolution_count(self) -> int:

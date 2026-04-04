@@ -15,11 +15,11 @@ Checks:
 Exit codes: 0 = PASS, 1 = FAIL, 2 = ERROR
 Output contract: PASS/FAIL + findings only. No scores.
 """
+
 from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -103,7 +103,7 @@ def validate_dependencies(data: dict[str, Any]) -> list[str]:
         graph[tid] = [d for d in deps if d in task_ids]
 
     # Cycle detection via DFS
-    WHITE, GRAY, BLACK = 0, 1, 2
+    WHITE, GRAY, BLACK = 0, 1, 2  # noqa: N806
     color: dict[str, int] = {tid: WHITE for tid in task_ids}
 
     def dfs(node: str) -> bool:
@@ -158,8 +158,7 @@ def validate(path: Path, check_refs: bool = False) -> tuple[str, list[str]]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate a PlanSpec YAML file.")
     parser.add_argument("path", help="Path to the PlanSpec YAML file")
-    parser.add_argument("--check-refs", action="store_true",
-                        help="Also check that task_ids exist as TaskSpec files")
+    parser.add_argument("--check-refs", action="store_true", help="Also check that task_ids exist as TaskSpec files")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     args = parser.parse_args()
 

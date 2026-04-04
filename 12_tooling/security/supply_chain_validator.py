@@ -19,6 +19,7 @@ Usage:
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import argparse
@@ -27,30 +28,26 @@ import json
 import re
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-
 
 # ---------------------------------------------------------------------------
 # Constants (mirrors security_config.yaml)
 # ---------------------------------------------------------------------------
 
-REQUIRED_PROVENANCE_FIELDS = frozenset(
-    ["builder", "build_timestamp", "source_repo", "commit_sha"]
-)
+REQUIRED_PROVENANCE_FIELDS = frozenset(["builder", "build_timestamp", "source_repo", "commit_sha"])
 
 ALLOWED_BUILDERS = frozenset(["github-actions", "ssid-local"])
 
 _COMMIT_SHA_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
-_ISO8601_RE = re.compile(
-    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z?$"
-)
+_ISO8601_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z?$")
 
 
 # ---------------------------------------------------------------------------
 # Data types
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class ValidationCheck:
@@ -80,16 +77,14 @@ class ValidationReport:
             "validated_at": self.validated_at,
             "subject": self.subject,
             "overall_pass": self.overall_pass,
-            "checks": [
-                {"name": c.name, "passed": c.passed, "detail": c.detail}
-                for c in self.checks
-            ],
+            "checks": [{"name": c.name, "passed": c.passed, "detail": c.detail} for c in self.checks],
         }
 
 
 # ---------------------------------------------------------------------------
 # Provenance validation
 # ---------------------------------------------------------------------------
+
 
 def validate_provenance(provenance: dict[str, Any]) -> ValidationReport:
     """Validate build provenance metadata.
@@ -101,7 +96,7 @@ def validate_provenance(provenance: dict[str, Any]) -> ValidationReport:
         ValidationReport.
     """
     report = ValidationReport(
-        validated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        validated_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         subject="provenance",
         overall_pass=True,
     )
@@ -120,7 +115,8 @@ def validate_provenance(provenance: dict[str, Any]) -> ValidationReport:
     report.add(
         "allowed_builder",
         builder_ok,
-        f"Builder '{builder}' is allowed" if builder_ok
+        f"Builder '{builder}' is allowed"
+        if builder_ok
         else f"Builder '{builder}' not in allow-list {sorted(ALLOWED_BUILDERS)}",
     )
 
@@ -130,7 +126,8 @@ def validate_provenance(provenance: dict[str, Any]) -> ValidationReport:
     report.add(
         "commit_sha_format",
         sha_ok,
-        f"Commit SHA '{commit_sha[:8]}...' is valid 40-char hex" if sha_ok
+        f"Commit SHA '{commit_sha[:8]}...' is valid 40-char hex"
+        if sha_ok
         else f"Commit SHA '{commit_sha}' is not a valid 40-char hex string",
     )
 
@@ -140,8 +137,7 @@ def validate_provenance(provenance: dict[str, Any]) -> ValidationReport:
     report.add(
         "build_timestamp_format",
         ts_ok,
-        f"Timestamp '{ts}' matches ISO 8601" if ts_ok
-        else f"Timestamp '{ts}' does not match expected ISO 8601 format",
+        f"Timestamp '{ts}' matches ISO 8601" if ts_ok else f"Timestamp '{ts}' does not match expected ISO 8601 format",
     )
 
     # Check 5: Source repo non-empty
@@ -158,6 +154,7 @@ def validate_provenance(provenance: dict[str, Any]) -> ValidationReport:
 # ---------------------------------------------------------------------------
 # SBOM hash consistency
 # ---------------------------------------------------------------------------
+
 
 def _sha256_file(path: Path) -> str:
     """Compute SHA-256 hex digest of a file."""
@@ -179,14 +176,15 @@ def validate_sbom_integrity(sbom_path: Path, expected_sha256: str | None = None)
         ValidationReport.
     """
     report = ValidationReport(
-        validated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        validated_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         subject=str(sbom_path),
         overall_pass=True,
     )
 
     # Check 1: File exists
-    report.add("sbom_file_exists", sbom_path.exists(),
-               "SBOM file found" if sbom_path.exists() else "SBOM file not found")
+    report.add(
+        "sbom_file_exists", sbom_path.exists(), "SBOM file found" if sbom_path.exists() else "SBOM file not found"
+    )
     if not sbom_path.exists():
         return report
 
@@ -223,7 +221,8 @@ def validate_sbom_integrity(sbom_path: Path, expected_sha256: str | None = None)
         report.add(
             "sbom_hash_match",
             hash_ok,
-            f"SHA-256 matches: {actual[:16]}..." if hash_ok
+            f"SHA-256 matches: {actual[:16]}..."
+            if hash_ok
             else f"Hash MISMATCH: expected {expected_sha256[:16]}..., got {actual[:16]}...",
         )
 
@@ -233,6 +232,7 @@ def validate_sbom_integrity(sbom_path: Path, expected_sha256: str | None = None)
 # ---------------------------------------------------------------------------
 # Reproducibility comparison
 # ---------------------------------------------------------------------------
+
 
 def compare_sboms(sbom_a_path: Path, sbom_b_path: Path) -> ValidationReport:
     """Compare two CycloneDX SBOMs for reproducibility.
@@ -248,14 +248,13 @@ def compare_sboms(sbom_a_path: Path, sbom_b_path: Path) -> ValidationReport:
         ValidationReport with diff details.
     """
     report = ValidationReport(
-        validated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        validated_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         subject=f"{sbom_a_path.name} vs {sbom_b_path.name}",
         overall_pass=True,
     )
 
     for label, path in (("sbom_a", sbom_a_path), ("sbom_b", sbom_b_path)):
-        report.add(f"{label}_exists", path.exists(),
-                   "found" if path.exists() else "not found")
+        report.add(f"{label}_exists", path.exists(), "found" if path.exists() else "not found")
 
     if not (sbom_a_path.exists() and sbom_b_path.exists()):
         return report
@@ -275,7 +274,8 @@ def compare_sboms(sbom_a_path: Path, sbom_b_path: Path) -> ValidationReport:
     report.add(
         "component_sets_identical",
         not (only_in_a or only_in_b),
-        "Component sets match" if not (only_in_a or only_in_b)
+        "Component sets match"
+        if not (only_in_a or only_in_b)
         else (
             f"{len(only_in_a)} component(s) only in A, "
             f"{len(only_in_b)} component(s) only in B. "
@@ -286,7 +286,8 @@ def compare_sboms(sbom_a_path: Path, sbom_b_path: Path) -> ValidationReport:
     report.add(
         "component_count_match",
         len(a_keys) == len(b_keys),
-        f"Both SBOMs have {len(a_keys)} components" if len(a_keys) == len(b_keys)
+        f"Both SBOMs have {len(a_keys)} components"
+        if len(a_keys) == len(b_keys)
         else f"Count mismatch: A={len(a_keys)}, B={len(b_keys)}",
     )
 
@@ -296,6 +297,7 @@ def compare_sboms(sbom_a_path: Path, sbom_b_path: Path) -> ValidationReport:
 # ---------------------------------------------------------------------------
 # Deployment artifact hash manifest validation
 # ---------------------------------------------------------------------------
+
 
 def validate_artifact_manifest(manifest_path: Path) -> ValidationReport:
     """Validate a deployment artifact hash manifest.
@@ -318,13 +320,12 @@ def validate_artifact_manifest(manifest_path: Path) -> ValidationReport:
         ValidationReport.
     """
     report = ValidationReport(
-        validated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        validated_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         subject=str(manifest_path),
         overall_pass=True,
     )
 
-    report.add("manifest_exists", manifest_path.exists(),
-               "found" if manifest_path.exists() else "not found")
+    report.add("manifest_exists", manifest_path.exists(), "found" if manifest_path.exists() else "not found")
     if not manifest_path.exists():
         return report
 
@@ -337,8 +338,7 @@ def validate_artifact_manifest(manifest_path: Path) -> ValidationReport:
     report.add("manifest_valid_json", True, "manifest is valid JSON")
 
     artifacts: list[dict] = manifest.get("artifacts", [])
-    report.add("manifest_has_artifacts", bool(artifacts),
-               f"{len(artifacts)} artifacts declared")
+    report.add("manifest_has_artifacts", bool(artifacts), f"{len(artifacts)} artifacts declared")
 
     base_dir = manifest_path.parent
     for entry in artifacts:
@@ -365,23 +365,21 @@ def validate_artifact_manifest(manifest_path: Path) -> ValidationReport:
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def main(argv: list[str] | None = None) -> int:
     """Entry point."""
     parser = argparse.ArgumentParser(description="SSID Supply Chain Validator")
-    parser.add_argument("--provenance", type=Path, default=None,
-                        help="Build provenance JSON file to validate")
-    parser.add_argument("--sbom", type=Path, default=None,
-                        help="CycloneDX SBOM JSON to validate")
-    parser.add_argument("--sbom-hash", type=str, default=None,
-                        help="Expected SHA-256 hex of the SBOM file")
-    parser.add_argument("--sbom-compare", type=Path, default=None,
-                        help="Second SBOM to compare against --sbom for reproducibility")
-    parser.add_argument("--manifest", type=Path, default=None,
-                        help="Deployment artifact hash manifest JSON to validate")
-    parser.add_argument("--output", "-o", type=Path, default=None,
-                        help="Write validation report JSON to this path")
-    parser.add_argument("--fail-on-invalid", action="store_true",
-                        help="Exit non-zero if any check fails")
+    parser.add_argument("--provenance", type=Path, default=None, help="Build provenance JSON file to validate")
+    parser.add_argument("--sbom", type=Path, default=None, help="CycloneDX SBOM JSON to validate")
+    parser.add_argument("--sbom-hash", type=str, default=None, help="Expected SHA-256 hex of the SBOM file")
+    parser.add_argument(
+        "--sbom-compare", type=Path, default=None, help="Second SBOM to compare against --sbom for reproducibility"
+    )
+    parser.add_argument(
+        "--manifest", type=Path, default=None, help="Deployment artifact hash manifest JSON to validate"
+    )
+    parser.add_argument("--output", "-o", type=Path, default=None, help="Write validation report JSON to this path")
+    parser.add_argument("--fail-on-invalid", action="store_true", help="Exit non-zero if any check fails")
     args = parser.parse_args(argv)
 
     reports: list[ValidationReport] = []
@@ -406,7 +404,7 @@ def main(argv: list[str] | None = None) -> int:
 
     overall_pass = all(r.overall_pass for r in reports)
     output = {
-        "validated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "validated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "overall_pass": overall_pass,
         "report_count": len(reports),
         "reports": [r.to_dict() for r in reports],

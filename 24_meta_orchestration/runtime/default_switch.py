@@ -3,25 +3,26 @@ SSIDCTL v2 Default Switch — Runtime Selector, Compatibility Gate, Rollback Gat
 
 Manages the controlled transition from legacy_29 to ssidctl_v2 as default runtime.
 """
+
 from __future__ import annotations
 
 import datetime as dt
 import hashlib
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from .loader import load_bundle, RegistryBundle
-from .resolver import resolve_profile, ResolutionResult
 from .enforcement import check_root24_lock, enforce_all_agents
+from .loader import RegistryBundle, load_bundle
+from .resolver import resolve_profile
 from .runner import SSIDCTLRunner
-
 
 # ---------------------------------------------------------------------------
 # Runtime Mode
 # ---------------------------------------------------------------------------
+
 
 class RuntimeMode(Enum):
     LEGACY_29 = "legacy_29"
@@ -35,12 +36,7 @@ SWITCH_CONFIG_FILENAME = "ssidctl_runtime_config.json"
 
 
 def _utc_now() -> str:
-    return (
-        dt.datetime.now(dt.timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _sha256_text(text: str) -> str:
@@ -51,9 +47,11 @@ def _sha256_text(text: str) -> str:
 # Runtime Config
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class RuntimeConfig:
     """Explicit runtime selection — no heuristics, no implicit behaviour."""
+
     runtime_mode: str = "legacy_29"
     default_profile: str = "gate55_core_11"
     fallback_profile: str = "legacy_29_compat"
@@ -61,7 +59,7 @@ class RuntimeConfig:
     switch_allowed: bool = False
     rollback_allowed: bool = True
 
-    def validate(self) -> List[str]:
+    def validate(self) -> list[str]:
         errors = []
         if self.runtime_mode not in VALID_MODES:
             errors.append(f"invalid runtime_mode: {self.runtime_mode}")
@@ -84,7 +82,7 @@ class RuntimeConfig:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "RuntimeConfig":
+    def from_dict(cls, data: dict) -> RuntimeConfig:
         return cls(
             runtime_mode=data.get("runtime_mode", "legacy_29"),
             default_profile=data.get("default_profile", "gate55_core_11"),
@@ -118,23 +116,24 @@ def save_runtime_config(repo_root: Path, config: RuntimeConfig) -> Path:
 # Compatibility Gate
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CompatibilityResult:
     compatible: bool
     mode: str
     profile: str
-    checks: Dict[str, bool]
-    block_reasons: List[str]
+    checks: dict[str, bool]
+    block_reasons: list[str]
 
 
 def compatibility_gate(
     repo_root: Path,
     config: RuntimeConfig,
-    bundle: Optional[RegistryBundle] = None,
+    bundle: RegistryBundle | None = None,
 ) -> CompatibilityResult:
     """Check if the requested runtime mode + profile is compatible and safe."""
-    checks: Dict[str, bool] = {}
-    block_reasons: List[str] = []
+    checks: dict[str, bool] = {}
+    block_reasons: list[str] = []
 
     # 1. Config validation
     config_errors = config.validate()
@@ -150,9 +149,7 @@ def compatibility_gate(
     # 3. Legacy mode always compatible
     if config.runtime_mode == RuntimeMode.LEGACY_29.value:
         checks["legacy_available"] = True
-        legacy_manifest = (
-            repo_root / "24_meta_orchestration" / "agents" / "claude" / "agents_manifest.json"
-        )
+        legacy_manifest = repo_root / "24_meta_orchestration" / "agents" / "claude" / "agents_manifest.json"
         if not legacy_manifest.exists():
             checks["legacy_available"] = False
             block_reasons.append("legacy agents_manifest.json not found")
@@ -224,19 +221,20 @@ def compatibility_gate(
 # Rollback Gate
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class RollbackResult:
     rollback_possible: bool
     current_mode: str
     rollback_target: str
-    checks: Dict[str, bool]
-    block_reasons: List[str]
+    checks: dict[str, bool]
+    block_reasons: list[str]
 
 
 def rollback_gate(repo_root: Path, config: RuntimeConfig) -> RollbackResult:
     """Verify rollback path is available and safe."""
-    checks: Dict[str, bool] = {}
-    block_reasons: List[str] = []
+    checks: dict[str, bool] = {}
+    block_reasons: list[str] = []
 
     checks["rollback_allowed"] = config.rollback_allowed
     if not config.rollback_allowed:
@@ -248,17 +246,13 @@ def rollback_gate(repo_root: Path, config: RuntimeConfig) -> RollbackResult:
 
     # Verify rollback target runtime is available
     if config.rollback_target == RuntimeMode.LEGACY_29.value:
-        legacy_manifest = (
-            repo_root / "24_meta_orchestration" / "agents" / "claude" / "agents_manifest.json"
-        )
+        legacy_manifest = repo_root / "24_meta_orchestration" / "agents" / "claude" / "agents_manifest.json"
         checks["rollback_runtime_available"] = legacy_manifest.exists()
         if not checks["rollback_runtime_available"]:
             block_reasons.append("legacy agents_manifest.json missing — rollback impossible")
 
     elif config.rollback_target == RuntimeMode.SSIDCTL_V2.value:
-        v2_registry = (
-            repo_root / "24_meta_orchestration" / "registry" / "ssidctl_agent_registry.v2.json"
-        )
+        v2_registry = repo_root / "24_meta_orchestration" / "registry" / "ssidctl_agent_registry.v2.json"
         checks["rollback_runtime_available"] = v2_registry.exists()
         if not checks["rollback_runtime_available"]:
             block_reasons.append("v2 registry missing — rollback impossible")
@@ -282,6 +276,7 @@ def rollback_gate(repo_root: Path, config: RuntimeConfig) -> RollbackResult:
 # Switch Decision
 # ---------------------------------------------------------------------------
 
+
 class SwitchDecision(Enum):
     SWITCH_READY = "SWITCH_READY"
     SWITCH_READY_WITH_WARNINGS = "SWITCH_READY_WITH_WARNINGS"
@@ -294,13 +289,13 @@ class SwitchAudit:
     current_default: str
     candidate_default: str
     rollback_target: str
-    compatibility_result: Dict[str, Any]
-    rollback_result: Dict[str, Any]
+    compatibility_result: dict[str, Any]
+    rollback_result: dict[str, Any]
     v2_dry_run_status: str
     v2_smoke_run_status: str
     legacy_smoke_run_status: str
     final_decision: str
-    warnings: List[str]
+    warnings: list[str]
 
     def to_dict(self) -> dict:
         return {
@@ -320,7 +315,7 @@ class SwitchAudit:
 
 def execute_switch_readiness(repo_root: Path) -> SwitchAudit:
     """Full switch-readiness assessment: compatibility, rollback, dry-run, smoke-runs."""
-    warnings: List[str] = []
+    warnings: list[str] = []
 
     # Load config (defaults to legacy_29)
     config = load_runtime_config(repo_root)

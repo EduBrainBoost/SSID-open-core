@@ -11,13 +11,13 @@ import difflib
 import fnmatch
 import hashlib
 import json
-import os
 import re
 import shutil
 import subprocess
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any
 
 import yaml
 
@@ -28,9 +28,7 @@ REPORTS_DIR = REPO_ROOT / "02_audit_logging" / "reports"
 EVIDENCE_TASKS_DIR = REPO_ROOT / "02_audit_logging" / "evidence" / "tasks"
 REGISTRY_DIR = REPO_ROOT / "24_meta_orchestration" / "registry"
 PREPROCESSING_DIR = REPO_ROOT / "24_meta_orchestration" / "pipelines" / "preprocessing"
-ROOT_EXCEPTIONS_FILE = (
-    REPO_ROOT / "23_compliance" / "exceptions" / "root_level_exceptions.yaml"
-)
+ROOT_EXCEPTIONS_FILE = REPO_ROOT / "23_compliance" / "exceptions" / "root_level_exceptions.yaml"
 
 SOT_INPUT_FILES = [
     REPO_ROOT / "16_codex" / "ssid_master_definition_corrected_v1.1.1.md",
@@ -38,9 +36,7 @@ SOT_INPUT_FILES = [
     REPO_ROOT / "16_codex" / "SSID_structure_level3_part2_MAX.md",
     REPO_ROOT / "16_codex" / "SSID_structure_level3_part3_MAX.md",
     REPO_ROOT / "16_codex" / "SSID_structure_gebuehren_abo_modelle.md",
-    REPO_ROOT
-    / "16_codex"
-    / "SSID_structure_gebuehren_abo_modelle_ROOTS_16_21_ADDENDUM.md",
+    REPO_ROOT / "16_codex" / "SSID_structure_gebuehren_abo_modelle_ROOTS_16_21_ADDENDUM.md",
 ]
 
 ROOTS_24 = [
@@ -97,12 +93,7 @@ ALLOWED_PATH_GLOBS_DEFAULT = [
 
 
 def utc_now() -> str:
-    return (
-        dt.datetime.now(dt.timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def ts_slug(ts: str) -> str:
@@ -123,7 +114,7 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
-def write_json(path: Path, payload: Dict[str, Any], dry_run: bool = False) -> bool:
+def write_json(path: Path, payload: dict[str, Any], dry_run: bool = False) -> bool:
     path.parent.mkdir(parents=True, exist_ok=True)
     rendered = json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
     rendered_bytes = rendered.encode("utf-8")
@@ -143,9 +134,7 @@ def move_to_worm(source_path: Path, reason: str) -> Path | None:
         return None
 
     ts = utc_now()
-    worm_dir = (
-        REPO_ROOT / "02_audit_logging" / "storage" / "worm" / reason / ts_slug(ts)
-    )
+    worm_dir = REPO_ROOT / "02_audit_logging" / "storage" / "worm" / reason / ts_slug(ts)
     worm_dir.mkdir(parents=True, exist_ok=True)
 
     target_path = worm_dir / source_path.name
@@ -154,7 +143,7 @@ def move_to_worm(source_path: Path, reason: str) -> Path | None:
     return target_path
 
 
-def load_root_exceptions() -> Tuple[List[str], List[str]]:
+def load_root_exceptions() -> tuple[list[str], list[str]]:
     data = yaml.safe_load(ROOT_EXCEPTIONS_FILE.read_text(encoding="utf-8")) or {}
     dirs = data.get("allowed_directories", []) or []
     files = data.get("allowed_files", []) or []
@@ -173,11 +162,7 @@ def is_preflight_allowed(rel_path: str) -> bool:
         return True
     if name in ALLOWED_FILENAMES_DEFAULT:
         return True
-    if any(
-        fnmatch.fnmatch(rel_path, pattern) for pattern in ALLOWED_PATH_GLOBS_DEFAULT
-    ):
-        return True
-    return False
+    return bool(any(fnmatch.fnmatch(rel_path, pattern) for pattern in ALLOWED_PATH_GLOBS_DEFAULT))
 
 
 def iter_files() -> Iterable[Path]:
@@ -196,9 +181,9 @@ def iter_files() -> Iterable[Path]:
             yield p
 
 
-def root_scan() -> List[Dict[str, Any]]:
+def root_scan() -> list[dict[str, Any]]:
     allowed_dirs, allowed_files = load_root_exceptions()
-    out: List[Dict[str, Any]] = []
+    out: list[dict[str, Any]] = []
     for item in sorted(REPO_ROOT.iterdir(), key=lambda x: x.name):
         if item.name == ".git":
             continue
@@ -225,13 +210,13 @@ def root_scan() -> List[Dict[str, Any]]:
     return out
 
 
-def extract_paths_from_sot(file_path: Path) -> List[str]:
+def extract_paths_from_sot(file_path: Path) -> list[str]:
     if not file_path.exists():
         return []
     text = file_path.read_text(encoding="utf-8", errors="replace")
     pattern = re.compile(r"(?<![A-Za-z0-9_./-])(?:\d{2}_[A-Za-z0-9_./-]+)")
     found = [m.group(0).strip().strip("`\"'") for m in pattern.finditer(text)]
-    out: List[str] = []
+    out: list[str] = []
     for p in found:
         p = p.rstrip(".,:;)")
         if "/" not in p:
@@ -243,8 +228,8 @@ def extract_paths_from_sot(file_path: Path) -> List[str]:
     return out
 
 
-def duplicate_guard() -> Tuple[bool, List[str]]:
-    issues: List[str] = []
+def duplicate_guard() -> tuple[bool, list[str]]:
+    issues: list[str] = []
 
     contract = REPO_ROOT / "16_codex" / "contracts" / "sot" / "sot_contract.yaml"
     if contract.exists():
@@ -260,9 +245,7 @@ def duplicate_guard() -> Tuple[bool, List[str]]:
         funcs = [n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]
         duplicates = sorted({f for f in funcs if funcs.count(f) > 1})
         if duplicates:
-            issues.append(
-                f"duplicate function names in sot_validator_core.py: {duplicates}"
-            )
+            issues.append(f"duplicate function names in sot_validator_core.py: {duplicates}")
 
     rego = REPO_ROOT / "23_compliance" / "policies" / "sot" / "sot_policy.rego"
     if rego.exists():
@@ -281,22 +264,18 @@ def duplicate_guard() -> Tuple[bool, List[str]]:
         if duplicates:
             issues.append(f"duplicate CLI flags in sot_validator.py: {duplicates}")
 
-    test = (
-        REPO_ROOT / "11_test_simulation" / "tests_compliance" / "test_sot_validator.py"
-    )
+    test = REPO_ROOT / "11_test_simulation" / "tests_compliance" / "test_sot_validator.py"
     if test.exists():
         tree = ast.parse(test.read_text(encoding="utf-8"))
         funcs = [n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]
         duplicates = sorted({f for f in funcs if funcs.count(f) > 1})
         if duplicates:
-            issues.append(
-                f"duplicate test names in test_sot_validator.py: {duplicates}"
-            )
+            issues.append(f"duplicate test names in test_sot_validator.py: {duplicates}")
 
     return len(issues) == 0, issues
 
 
-def run_cmd(name: str, cmd: List[str]) -> Dict[str, Any]:
+def run_cmd(name: str, cmd: list[str]) -> dict[str, Any]:
     p = subprocess.run(cmd, cwd=str(REPO_ROOT), capture_output=True, text=True)
     return {
         "name": name,
@@ -308,7 +287,7 @@ def run_cmd(name: str, cmd: List[str]) -> Dict[str, Any]:
     }
 
 
-def phase0_inventory(ts: str) -> Dict[str, Path]:
+def phase0_inventory(ts: str) -> dict[str, Path]:
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
     files_payload = []
@@ -336,13 +315,7 @@ def phase0_inventory(ts: str) -> Dict[str, Path]:
     )
 
     missing_roots = [r for r in ROOTS_24 if not (REPO_ROOT / r).exists()]
-    actual_modules = sorted(
-        [
-            p.name
-            for p in REPO_ROOT.iterdir()
-            if p.is_dir() and re.match(r"^\d{2}_.+", p.name)
-        ]
-    )
+    actual_modules = sorted([p.name for p in REPO_ROOT.iterdir() if p.is_dir() and re.match(r"^\d{2}_.+", p.name)])
     unexpected_modules = [m for m in actual_modules if m not in ROOTS_24]
     sot_diff_path = REPORTS_DIR / f"SOT_STRUCT_DIFF_{ts_slug(ts)}.json"
     write_json(
@@ -390,8 +363,8 @@ def phase0_inventory(ts: str) -> Dict[str, Path]:
 
 
 def phase1_compile_structure_spec(
-    ts: str, pdf_requirements: List[Dict[str, str]], dry_run: bool = False
-) -> Tuple[Path, bool]:
+    ts: str, pdf_requirements: list[dict[str, str]], dry_run: bool = False
+) -> tuple[Path, bool]:
     REGISTRY_DIR.mkdir(parents=True, exist_ok=True)
     allowed_dirs, allowed_files = load_root_exceptions()
 
@@ -402,7 +375,7 @@ def phase1_compile_structure_spec(
             print(f"- {rel(p)}", file=sys.stderr)
         raise SystemExit(EXIT_HARD_FAIL)
 
-    extracted_paths: List[str] = []
+    extracted_paths: list[str] = []
     for f in SOT_INPUT_FILES:
         for p in extract_paths_from_sot(f):
             if p not in extracted_paths:
@@ -448,34 +421,24 @@ def phase1_compile_structure_spec(
     return out, wrote
 
 
-def phase2_generate_move_plan(
-    ts: str, structure_spec_path: Path, root_check_path: Path
-) -> Path:
+def phase2_generate_move_plan(ts: str, structure_spec_path: Path, root_check_path: Path) -> Path:
     PREPROCESSING_DIR.mkdir(parents=True, exist_ok=True)
     spec = json.loads(structure_spec_path.read_text(encoding="utf-8"))
     root_check = json.loads(root_check_path.read_text(encoding="utf-8"))
 
-    moves: List[Dict[str, Any]] = []
-    creates: List[Dict[str, Any]] = []
-    conflicts: List[Dict[str, Any]] = []
+    moves: list[dict[str, Any]] = []
+    creates: list[dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = []
     root_violations = root_check.get("violations", [])
 
     for v in root_violations:
         name = v["name"]
         source = REPO_ROOT / name
         if name == "e2e_dispatcher.py":
-            target = (
-                REPO_ROOT / "24_meta_orchestration" / "dispatcher" / "e2e_dispatcher.py"
-            )
+            target = REPO_ROOT / "24_meta_orchestration" / "dispatcher" / "e2e_dispatcher.py"
             if target.exists():
                 worm_target = (
-                    REPO_ROOT
-                    / "02_audit_logging"
-                    / "storage"
-                    / "worm"
-                    / "root_level_violations"
-                    / ts_slug(ts)
-                    / name
+                    REPO_ROOT / "02_audit_logging" / "storage" / "worm" / "root_level_violations" / ts_slug(ts) / name
                 )
                 moves.append(
                     {
@@ -498,13 +461,7 @@ def phase2_generate_move_plan(
             target = REPO_ROOT / "05_documentation" / "legacy_root_items" / name
             if target.exists():
                 worm_target = (
-                    REPO_ROOT
-                    / "02_audit_logging"
-                    / "storage"
-                    / "worm"
-                    / "root_level_violations"
-                    / ts_slug(ts)
-                    / name
+                    REPO_ROOT / "02_audit_logging" / "storage" / "worm" / "root_level_violations" / ts_slug(ts) / name
                 )
                 moves.append(
                     {
@@ -556,9 +513,9 @@ def apply_move_plan(move_plan_path: Path, task_id: str) -> Path:
 
     evidence_dir = EVIDENCE_TASKS_DIR / task_id
     evidence_dir.mkdir(parents=True, exist_ok=True)
-    before: Dict[str, bytes] = {}
-    after: Dict[str, bytes] = {}
-    touched: List[str] = []
+    before: dict[str, bytes] = {}
+    after: dict[str, bytes] = {}
+    touched: list[str] = []
 
     for m in plan.get("moves", []):
         src = REPO_ROOT / m["from"]
@@ -585,7 +542,7 @@ def apply_move_plan(move_plan_path: Path, task_id: str) -> Path:
             after[rel(p)] = p.read_bytes()
         touched.append(c["path"])
 
-    gate_results: List[Dict[str, Any]] = []
+    gate_results: list[dict[str, Any]] = []
     gate_results.append(
         run_cmd(
             "write_gate.structure_guard",
@@ -637,32 +594,22 @@ def apply_move_plan(move_plan_path: Path, task_id: str) -> Path:
 
     failed = [g for g in gate_results if g.get("returncode") != 0]
 
-    patch_lines: List[str] = []
+    patch_lines: list[str] = []
     for p, old_bytes in sorted(before.items()):
         old_txt = old_bytes.decode("utf-8", errors="replace").splitlines(keepends=True)
         new_bytes = after.get(p, b"")
         new_txt = new_bytes.decode("utf-8", errors="replace").splitlines(keepends=True)
-        patch_lines.extend(
-            difflib.unified_diff(
-                old_txt, new_txt, fromfile=f"a/{p}", tofile=f"b/{p}", lineterm=""
-            )
-        )
+        patch_lines.extend(difflib.unified_diff(old_txt, new_txt, fromfile=f"a/{p}", tofile=f"b/{p}", lineterm=""))
 
     for p, new_bytes in sorted(after.items()):
         if p in before:
             continue
         new_txt = new_bytes.decode("utf-8", errors="replace").splitlines(keepends=True)
-        patch_lines.extend(
-            difflib.unified_diff(
-                [], new_txt, fromfile="/dev/null", tofile=f"b/{p}", lineterm=""
-            )
-        )
+        patch_lines.extend(difflib.unified_diff([], new_txt, fromfile="/dev/null", tofile=f"b/{p}", lineterm=""))
 
-    (evidence_dir / "patch.diff").write_text(
-        "\n".join(patch_lines) + "\n", encoding="utf-8"
-    )
+    (evidence_dir / "patch.diff").write_text("\n".join(patch_lines) + "\n", encoding="utf-8")
 
-    hash_manifest: Dict[str, Any] = {"generated_utc": utc_now(), "files": []}
+    hash_manifest: dict[str, Any] = {"generated_utc": utc_now(), "files": []}
     for p in sorted(set(touched)):
         abs_path = REPO_ROOT / p
         if abs_path.exists() and abs_path.is_file():
@@ -695,8 +642,8 @@ def apply_move_plan(move_plan_path: Path, task_id: str) -> Path:
     return evidence_dir
 
 
-def parse_pdf_rules(raw: List[str]) -> List[Dict[str, str]]:
-    out: List[Dict[str, str]] = []
+def parse_pdf_rules(raw: list[str]) -> list[dict[str, str]]:
+    out: list[dict[str, str]] = []
     for item in raw:
         if "::" in item:
             rule_id, requirement = item.split("::", 1)
@@ -710,13 +657,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(prog="deterministic_repo_setup.py")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    sub.add_parser(
-        "phase0", help="Generate read-only inventory and policy preflight artefacts."
-    )
+    sub.add_parser("phase0", help="Generate read-only inventory and policy preflight artefacts.")
 
-    p1 = sub.add_parser(
-        "phase1", help="Compile machine-readable structure spec from SoT and PDF rules."
-    )
+    p1 = sub.add_parser("phase1", help="Compile machine-readable structure spec from SoT and PDF rules.")
     p1.add_argument("--pdf-rule", action="append", default=[], help="rule_ref::text")
     p1.add_argument(
         "--check",
@@ -729,27 +672,19 @@ def main() -> int:
         help="Write files if changed (default: check only)",
     )
 
-    p2 = sub.add_parser(
-        "phase2", help="Generate move plan from root violations and structure spec."
-    )
-    p2.add_argument(
-        "--structure-spec", default="24_meta_orchestration/registry/structure_spec.json"
-    )
+    p2 = sub.add_parser("phase2", help="Generate move plan from root violations and structure spec.")
+    p2.add_argument("--structure-spec", default="24_meta_orchestration/registry/structure_spec.json")
     p2.add_argument(
         "--root-check",
         default="",
         help="Optional explicit ROOT_EXCEPTIONS_CHECK json path",
     )
 
-    p3 = sub.add_parser(
-        "phase3", help="Apply move plan and run hard-gates with evidence."
-    )
+    p3 = sub.add_parser("phase3", help="Apply move plan and run hard-gates with evidence.")
     p3.add_argument("--move-plan", required=True)
     p3.add_argument("--task-id", required=True)
 
-    sub.add_parser(
-        "policy_gate", help="Run policy preflight and fail on policy violations."
-    )
+    sub.add_parser("policy_gate", help="Run policy preflight and fail on policy violations.")
 
     sub.add_parser("all", help="Run phase0 -> phase1 -> phase2 (no apply)")
 
@@ -763,9 +698,7 @@ def main() -> int:
 
     if args.cmd == "phase1":
         dry_run = not args.apply
-        out, wrote = phase1_compile_structure_spec(
-            ts, parse_pdf_rules(args.pdf_rule), dry_run=dry_run
-        )
+        out, wrote = phase1_compile_structure_spec(ts, parse_pdf_rules(args.pdf_rule), dry_run=dry_run)
         print(rel(out))
         if dry_run and wrote:
             print(
@@ -777,9 +710,7 @@ def main() -> int:
 
     if args.cmd == "phase2":
         root_check = (
-            Path(args.root_check)
-            if args.root_check
-            else REPORTS_DIR / f"ROOT_EXCEPTIONS_CHECK_{ts_slug(ts)}.json"
+            Path(args.root_check) if args.root_check else REPORTS_DIR / f"ROOT_EXCEPTIONS_CHECK_{ts_slug(ts)}.json"
         )
         if not root_check.exists():
             artefacts = phase0_inventory(ts)
@@ -797,9 +728,7 @@ def main() -> int:
 
     if args.cmd == "policy_gate":
         artefacts = phase0_inventory(ts)
-        preflight = json.loads(
-            artefacts["policy_preflight"].read_text(encoding="utf-8")
-        )
+        preflight = json.loads(artefacts["policy_preflight"].read_text(encoding="utf-8"))
         duplicate_status = preflight.get("duplicate_guard", {}).get("status")
         has_disallowed = len(preflight.get("disallowed_files", [])) > 0
         if duplicate_status != "PASS" or has_disallowed:
@@ -809,9 +738,7 @@ def main() -> int:
     if args.cmd == "all":
         artefacts = phase0_inventory(ts)
         phase1_compile_structure_spec(ts, [])
-        move_plan = phase2_generate_move_plan(
-            ts, REGISTRY_DIR / "structure_spec.json", artefacts["root_check"]
-        )
+        move_plan = phase2_generate_move_plan(ts, REGISTRY_DIR / "structure_spec.json", artefacts["root_check"])
         print(rel(move_plan))
         if json.loads(move_plan.read_text(encoding="utf-8")).get("conflicts"):
             return EXIT_HARD_FAIL

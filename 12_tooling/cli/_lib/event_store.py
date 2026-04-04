@@ -8,10 +8,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-
 
 EVENTS_DIR_NAME = "events"
 REPORT_BUS_JSONL = "report_bus.jsonl"
@@ -41,7 +40,7 @@ def emit_event(
     payload: dict[str, Any] | None = None,
 ) -> Path:
     """Write a single event to the event store. Returns path to created file."""
-    ts_utc = datetime.now(timezone.utc).isoformat()
+    ts_utc = datetime.now(UTC).isoformat()
     event: dict[str, Any] = {
         "ts_utc": ts_utc,
         "repo": repo,

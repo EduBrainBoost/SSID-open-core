@@ -1,7 +1,11 @@
 """Tests for SSID CLI."""
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from ssid_cli import SSIDCLI
+
 
 def test_commands():
     cli = SSIDCLI()
@@ -17,6 +21,7 @@ def test_commands():
     assert "error" in r
     assert cli.history_count == 5
     print("PASS: test_commands")
+
 
 if __name__ == "__main__":
     test_commands()

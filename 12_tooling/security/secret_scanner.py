@@ -16,6 +16,7 @@ Usage:
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 import argparse
@@ -23,9 +24,8 @@ import json
 import re
 import sys
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 # ---------------------------------------------------------------------------
 # Secret pattern registry
@@ -36,88 +36,95 @@ from typing import Any
 #: number of test fixtures may need to be added to the allow-list.
 _SECRET_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     # AWS credentials
-    ("AWS_ACCESS_KEY_ID",      re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
-    ("AWS_SECRET_ACCESS_KEY",  re.compile(r"(?i)aws[_\-]?secret[_\-]?access[_\-]?key\s*[=:]\s*['\"]?[A-Za-z0-9/+]{40}['\"]?")),
-
+    ("AWS_ACCESS_KEY_ID", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
+    (
+        "AWS_SECRET_ACCESS_KEY",
+        re.compile(r"(?i)aws[_\-]?secret[_\-]?access[_\-]?key\s*[=:]\s*['\"]?[A-Za-z0-9/+]{40}['\"]?"),
+    ),
     # GitHub tokens
-    ("GITHUB_TOKEN_PAT",       re.compile(r"\bghp_[a-zA-Z0-9]{36}\b")),
-    ("GITHUB_TOKEN_OAUTH",     re.compile(r"\bgho_[a-zA-Z0-9]{36}\b")),
-    ("GITHUB_TOKEN_APP",       re.compile(r"\bghu_[a-zA-Z0-9]{36}\b")),
-    ("GITHUB_TOKEN_REFRESH",   re.compile(r"\bghr_[a-zA-Z0-9]{76}\b")),
-
+    ("GITHUB_TOKEN_PAT", re.compile(r"\bghp_[a-zA-Z0-9]{36}\b")),
+    ("GITHUB_TOKEN_OAUTH", re.compile(r"\bgho_[a-zA-Z0-9]{36}\b")),
+    ("GITHUB_TOKEN_APP", re.compile(r"\bghu_[a-zA-Z0-9]{36}\b")),
+    ("GITHUB_TOKEN_REFRESH", re.compile(r"\bghr_[a-zA-Z0-9]{76}\b")),
     # OpenAI / Anthropic
-    ("OPENAI_API_KEY",         re.compile(r"\bsk-[a-zA-Z0-9]{48}\b")),
-    ("ANTHROPIC_API_KEY",      re.compile(r"\bsk-ant-[a-zA-Z0-9\-_]{32,}\b")),
-
+    ("OPENAI_API_KEY", re.compile(r"\bsk-[a-zA-Z0-9]{48}\b")),
+    ("ANTHROPIC_API_KEY", re.compile(r"\bsk-ant-[a-zA-Z0-9\-_]{32,}\b")),
     # Slack tokens
-    ("SLACK_BOT_TOKEN",        re.compile(r"\bxoxb-[0-9]+-[0-9]+-[a-zA-Z0-9]+")),
-    ("SLACK_APP_TOKEN",        re.compile(r"\bxapp-[0-9]+-[a-zA-Z0-9]+")),
-    ("SLACK_LEGACY_TOKEN",     re.compile(r"\bxox[prs]-[a-zA-Z0-9\-]+")),
-
+    ("SLACK_BOT_TOKEN", re.compile(r"\bxoxb-[0-9]+-[0-9]+-[a-zA-Z0-9]+")),
+    ("SLACK_APP_TOKEN", re.compile(r"\bxapp-[0-9]+-[a-zA-Z0-9]+")),
+    ("SLACK_LEGACY_TOKEN", re.compile(r"\bxox[prs]-[a-zA-Z0-9\-]+")),
     # Google / GCP
-    ("GOOGLE_API_KEY",         re.compile(r"\bAIza[0-9A-Za-z\-_]{35}\b")),
-    ("GOOGLE_OAUTH_SECRET",    re.compile(r"\bGOCSPX-[a-zA-Z0-9\-_]+")),
-    ("GCP_SERVICE_ACCOUNT",    re.compile(r'"type"\s*:\s*"service_account"')),
-
+    ("GOOGLE_API_KEY", re.compile(r"\bAIza[0-9A-Za-z\-_]{35}\b")),
+    ("GOOGLE_OAUTH_SECRET", re.compile(r"\bGOCSPX-[a-zA-Z0-9\-_]+")),
+    ("GCP_SERVICE_ACCOUNT", re.compile(r'"type"\s*:\s*"service_account"')),
     # GitLab
-    ("GITLAB_PERSONAL_TOKEN",  re.compile(r"\bglpat-[a-zA-Z0-9\-_]{20,}\b")),
-
+    ("GITLAB_PERSONAL_TOKEN", re.compile(r"\bglpat-[a-zA-Z0-9\-_]{20,}\b")),
     # Generic high-entropy passwords / secrets in common assignment patterns
-    ("GENERIC_PASSWORD",       re.compile(
-        r'(?i)(?:password|passwd|pwd|secret|token|api[_\-]?key)\s*[=:]\s*["\']([^"\']{8,})["\']'
-    )),
-
+    (
+        "GENERIC_PASSWORD",
+        re.compile(r'(?i)(?:password|passwd|pwd|secret|token|api[_\-]?key)\s*[=:]\s*["\']([^"\']{8,})["\']'),
+    ),
     # Private keys (PEM headers)
-    ("PRIVATE_KEY_RSA",        re.compile(r"-----BEGIN RSA PRIVATE KEY-----")),
-    ("PRIVATE_KEY_EC",         re.compile(r"-----BEGIN EC PRIVATE KEY-----")),
-    ("PRIVATE_KEY_PKCS8",      re.compile(r"-----BEGIN PRIVATE KEY-----")),
-    ("PRIVATE_KEY_OPENSSH",    re.compile(r"-----BEGIN OPENSSH PRIVATE KEY-----")),
-    ("PRIVATE_KEY_PGP",        re.compile(r"-----BEGIN PGP PRIVATE KEY BLOCK-----")),
-
+    ("PRIVATE_KEY_RSA", re.compile(r"-----BEGIN RSA PRIVATE KEY-----")),
+    ("PRIVATE_KEY_EC", re.compile(r"-----BEGIN EC PRIVATE KEY-----")),
+    ("PRIVATE_KEY_PKCS8", re.compile(r"-----BEGIN PRIVATE KEY-----")),
+    ("PRIVATE_KEY_OPENSSH", re.compile(r"-----BEGIN OPENSSH PRIVATE KEY-----")),
+    ("PRIVATE_KEY_PGP", re.compile(r"-----BEGIN PGP PRIVATE KEY BLOCK-----")),
     # Database connection strings
-    ("DATABASE_URL",           re.compile(
-        r'(?i)(?:postgres(?:ql)?|mysql|mongodb|redis)://[^:\s]+:[^@\s]+@[^\s]+'
-    )),
-
+    ("DATABASE_URL", re.compile(r"(?i)(?:postgres(?:ql)?|mysql|mongodb|redis)://[^:\s]+:[^@\s]+@[^\s]+")),
     # JWT tokens (3-part base64url structure)
-    ("JWT_TOKEN",              re.compile(
-        r'\beyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\b'
-    )),
-
+    ("JWT_TOKEN", re.compile(r"\beyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\b")),
     # Bearer tokens in HTTP headers
-    ("HTTP_BEARER_TOKEN",      re.compile(
-        r'(?i)Authorization\s*[=:]\s*["\']?Bearer\s+[a-zA-Z0-9\-._~+/]{20,}'
-    )),
-
+    ("HTTP_BEARER_TOKEN", re.compile(r'(?i)Authorization\s*[=:]\s*["\']?Bearer\s+[a-zA-Z0-9\-._~+/]{20,}')),
     # HashiCorp Vault tokens
-    ("VAULT_TOKEN",            re.compile(r"\bs\.([a-zA-Z0-9]{24})\b")),
-    ("VAULT_ROLE_ID",          re.compile(r"\broot\.[a-zA-Z0-9]{24}\b")),
-
+    ("VAULT_TOKEN", re.compile(r"\bs\.([a-zA-Z0-9]{24})\b")),
+    ("VAULT_ROLE_ID", re.compile(r"\broot\.[a-zA-Z0-9]{24}\b")),
     # npm auth tokens
-    ("NPM_AUTH_TOKEN",         re.compile(r"//registry\.npmjs\.org/:_authToken=[a-zA-Z0-9\-_]+")),
-
+    ("NPM_AUTH_TOKEN", re.compile(r"//registry\.npmjs\.org/:_authToken=[a-zA-Z0-9\-_]+")),
     # Stripe keys
-    ("STRIPE_SECRET_KEY",      re.compile(r"\bsk_live_[a-zA-Z0-9]{24}\b")),
-    ("STRIPE_TEST_KEY",        re.compile(r"\bsk_test_[a-zA-Z0-9]{24}\b")),
-
+    ("STRIPE_SECRET_KEY", re.compile(r"\bsk_live_[a-zA-Z0-9]{24}\b")),
+    ("STRIPE_TEST_KEY", re.compile(r"\bsk_test_[a-zA-Z0-9]{24}\b")),
     # Twilio
-    ("TWILIO_AUTH_TOKEN",      re.compile(r"(?i)twilio.*auth.*token\s*[=:]\s*[a-f0-9]{32}")),
-
+    ("TWILIO_AUTH_TOKEN", re.compile(r"(?i)twilio.*auth.*token\s*[=:]\s*[a-f0-9]{32}")),
     # Sendgrid
-    ("SENDGRID_API_KEY",       re.compile(r"\bSG\.[a-zA-Z0-9]{22}\.[a-zA-Z0-9]{43}\b")),
+    ("SENDGRID_API_KEY", re.compile(r"\bSG\.[a-zA-Z0-9]{22}\.[a-zA-Z0-9]{43}\b")),
 ]
 
 #: Inline suppression comment — any line containing this string is skipped.
 _SUPPRESS_COMMENT = "secret-scanner:ignore"
 
 #: File extensions to skip unconditionally (binary / generated / large).
-_SKIP_EXTENSIONS = frozenset({
-    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".svg",
-    ".pdf", ".zip", ".tar", ".gz", ".bz2", ".xz", ".whl", ".egg",
-    ".pyc", ".pyo", ".pyd", ".so", ".dll", ".exe", ".bin",
-    ".ttf", ".woff", ".woff2", ".eot",
-    ".lock",  # lockfiles contain hash strings that resemble secrets
-})
+_SKIP_EXTENSIONS = frozenset(
+    {
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".bmp",
+        ".ico",
+        ".svg",
+        ".pdf",
+        ".zip",
+        ".tar",
+        ".gz",
+        ".bz2",
+        ".xz",
+        ".whl",
+        ".egg",
+        ".pyc",
+        ".pyo",
+        ".pyd",
+        ".so",
+        ".dll",
+        ".exe",
+        ".bin",
+        ".ttf",
+        ".woff",
+        ".woff2",
+        ".eot",
+        ".lock",  # lockfiles contain hash strings that resemble secrets
+    }
+)
 
 #: Maximum file size (bytes) to read; larger files are skipped.
 _MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MiB
@@ -127,15 +134,16 @@ _MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MiB
 # Data types
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SecretFinding:
     """A single potential secret found in a file."""
 
-    file_path: str          # Relative or absolute path as provided
-    line_number: int        # 1-based line number
-    pattern_label: str      # Human-readable pattern name (e.g. "AWS_ACCESS_KEY_ID")
-    matched_text: str       # Redacted excerpt (first 40 chars of match, then "…")
-    severity: str           # "critical" | "high" | "medium"
+    file_path: str  # Relative or absolute path as provided
+    line_number: int  # 1-based line number
+    pattern_label: str  # Human-readable pattern name (e.g. "AWS_ACCESS_KEY_ID")
+    matched_text: str  # Redacted excerpt (first 40 chars of match, then "…")
+    severity: str  # "critical" | "high" | "medium"
 
 
 @dataclass
@@ -160,31 +168,31 @@ class ScanSummary:
 
 #: Override default "high" for specific pattern labels.
 _SEVERITY_MAP: dict[str, str] = {
-    "AWS_ACCESS_KEY_ID":      "critical",
-    "AWS_SECRET_ACCESS_KEY":  "critical",
-    "GITHUB_TOKEN_PAT":       "critical",
-    "GITHUB_TOKEN_OAUTH":     "critical",
-    "GITHUB_TOKEN_APP":       "critical",
-    "GITHUB_TOKEN_REFRESH":   "critical",
-    "OPENAI_API_KEY":         "critical",
-    "ANTHROPIC_API_KEY":      "critical",
-    "STRIPE_SECRET_KEY":      "critical",
-    "PRIVATE_KEY_RSA":        "critical",
-    "PRIVATE_KEY_EC":         "critical",
-    "PRIVATE_KEY_PKCS8":      "critical",
-    "PRIVATE_KEY_OPENSSH":    "critical",
-    "PRIVATE_KEY_PGP":        "critical",
-    "GCP_SERVICE_ACCOUNT":    "high",
-    "GITLAB_PERSONAL_TOKEN":  "high",
-    "DATABASE_URL":           "high",
-    "JWT_TOKEN":              "high",
-    "HTTP_BEARER_TOKEN":      "high",
-    "VAULT_TOKEN":            "high",
-    "SLACK_BOT_TOKEN":        "high",
-    "GENERIC_PASSWORD":       "medium",
-    "NPM_AUTH_TOKEN":         "medium",
-    "STRIPE_TEST_KEY":        "medium",
-    "VAULT_ROLE_ID":          "medium",
+    "AWS_ACCESS_KEY_ID": "critical",
+    "AWS_SECRET_ACCESS_KEY": "critical",
+    "GITHUB_TOKEN_PAT": "critical",
+    "GITHUB_TOKEN_OAUTH": "critical",
+    "GITHUB_TOKEN_APP": "critical",
+    "GITHUB_TOKEN_REFRESH": "critical",
+    "OPENAI_API_KEY": "critical",
+    "ANTHROPIC_API_KEY": "critical",
+    "STRIPE_SECRET_KEY": "critical",
+    "PRIVATE_KEY_RSA": "critical",
+    "PRIVATE_KEY_EC": "critical",
+    "PRIVATE_KEY_PKCS8": "critical",
+    "PRIVATE_KEY_OPENSSH": "critical",
+    "PRIVATE_KEY_PGP": "critical",
+    "GCP_SERVICE_ACCOUNT": "high",
+    "GITLAB_PERSONAL_TOKEN": "high",
+    "DATABASE_URL": "high",
+    "JWT_TOKEN": "high",
+    "HTTP_BEARER_TOKEN": "high",
+    "VAULT_TOKEN": "high",
+    "SLACK_BOT_TOKEN": "high",
+    "GENERIC_PASSWORD": "medium",
+    "NPM_AUTH_TOKEN": "medium",
+    "STRIPE_TEST_KEY": "medium",
+    "VAULT_ROLE_ID": "medium",
 }
 
 _DEFAULT_SEVERITY = "high"
@@ -197,6 +205,7 @@ def _severity(label: str) -> str:
 # ---------------------------------------------------------------------------
 # Allow-list helpers
 # ---------------------------------------------------------------------------
+
 
 def _load_allowlist(path: Path) -> set[str]:
     """Load an allow-list JSON file.
@@ -230,15 +239,13 @@ def _is_allowlisted(
     abs_str = str(file_path.resolve()).lower()
     if label.upper() in allowlist:
         return True
-    for entry in allowlist:
-        if entry in abs_str:
-            return True
-    return False
+    return any(entry in abs_str for entry in allowlist)
 
 
 # ---------------------------------------------------------------------------
 # Core scanner
 # ---------------------------------------------------------------------------
+
 
 class SecretScanner:
     """Scan files and directories for potential leaked secrets.
@@ -383,7 +390,7 @@ class SecretScanner:
             counts[f.severity] = counts.get(f.severity, 0) + 1
 
         return ScanSummary(
-            scanned_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            scanned_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             root_path=root_path,
             files_scanned=self._files_scanned,
             files_skipped=self._files_skipped,
@@ -406,6 +413,7 @@ class SecretScanner:
 # ---------------------------------------------------------------------------
 # Convenience module-level functions
 # ---------------------------------------------------------------------------
+
 
 def scan_file(
     path: Path,
@@ -438,19 +446,20 @@ def scan_directory(
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def main(argv: list[str] | None = None) -> int:
     """Entry point."""
     parser = argparse.ArgumentParser(description="SSID Secret Scanner")
-    parser.add_argument("--path", type=Path, required=True,
-                        help="File or directory to scan")
-    parser.add_argument("--allowlist", type=Path, default=None,
-                        help="Path to allow-list JSON file")
-    parser.add_argument("--output", "-o", type=Path, default=None,
-                        help="Write JSON report to this path")
-    parser.add_argument("--fail-on-findings", action="store_true",
-                        help="Exit non-zero if any secrets are found")
-    parser.add_argument("--min-severity", choices=["critical", "high", "medium"],
-                        default="medium", help="Minimum severity to report (default: medium)")
+    parser.add_argument("--path", type=Path, required=True, help="File or directory to scan")
+    parser.add_argument("--allowlist", type=Path, default=None, help="Path to allow-list JSON file")
+    parser.add_argument("--output", "-o", type=Path, default=None, help="Write JSON report to this path")
+    parser.add_argument("--fail-on-findings", action="store_true", help="Exit non-zero if any secrets are found")
+    parser.add_argument(
+        "--min-severity",
+        choices=["critical", "high", "medium"],
+        default="medium",
+        help="Minimum severity to report (default: medium)",
+    )
     args = parser.parse_args(argv)
 
     scanner = SecretScanner(allowlist_path=args.allowlist)
@@ -468,10 +477,7 @@ def main(argv: list[str] | None = None) -> int:
     # Filter by minimum severity
     severity_order = {"critical": 3, "high": 2, "medium": 1}
     min_rank = severity_order.get(args.min_severity, 1)
-    summary.findings = [
-        f for f in summary.findings
-        if severity_order.get(f.severity, 0) >= min_rank
-    ]
+    summary.findings = [f for f in summary.findings if severity_order.get(f.severity, 0) >= min_rank]
 
     report = asdict(summary)
 

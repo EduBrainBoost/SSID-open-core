@@ -16,6 +16,7 @@ Exit codes:
   4 = version_mismatch (MAJOR version incompatible)
   5 = incomplete (missing required fields)
 """
+
 from __future__ import annotations
 
 import json
@@ -24,7 +25,8 @@ from pathlib import Path
 from typing import Any
 
 try:
-    import jsonschema  # optional — gracefully degrades if missing
+    import jsonschema  # noqa: F401  # optional — gracefully degrades if missing
+
     _JSONSCHEMA_AVAILABLE = True
 except ImportError:
     _JSONSCHEMA_AVAILABLE = False
@@ -84,8 +86,9 @@ class FlowSummary:
 @dataclass
 class ConsumerResult:
     """Result of consuming a SSID runtime report."""
+
     exit_code: int
-    contract_status: str       # CONTRACT_* constant
+    contract_status: str  # CONTRACT_* constant
     overall_classification: str  # "healthy" | "denied" | "degraded" | "error"
     schema_version: str
     module_summary: ModuleSummary
@@ -148,15 +151,11 @@ class EmsConsumer:
         """Load a report from a JSON file and consume it."""
         path = Path(report_path)
         if not path.is_file():
-            return self._error_result(
-                f"Report file not found: {path}", CONTRACT_INCOMPLETE, EXIT_INCOMPLETE
-            )
+            return self._error_result(f"Report file not found: {path}", CONTRACT_INCOMPLETE, EXIT_INCOMPLETE)
         try:
             report = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as e:
-            return self._error_result(
-                f"Invalid JSON: {e}", CONTRACT_SCHEMA_MISMATCH, EXIT_INVALID_SCHEMA
-            )
+            return self._error_result(f"Invalid JSON: {e}", CONTRACT_SCHEMA_MISMATCH, EXIT_INVALID_SCHEMA)
         return self.consume(report)
 
     def consume(self, report: dict[str, Any]) -> ConsumerResult:
@@ -183,6 +182,7 @@ class EmsConsumer:
         if _JSONSCHEMA_AVAILABLE and self._schema is not None:
             try:
                 import jsonschema
+
                 jsonschema.validate(report, self._schema)
             except jsonschema.ValidationError as e:
                 return self._error_result(
@@ -201,7 +201,12 @@ class EmsConsumer:
         if flow_summary.denied > 0:
             overall = "denied"
             exit_code = EXIT_DENIED
-        elif module_summary.offline > 0 or module_summary.degraded > 0 or flow_summary.error > 0 or flow_summary.degraded > 0:
+        elif (
+            module_summary.offline > 0
+            or module_summary.degraded > 0
+            or flow_summary.error > 0
+            or flow_summary.degraded > 0
+        ):
             overall = "degraded"
             exit_code = EXIT_DEGRADED
         else:
@@ -223,9 +228,7 @@ class EmsConsumer:
     def _check_version(self, version: str) -> ConsumerResult | None:
         """Return error result if MAJOR version is incompatible, else None."""
         if not version:
-            return self._error_result(
-                "schema_version is empty", CONTRACT_VERSION_MISMATCH, EXIT_VERSION_MISMATCH
-            )
+            return self._error_result("schema_version is empty", CONTRACT_VERSION_MISMATCH, EXIT_VERSION_MISMATCH)
         parts = version.split(".")
         if len(parts) != 3 or not all(p.isdigit() for p in parts):
             return self._error_result(
@@ -241,9 +244,7 @@ class EmsConsumer:
             )
         return None
 
-    def _classify_modules(
-        self, module_health: list[dict], errors: list[str]
-    ) -> ModuleSummary:
+    def _classify_modules(self, module_health: list[dict], errors: list[str]) -> ModuleSummary:
         healthy = degraded = offline = 0
         names_degraded: list[str] = []
         names_offline: list[str] = []
@@ -269,9 +270,7 @@ class EmsConsumer:
             names_offline=names_offline,
         )
 
-    def _classify_flows(
-        self, flow_statuses: list[dict], errors: list[str]
-    ) -> FlowSummary:
+    def _classify_flows(self, flow_statuses: list[dict], errors: list[str]) -> FlowSummary:
         successful = denied = error = degraded = 0
         flow_ids_denied: list[str] = []
         flow_ids_error: list[str] = []
@@ -301,9 +300,7 @@ class EmsConsumer:
         )
 
     @staticmethod
-    def _error_result(
-        message: str, contract_status: str, exit_code: int
-    ) -> ConsumerResult:
+    def _error_result(message: str, contract_status: str, exit_code: int) -> ConsumerResult:
         return ConsumerResult(
             exit_code=exit_code,
             contract_status=contract_status,
@@ -318,6 +315,7 @@ class EmsConsumer:
 # CLI entrypoint
 if __name__ == "__main__":
     import sys
+
     if len(sys.argv) < 2:
         print("Usage: python consumer_simulator.py <report.json>")
         sys.exit(5)

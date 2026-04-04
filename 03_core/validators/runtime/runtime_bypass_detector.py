@@ -20,7 +20,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
@@ -32,7 +32,7 @@ class BypassFinding:
     pattern_type: str
     consumer_root_id: str
     consumer_shard_id: str
-    provider_root_id: Optional[str]
+    provider_root_id: str | None
     file_path: str
     line_number: int
     detail: str
@@ -80,7 +80,9 @@ def _get_declared_dep_capabilities(repo_root: Path, root_id: str, shard_id: str)
     deps = runtime_index.get("runtime_dependencies", [])
     if not isinstance(deps, list):
         return set()
-    return {str(d.get("dependency_capability", "")) for d in deps if isinstance(d, dict) and d.get("dependency_capability")}
+    return {
+        str(d.get("dependency_capability", "")) for d in deps if isinstance(d, dict) and d.get("dependency_capability")
+    }
 
 
 class RuntimeBypassDetector:
@@ -105,7 +107,7 @@ class RuntimeBypassDetector:
             return findings
 
         allowed_providers = _get_allowed_providers(self.repo_root, root_id, shard_id)
-        declared_caps = _get_declared_dep_capabilities(self.repo_root, root_id, shard_id)
+        _get_declared_dep_capabilities(self.repo_root, root_id, shard_id)
 
         for py_file in sorted(shard_src.glob("**/*.py")):
             try:
@@ -114,9 +116,9 @@ class RuntimeBypassDetector:
                 continue
 
             has_gate_call = any(
-                "enforce_runtime_dependencies" in line or
-                "resolve_runtime_gate" in line or
-                "evaluate_runtime_dependency" in line
+                "enforce_runtime_dependencies" in line
+                or "resolve_runtime_gate" in line
+                or "evaluate_runtime_dependency" in line
                 for line in lines
             )
             has_cross_root = False
@@ -139,55 +141,63 @@ class RuntimeBypassDetector:
 
                 # 1. Direct cross-root import
                 if ".src." in import_path or import_path.endswith(".src"):
-                    findings.append(BypassFinding(
-                        pattern_type="direct_cross_root_import",
-                        consumer_root_id=root_id,
-                        consumer_shard_id=shard_id,
-                        provider_root_id=first,
-                        file_path=rel_path,
-                        line_number=lineno,
-                        detail=f"Direct import from provider src: {import_path}",
-                        severity="critical",
-                    ))
+                    findings.append(
+                        BypassFinding(
+                            pattern_type="direct_cross_root_import",
+                            consumer_root_id=root_id,
+                            consumer_shard_id=shard_id,
+                            provider_root_id=first,
+                            file_path=rel_path,
+                            line_number=lineno,
+                            detail=f"Direct import from provider src: {import_path}",
+                            severity="critical",
+                        )
+                    )
 
                 # 2. Provider implementation access (non-facade internals)
                 if len(parts) >= 3 and parts[1] not in ("src", "shards"):
-                    findings.append(BypassFinding(
-                        pattern_type="provider_implementation_access",
-                        consumer_root_id=root_id,
-                        consumer_shard_id=shard_id,
-                        provider_root_id=first,
-                        file_path=rel_path,
-                        line_number=lineno,
-                        detail=f"Access to provider internals: {import_path}",
-                        severity="high",
-                    ))
+                    findings.append(
+                        BypassFinding(
+                            pattern_type="provider_implementation_access",
+                            consumer_root_id=root_id,
+                            consumer_shard_id=shard_id,
+                            provider_root_id=first,
+                            file_path=rel_path,
+                            line_number=lineno,
+                            detail=f"Access to provider internals: {import_path}",
+                            severity="high",
+                        )
+                    )
 
                 # 3. Undeclared provider access
                 if allowed_providers and first not in allowed_providers:
-                    findings.append(BypassFinding(
-                        pattern_type="undeclared_provider_access",
-                        consumer_root_id=root_id,
-                        consumer_shard_id=shard_id,
-                        provider_root_id=first,
-                        file_path=rel_path,
-                        line_number=lineno,
-                        detail=f"Provider {first} not in declared dependencies",
-                        severity="high",
-                    ))
+                    findings.append(
+                        BypassFinding(
+                            pattern_type="undeclared_provider_access",
+                            consumer_root_id=root_id,
+                            consumer_shard_id=shard_id,
+                            provider_root_id=first,
+                            file_path=rel_path,
+                            line_number=lineno,
+                            detail=f"Provider {first} not in declared dependencies",
+                            severity="high",
+                        )
+                    )
 
             # 4. Gate circumvention
             if has_cross_root and not has_gate_call:
-                findings.append(BypassFinding(
-                    pattern_type="gate_circumvention",
-                    consumer_root_id=root_id,
-                    consumer_shard_id=shard_id,
-                    provider_root_id=None,
-                    file_path=str(py_file.relative_to(self.repo_root)),
-                    line_number=0,
-                    detail=f"Cross-root access without runtime gate call in {py_file.name}",
-                    severity="critical",
-                ))
+                findings.append(
+                    BypassFinding(
+                        pattern_type="gate_circumvention",
+                        consumer_root_id=root_id,
+                        consumer_shard_id=shard_id,
+                        provider_root_id=None,
+                        file_path=str(py_file.relative_to(self.repo_root)),
+                        line_number=0,
+                        detail=f"Cross-root access without runtime gate call in {py_file.name}",
+                        severity="critical",
+                    )
+                )
 
         return sorted(findings, key=lambda f: (f.severity, f.pattern_type, f.file_path, f.line_number))
 

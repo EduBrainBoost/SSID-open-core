@@ -4,6 +4,7 @@ Registry Canonicalization Gate — validates sot_registry.json integrity.
 Checks file existence, SHA256 hashes, format consistency, evidence refs.
 Produces: JSON findings, MD report, PASS/WARN/DENY exit code.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -12,9 +13,9 @@ import json
 import os
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 from uuid import uuid4
 
 # ---------------------------------------------------------------------------
@@ -47,12 +48,15 @@ EXIT_ERROR = 3
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _detect_repo_root() -> Path:
     """Auto-detect repo root via git or fallback to file-relative."""
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--show-toplevel"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         if result.returncode == 0:
             return Path(result.stdout.strip()).resolve()
@@ -91,43 +95,48 @@ def _normalize_hash(raw: str) -> str:
 # Core logic
 # ---------------------------------------------------------------------------
 
+
 def run_canonicalization(
     repo_root: Path,
     output_dir: Path,
     strict: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Run full registry canonicalization check. Returns structured result."""
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    ts = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     registry_path = repo_root / REGISTRY_REL
-    findings: List[Dict[str, Any]] = []
+    findings: list[dict[str, Any]] = []
 
     # --- Load registry ---
     if not registry_path.is_file():
-        findings.append({
-            "id": _finding_id("missing_file", REGISTRY_REL),
-            "class": "missing_file",
-            "severity": "deny",
-            "source": "registry_canonicalization",
-            "path": REGISTRY_REL,
-            "details": "sot_registry.json not found on disk",
-            "timestamp_utc": ts,
-            "repo": str(repo_root),
-        })
+        findings.append(
+            {
+                "id": _finding_id("missing_file", REGISTRY_REL),
+                "class": "missing_file",
+                "severity": "deny",
+                "source": "registry_canonicalization",
+                "path": REGISTRY_REL,
+                "details": "sot_registry.json not found on disk",
+                "timestamp_utc": ts,
+                "repo": str(repo_root),
+            }
+        )
         return _build_result(ts, repo_root, findings)
 
     try:
         registry = json.loads(registry_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError) as exc:
-        findings.append({
-            "id": _finding_id("parse_error", REGISTRY_REL),
-            "class": "parse_error",
-            "severity": "deny",
-            "source": "registry_canonicalization",
-            "path": REGISTRY_REL,
-            "details": f"Failed to parse sot_registry.json: {exc}",
-            "timestamp_utc": ts,
-            "repo": str(repo_root),
-        })
+        findings.append(
+            {
+                "id": _finding_id("parse_error", REGISTRY_REL),
+                "class": "parse_error",
+                "severity": "deny",
+                "source": "registry_canonicalization",
+                "path": REGISTRY_REL,
+                "details": f"Failed to parse sot_registry.json: {exc}",
+                "timestamp_utc": ts,
+                "repo": str(repo_root),
+            }
+        )
         return _build_result(ts, repo_root, findings)
 
     artifacts = registry.get("roots", {}).get("sot_artifacts", [])
@@ -145,16 +154,18 @@ def run_canonicalization(
 
         # 1. File existence
         if not full_path.is_file():
-            findings.append({
-                "id": _finding_id("missing_file", art_path),
-                "class": "missing_file",
-                "severity": "deny",
-                "source": "registry_canonicalization",
-                "path": art_path,
-                "details": f"Artifact '{art_name}' not found on disk",
-                "timestamp_utc": ts,
-                "repo": str(repo_root),
-            })
+            findings.append(
+                {
+                    "id": _finding_id("missing_file", art_path),
+                    "class": "missing_file",
+                    "severity": "deny",
+                    "source": "registry_canonicalization",
+                    "path": art_path,
+                    "details": f"Artifact '{art_name}' not found on disk",
+                    "timestamp_utc": ts,
+                    "repo": str(repo_root),
+                }
+            )
             continue
 
         # 2. Hash computation and comparison
@@ -163,81 +174,88 @@ def run_canonicalization(
 
         # 2a. Format consistency check (sha256: prefix)
         if art_hash.startswith("sha256:"):
-            findings.append({
-                "id": _finding_id("format_inconsistency", art_path),
-                "class": "format_inconsistency",
-                "severity": "warn",
-                "source": "registry_canonicalization",
-                "path": art_path,
-                "details": f"Hash has 'sha256:' prefix — raw hex expected",
-                "timestamp_utc": ts,
-                "repo": str(repo_root),
-            })
+            findings.append(
+                {
+                    "id": _finding_id("format_inconsistency", art_path),
+                    "class": "format_inconsistency",
+                    "severity": "warn",
+                    "source": "registry_canonicalization",
+                    "path": art_path,
+                    "details": "Hash has 'sha256:' prefix — raw hex expected",
+                    "timestamp_utc": ts,
+                    "repo": str(repo_root),
+                }
+            )
 
         # 2b. Hash mismatch
         if current_hash and current_hash != normalized_registry_hash:
-            findings.append({
-                "id": _finding_id("hash_mismatch", art_path),
-                "class": "hash_mismatch",
-                "severity": "deny",
-                "source": "registry_canonicalization",
-                "path": art_path,
-                "details": (
-                    f"SHA256 mismatch for '{art_name}': "
-                    f"registry={normalized_registry_hash[:16]}... "
-                    f"disk={current_hash[:16]}..."
-                ),
-                "timestamp_utc": ts,
-                "repo": str(repo_root),
-            })
+            findings.append(
+                {
+                    "id": _finding_id("hash_mismatch", art_path),
+                    "class": "hash_mismatch",
+                    "severity": "deny",
+                    "source": "registry_canonicalization",
+                    "path": art_path,
+                    "details": (
+                        f"SHA256 mismatch for '{art_name}': "
+                        f"registry={normalized_registry_hash[:16]}... "
+                        f"disk={current_hash[:16]}..."
+                    ),
+                    "timestamp_utc": ts,
+                    "repo": str(repo_root),
+                }
+            )
 
         # 3. evidence_ref check
         if "evidence_ref" not in art:
-            findings.append({
-                "id": _finding_id("missing_evidence_ref", art_path),
-                "class": "missing_evidence_ref",
-                "severity": "warn",
-                "source": "registry_canonicalization",
-                "path": art_path,
-                "details": f"Artifact '{art_name}' has no evidence_ref field",
-                "timestamp_utc": ts,
-                "repo": str(repo_root),
-            })
+            findings.append(
+                {
+                    "id": _finding_id("missing_evidence_ref", art_path),
+                    "class": "missing_evidence_ref",
+                    "severity": "warn",
+                    "source": "registry_canonicalization",
+                    "path": art_path,
+                    "details": f"Artifact '{art_name}' has no evidence_ref field",
+                    "timestamp_utc": ts,
+                    "repo": str(repo_root),
+                }
+            )
 
         # 4. Strict mode: check for unknown fields
         if strict:
             known_fields = {"name", "path", "hash_sha256", "evidence_ref", "source_of_truth_ref"}
             unknown = set(art.keys()) - known_fields
             if unknown:
-                findings.append({
-                    "id": _finding_id("unknown_fields", art_path),
-                    "class": "unknown_fields",
-                    "severity": "deny",
-                    "source": "registry_canonicalization",
-                    "path": art_path,
-                    "details": f"Unknown fields in artifact '{art_name}': {sorted(unknown)}",
-                    "timestamp_utc": ts,
-                    "repo": str(repo_root),
-                })
+                findings.append(
+                    {
+                        "id": _finding_id("unknown_fields", art_path),
+                        "class": "unknown_fields",
+                        "severity": "deny",
+                        "source": "registry_canonicalization",
+                        "path": art_path,
+                        "details": f"Unknown fields in artifact '{art_name}': {sorted(unknown)}",
+                        "timestamp_utc": ts,
+                        "repo": str(repo_root),
+                    }
+                )
 
     # --- Unregistered artifact scan (SOT_ALLOWLIST vs registry) ---
     for allowed in SOT_ALLOWLIST:
         if allowed["path"] not in registered_paths:
             disk_path = repo_root / allowed["path"]
             if disk_path.is_file():
-                findings.append({
-                    "id": _finding_id("unregistered_artifact", allowed["path"]),
-                    "class": "unregistered_artifact",
-                    "severity": "warn",
-                    "source": "registry_canonicalization",
-                    "path": allowed["path"],
-                    "details": (
-                        f"Artifact '{allowed['name']}' exists on disk "
-                        f"but is not in sot_registry.json"
-                    ),
-                    "timestamp_utc": ts,
-                    "repo": str(repo_root),
-                })
+                findings.append(
+                    {
+                        "id": _finding_id("unregistered_artifact", allowed["path"]),
+                        "class": "unregistered_artifact",
+                        "severity": "warn",
+                        "source": "registry_canonicalization",
+                        "path": allowed["path"],
+                        "details": (f"Artifact '{allowed['name']}' exists on disk but is not in sot_registry.json"),
+                        "timestamp_utc": ts,
+                        "repo": str(repo_root),
+                    }
+                )
 
     return _build_result(ts, repo_root, findings)
 
@@ -245,8 +263,8 @@ def run_canonicalization(
 def _build_result(
     ts: str,
     repo_root: Path,
-    findings: List[Dict[str, Any]],
-) -> Dict[str, Any]:
+    findings: list[dict[str, Any]],
+) -> dict[str, Any]:
     """Build structured result from findings."""
     deny_count = sum(1 for f in findings if f["severity"] == "deny")
     warn_count = sum(1 for f in findings if f["severity"] == "warn")
@@ -277,12 +295,13 @@ def _build_result(
 # Report generation
 # ---------------------------------------------------------------------------
 
-def _findings_to_json(result: Dict[str, Any]) -> str:
+
+def _findings_to_json(result: dict[str, Any]) -> str:
     """Render findings as JSON string."""
     return json.dumps(result, indent=2, sort_keys=False)
 
 
-def _findings_to_md(result: Dict[str, Any]) -> str:
+def _findings_to_md(result: dict[str, Any]) -> str:
     """Render findings as Markdown report."""
     lines = [
         "# Registry Canonicalization Report\n",
@@ -298,10 +317,7 @@ def _findings_to_md(result: Dict[str, Any]) -> str:
         lines.append("\n| ID | Severity | Path | Details |\n")
         lines.append("|----|----------|------|---------|\n")
         for f in result["findings"]:
-            lines.append(
-                f"| `{f['id']}` | {f['severity']} "
-                f"| `{f['path']}` | {f['details']} |\n"
-            )
+            lines.append(f"| `{f['id']}` | {f['severity']} | `{f['path']}` | {f['details']} |\n")
     else:
         lines.append("\nNo findings — all registry artifacts are canonical.\n")
 
@@ -312,19 +328,17 @@ def _findings_to_md(result: Dict[str, Any]) -> str:
 # Run-ledger builder
 # ---------------------------------------------------------------------------
 
+
 def _build_run_ledger(
-    result: Dict[str, Any],
+    result: dict[str, Any],
     gate_type: str,
     repo_root: Path,
     related_repo: str = "",
     trigger: str = "manual",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Build a run-ledger dict from a gate result."""
-    now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    run_id = (
-        f"{gate_type}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
-        f"_{uuid4().hex[:8]}"
-    )
+    now_utc = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    run_id = f"{gate_type}_{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}_{uuid4().hex[:8]}"
 
     # Detect CI vs manual
     if any(os.environ.get(v) for v in ("CI", "GITHUB_ACTIONS", "GITLAB_CI")):
@@ -339,23 +353,29 @@ def _build_run_ledger(
     artifacts = sorted({f.get("path", "") for f in result.get("findings", []) if f.get("path")})
 
     # Extract evidence_refs and source_of_truth_refs from findings
-    evidence_refs = sorted({
-        f["evidence_ref"]
-        for f in result.get("findings", [])
-        if isinstance(f.get("evidence_ref"), str) and f["evidence_ref"]
-    })
-    source_of_truth_refs = sorted({
-        f["source_of_truth_ref"]
-        for f in result.get("findings", [])
-        if isinstance(f.get("source_of_truth_ref"), str) and f["source_of_truth_ref"]
-    })
+    evidence_refs = sorted(
+        {
+            f["evidence_ref"]
+            for f in result.get("findings", [])
+            if isinstance(f.get("evidence_ref"), str) and f["evidence_ref"]
+        }
+    )
+    source_of_truth_refs = sorted(
+        {
+            f["source_of_truth_ref"]
+            for f in result.get("findings", [])
+            if isinstance(f.get("source_of_truth_ref"), str) and f["source_of_truth_ref"]
+        }
+    )
 
     # Commit SHA
     commit_sha = ""
     try:
         cp = subprocess.run(
             ["git", "rev-parse", "HEAD"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         if cp.returncode == 0:
             commit_sha = cp.stdout.strip()
@@ -394,33 +414,42 @@ def _build_run_ledger(
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="run_registry_canonicalization",
         description="Registry Canonicalization Gate — validate sot_registry.json integrity",
     )
     parser.add_argument(
-        "--repo-root", type=str, default=None,
+        "--repo-root",
+        type=str,
+        default=None,
         help="Path to SSID repo root (default: auto-detect via git)",
     )
     parser.add_argument(
-        "--output-dir", type=str, default=None,
+        "--output-dir",
+        type=str,
+        default=None,
         help=f"Report output directory (default: <repo-root>/{REPORT_REL})",
     )
     parser.add_argument(
-        "--write-reports", action="store_true",
+        "--write-reports",
+        action="store_true",
         help="Write JSON + MD reports to output directory",
     )
     parser.add_argument(
-        "--verify-only", action="store_true",
+        "--verify-only",
+        action="store_true",
         help="Verify only — print result, no reports written",
     )
     parser.add_argument(
-        "--strict", action="store_true",
+        "--strict",
+        action="store_true",
         help="Strict mode: unknown fields in artifacts = deny",
     )
     parser.add_argument(
-        "--emit-run-ledger", action="store_true",
+        "--emit-run-ledger",
+        action="store_true",
         help="Write a *_run_ledger.json to output directory",
     )
     args = parser.parse_args()

@@ -1,27 +1,27 @@
 """Tests for identity_fee_router."""
+
 from __future__ import annotations
 
+import sys
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
-import sys
-from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from identity_fee_router import (
+    DEFAULT_FEE_SCHEDULE,
+    FeeScheduleEntry,
     IdentityFeeRouter,
     ValidatorProfile,
     VerificationType,
-    FeeScheduleEntry,
-    RoutingResult,
-    DEFAULT_FEE_SCHEDULE,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 def _email_validator(vid: str, score: float = 1.0) -> ValidatorProfile:
     return ValidatorProfile(vid, [VerificationType.EMAIL], reliability_score=score)
@@ -42,6 +42,7 @@ def _multi_validator(vid: str, score: float = 1.0) -> ValidatorProfile:
 # ---------------------------------------------------------------------------
 # ValidatorProfile validation
 # ---------------------------------------------------------------------------
+
 
 class TestValidatorProfile:
     def test_valid_profile(self) -> None:
@@ -65,6 +66,7 @@ class TestValidatorProfile:
 # FeeScheduleEntry validation
 # ---------------------------------------------------------------------------
 
+
 class TestFeeScheduleEntry:
     def test_valid_entry(self) -> None:
         entry = FeeScheduleEntry(VerificationType.EMAIL, Decimal("1.00"), 0.10)
@@ -83,28 +85,21 @@ class TestFeeScheduleEntry:
 # route_fee — basic routing
 # ---------------------------------------------------------------------------
 
+
 class TestRouteFee:
     def setup_method(self) -> None:
         self.router = IdentityFeeRouter()
 
     def test_single_validator_receives_validator_pool(self) -> None:
         v = _email_validator("v1")
-        result = self.router.route_fee(
-            VerificationType.EMAIL, Decimal("1.00"), [v]
-        )
+        result = self.router.route_fee(VerificationType.EMAIL, Decimal("1.00"), [v])
         assert "v1" in result.validator_allocations
         assert result.validator_allocations["v1"] > Decimal("0")
 
     def test_platform_fee_plus_validator_pool_equals_total(self) -> None:
         validators = [_email_validator("v1"), _email_validator("v2", 0.5)]
-        result = self.router.route_fee(
-            VerificationType.EMAIL, Decimal("1.00"), validators
-        )
-        total = (
-            result.platform_fee
-            + sum(result.validator_allocations.values())
-            + result.residual
-        )
+        result = self.router.route_fee(VerificationType.EMAIL, Decimal("1.00"), validators)
+        total = result.platform_fee + sum(result.validator_allocations.values()) + result.residual
         assert abs(total - Decimal("1.00")) < Decimal("0.001")
 
     def test_higher_reliability_gets_larger_share(self) -> None:
@@ -112,24 +107,18 @@ class TestRouteFee:
             _email_validator("high", score=0.9),
             _email_validator("low", score=0.3),
         ]
-        result = self.router.route_fee(
-            VerificationType.EMAIL, Decimal("1.00"), validators
-        )
+        result = self.router.route_fee(VerificationType.EMAIL, Decimal("1.00"), validators)
         assert result.validator_allocations["high"] > result.validator_allocations["low"]
 
     def test_no_eligible_validators_full_platform_fee(self) -> None:
         # Phone validator provided, but we route EMAIL
         phone_v = ValidatorProfile("v1", [VerificationType.PHONE])
-        result = self.router.route_fee(
-            VerificationType.EMAIL, Decimal("1.00"), [phone_v]
-        )
+        result = self.router.route_fee(VerificationType.EMAIL, Decimal("1.00"), [phone_v])
         assert result.validator_allocations == {}
         assert result.platform_fee == Decimal("1.00")
 
     def test_no_validators_full_platform_fee(self) -> None:
-        result = self.router.route_fee(
-            VerificationType.EMAIL, Decimal("1.00"), []
-        )
+        result = self.router.route_fee(VerificationType.EMAIL, Decimal("1.00"), [])
         assert result.platform_fee == Decimal("1.00")
         assert result.validator_allocations == {}
 
@@ -144,14 +133,8 @@ class TestRouteFee:
         assert result.total_fee == schedule_base
 
     def test_government_id_higher_platform_cut(self) -> None:
-        email_result = self.router.route_fee(
-            VerificationType.EMAIL, Decimal("10.00"),
-            [_email_validator("ve")]
-        )
-        gov_result = self.router.route_fee(
-            VerificationType.GOVERNMENT_ID, Decimal("10.00"),
-            [_gov_id_validator("vg")]
-        )
+        email_result = self.router.route_fee(VerificationType.EMAIL, Decimal("10.00"), [_email_validator("ve")])
+        gov_result = self.router.route_fee(VerificationType.GOVERNMENT_ID, Decimal("10.00"), [_gov_id_validator("vg")])
         # Government ID has a higher platform_cut rate
         gov_platform_rate = DEFAULT_FEE_SCHEDULE[VerificationType.GOVERNMENT_ID].platform_cut
         email_platform_rate = DEFAULT_FEE_SCHEDULE[VerificationType.EMAIL].platform_cut
@@ -162,6 +145,7 @@ class TestRouteFee:
 # ---------------------------------------------------------------------------
 # get_validator_earnings
 # ---------------------------------------------------------------------------
+
 
 class TestValidatorEarnings:
     def setup_method(self) -> None:
@@ -198,6 +182,7 @@ class TestValidatorEarnings:
 # get_fee_schedule & update_fee_schedule
 # ---------------------------------------------------------------------------
 
+
 class TestFeeSchedule:
     def setup_method(self) -> None:
         self.router = IdentityFeeRouter()
@@ -208,9 +193,7 @@ class TestFeeSchedule:
             assert vt in schedule, f"Missing schedule entry for {vt}"
 
     def test_update_fee_schedule_affects_routing(self) -> None:
-        new_entry = FeeScheduleEntry(
-            VerificationType.EMAIL, Decimal("5.00"), platform_cut=0.50
-        )
+        new_entry = FeeScheduleEntry(VerificationType.EMAIL, Decimal("5.00"), platform_cut=0.50)
         self.router.update_fee_schedule(VerificationType.EMAIL, new_entry)
         schedule = self.router.get_fee_schedule()
         assert schedule[VerificationType.EMAIL].base_fee == Decimal("5.00")
@@ -218,9 +201,7 @@ class TestFeeSchedule:
 
     def test_get_fee_schedule_returns_copy(self) -> None:
         schedule1 = self.router.get_fee_schedule()
-        schedule1[VerificationType.EMAIL] = FeeScheduleEntry(
-            VerificationType.EMAIL, Decimal("999.00")
-        )
+        schedule1[VerificationType.EMAIL] = FeeScheduleEntry(VerificationType.EMAIL, Decimal("999.00"))
         schedule2 = self.router.get_fee_schedule()
         # Mutation of returned dict must not affect internal schedule
         assert schedule2[VerificationType.EMAIL].base_fee != Decimal("999.00")
@@ -230,13 +211,14 @@ class TestFeeSchedule:
 # routing_history
 # ---------------------------------------------------------------------------
 
+
 class TestRoutingHistory:
     def setup_method(self) -> None:
         self.router = IdentityFeeRouter()
 
     def test_history_grows_with_each_route(self) -> None:
         v = _email_validator("v1")
-        for i in range(4):
+        for _i in range(4):
             self.router.route_fee(VerificationType.EMAIL, Decimal("1.00"), [v])
         history = self.router.get_routing_history()
         assert len(history) == 4

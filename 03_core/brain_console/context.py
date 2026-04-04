@@ -1,11 +1,12 @@
 """Brain Context Assembly — collects context from Session, Memory, and Evidence."""
+
 from __future__ import annotations
 
 import datetime as dt
 import hashlib
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
@@ -13,21 +14,20 @@ class BrainContext:
     """Immutable snapshot of assembled brain context for a single interaction."""
 
     session_id: str
-    memory_snapshot: Dict[str, Any] = field(default_factory=dict)
-    evidence_refs: List[str] = field(default_factory=list)
-    timestamp: str = field(default_factory=lambda: (
-        dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
-        .isoformat().replace("+00:00", "Z")
-    ))
+    memory_snapshot: dict[str, Any] = field(default_factory=dict)
+    evidence_refs: list[str] = field(default_factory=list)
+    timestamp: str = field(
+        default_factory=lambda: dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    )
     role: str = "user"
     sot_available: bool = False
     registry_available: bool = False
     evidence_available: bool = False
-    allowed_topics: List[str] = field(default_factory=list)
+    allowed_topics: list[str] = field(default_factory=list)
     query_hash: str = ""
     blocked: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return asdict(self)
 
@@ -77,7 +77,7 @@ class BrainContextAssembler:
 
     _CANONICAL_FORBIDDEN = ["documents/github"]
 
-    def __init__(self, repo_root: Optional[Path] = None) -> None:
+    def __init__(self, repo_root: Path | None = None) -> None:
         self._repo_root = Path(repo_root) if repo_root else None
 
     def assemble(
