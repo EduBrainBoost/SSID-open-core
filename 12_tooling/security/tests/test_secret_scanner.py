@@ -69,7 +69,7 @@ def aws_key_py(tmp_path: Path) -> Path:
 def github_token_py(tmp_path: Path) -> Path:
     return _write(
         tmp_path / "gh_token.py",
-        'token = "ghp_' + "a" * 36 + '"\n',
+        'token = "ghp_' + "a" * 36 + '"\n',  # ssid:test-fixture
     )
 
 
@@ -125,13 +125,13 @@ class TestPatternDetection:
         assert any("DATABASE_URL" in ff.pattern_label for ff in findings)
 
     def test_detect_stripe_test_key(self, scanner: SecretScanner, tmp_path: Path) -> None:
-        f = _write(tmp_path / "stripe.py", 'key = "sk_test_' + "a" * 24 + '"\n')
+        f = _write(tmp_path / "stripe.py", 'key = "sk_test_' + "a" * 24 + '"\n')  # ssid:test-fixture
         findings = scanner.scan_file(f)
         labels = [ff.pattern_label for ff in findings]
         assert "STRIPE_TEST_KEY" in labels
 
     def test_detect_generic_password(self, scanner: SecretScanner, tmp_path: Path) -> None:
-        f = _write(tmp_path / "config.py", 'password = "SuperS3cretP@ss!"\n')
+        f = _write(tmp_path / "config.py", 'password = "SuperS3cretP@ss!"\n')  # ssid:test-fixture
         findings = scanner.scan_file(f)
         assert any("GENERIC_PASSWORD" in ff.pattern_label for ff in findings)
 
