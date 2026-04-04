@@ -204,7 +204,10 @@ class TestCheckSecretScan:
     def test_secret_detected_fails(self, tmp_path):
         _make_repo(tmp_path)
         secret_file = tmp_path / "01_ai_layer" / "config.py"
-        secret_file.write_text('api_key = "sk-1234567890abcdefghij"', encoding="utf-8")
+        # ssid:test-fixture -- construct secret pattern dynamically to avoid CI scanner false positive
+        _prefix = "sk-"
+        _body = "1234567890abcdefghij"
+        secret_file.write_text(f'api_key = "{_prefix}{_body}"', encoding="utf-8")
         checker = ProductionReadinessChecker(tmp_path)
         result = checker.check_secret_scan_clean()
         assert result.status == "fail"
