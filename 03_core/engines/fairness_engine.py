@@ -4,12 +4,12 @@ Compute-only: produces assessments and policy results, never stores individual d
 All evaluations produce SHA-256 evidence chains for audit traceability.
 No PII is handled; inputs are expected to be anonymised numeric/categorical data.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 from dataclasses import dataclass
-from decimal import Decimal
 from typing import Any
 
 
@@ -30,11 +30,12 @@ def _sha256_dict(data: dict[str, Any]) -> str:
 # Result dataclasses
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class FairnessScore:
     gini_coefficient: float
-    score: float          # 0.0 (perfectly unfair) – 1.0 (perfectly fair)
-    verdict: str          # "fair" | "marginal" | "unfair"
+    score: float  # 0.0 (perfectly unfair) – 1.0 (perfectly fair)
+    verdict: str  # "fair" | "marginal" | "unfair"
     criteria_met: list[str]
     criteria_failed: list[str]
     evidence_hash: str
@@ -44,8 +45,8 @@ class FairnessScore:
 @dataclass(frozen=True)
 class BiasReport:
     biased_attributes: list[str]
-    disparity_scores: dict[str, float]   # attribute -> disparity ratio
-    verdict: str                          # "no_bias" | "potential_bias" | "significant_bias"
+    disparity_scores: dict[str, float]  # attribute -> disparity ratio
+    verdict: str  # "no_bias" | "potential_bias" | "significant_bias"
     evidence_hash: str
     input_hash: str
 
@@ -63,6 +64,7 @@ class PolicyResult:
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
+
 
 class FairnessEngine:
     """
@@ -234,10 +236,7 @@ class FairnessEngine:
             mean_values = list(group_means.values())
             max_mean = max(mean_values)
             min_mean = min(mean_values)
-            if max_mean == 0.0:
-                disparity = 0.0
-            else:
-                disparity = (max_mean - min_mean) / max_mean
+            disparity = 0.0 if max_mean == 0.0 else (max_mean - min_mean) / max_mean
 
             disparity_scores[attr] = round(disparity, 6)
             if disparity >= self.BIAS_DISPARITY_THRESHOLD:

@@ -4,17 +4,16 @@ Covers: scan_sources discovery, markdown extraction, YAML extraction,
 JSON extraction, policy extraction, SHA-256 hash determinism,
 missing file handling, and content_type detection.
 """
+
 from __future__ import annotations
 
 import hashlib
 from pathlib import Path
 
 import pytest
-
 from content_pipeline.content_extractor import (
     ContentExtractor,
     ExtractedContent,
-    SourceFile,
 )
 
 

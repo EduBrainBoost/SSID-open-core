@@ -3,17 +3,18 @@
 Compute-only: calculates distribution instructions but never holds funds.
 All operations produce SHA-256 evidence hashes for audit traceability.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass, field
-from decimal import Decimal, ROUND_DOWN
-from enum import Enum
+from dataclasses import dataclass
+from decimal import ROUND_DOWN, Decimal
+from enum import StrEnum
 from typing import Any
 
 
-class DistributionMode(str, Enum):
+class DistributionMode(StrEnum):
     PERCENTAGE = "percentage"
     FIXED = "fixed"
 
@@ -112,9 +113,7 @@ class FeeDistributionEngine:
                 # Last participant gets the remainder to avoid rounding loss.
                 amount = total - allocated
             else:
-                amount = (total * Decimal(str(weights[pid])) / Decimal("100")).quantize(
-                    quantiser, rounding=ROUND_DOWN
-                )
+                amount = (total * Decimal(str(weights[pid])) / Decimal("100")).quantize(quantiser, rounding=ROUND_DOWN)
             distribution[pid] = str(amount)
             allocated += amount
         return distribution
@@ -128,9 +127,7 @@ class FeeDistributionEngine:
     ) -> dict[str, str]:
         fixed_sum = sum(Decimal(str(w)) for w in weights.values())
         if fixed_sum > total:
-            raise ValidationError(
-                f"fixed weights sum ({fixed_sum}) exceeds total_amount ({total})"
-            )
+            raise ValidationError(f"fixed weights sum ({fixed_sum}) exceeds total_amount ({total})")
         distribution: dict[str, str] = {}
         for pid in participants:
             amount = Decimal(str(weights[pid])).quantize(quantiser, rounding=ROUND_DOWN)

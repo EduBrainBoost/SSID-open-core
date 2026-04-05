@@ -3,6 +3,7 @@
 Covers: revenue share calculation, tiered distribution, payout reports,
 evidence hashing, edge cases, and determinism.
 """
+
 from __future__ import annotations
 
 from decimal import Decimal
@@ -23,6 +24,7 @@ def distributor() -> SubscriptionRevenueDistributor:
 # Test 1: Revenue share sums to total revenue
 # ---------------------------------------------------------------------------
 
+
 def test_revenue_share_sums_to_total(distributor: SubscriptionRevenueDistributor) -> None:
     subscription = {"id": "sub-001", "revenue": "1200.00"}
     contributors = {"creator": "60", "platform": "30", "infra": "10"}
@@ -35,6 +37,7 @@ def test_revenue_share_sums_to_total(distributor: SubscriptionRevenueDistributor
 # Test 2: Revenue share assigns correct proportions
 # ---------------------------------------------------------------------------
 
+
 def test_revenue_share_correct_proportions(distributor: SubscriptionRevenueDistributor) -> None:
     subscription = {"id": "sub-002", "revenue": "1000"}
     contributors = {"author": "70", "platform": "30"}
@@ -46,6 +49,7 @@ def test_revenue_share_correct_proportions(distributor: SubscriptionRevenueDistr
 # ---------------------------------------------------------------------------
 # Test 3: Revenue share is deterministic
 # ---------------------------------------------------------------------------
+
 
 def test_revenue_share_is_deterministic(distributor: SubscriptionRevenueDistributor) -> None:
     subscription = {"id": "sub-003", "revenue": "777.77"}
@@ -60,6 +64,7 @@ def test_revenue_share_is_deterministic(distributor: SubscriptionRevenueDistribu
 # Test 4: Missing revenue in subscription raises ValidationError
 # ---------------------------------------------------------------------------
 
+
 def test_missing_revenue_raises_error(distributor: SubscriptionRevenueDistributor) -> None:
     with pytest.raises(ValidationError, match="revenue"):
         distributor.calculate_revenue_share({"id": "sub-x"}, {"a": "100"})
@@ -68,6 +73,7 @@ def test_missing_revenue_raises_error(distributor: SubscriptionRevenueDistributo
 # ---------------------------------------------------------------------------
 # Test 5: Tiered distribution allocates correctly across tiers
 # ---------------------------------------------------------------------------
+
 
 def test_tiered_distribution_applies_rates(distributor: SubscriptionRevenueDistributor) -> None:
     tiers = [
@@ -87,6 +93,7 @@ def test_tiered_distribution_applies_rates(distributor: SubscriptionRevenueDistr
 # Test 6: Tiered distribution evidence hash is 64 chars
 # ---------------------------------------------------------------------------
 
+
 def test_tiered_distribution_evidence_hash(distributor: SubscriptionRevenueDistributor) -> None:
     tiers = [{"name": "flat", "threshold": None, "rate": "0.20"}]
     result = distributor.apply_tiered_distribution("100", tiers)
@@ -97,6 +104,7 @@ def test_tiered_distribution_evidence_hash(distributor: SubscriptionRevenueDistr
 # ---------------------------------------------------------------------------
 # Test 7: Payout report aggregates multiple distributions
 # ---------------------------------------------------------------------------
+
 
 def test_payout_report_aggregates_distributions(distributor: SubscriptionRevenueDistributor) -> None:
     sub_a = {"id": "sub-A", "revenue": "500"}
@@ -117,6 +125,7 @@ def test_payout_report_aggregates_distributions(distributor: SubscriptionRevenue
 # Test 8: Payout report evidence hash is deterministic
 # ---------------------------------------------------------------------------
 
+
 def test_payout_report_is_deterministic(distributor: SubscriptionRevenueDistributor) -> None:
     sub = {"id": "sub-Z", "revenue": "300"}
     dist = distributor.calculate_revenue_share(sub, {"a": "100"})
@@ -129,6 +138,7 @@ def test_payout_report_is_deterministic(distributor: SubscriptionRevenueDistribu
 # Test 9: Empty contributors raises ValidationError
 # ---------------------------------------------------------------------------
 
+
 def test_empty_contributors_raises_error(distributor: SubscriptionRevenueDistributor) -> None:
     with pytest.raises(ValidationError, match="empty"):
         distributor.calculate_revenue_share({"id": "sub-1", "revenue": "100"}, {})
@@ -137,6 +147,7 @@ def test_empty_contributors_raises_error(distributor: SubscriptionRevenueDistrib
 # ---------------------------------------------------------------------------
 # Test 10: Subscription id is preserved in result
 # ---------------------------------------------------------------------------
+
 
 def test_subscription_id_preserved_in_result(distributor: SubscriptionRevenueDistributor) -> None:
     subscription = {"id": "my-unique-sub-id", "revenue": "50"}

@@ -5,12 +5,13 @@ Never stores, holds, or transfers funds.
 All reward calculations produce SHA-256 evidence hashes.
 No PII handling: participant IDs are treated as opaque references.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass, field
-from decimal import Decimal, ROUND_DOWN
+from dataclasses import dataclass
+from decimal import ROUND_DOWN, Decimal
 from typing import Any
 
 
@@ -34,6 +35,7 @@ def _sha256_dict(data: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 # Result dataclasses
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class Reward:
@@ -61,6 +63,7 @@ class RewardBatch:
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
+
 
 class RewardHandler:
     """
@@ -128,10 +131,7 @@ class RewardHandler:
         quantity = Decimal(str(quantity_raw))
         q = self._quantiser()
 
-        if eligible:
-            final = (base * multiplier * quantity).quantize(q, rounding=ROUND_DOWN)
-        else:
-            final = Decimal("0")
+        final = (base * multiplier * quantity).quantize(q, rounding=ROUND_DOWN) if eligible else Decimal("0")
 
         output_payload: dict[str, Any] = {
             "participant_id": participant_id,
@@ -234,9 +234,7 @@ class RewardHandler:
 
         input_payload: dict[str, Any] = {
             "activity_count": len(activities),
-            "activities_hash": _sha256_dict(
-                {"activities": [{k: str(v) for k, v in a.items()} for a in activities]}
-            ),
+            "activities_hash": _sha256_dict({"activities": [{k: str(v) for k, v in a.items()} for a in activities]}),
             "rules_hash": _sha256_dict(rules),
         }
         input_hash = _sha256_dict(input_payload)

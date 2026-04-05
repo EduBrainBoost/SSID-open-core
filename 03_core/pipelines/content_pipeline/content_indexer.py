@@ -9,13 +9,14 @@ Full-text search with optional tag/category filtering.
 Deterministic output: artifact ordering is by artifact_id (lexicographic).
 No PII; all content hashes are SHA-256.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import logging
 import re
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -39,7 +40,7 @@ class SearchResult:
     content_type: str
     categories: list[str]
     tags: list[str]
-    score: float          # relevance score (0.0 – 1.0)
+    score: float  # relevance score (0.0 – 1.0)
     hash: str
 
 
@@ -49,7 +50,7 @@ class KnowledgeIndex:
 
     artifacts: list[KnowledgeArtifact]
     total_count: int
-    index_hash: str       # SHA-256 of sorted artifact_ids (for integrity)
+    index_hash: str  # SHA-256 of sorted artifact_ids (for integrity)
 
 
 # ---------------------------------------------------------------------------
@@ -101,13 +102,15 @@ def _score_artifact(artifact: KnowledgeArtifact, query_tokens: list[str]) -> flo
     """Simple TF-style relevance score for full-text search."""
     if not query_tokens:
         return 1.0
-    searchable = " ".join([
-        artifact.title,
-        artifact.summary,
-        " ".join(artifact.tags),
-        " ".join(artifact.categories),
-        artifact.source_path,
-    ]).lower()
+    searchable = " ".join(
+        [
+            artifact.title,
+            artifact.summary,
+            " ".join(artifact.tags),
+            " ".join(artifact.categories),
+            artifact.source_path,
+        ]
+    ).lower()
     hits = sum(1 for token in query_tokens if token in searchable)
     # Title hits count double
     title_hits = sum(2 for token in query_tokens if token in artifact.title.lower())

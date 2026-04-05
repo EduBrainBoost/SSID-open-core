@@ -14,7 +14,6 @@ from reference_runtime import (
     Root03Service,
 )
 
-
 PRIORITY_SHARDS = [
     "01_identitaet_personen",
     "02_dokumente_nachweise",

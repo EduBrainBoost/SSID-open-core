@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Bootstrap missing root, shard, chart, manifest, TaskSpec, and audit assets."""
+
 from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import yaml
-
 from _lib.shards import ROOTS_24, SHARDS_16, find_roots, parse_yaml, write_yaml
 from shard_manifest_build import generate_manifest
 from shards_registry_build import build_registry
@@ -22,7 +22,11 @@ TASKSPEC_DIR_RELATIVE_PATH = Path("24_meta_orchestration/registry")
 ROOT_METADATA: dict[str, dict[str, str]] = {
     "01_ai_layer": {"name": "AI Layer", "classification": "AI Orchestration", "purpose": "ai_orchestration"},
     "02_audit_logging": {"name": "Audit Logging", "classification": "Audit Logging", "purpose": "audit_logging"},
-    "03_core": {"name": "Core Validators & Authority", "classification": "Internal Authority", "purpose": "final_authority"},
+    "03_core": {
+        "name": "Core Validators & Authority",
+        "classification": "Internal Authority",
+        "purpose": "final_authority",
+    },
     "04_deployment": {"name": "Deployment", "classification": "Deployment", "purpose": "deployment"},
     "05_documentation": {"name": "Documentation", "classification": "Documentation", "purpose": "documentation"},
     "06_data_pipeline": {"name": "Data Pipeline", "classification": "Data Pipeline", "purpose": "data_pipeline"},
@@ -30,8 +34,16 @@ ROOT_METADATA: dict[str, dict[str, str]] = {
     "08_identity_score": {"name": "Identity Score", "classification": "Scoring", "purpose": "identity_scoring"},
     "09_meta_identity": {"name": "Meta Identity", "classification": "Identity Metadata", "purpose": "meta_identity"},
     "10_interoperability": {"name": "Interoperability", "classification": "Integration", "purpose": "interoperability"},
-    "11_test_simulation": {"name": "Test Simulation", "classification": "Quality Assurance", "purpose": "test_simulation"},
-    "12_tooling": {"name": "Tooling & CLI Infrastructure", "classification": "Developer Tools", "purpose": "developer_tooling"},
+    "11_test_simulation": {
+        "name": "Test Simulation",
+        "classification": "Quality Assurance",
+        "purpose": "test_simulation",
+    },
+    "12_tooling": {
+        "name": "Tooling & CLI Infrastructure",
+        "classification": "Developer Tools",
+        "purpose": "developer_tooling",
+    },
     "13_ui_layer": {"name": "UI Layer", "classification": "User Interface", "purpose": "ui_layer"},
     "14_zero_time_auth": {"name": "Zero Time Auth", "classification": "Authentication", "purpose": "zero_time_auth"},
     "15_infra": {"name": "Infrastructure", "classification": "Infrastructure", "purpose": "infrastructure"},
@@ -40,10 +52,18 @@ ROOT_METADATA: dict[str, dict[str, str]] = {
     "18_data_layer": {"name": "Data Layer", "classification": "Data Platform", "purpose": "data_layer"},
     "19_adapters": {"name": "Adapters", "classification": "Adapters", "purpose": "adapter_layer"},
     "20_foundation": {"name": "Foundation", "classification": "Foundation", "purpose": "foundation"},
-    "21_post_quantum_crypto": {"name": "Post Quantum Crypto", "classification": "Cryptography", "purpose": "post_quantum_crypto"},
+    "21_post_quantum_crypto": {
+        "name": "Post Quantum Crypto",
+        "classification": "Cryptography",
+        "purpose": "post_quantum_crypto",
+    },
     "22_datasets": {"name": "Datasets", "classification": "Datasets", "purpose": "datasets"},
     "23_compliance": {"name": "Compliance", "classification": "Compliance", "purpose": "compliance"},
-    "24_meta_orchestration": {"name": "Meta Orchestration", "classification": "Orchestration", "purpose": "workflow_orchestration"},
+    "24_meta_orchestration": {
+        "name": "Meta Orchestration",
+        "classification": "Orchestration",
+        "purpose": "workflow_orchestration",
+    },
 }
 
 ROOT03_RUNTIME_SHARDS: dict[str, str] = {
@@ -72,7 +92,7 @@ ROOT07_RUNTIME_SHARDS: dict[str, str] = {
 
 
 def utc_now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def write_text_if_missing(path: Path, content: str) -> bool:
@@ -384,7 +404,7 @@ def ensure_contract_pack(shard_dir: Path, root_name: str, shard_name: str, summa
     evidence_dir.mkdir(parents=True, exist_ok=True)
 
     schema_names = ["inputs.schema.json", "outputs.schema.json", "events.schema.json"]
-    for schema_name, schema_kind in zip(schema_names, ["inputs", "outputs", "events"]):
+    for schema_name, schema_kind in zip(schema_names, ["inputs", "outputs", "events"], strict=False):
         schema_path = contracts_dir / schema_name
         schema_payload = build_generic_schema(root_name, shard_name, schema_kind)
         if write_text_if_missing(schema_path, json.dumps(schema_payload, indent=2, ensure_ascii=False) + "\n"):
@@ -395,11 +415,20 @@ def ensure_contract_pack(shard_dir: Path, root_name: str, shard_name: str, summa
         summary["indexes_created"] += 1
     if write_yaml(evidence_dir / "index.yaml", build_evidence_index()):
         summary["indexes_created"] += 1
-    if write_text_if_missing(fixtures_dir / "fixture_valid.json", json.dumps(build_valid_fixture_payload(root_name, shard_name, "inputs"), indent=2) + "\n"):
+    if write_text_if_missing(
+        fixtures_dir / "fixture_valid.json",
+        json.dumps(build_valid_fixture_payload(root_name, shard_name, "inputs"), indent=2) + "\n",
+    ):
         summary["fixtures_created"] += 1
-    if write_text_if_missing(fixtures_dir / "fixture_invalid.json", json.dumps(build_invalid_fixture_payload(root_name, shard_name, "inputs"), indent=2) + "\n"):
+    if write_text_if_missing(
+        fixtures_dir / "fixture_invalid.json",
+        json.dumps(build_invalid_fixture_payload(root_name, shard_name, "inputs"), indent=2) + "\n",
+    ):
         summary["fixtures_created"] += 1
-    if write_text_if_missing(shard_dir / "README.md", f"# {root_name}/{shard_name}\n\nCapability definition for deterministic shard contract baseline.\n"):
+    if write_text_if_missing(
+        shard_dir / "README.md",
+        f"# {root_name}/{shard_name}\n\nCapability definition for deterministic shard contract baseline.\n",
+    ):
         summary["readmes_created"] += 1
 
 
@@ -429,11 +458,17 @@ def ensure_pilot_contracts(root_dir: Path, shard_name: str, summary: dict[str, i
         summary["indexes_created"] += 1
     if write_yaml(evidence_dir / "index.yaml", build_evidence_index()):
         summary["indexes_created"] += 1
-    if write_text_if_missing(fixtures_dir / "valid_identity.json", json.dumps(build_valid_fixture(schema_kind), indent=2) + "\n"):
+    if write_text_if_missing(
+        fixtures_dir / "valid_identity.json", json.dumps(build_valid_fixture(schema_kind), indent=2) + "\n"
+    ):
         summary["fixtures_created"] += 1
-    if write_text_if_missing(fixtures_dir / "invalid_identity.json", json.dumps(build_invalid_fixture(schema_kind), indent=2) + "\n"):
+    if write_text_if_missing(
+        fixtures_dir / "invalid_identity.json", json.dumps(build_invalid_fixture(schema_kind), indent=2) + "\n"
+    ):
         summary["fixtures_created"] += 1
-    if write_text_if_missing(shard_dir / "README.md", f"# 03_core/{shard_name}\n\nPilot shard contract and conformance definition.\n"):
+    if write_text_if_missing(
+        shard_dir / "README.md", f"# 03_core/{shard_name}\n\nPilot shard contract and conformance definition.\n"
+    ):
         summary["readmes_created"] += 1
 
 
@@ -540,11 +575,21 @@ def build_registry_snapshot(repo_root: Path) -> dict[str, Any]:
                     "shard_id": shard_name,
                     "chart_path": chart_path.relative_to(repo_root).as_posix(),
                     "manifest_path": manifest_path.relative_to(repo_root).as_posix(),
-                    "contracts_index_path": contracts_index.relative_to(repo_root).as_posix() if contracts_index.exists() else None,
-                    "conformance_index_path": conformance_index.relative_to(repo_root).as_posix() if conformance_index.exists() else None,
-                    "evidence_index_path": evidence_index.relative_to(repo_root).as_posix() if evidence_index.exists() else None,
-                    "runtime_index_path": runtime_index.relative_to(repo_root).as_posix() if runtime_index.exists() else None,
-                    "promotion_tier": "MUST" if root_name == "03_core" and shard_name in {"01_identitaet_personen", "02_dokumente_nachweise"} else "WARN",
+                    "contracts_index_path": contracts_index.relative_to(repo_root).as_posix()
+                    if contracts_index.exists()
+                    else None,
+                    "conformance_index_path": conformance_index.relative_to(repo_root).as_posix()
+                    if conformance_index.exists()
+                    else None,
+                    "evidence_index_path": evidence_index.relative_to(repo_root).as_posix()
+                    if evidence_index.exists()
+                    else None,
+                    "runtime_index_path": runtime_index.relative_to(repo_root).as_posix()
+                    if runtime_index.exists()
+                    else None,
+                    "promotion_tier": "MUST"
+                    if root_name == "03_core" and shard_name in {"01_identitaet_personen", "02_dokumente_nachweise"}
+                    else "WARN",
                     "status": status,
                     "runtime_status": runtime_status,
                     "dependency_status": dependency_status,
@@ -643,7 +688,9 @@ def run_bootstrap(repo_root: Path) -> dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Bootstrap missing roots, shards, charts, manifests, TaskSpecs, and audit log.")
+    parser = argparse.ArgumentParser(
+        description="Bootstrap missing roots, shards, charts, manifests, TaskSpecs, and audit log."
+    )
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
     args = parser.parse_args()
     report = run_bootstrap(args.repo_root.resolve())

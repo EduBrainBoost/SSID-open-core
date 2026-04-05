@@ -5,16 +5,16 @@ and produces KnowledgeArtifact records ready for indexing.
 
 No PII is handled; all outputs are deterministic given identical inputs.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from .content_extractor import ExtractedContent
-
 
 # ---------------------------------------------------------------------------
 # Data models
@@ -26,11 +26,11 @@ class NormalizedContent:
     """Whitespace-normalised, formatting-stripped content."""
 
     title: str
-    body: str                    # Plain text, no markdown/YAML syntax noise
+    body: str  # Plain text, no markdown/YAML syntax noise
     metadata: dict[str, Any]
     content_type: str
     source_path: str
-    hash: str                    # SHA-256 of normalised body
+    hash: str  # SHA-256 of normalised body
 
 
 @dataclass(frozen=True)
@@ -52,10 +52,10 @@ class EnrichedContent:
 class KnowledgeArtifact:
     """Final packaged artifact ready for indexing and search."""
 
-    artifact_id: str             # SHA-256 of (source_path + body_hash)
+    artifact_id: str  # SHA-256 of (source_path + body_hash)
     title: str
     body: str
-    summary: str                 # First 400 chars of body
+    summary: str  # First 400 chars of body
     metadata: dict[str, Any]
     content_type: str
     source_path: str
@@ -63,7 +63,7 @@ class KnowledgeArtifact:
     tags: tuple[str, ...]
     categories: tuple[str, ...]
     cross_references: tuple[str, ...]
-    artifact_hash: str           # SHA-256 of full artifact (audit trail)
+    artifact_hash: str  # SHA-256 of full artifact (audit trail)
 
 
 # ---------------------------------------------------------------------------

@@ -7,40 +7,32 @@
   "export_policy": "public_export_rules.yaml",
   "integrity_policy": "opencore_policy.yaml",
   "exported_roots": [
-    {
-      "root": "03_core",
-      "description": "SoT validator core, identity primitives",
-      "status": "exported"
-    },
-    {
-      "root": "12_tooling",
-      "description": "CLI tools, guard scripts, gates",
-      "status": "exported"
-    },
-    {
-      "root": "16_codex",
-      "description": "Architecture Decision Records, SoT contracts",
-      "status": "exported"
-    },
-    {
-      "root": "23_compliance",
-      "description": "OPA policies, root-level exception allowlist",
-      "status": "exported"
-    },
-    {
-      "root": "24_meta_orchestration",
-      "description": "Canonical dispatcher, SoT artifact registry",
-      "status": "exported"
-    }
+    { "root": "01_ai_layer", "description": "AI/scoring layer scaffolding", "status": "scaffolded" },
+    { "root": "02_audit_logging", "description": "Audit logging scaffolding", "status": "scaffolded" },
+    { "root": "03_core", "description": "SoT validator core, identity primitives", "status": "exported" },
+    { "root": "04_deployment", "description": "Deployment scaffolding", "status": "scaffolded" },
+    { "root": "05_documentation", "description": "Documentation scaffolding", "status": "scaffolded" },
+    { "root": "06_data_pipeline", "description": "Data pipeline scaffolding", "status": "scaffolded" },
+    { "root": "07_governance_legal", "description": "Governance/legal scaffolding", "status": "scaffolded" },
+    { "root": "08_identity_score", "description": "Identity score scaffolding", "status": "scaffolded" },
+    { "root": "09_meta_identity", "description": "Meta identity scaffolding", "status": "scaffolded" },
+    { "root": "10_interoperability", "description": "Interoperability scaffolding", "status": "scaffolded" },
+    { "root": "11_test_simulation", "description": "Test simulation scaffolding", "status": "scaffolded" },
+    { "root": "12_tooling", "description": "CLI tools, guard scripts, gates", "status": "exported" },
+    { "root": "13_ui_layer", "description": "UI layer scaffolding", "status": "scaffolded" },
+    { "root": "14_zero_time_auth", "description": "Zero-time auth scaffolding", "status": "scaffolded" },
+    { "root": "15_infra", "description": "Infrastructure scaffolding", "status": "scaffolded" },
+    { "root": "16_codex", "description": "Architecture Decision Records, SoT contracts", "status": "exported" },
+    { "root": "17_observability", "description": "Observability scaffolding", "status": "scaffolded" },
+    { "root": "18_data_layer", "description": "Data layer scaffolding", "status": "scaffolded" },
+    { "root": "19_adapters", "description": "Adapters scaffolding", "status": "scaffolded" },
+    { "root": "20_foundation", "description": "Foundation scaffolding", "status": "scaffolded" },
+    { "root": "21_post_quantum_crypto", "description": "Post-quantum crypto scaffolding", "status": "scaffolded" },
+    { "root": "22_datasets", "description": "Datasets scaffolding", "status": "scaffolded" },
+    { "root": "23_compliance", "description": "OPA policies, root-level exception allowlist", "status": "exported" },
+    { "root": "24_meta_orchestration", "description": "Canonical dispatcher, SoT artifact registry", "status": "exported" }
   ],
-  "excluded_roots": [
-    "01_ai_layer", "02_audit_logging", "04_deployment", "05_documentation",
-    "06_data_pipeline", "07_governance_legal", "08_identity_score",
-    "09_meta_identity", "10_interoperability", "11_test_simulation",
-    "13_ui_layer", "14_zero_time_auth", "15_infra", "17_observability",
-    "18_data_layer", "19_adapters", "20_foundation",
-    "21_post_quantum_crypto", "22_datasets"
-  ],
+  "excluded_roots": [],
   "root_level_artifacts": [
     "README.md",
     "LICENSE",

@@ -1,9 +1,8 @@
 """Shared pytest fixtures for content pipeline tests."""
+
 from __future__ import annotations
 
 import sys
-import os
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -62,14 +61,18 @@ def sample_json_file(tmp_path: Path) -> Path:
     """Write a sample JSON file and return its path."""
     j = tmp_path / "sample_contract.json"
     import json
+
     j.write_text(
-        json.dumps({
-            "title": "Service Level Agreement",
-            "id": "CONTRACT-001",
-            "category": "contract",
-            "parties": ["SSID", "Partner"],
-            "terms": "Standard SLA terms and conditions apply.",
-        }, indent=2),
+        json.dumps(
+            {
+                "title": "Service Level Agreement",
+                "id": "CONTRACT-001",
+                "category": "contract",
+                "parties": ["SSID", "Partner"],
+                "terms": "Standard SLA terms and conditions apply.",
+            },
+            indent=2,
+        ),
         encoding="utf-8",
     )
     return j
@@ -80,11 +83,7 @@ def sample_policy_file(tmp_path: Path) -> Path:
     """Write a sample Rego policy file and return its path."""
     p = tmp_path / "allow_access.rego"
     p.write_text(
-        "package ssid.governance\n\n"
-        "default allow = false\n\n"
-        "allow {\n"
-        "    input.role == \"admin\"\n"
-        "}\n",
+        'package ssid.governance\n\ndefault allow = false\n\nallow {\n    input.role == "admin"\n}\n',
         encoding="utf-8",
     )
     return p

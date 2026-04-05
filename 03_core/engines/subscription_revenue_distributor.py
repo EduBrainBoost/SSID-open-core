@@ -4,12 +4,13 @@ Compute-only: produces revenue-share calculations and payout reports.
 Never holds, stores, or transfers funds.
 All operations produce SHA-256 evidence hashes.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_DOWN
+from decimal import ROUND_DOWN, Decimal
 from typing import Any
 
 
@@ -30,11 +31,12 @@ def _sha256_dict(data: dict[str, Any]) -> str:
 # Result dataclasses
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class RevenueShare:
     subscription_id: str
     total_revenue: str
-    shares: dict[str, str]       # contributor_id -> allocated amount (decimal string)
+    shares: dict[str, str]  # contributor_id -> allocated amount (decimal string)
     remainder: str
     evidence_hash: str
     input_hash: str
@@ -63,7 +65,7 @@ class PayoutReport:
     period: str
     total_distributed: str
     distribution_count: int
-    per_contributor: dict[str, str]   # contributor_id -> cumulative amount
+    per_contributor: dict[str, str]  # contributor_id -> cumulative amount
     evidence_hash: str
     input_hash: str
 
@@ -71,6 +73,7 @@ class PayoutReport:
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
+
 
 class SubscriptionRevenueDistributor:
     """

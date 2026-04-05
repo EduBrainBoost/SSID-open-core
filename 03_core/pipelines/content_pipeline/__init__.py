@@ -37,22 +37,16 @@ Typical usage::
     result = updater.update_registry(index, "/path/to/registry_dir")
 """
 
+from .content_classifier import (
+    CATEGORIES,
+    CategoryScore,
+    Classification,
+    ContentClassifier,
+)
 from .content_extractor import (
     ContentExtractor,
-    SourceFile,
     ExtractedContent,
-)
-from .content_transformer import (
-    ContentTransformer,
-    NormalizedContent,
-    EnrichedContent,
-    KnowledgeArtifact,
-)
-from .content_classifier import (
-    ContentClassifier,
-    Classification,
-    CategoryScore,
-    CATEGORIES,
+    SourceFile,
 )
 from .content_indexer import (
     ContentIndexer,
@@ -63,6 +57,12 @@ from .content_registry_updater import (
     ContentRegistryUpdater,
     RegistryEntry,
     RegistryUpdate,
+)
+from .content_transformer import (
+    ContentTransformer,
+    EnrichedContent,
+    KnowledgeArtifact,
+    NormalizedContent,
 )
 
 __all__ = [

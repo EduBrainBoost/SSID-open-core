@@ -5,13 +5,14 @@ updated knowledge_registry.json in a deterministic, append-compatible format.
 
 No PII; all hashes are SHA-256; output is deterministic given identical input.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -49,7 +50,7 @@ class RegistryUpdate:
     updated: int
     unchanged: int
     total: int
-    registry_hash: str      # SHA-256 of sorted artifact_ids in registry
+    registry_hash: str  # SHA-256 of sorted artifact_ids in registry
     registry_path: str
 
 
@@ -68,7 +69,7 @@ def _sha256_dict(data: dict[str, Any]) -> str:
 
 
 def _now_iso() -> str:
-    return datetime.now(tz=timezone.utc).isoformat()
+    return datetime.now(tz=UTC).isoformat()
 
 
 def _entry_from_artifact(artifact: KnowledgeArtifact) -> RegistryEntry:

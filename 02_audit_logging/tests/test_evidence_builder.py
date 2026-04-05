@@ -12,15 +12,14 @@ Covers:
 
 from __future__ import annotations
 
-import hashlib
+import sys
 from pathlib import Path
 
 import pytest
 
-import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "agent_runs"))
 
-from evidence_builder import EvidenceBuilder, Evidence, ChainedEvidence, _sha256, _sha256_dict
+from evidence_builder import ChainedEvidence, Evidence, EvidenceBuilder, _sha256, _sha256_dict
 
 
 @pytest.fixture()

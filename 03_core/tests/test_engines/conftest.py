@@ -1,4 +1,5 @@
 """conftest.py — ensures the engines package is importable for all test_engines tests."""
+
 from __future__ import annotations
 
 import sys

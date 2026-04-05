@@ -5,9 +5,13 @@ from pathlib import Path
 from typing import Any
 
 from reference_runtime import ContractValidationError
-from reference_services import ContractBoundServiceProcessor, ServiceContractError, ServiceDependencyError, ServiceEvidence
+from reference_services import (
+    ContractBoundServiceProcessor,
+    ServiceContractError,
+    ServiceDependencyError,
+    ServiceEvidence,
+)
 from wave03_reference import Root03ReferenceWave
-
 
 PRIORITY_SHARDS = [
     "01_identitaet_personen",

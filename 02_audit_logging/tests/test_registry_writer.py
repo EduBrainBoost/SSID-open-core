@@ -16,14 +16,14 @@ Covers:
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import pytest
 
-import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "agent_runs"))
 
-from registry_writer import RegistryWriter, RegistryEntry, RunRecord, _sha256_dict
+from registry_writer import RegistryEntry, RegistryWriter, RunRecord, _sha256_dict
 
 
 @pytest.fixture()

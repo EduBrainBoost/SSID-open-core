@@ -17,9 +17,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-import os
-import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -32,7 +30,7 @@ _MAX_LINES = 10_000  # cap to avoid unbounded growth
 
 
 def _utcnow_iso() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+    return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 def _sha256(data: str) -> str:
@@ -119,6 +117,7 @@ class PulseStateStore:
             return pulse_data.to_dict()
         if hasattr(pulse_data, "__dataclass_fields__"):
             from dataclasses import asdict
+
             return asdict(pulse_data)
         return {"raw": str(pulse_data)}
 
@@ -138,6 +137,7 @@ class PulseStateStore:
         """Append a line with best-effort exclusive locking."""
         try:
             import portalocker  # type: ignore
+
             with portalocker.Lock(str(path), mode="a", encoding="utf-8", timeout=3) as fh:
                 fh.write(line + "\n")
         except ImportError:

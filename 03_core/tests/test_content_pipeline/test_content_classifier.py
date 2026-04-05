@@ -4,13 +4,12 @@ Covers: category assignment for governance/policy/contract/technical/knowledge,
 path-based signals, confidence scores in [0,1], evidence hash determinism,
 and primary category selection.
 """
+
 from __future__ import annotations
 
 import pytest
-
 from content_pipeline.content_classifier import (
     CATEGORIES,
-    CategoryScore,
     Classification,
     ContentClassifier,
 )
@@ -55,9 +54,7 @@ def test_classify_policy_content(classifier: ContentClassifier) -> None:
     )
     result = classifier.classify(content)
     assert isinstance(result, Classification)
-    assert result.primary_category == "policy", (
-        f"Expected 'policy', got '{result.primary_category}'"
-    )
+    assert result.primary_category == "policy", f"Expected 'policy', got '{result.primary_category}'"
 
 
 # ---------------------------------------------------------------------------
@@ -73,9 +70,7 @@ def test_classify_contract_content(classifier: ContentClassifier) -> None:
         source_path="/ssid/contracts/sla.md",
     )
     result = classifier.classify(content)
-    assert result.primary_category == "contract", (
-        f"Expected 'contract', got '{result.primary_category}'"
-    )
+    assert result.primary_category == "contract", f"Expected 'contract', got '{result.primary_category}'"
 
 
 # ---------------------------------------------------------------------------
@@ -127,6 +122,4 @@ def test_all_categories_present_in_scores(classifier: ContentClassifier) -> None
     content = _make_content(title="Simple doc", body="A simple knowledge document.")
     result = classifier.classify(content)
     scored_cats = {cs.category for cs in result.all_scores}
-    assert scored_cats == set(CATEGORIES), (
-        f"Missing categories: {set(CATEGORIES) - scored_cats}"
-    )
+    assert scored_cats == set(CATEGORIES), f"Missing categories: {set(CATEGORIES) - scored_cats}"

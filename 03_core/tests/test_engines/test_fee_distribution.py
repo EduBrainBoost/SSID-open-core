@@ -3,6 +3,7 @@
 Covers: percentage distribution, fixed distribution, validation,
 apply_distribution evidence hashing, edge cases, and determinism.
 """
+
 from __future__ import annotations
 
 from decimal import Decimal
@@ -24,6 +25,7 @@ def engine() -> FeeDistributionEngine:
 # Test 1: Equal percentage distribution sums to total
 # ---------------------------------------------------------------------------
 
+
 def test_percentage_distribution_sums_to_total(engine: FeeDistributionEngine) -> None:
     participants = ["alice", "bob", "carol"]
     weights = {"alice": "33.333334", "bob": "33.333333", "carol": "33.333333"}
@@ -40,6 +42,7 @@ def test_percentage_distribution_sums_to_total(engine: FeeDistributionEngine) ->
 # ---------------------------------------------------------------------------
 # Test 2: Unequal percentage distribution assigns correct proportions
 # ---------------------------------------------------------------------------
+
 
 def test_percentage_distribution_correct_proportions(engine: FeeDistributionEngine) -> None:
     participants = ["platform", "creator"]
@@ -60,6 +63,7 @@ def test_percentage_distribution_correct_proportions(engine: FeeDistributionEngi
 # Test 3: Fixed distribution allocates exact amounts
 # ---------------------------------------------------------------------------
 
+
 def test_fixed_distribution_allocates_exact_amounts(engine: FeeDistributionEngine) -> None:
     participants = ["ops", "dev", "qa"]
     weights = {"ops": "50.0", "dev": "30.0", "qa": "15.0"}
@@ -78,6 +82,7 @@ def test_fixed_distribution_allocates_exact_amounts(engine: FeeDistributionEngin
 # Test 4: validate_distribution rejects negative amounts
 # ---------------------------------------------------------------------------
 
+
 def test_validate_distribution_rejects_negative_amounts(engine: FeeDistributionEngine) -> None:
     with pytest.raises(ValidationError, match="negative amount"):
         engine.validate_distribution({"alice": "10.0", "bob": "-5.0"})
@@ -86,6 +91,7 @@ def test_validate_distribution_rejects_negative_amounts(engine: FeeDistributionE
 # ---------------------------------------------------------------------------
 # Test 5: apply_distribution returns DistributionResult with evidence hashes
 # ---------------------------------------------------------------------------
+
 
 def test_apply_distribution_returns_evidence_hashes(engine: FeeDistributionEngine) -> None:
     result = engine.apply_distribution(
@@ -102,6 +108,7 @@ def test_apply_distribution_returns_evidence_hashes(engine: FeeDistributionEngin
 # ---------------------------------------------------------------------------
 # Test 6: apply_distribution is deterministic
 # ---------------------------------------------------------------------------
+
 
 def test_apply_distribution_is_deterministic(engine: FeeDistributionEngine) -> None:
     kwargs = dict(
@@ -120,6 +127,7 @@ def test_apply_distribution_is_deterministic(engine: FeeDistributionEngine) -> N
 # Test 7: Missing weights for participant raises ValidationError
 # ---------------------------------------------------------------------------
 
+
 def test_missing_weight_raises_error(engine: FeeDistributionEngine) -> None:
     with pytest.raises(ValidationError, match="weights missing"):
         engine.calculate_distribution(
@@ -132,6 +140,7 @@ def test_missing_weight_raises_error(engine: FeeDistributionEngine) -> None:
 # ---------------------------------------------------------------------------
 # Test 8: Fixed weights exceeding total raises ValidationError
 # ---------------------------------------------------------------------------
+
 
 def test_fixed_weights_exceeding_total_raises_error(engine: FeeDistributionEngine) -> None:
     with pytest.raises(ValidationError, match="exceeds total_amount"):
@@ -147,6 +156,7 @@ def test_fixed_weights_exceeding_total_raises_error(engine: FeeDistributionEngin
 # Test 9: Zero total_amount raises ValidationError
 # ---------------------------------------------------------------------------
 
+
 def test_zero_total_raises_error(engine: FeeDistributionEngine) -> None:
     with pytest.raises(ValidationError, match="positive"):
         engine.calculate_distribution(
@@ -159,6 +169,7 @@ def test_zero_total_raises_error(engine: FeeDistributionEngine) -> None:
 # ---------------------------------------------------------------------------
 # Test 10: Last participant absorbs rounding remainder
 # ---------------------------------------------------------------------------
+
 
 def test_last_participant_absorbs_remainder(engine: FeeDistributionEngine) -> None:
     """With an indivisible total the last participant absorbs the remainder."""

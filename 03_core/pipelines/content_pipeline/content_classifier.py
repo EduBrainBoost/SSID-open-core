@@ -5,17 +5,17 @@ per-category confidence score.  No ML models; purely keyword + path heuristics.
 
 No PII is handled; output is deterministic given identical inputs.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from .content_extractor import ExtractedContent
-
 
 # ---------------------------------------------------------------------------
 # Category vocabulary
@@ -42,7 +42,7 @@ class CategoryScore:
     """Confidence score for a single category."""
 
     category: str
-    score: float           # 0.0 – 1.0
+    score: float  # 0.0 – 1.0
     matched_signals: tuple[str, ...]  # human-readable explanation
 
 
@@ -52,8 +52,8 @@ class Classification:
 
     primary_category: str
     all_scores: tuple[CategoryScore, ...]
-    input_hash: str         # SHA-256 of (source_path + body)
-    evidence_hash: str      # SHA-256 of full classification output
+    input_hash: str  # SHA-256 of (source_path + body)
+    evidence_hash: str  # SHA-256 of full classification output
 
 
 # ---------------------------------------------------------------------------
@@ -200,10 +200,7 @@ class ContentClassifier:
             SHA-256 hashes for input and evidence.
         """
         combined_text = f"{content.title} {content.body}"
-        path_parts = set(
-            Path(content.source_path).parts
-            + tuple(content.source_path.replace("\\", "/").lower().split("/"))
-        )
+        set(Path(content.source_path).parts + tuple(content.source_path.replace("\\", "/").lower().split("/")))
         path_lower = content.source_path.replace("\\", "/").lower()
 
         raw_scores: dict[str, float] = {cat: 0.0 for cat in CATEGORIES}

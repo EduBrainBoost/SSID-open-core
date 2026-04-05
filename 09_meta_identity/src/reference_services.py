@@ -115,4 +115,3 @@ class ContractBoundServiceProcessor:
             audit_event=audit_event,
         )
         return result, evidence
-

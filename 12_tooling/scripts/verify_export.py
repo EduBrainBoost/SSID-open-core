@@ -16,6 +16,7 @@ Exit codes:
   2 = FAIL      — one or more policy breaches
   3 = CORRUPT   — invalid manifest, hash mismatch, or corrupted bundle
 """
+
 from __future__ import annotations
 
 import argparse
@@ -82,10 +83,7 @@ def is_denied(path_posix: str, deny_globs: list[str]) -> bool:
 def is_allowed_prefix(path_posix: str, allow_prefixes: list[str]) -> bool:
     if not allow_prefixes:
         return True
-    return any(
-        path_posix.startswith(prefix) or path_posix == prefix.rstrip("/")
-        for prefix in allow_prefixes
-    )
+    return any(path_posix.startswith(prefix) or path_posix == prefix.rstrip("/") for prefix in allow_prefixes)
 
 
 def is_allowed_extension(path_posix: str, allow_extensions: list[str]) -> bool:
@@ -237,9 +235,7 @@ def check_hash_integrity(
     if expected_bundle_hash:
         actual_bundle_hash = sha256_file(zip_path)
         if actual_bundle_hash != expected_bundle_hash:
-            result.corruption(
-                f"bundle SHA256 mismatch: expected={expected_bundle_hash}, actual={actual_bundle_hash}"
-            )
+            result.corruption(f"bundle SHA256 mismatch: expected={expected_bundle_hash}, actual={actual_bundle_hash}")
     else:
         result.warn("manifest has no bundle_sha256, cannot verify bundle integrity")
 
@@ -326,8 +322,7 @@ def check_sanitization_provenance(
         status = provenance.get("status")
         if status and status not in VALID_PROVENANCE_STATUS:
             result.fail(
-                f"provenance.status for {path} is invalid: {status} "
-                f"(must be one of {sorted(VALID_PROVENANCE_STATUS)})"
+                f"provenance.status for {path} is invalid: {status} (must be one of {sorted(VALID_PROVENANCE_STATUS)})"
             )
 
         public_safe = provenance.get("public_safe")
@@ -335,9 +330,7 @@ def check_sanitization_provenance(
             result.fail(f"provenance.public_safe for {path} must be a boolean")
 
         if entry.get("sanitized") and status != "redacted":
-            result.warn(
-                f"file {path} is marked sanitized but provenance.status is '{status}', expected 'redacted'"
-            )
+            result.warn(f"file {path} is marked sanitized but provenance.status is '{status}', expected 'redacted'")
 
 
 def verify_export(

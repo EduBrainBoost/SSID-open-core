@@ -3,12 +3,12 @@
 Covers: calculate_reward, validate_reward_eligibility, batch_process_rewards,
 evidence hashing, ineligible participants, edge cases, and determinism.
 """
+
 from __future__ import annotations
 
 from decimal import Decimal
 
 import pytest
-
 from reward_handler import (
     RewardHandler,
     ValidationError,
@@ -33,6 +33,7 @@ def basic_rules() -> dict:
 # Test 1: Eligible participant receives correct reward amount
 # ---------------------------------------------------------------------------
 
+
 def test_calculate_reward_eligible_participant(handler: RewardHandler, basic_rules: dict) -> None:
     activity = {"participant_id": "user-001", "type": "contribution", "score": 5, "quantity": 1}
     reward = handler.calculate_reward(activity, basic_rules)
@@ -45,6 +46,7 @@ def test_calculate_reward_eligible_participant(handler: RewardHandler, basic_rul
 # Test 2: Ineligible participant receives zero reward
 # ---------------------------------------------------------------------------
 
+
 def test_calculate_reward_ineligible_participant(handler: RewardHandler, basic_rules: dict) -> None:
     activity = {"participant_id": "user-002", "type": "contribution", "score": 0, "quantity": 3}
     reward = handler.calculate_reward(activity, basic_rules)
@@ -56,6 +58,7 @@ def test_calculate_reward_ineligible_participant(handler: RewardHandler, basic_r
 # Test 3: Quantity multiplier scales reward correctly
 # ---------------------------------------------------------------------------
 
+
 def test_reward_scales_with_quantity(handler: RewardHandler) -> None:
     rules = {"base_amounts": {"action": "5"}, "multipliers": {"action": "1"}}
     activity = {"participant_id": "user-003", "type": "action", "quantity": 4}
@@ -66,6 +69,7 @@ def test_reward_scales_with_quantity(handler: RewardHandler) -> None:
 # ---------------------------------------------------------------------------
 # Test 4: Evidence hash is 64-char SHA-256 hex
 # ---------------------------------------------------------------------------
+
 
 def test_calculate_reward_evidence_hash_format(handler: RewardHandler, basic_rules: dict) -> None:
     activity = {"participant_id": "user-004", "type": "review", "score": 3}
@@ -79,6 +83,7 @@ def test_calculate_reward_evidence_hash_format(handler: RewardHandler, basic_rul
 # Test 5: calculate_reward is deterministic
 # ---------------------------------------------------------------------------
 
+
 def test_calculate_reward_is_deterministic(handler: RewardHandler, basic_rules: dict) -> None:
     activity = {"participant_id": "user-005", "type": "review", "score": 10}
     r1 = handler.calculate_reward(activity, basic_rules)
@@ -91,6 +96,7 @@ def test_calculate_reward_is_deterministic(handler: RewardHandler, basic_rules: 
 # Test 6: validate_reward_eligibility with min_ criteria
 # ---------------------------------------------------------------------------
 
+
 def test_validate_eligibility_min_criterion(handler: RewardHandler) -> None:
     criteria = {"min_reputation": 10}
     assert handler.validate_reward_eligibility({"reputation": 15}, criteria) is True
@@ -101,6 +107,7 @@ def test_validate_eligibility_min_criterion(handler: RewardHandler) -> None:
 # Test 7: validate_reward_eligibility with exact-match criterion
 # ---------------------------------------------------------------------------
 
+
 def test_validate_eligibility_exact_match(handler: RewardHandler) -> None:
     criteria = {"status": "active"}
     assert handler.validate_reward_eligibility({"status": "active"}, criteria) is True
@@ -110,6 +117,7 @@ def test_validate_eligibility_exact_match(handler: RewardHandler) -> None:
 # ---------------------------------------------------------------------------
 # Test 8: batch_process_rewards aggregates totals correctly
 # ---------------------------------------------------------------------------
+
 
 def test_batch_process_rewards_totals(handler: RewardHandler) -> None:
     rules = {"base_amounts": {"task": "10"}, "multipliers": {"task": "1"}}
@@ -128,6 +136,7 @@ def test_batch_process_rewards_totals(handler: RewardHandler) -> None:
 # ---------------------------------------------------------------------------
 # Test 9: batch_process_rewards counts ineligible participants
 # ---------------------------------------------------------------------------
+
 
 def test_batch_process_rewards_ineligible_count(handler: RewardHandler) -> None:
     rules = {
@@ -150,6 +159,7 @@ def test_batch_process_rewards_ineligible_count(handler: RewardHandler) -> None:
 # Test 10: batch_process_rewards batch_evidence_hash is deterministic
 # ---------------------------------------------------------------------------
 
+
 def test_batch_evidence_hash_is_deterministic(handler: RewardHandler) -> None:
     rules = {"base_amounts": {"x": "1"}, "multipliers": {"x": "1"}}
     activities = [{"participant_id": "p1", "type": "x"}, {"participant_id": "p2", "type": "x"}]
@@ -162,6 +172,7 @@ def test_batch_evidence_hash_is_deterministic(handler: RewardHandler) -> None:
 # Test 11: Missing participant_id raises ValidationError
 # ---------------------------------------------------------------------------
 
+
 def test_missing_participant_id_raises_error(handler: RewardHandler) -> None:
     with pytest.raises(ValidationError, match="participant_id"):
         handler.calculate_reward({"type": "task"}, {})
@@ -170,6 +181,7 @@ def test_missing_participant_id_raises_error(handler: RewardHandler) -> None:
 # ---------------------------------------------------------------------------
 # Test 12: Empty activities list raises ValidationError
 # ---------------------------------------------------------------------------
+
 
 def test_empty_activities_raises_error(handler: RewardHandler) -> None:
     with pytest.raises(ValidationError, match="empty"):

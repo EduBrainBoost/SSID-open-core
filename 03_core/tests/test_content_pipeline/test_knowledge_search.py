@@ -4,16 +4,14 @@ Covers: full-text search returns relevant results, category filter,
 tag filter, empty query returns all results, no match returns empty list,
 and score ordering.
 """
+
 from __future__ import annotations
 
 import hashlib
-from pathlib import Path
 
 import pytest
-
 from content_pipeline.content_indexer import ContentIndexer, KnowledgeIndex
 from content_pipeline.content_transformer import KnowledgeArtifact
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -94,9 +92,7 @@ def test_search_returns_relevant_result_first(
     """Searching for 'ADR' should rank the architecture ADR artifact highest."""
     results = indexer.search("ADR", {}, index=populated_index)
     assert results, "Expected at least one search result"
-    assert "Architecture" in results[0].title, (
-        f"Top result should be the ADR, got: {results[0].title}"
-    )
+    assert "Architecture" in results[0].title, f"Top result should be the ADR, got: {results[0].title}"
 
 
 # ---------------------------------------------------------------------------

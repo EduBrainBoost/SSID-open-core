@@ -5,11 +5,10 @@ from typing import Any
 
 from reference_security import (
     SecurityEnforcementBridge,
+    SecurityEvidence,
     SecurityPolicyDeniedError,
     SecurityRuntimeDependencyError,
-    SecurityEvidence,
 )
-
 
 PRIORITY_SHARDS = [
     "01_identitaet_personen",

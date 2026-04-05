@@ -12,16 +12,16 @@ Covers:
 from __future__ import annotations
 
 import json
-import re
+
+# Add parent to path for import without package install
+import sys
 from pathlib import Path
 
 import pytest
 
-# Add parent to path for import without package install
-import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "agent_runs"))
 
-from agent_run_logger import AgentRunLogger, _sha256, _GENESIS_HASH
+from agent_run_logger import _GENESIS_HASH, AgentRunLogger, _sha256
 
 
 @pytest.fixture()
@@ -55,7 +55,7 @@ class TestLogRunStart:
 
     def test_task_stored_as_hash_not_raw(self, logger: AgentRunLogger) -> None:
         task = "sensitive task description"
-        run_id = logger.log_run_start("agent-d", task=task, config={})
+        logger.log_run_start("agent-d", task=task, config={})
         entries = logger.read_agent_log("agent-d")
         entry_text = json.dumps(entries[0])
         assert task not in entry_text

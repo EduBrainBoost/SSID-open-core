@@ -4,12 +4,10 @@ Covers: full pipeline run (scan → extract → normalize → enrich → artifac
 KnowledgeArtifact integrity (artifact_id, artifact_hash), pipeline idempotency,
 index persistence round-trip, and registry update.
 """
+
 from __future__ import annotations
 
-import json
 from pathlib import Path
-
-import pytest
 
 from content_pipeline import (
     ContentExtractor,
@@ -47,9 +45,7 @@ def test_pipeline_produces_artifacts_for_all_files(
     extractor = ContentExtractor()
     sources = extractor.scan_sources([str(sample_source_dir)])
     artifacts = _run_pipeline(sample_source_dir)
-    assert len(artifacts) == len(sources), (
-        f"Expected {len(sources)} artifacts, got {len(artifacts)}"
-    )
+    assert len(artifacts) == len(sources), f"Expected {len(sources)} artifacts, got {len(artifacts)}"
     for artifact in artifacts:
         assert isinstance(artifact, KnowledgeArtifact)
         assert artifact.artifact_id, "artifact_id must not be empty"
@@ -67,9 +63,7 @@ def test_artifact_id_is_sha256_hex(sample_source_dir: Path) -> None:
     assert artifacts, "Need at least one artifact"
     for a in artifacts:
         assert len(a.artifact_id) == 64
-        assert all(c in "0123456789abcdef" for c in a.artifact_id), (
-            f"artifact_id is not hex: {a.artifact_id}"
-        )
+        assert all(c in "0123456789abcdef" for c in a.artifact_id), f"artifact_id is not hex: {a.artifact_id}"
 
 
 # ---------------------------------------------------------------------------
@@ -124,9 +118,7 @@ def test_registry_update_counts(sample_source_dir: Path, tmp_dir: Path) -> None:
 
     # First update: everything is new
     result1 = updater.update_registry(index, str(tmp_dir))
-    assert result1.added == len(artifacts), (
-        f"Expected {len(artifacts)} added, got {result1.added}"
-    )
+    assert result1.added == len(artifacts), f"Expected {len(artifacts)} added, got {result1.added}"
     assert result1.updated == 0
     assert result1.unchanged == 0
 

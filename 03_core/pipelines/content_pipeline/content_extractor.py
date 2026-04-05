@@ -5,13 +5,14 @@ and returns structured ExtractedContent records with SHA-256 content hashes.
 
 No PII is stored; output is deterministic given the same file contents.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -231,9 +232,10 @@ class ContentExtractor:
         fm_match = re.match(r"^---\r?\n(.*?)\r?\n---\r?\n", text, re.DOTALL)
         if fm_match:
             fm_text = fm_match.group(1)
-            body = text[fm_match.end():]
+            body = text[fm_match.end() :]
             try:
                 import yaml  # type: ignore[import]
+
                 fm_data = yaml.safe_load(fm_text)
                 if isinstance(fm_data, dict):
                     metadata = {k: str(v) for k, v in fm_data.items()}
@@ -247,11 +249,7 @@ class ContentExtractor:
         data = _parse_yaml_safe(text)
         metadata: dict[str, Any] = {}
         if isinstance(data, dict):
-            metadata = {
-                k: str(v)
-                for k, v in data.items()
-                if isinstance(v, (str, int, float, bool))
-            }
+            metadata = {k: str(v) for k, v in data.items() if isinstance(v, (str, int, float, bool))}
         title = _extract_yaml_title(data, source.path)
         body = _flatten_to_text(data)
         return self._make_result(title, body, metadata, source)
@@ -268,11 +266,7 @@ class ContentExtractor:
                     if key in data and isinstance(data[key], str):
                         title = data[key]
                         break
-                metadata = {
-                    k: str(v)
-                    for k, v in data.items()
-                    if isinstance(v, (str, int, float, bool))
-                }
+                metadata = {k: str(v) for k, v in data.items() if isinstance(v, (str, int, float, bool))}
         except json.JSONDecodeError as exc:
             logger.debug("extract_json: parse error in %s — %s", source.path, exc)
         return self._make_result(title, body, metadata, source)

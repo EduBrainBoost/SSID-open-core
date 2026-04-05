@@ -13,6 +13,7 @@ Test matrix:
   - test_warn_no_zip:             no ZIP provided => WARN
   - test_pass_full_bundle:        complete valid bundle => PASS
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -21,8 +22,6 @@ import sys
 import zipfile
 from pathlib import Path
 from typing import Any
-
-import pytest
 
 # Add the scripts directory to path so we can import verify_export
 SCRIPTS_DIR = Path(__file__).resolve().parents[2] / "12_tooling" / "scripts"
@@ -33,7 +32,6 @@ from verify_export import (
     EXIT_FAIL,
     EXIT_PASS,
     EXIT_WARN,
-    VerificationResult,
     verify_export,
 )
 
@@ -310,11 +308,15 @@ class TestFailMissingManifestFields:
         manifest_path = tmp_path / "manifest.json"
         # Minimal manifest missing most required fields
         manifest_path.write_text(
-            json.dumps({
-                "status": "PASS",
-                "files": [],
-                "excluded_files": [],
-            }, indent=2) + "\n",
+            json.dumps(
+                {
+                    "status": "PASS",
+                    "files": [],
+                    "excluded_files": [],
+                },
+                indent=2,
+            )
+            + "\n",
             encoding="utf-8",
         )
 
@@ -393,10 +395,13 @@ class TestFailExtraFileInZip:
         content_a = b"public a"
         content_extra = b"sneaky extra"
         zip_path = tmp_path / "bundle.zip"
-        bundle_hash = _make_zip(zip_path, {
-            "docs/a.md": content_a,
-            "docs/extra.md": content_extra,
-        })
+        bundle_hash = _make_zip(
+            zip_path,
+            {
+                "docs/a.md": content_a,
+                "docs/extra.md": content_extra,
+            },
+        )
 
         manifest_path = tmp_path / "manifest.json"
         _make_manifest(
@@ -419,10 +424,13 @@ class TestFailDeniedPathInZip:
     def test_fail_denied_path_in_zip(self, tmp_path: Path) -> None:
         content = b"env secrets"
         zip_path = tmp_path / "bundle.zip"
-        bundle_hash = _make_zip(zip_path, {
-            "docs/ok.md": b"ok",
-            "12_tooling/.env": content,
-        })
+        bundle_hash = _make_zip(
+            zip_path,
+            {
+                "docs/ok.md": b"ok",
+                "12_tooling/.env": content,
+            },
+        )
 
         manifest_path = tmp_path / "manifest.json"
         policy_path = tmp_path / "policy.yaml"
@@ -489,18 +497,20 @@ class TestPassProvenanceRedacted:
         manifest_path = tmp_path / "manifest.json"
         _make_manifest(
             manifest_path,
-            files=[{
-                "path": "03_core/module.py",
-                "sha256": file_hash,
-                "size_bytes": len(content),
-                "sanitized": True,
-                "provenance": {
-                    "status": "redacted",
-                    "public_safe": True,
-                    "sanitization_rule": "secret_redact_v1",
-                    "policy_ref": "opencore_export_policy.yaml",
-                },
-            }],
+            files=[
+                {
+                    "path": "03_core/module.py",
+                    "sha256": file_hash,
+                    "size_bytes": len(content),
+                    "sanitized": True,
+                    "provenance": {
+                        "status": "redacted",
+                        "public_safe": True,
+                        "sanitization_rule": "secret_redact_v1",
+                        "policy_ref": "opencore_export_policy.yaml",
+                    },
+                }
+            ],
             bundle_sha256=bundle_hash,
             allow_prefixes=["03_core/"],
             allow_extensions=[".py"],
@@ -524,18 +534,20 @@ class TestWarnProvenanceMismatch:
         manifest_path = tmp_path / "manifest.json"
         _make_manifest(
             manifest_path,
-            files=[{
-                "path": "03_core/code.py",
-                "sha256": file_hash,
-                "size_bytes": len(content),
-                "sanitized": True,
-                "provenance": {
-                    "status": "unchanged",
-                    "public_safe": True,
-                    "sanitization_rule": None,
-                    "policy_ref": "opencore_export_policy.yaml",
-                },
-            }],
+            files=[
+                {
+                    "path": "03_core/code.py",
+                    "sha256": file_hash,
+                    "size_bytes": len(content),
+                    "sanitized": True,
+                    "provenance": {
+                        "status": "unchanged",
+                        "public_safe": True,
+                        "sanitization_rule": None,
+                        "policy_ref": "opencore_export_policy.yaml",
+                    },
+                }
+            ],
             bundle_sha256=bundle_hash,
             allow_prefixes=["03_core/"],
             allow_extensions=[".py"],
@@ -559,16 +571,18 @@ class TestFailInvalidProvenanceStatus:
         manifest_path = tmp_path / "manifest.json"
         _make_manifest(
             manifest_path,
-            files=[{
-                "path": "03_core/mod.py",
-                "sha256": file_hash,
-                "size_bytes": len(content),
-                "sanitized": False,
-                "provenance": {
-                    "status": "BOGUS_STATUS",
-                    "public_safe": True,
-                },
-            }],
+            files=[
+                {
+                    "path": "03_core/mod.py",
+                    "sha256": file_hash,
+                    "size_bytes": len(content),
+                    "sanitized": False,
+                    "provenance": {
+                        "status": "BOGUS_STATUS",
+                        "public_safe": True,
+                    },
+                }
+            ],
             bundle_sha256=bundle_hash,
             allow_prefixes=["03_core/"],
             allow_extensions=[".py"],

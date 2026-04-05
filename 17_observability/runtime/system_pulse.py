@@ -15,13 +15,11 @@ Usage::
 
 from __future__ import annotations
 
-import hashlib
-import json
 import logging
 import time
 import urllib.request
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -33,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 def _utcnow_iso() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+    return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 @dataclass
@@ -64,7 +62,7 @@ class PulseMetrics:
         return d
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "PulseMetrics":
+    def from_dict(cls, data: dict[str, Any]) -> PulseMetrics:
         net_raw = data.pop("network", {})
         if isinstance(net_raw, dict):
             net = NetworkStats(**{k: net_raw.get(k, 0) for k in NetworkStats.__dataclass_fields__})
@@ -177,11 +175,11 @@ class SystemPulse:
                 timestamp=_utcnow_iso(),
                 cpu_percent=round(cpu, 2),
                 cpu_count=cpu_count,
-                memory_total_mb=round(vm.total / (1024 ** 2), 1),
-                memory_used_mb=round(vm.used / (1024 ** 2), 1),
+                memory_total_mb=round(vm.total / (1024**2), 1),
+                memory_used_mb=round(vm.used / (1024**2), 1),
                 memory_percent=round(vm.percent, 2),
-                disk_total_gb=round(du.total / (1024 ** 3), 2),
-                disk_used_gb=round(du.used / (1024 ** 3), 2),
+                disk_total_gb=round(du.total / (1024**3), 2),
+                disk_used_gb=round(du.used / (1024**3), 2),
                 disk_percent=round(du.percent, 2),
                 network=NetworkStats(
                     bytes_sent=net.bytes_sent,
@@ -276,6 +274,7 @@ class SystemPulse:
         """
         try:
             from ssid_observability.runtime.pulse_state_store import PulseStateStore  # type: ignore
+
             store = PulseStateStore()
             history = store.get_pulse_history(count=500)
         except Exception:
@@ -369,18 +368,26 @@ class SystemPulse:
                 code = resp.status
                 if code < 400:
                     return ServiceHealth(
-                        name=name, url=url, status="healthy",
-                        latency_ms=latency_ms, http_status=code,
+                        name=name,
+                        url=url,
+                        status="healthy",
+                        latency_ms=latency_ms,
+                        http_status=code,
                         detail=f"HTTP {code}",
                     )
                 return ServiceHealth(
-                    name=name, url=url, status="degraded",
-                    latency_ms=latency_ms, http_status=code,
+                    name=name,
+                    url=url,
+                    status="degraded",
+                    latency_ms=latency_ms,
+                    http_status=code,
                     detail=f"HTTP {code}",
                 )
         except Exception as exc:
             return ServiceHealth(
-                name=name, url=url, status="unreachable",
+                name=name,
+                url=url,
+                status="unreachable",
                 detail=str(exc)[:120],
             )
 
@@ -389,6 +396,7 @@ class SystemPulse:
         """Return system uptime in seconds (best-effort)."""
         try:
             import psutil  # type: ignore
+
             return round(time.time() - psutil.boot_time(), 1)
         except Exception:
             return 0.0

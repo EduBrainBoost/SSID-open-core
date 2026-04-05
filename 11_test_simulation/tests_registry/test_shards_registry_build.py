@@ -6,9 +6,9 @@ from pathlib import Path
 CLI_DIR = Path(__file__).resolve().parents[2] / "12_tooling" / "cli"
 sys.path.insert(0, str(CLI_DIR))
 
+from _lib.shards import find_roots
 from chart_manifest_bootstrap import run_bootstrap
 from shards_registry_build import build_registry
-from _lib.shards import find_roots
 
 
 def test_registry_marks_shards_conformance_ready(tmp_path: Path) -> None:
