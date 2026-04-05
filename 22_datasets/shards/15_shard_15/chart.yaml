@@ -1,0 +1,39 @@
+name: 15_shard_15
+layer: 22_datasets
+version: 0.1.0
+title: Dataset Discovery
+capabilities:
+  MUST:
+  - dataset_catalog
+  - search_interface
+  - metadata_facets
+  SHOULD:
+  - recommendation_engine
+  - dataset_comparison
+  COULD:
+  - federated_discovery
+  - dataset_preview
+  WOULD:
+  - ai_dataset_recommendation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

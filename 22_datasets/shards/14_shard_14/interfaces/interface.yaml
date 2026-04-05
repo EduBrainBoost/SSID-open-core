@@ -1,0 +1,5 @@
+interface_id: 22_datasets.14_shard_14.primary
+root_id: 22_datasets
+shard_id: 14_shard_14
+kind: bootstrap_contract
+status: active

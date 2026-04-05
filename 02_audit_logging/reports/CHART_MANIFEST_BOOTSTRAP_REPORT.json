@@ -1,0 +1,26 @@
+{
+  "generated_at_utc": "2026-03-11T22:36:40Z",
+  "summary": {
+    "roots_created": 0,
+    "directories_created": 0,
+    "module_files_created": 0,
+    "readmes_created": 0,
+    "shards_created": 0,
+    "charts_created": 0,
+    "manifests_created": 0,
+    "templates_created": 0,
+    "contracts_created": 0,
+    "fixtures_created": 0,
+    "indexes_created": 5,
+    "taskspecs_created": 0
+  },
+  "chart_count": 384,
+  "manifest_count": 384,
+  "taskspec_count": 24,
+  "pilot_contract_shards": [
+    "03_core/01_identitaet_personen",
+    "03_core/02_dokumente_nachweise"
+  ],
+  "registry_path": "24_meta_orchestration/registry/shards_registry.json",
+  "agent_run_log_path": "02_audit_logging/agent_runs/AI_CLI_INTEGRATION_LOG.jsonl"
+}

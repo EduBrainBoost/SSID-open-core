@@ -1,0 +1,16 @@
+name: 09_shard_09
+layer: 16_codex
+implementation:
+  language: python
+  entrypoint: implementations/main.py
+  dependencies:
+  - pydantic
+  - jinja2
+tests:
+  - tests/unit
+  - tests/integration
+contracts:
+  - contracts/openapi.yaml
+conformance:
+  chart_ref: chart.yaml
+  semver: "0.1.0"

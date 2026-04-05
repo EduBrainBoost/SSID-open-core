@@ -1,0 +1,5 @@
+interface_id: 21_post_quantum_crypto.01_identitaet_personen.primary
+root_id: 21_post_quantum_crypto
+shard_id: 01_identitaet_personen
+kind: bootstrap_contract
+status: active

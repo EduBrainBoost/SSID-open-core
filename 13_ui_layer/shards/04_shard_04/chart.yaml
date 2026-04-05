@@ -1,0 +1,39 @@
+name: 04_shard_04
+layer: 13_ui_layer
+version: 0.1.0
+title: Form Builder
+capabilities:
+  MUST:
+  - dynamic_forms
+  - validation_rules
+  - field_types
+  SHOULD:
+  - multi_step_forms
+  - conditional_fields
+  COULD:
+  - a11y_forms
+  - localized_forms
+  WOULD:
+  - ai_form_generation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

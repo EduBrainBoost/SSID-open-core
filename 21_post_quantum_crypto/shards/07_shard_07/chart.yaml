@@ -1,0 +1,40 @@
+name: 07_shard_07
+layer: 21_post_quantum_crypto
+version: 0.1.0
+title: Hybrid Crypto Engine
+capabilities:
+  MUST:
+  - classical_pq_hybrid
+  - algorithm_negotiation
+  - migration_path
+  SHOULD:
+  - backward_compatibility
+  - forward_security
+  COULD:
+  - hybrid_protocol_support
+  - crypto_agility
+  WOULD:
+  - adaptive_hybrid_selection
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - cryptography_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

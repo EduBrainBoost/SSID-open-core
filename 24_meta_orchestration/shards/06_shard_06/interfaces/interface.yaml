@@ -1,0 +1,5 @@
+interface_id: 24_meta_orchestration.06_shard_06.primary
+root_id: 24_meta_orchestration
+shard_id: 06_shard_06
+kind: bootstrap_contract
+status: active

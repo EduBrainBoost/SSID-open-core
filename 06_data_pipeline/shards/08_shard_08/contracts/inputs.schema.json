@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "request_id",
+    "payload_hash"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "payload_hash": {
+      "type": "string",
+      "minLength": 32
+    }
+  },
+  "additionalProperties": false
+}

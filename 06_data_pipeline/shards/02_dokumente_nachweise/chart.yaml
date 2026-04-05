@@ -1,0 +1,40 @@
+name: 02_dokumente_nachweise
+layer: 06_data_pipeline
+version: 0.1.0
+title: Document Data Pipeline
+capabilities:
+  MUST:
+  - document_extraction
+  - metadata_tagging
+  - format_conversion
+  SHOULD:
+  - ocr_pipeline
+  - classification_pipeline
+  COULD:
+  - multi_source_ingestion
+  - enrichment
+  WOULD:
+  - ai_document_routing
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - data_architect_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

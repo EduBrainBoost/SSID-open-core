@@ -1,0 +1,39 @@
+name: 11_shard_11
+layer: 09_meta_identity
+version: 0.1.0
+title: Pseudonym Manager
+capabilities:
+  MUST:
+  - pseudonym_generation
+  - pseudonym_linkage
+  - pseudonym_lifecycle
+  SHOULD:
+  - context_bound_pseudonyms
+  - unlinkability
+  COULD:
+  - cross_context_pseudonyms
+  - pseudonym_recovery
+  WOULD:
+  - ai_pseudonym_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

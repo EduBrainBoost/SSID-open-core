@@ -1,0 +1,39 @@
+name: 14_shard_14
+layer: 09_meta_identity
+version: 0.1.0
+title: Identity Reconciliation
+capabilities:
+  MUST:
+  - duplicate_detection
+  - merge_workflow
+  - conflict_resolution
+  SHOULD:
+  - reconciliation_audit
+  - rollback_support
+  COULD:
+  - automated_reconciliation
+  - human_review_queue
+  WOULD:
+  - ai_reconciliation_engine
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

@@ -1,0 +1,5 @@
+interface_id: 06_data_pipeline.09_shard_09.primary
+root_id: 06_data_pipeline
+shard_id: 09_shard_09
+kind: bootstrap_contract
+status: active

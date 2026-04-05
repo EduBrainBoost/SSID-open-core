@@ -1,0 +1,8 @@
+root_id: 11_test_simulation
+shard_id: 16_shard_16
+rule_refs:
+- ROOT-24-LOCK
+- SAFE-FIX
+- SOT_AGENT_021
+- SOT_AGENT_022
+- SOT_AGENT_023

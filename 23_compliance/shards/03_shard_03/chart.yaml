@@ -1,0 +1,40 @@
+name: 03_shard_03
+layer: 23_compliance
+version: 0.1.0
+title: KYC Engine
+capabilities:
+  MUST:
+  - identity_verification
+  - document_check
+  - liveness_check
+  SHOULD:
+  - risk_scoring
+  - pep_screening
+  COULD:
+  - ongoing_monitoring
+  - enhanced_due_diligence
+  WOULD:
+  - ai_kyc_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - legal_counsel_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

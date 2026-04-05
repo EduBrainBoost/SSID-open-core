@@ -1,0 +1,5 @@
+interface_id: 21_post_quantum_crypto.06_shard_06.primary
+root_id: 21_post_quantum_crypto
+shard_id: 06_shard_06
+kind: bootstrap_contract
+status: active

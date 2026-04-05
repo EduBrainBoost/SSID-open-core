@@ -1,0 +1,40 @@
+name: 13_shard_13
+layer: 21_post_quantum_crypto
+version: 0.1.0
+title: PQ Attestation
+capabilities:
+  MUST:
+  - pq_hardware_attestation
+  - pq_remote_attestation
+  - pq_tee_support
+  SHOULD:
+  - pq_attestation_verification
+  - trust_chain
+  COULD:
+  - pq_platform_certificates
+  - pq_firmware_attestation
+  WOULD:
+  - ai_attestation_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - cryptography_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

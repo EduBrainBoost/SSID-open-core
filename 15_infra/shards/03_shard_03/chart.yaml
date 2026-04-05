@@ -1,0 +1,39 @@
+name: 03_shard_03
+layer: 15_infra
+version: 0.1.0
+title: Networking
+capabilities:
+  MUST:
+  - vpc_management
+  - subnet_routing
+  - firewall_rules
+  SHOULD:
+  - dns_management
+  - ssl_certificates
+  COULD:
+  - service_discovery
+  - traffic_management
+  WOULD:
+  - software_defined_networking
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

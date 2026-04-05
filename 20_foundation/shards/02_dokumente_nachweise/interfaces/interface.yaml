@@ -1,0 +1,5 @@
+interface_id: 20_foundation.02_dokumente_nachweise.primary
+root_id: 20_foundation
+shard_id: 02_dokumente_nachweise
+kind: bootstrap_contract
+status: active

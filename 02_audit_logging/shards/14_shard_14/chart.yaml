@@ -1,0 +1,39 @@
+name: 14_shard_14
+layer: 02_audit_logging
+version: 0.1.0
+title: Correlation Engine
+capabilities:
+  MUST:
+  - event_correlation
+  - actor_timeline
+  - resource_history
+  SHOULD:
+  - cross_layer_correlation
+  - causal_graph
+  COULD:
+  - anomaly_correlation
+  - risk_scoring
+  WOULD:
+  - ai_assisted_correlation
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

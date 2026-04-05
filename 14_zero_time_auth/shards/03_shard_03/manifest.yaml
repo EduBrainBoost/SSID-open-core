@@ -1,0 +1,17 @@
+name: 03_shard_03
+layer: 14_zero_time_auth
+implementation:
+  language: python
+  entrypoint: implementations/main.py
+  dependencies:
+  - cryptography
+  - pyjwt
+  - argon2
+tests:
+  - tests/unit
+  - tests/integration
+contracts:
+  - contracts/openapi.yaml
+conformance:
+  chart_ref: chart.yaml
+  semver: "0.1.0"

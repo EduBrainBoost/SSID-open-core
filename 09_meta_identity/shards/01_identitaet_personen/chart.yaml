@@ -1,0 +1,39 @@
+name: 01_identitaet_personen
+layer: 09_meta_identity
+version: 0.1.0
+title: Meta Person Identity
+capabilities:
+  MUST:
+  - meta_identity_resolution
+  - identity_federation
+  - cross_system_linkage
+  SHOULD:
+  - identity_graph
+  - alias_management
+  COULD:
+  - identity_clustering
+  - deduplication
+  WOULD:
+  - ai_identity_intelligence
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

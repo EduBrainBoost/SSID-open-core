@@ -1,0 +1,5 @@
+policy_id: 19_adapters.13_shard_13.baseline_policy
+root_id: 19_adapters
+shard_id: 13_shard_13
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

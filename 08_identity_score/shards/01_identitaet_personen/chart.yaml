@@ -1,0 +1,39 @@
+name: 01_identitaet_personen
+layer: 08_identity_score
+version: 0.1.0
+title: Person Score Engine
+capabilities:
+  MUST:
+  - score_calculation
+  - factor_weighting
+  - score_normalization
+  SHOULD:
+  - score_versioning
+  - historical_tracking
+  COULD:
+  - score_explainability
+  - confidence_intervals
+  WOULD:
+  - ai_score_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

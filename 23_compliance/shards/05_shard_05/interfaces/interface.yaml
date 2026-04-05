@@ -1,0 +1,5 @@
+interface_id: 23_compliance.05_shard_05.primary
+root_id: 23_compliance
+shard_id: 05_shard_05
+kind: bootstrap_contract
+status: active

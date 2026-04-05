@@ -1,0 +1,5 @@
+interface_id: 10_interoperability.02_dokumente_nachweise.primary
+root_id: 10_interoperability
+shard_id: 02_dokumente_nachweise
+kind: bootstrap_contract
+status: active

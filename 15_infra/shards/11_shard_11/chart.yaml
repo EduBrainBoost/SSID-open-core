@@ -1,0 +1,39 @@
+name: 11_shard_11
+layer: 15_infra
+version: 0.1.0
+title: Backup and Recovery
+capabilities:
+  MUST:
+  - automated_backups
+  - backup_verification
+  - restore_procedures
+  SHOULD:
+  - rpo_rto_compliance
+  - backup_encryption
+  COULD:
+  - cross_region_backups
+  - point_in_time_recovery
+  WOULD:
+  - ai_recovery_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding
