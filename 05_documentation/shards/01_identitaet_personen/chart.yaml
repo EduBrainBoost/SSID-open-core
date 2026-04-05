@@ -1,0 +1,39 @@
+name: 01_identitaet_personen
+layer: 05_documentation
+version: 0.1.0
+title: Identity API Docs
+capabilities:
+  MUST:
+  - openapi_spec
+  - endpoint_description
+  - parameter_docs
+  SHOULD:
+  - code_samples
+  - authentication_guide
+  COULD:
+  - sdk_docs
+  - postman_collection
+  WOULD:
+  - interactive_api_explorer
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

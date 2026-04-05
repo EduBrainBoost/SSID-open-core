@@ -1,0 +1,5 @@
+interface_id: 24_meta_orchestration.01_identitaet_personen.primary
+root_id: 24_meta_orchestration
+shard_id: 01_identitaet_personen
+kind: bootstrap_contract
+status: active

@@ -1,0 +1,40 @@
+name: 15_shard_15
+layer: 18_data_layer
+version: 0.1.0
+title: Vector Store
+capabilities:
+  MUST:
+  - vector_ingestion
+  - similarity_search
+  - index_management
+  SHOULD:
+  - multi_modal_vectors
+  - namespace_isolation
+  COULD:
+  - hybrid_search
+  - reranking
+  WOULD:
+  - ai_vector_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - data_architect_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

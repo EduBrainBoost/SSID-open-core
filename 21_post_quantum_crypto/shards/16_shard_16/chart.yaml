@@ -1,0 +1,40 @@
+name: 16_shard_16
+layer: 21_post_quantum_crypto
+version: 0.1.0
+title: PQ Benchmarking
+capabilities:
+  MUST:
+  - algorithm_performance
+  - key_size_analysis
+  - operation_latency
+  SHOULD:
+  - comparative_analysis
+  - hardware_acceleration_benchmarks
+  COULD:
+  - energy_efficiency
+  - network_overhead_analysis
+  WOULD:
+  - ai_pq_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - cryptography_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

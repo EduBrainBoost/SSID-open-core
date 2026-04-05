@@ -1,0 +1,5 @@
+interface_id: 04_deployment.01_identitaet_personen.primary
+root_id: 04_deployment
+shard_id: 01_identitaet_personen
+kind: bootstrap_contract
+status: active

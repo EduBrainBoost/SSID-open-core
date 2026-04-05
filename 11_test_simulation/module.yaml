@@ -1,0 +1,34 @@
+module_id: 11_test_simulation
+name: Test Simulation
+version: 4.1.0
+status: ROOT-24-LOCK
+classification: Quality Assurance
+purpose: test_simulation
+structure:
+  must_dirs:
+  - docs
+  - src
+  - tests
+  - config
+  - shards
+  must_files:
+  - module.yaml
+  - README.md
+  forbidden_paths:
+  - compliance_policies
+  - audit_storage
+  - governance_rules
+interfaces:
+  outputs:
+  - ref: 17_observability/logs/test_simulation
+    type: log_sink
+  evidence:
+  - ref: 23_compliance/evidence/test_simulation
+    type: evidence_target
+shard_count: 16
+evidence_strategy: hash_manifest_only
+governance_rules:
+- SOT_AGENT_021
+- SOT_AGENT_022
+- SOT_AGENT_023
+final_authority: 03_core

@@ -1,0 +1,5 @@
+interface_id: 19_adapters.02_dokumente_nachweise.primary
+root_id: 19_adapters
+shard_id: 02_dokumente_nachweise
+kind: bootstrap_contract
+status: active

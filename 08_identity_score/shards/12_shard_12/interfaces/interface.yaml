@@ -1,0 +1,5 @@
+interface_id: 08_identity_score.12_shard_12.primary
+root_id: 08_identity_score
+shard_id: 12_shard_12
+kind: bootstrap_contract
+status: active

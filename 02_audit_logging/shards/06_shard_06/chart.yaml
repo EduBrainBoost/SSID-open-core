@@ -1,0 +1,39 @@
+name: 06_shard_06
+layer: 02_audit_logging
+version: 0.1.0
+title: Audit Query Engine
+capabilities:
+  MUST:
+  - query_by_actor
+  - query_by_resource
+  - time_range_query
+  SHOULD:
+  - full_text_search
+  - faceted_filtering
+  COULD:
+  - aggregated_reports
+  - export_formats
+  WOULD:
+  - real_time_query_streaming
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

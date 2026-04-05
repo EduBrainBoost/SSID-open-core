@@ -1,0 +1,17 @@
+name: 03_shard_03
+layer: 01_ai_layer
+implementation:
+  language: python
+  entrypoint: implementations/main.py
+  dependencies:
+  - transformers
+  - torch
+  - langchain
+tests:
+  - tests/unit
+  - tests/integration
+contracts:
+  - contracts/openapi.yaml
+conformance:
+  chart_ref: chart.yaml
+  semver: "0.1.0"

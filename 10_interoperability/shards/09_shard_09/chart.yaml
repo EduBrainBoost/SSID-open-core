@@ -1,0 +1,39 @@
+name: 09_shard_09
+layer: 10_interoperability
+version: 0.1.0
+title: Identity Protocol Bridge
+capabilities:
+  MUST:
+  - saml_bridge
+  - oidc_bridge
+  - ldap_bridge
+  SHOULD:
+  - kerberos_support
+  - radius_bridge
+  COULD:
+  - zero_knowledge_bridge
+  - did_comm_bridge
+  WOULD:
+  - adaptive_protocol_bridge
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

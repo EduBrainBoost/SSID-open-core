@@ -1,0 +1,39 @@
+name: 16_shard_16
+layer: 19_adapters
+version: 0.1.0
+title: Compliance Adapter
+capabilities:
+  MUST:
+  - risk_framework_adapter
+  - regulatory_reporting_adapter
+  - sanctions_list_adapter
+  SHOULD:
+  - data_normalization
+  - report_generation
+  COULD:
+  - real_time_compliance_adapter
+  - bulk_compliance_adapter
+  WOULD:
+  - ai_compliance_intelligence
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

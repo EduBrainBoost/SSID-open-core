@@ -1,0 +1,5 @@
+interface_id: 23_compliance.02_dokumente_nachweise.primary
+root_id: 23_compliance
+shard_id: 02_dokumente_nachweise
+kind: bootstrap_contract
+status: active

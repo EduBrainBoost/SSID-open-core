@@ -1,0 +1,5 @@
+interface_id: 14_zero_time_auth.10_shard_10.primary
+root_id: 14_zero_time_auth
+shard_id: 10_shard_10
+kind: bootstrap_contract
+status: active

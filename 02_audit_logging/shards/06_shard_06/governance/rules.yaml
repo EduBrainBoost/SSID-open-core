@@ -1,0 +1,8 @@
+root_id: 02_audit_logging
+shard_id: 06_shard_06
+rule_refs:
+- ROOT-24-LOCK
+- SAFE-FIX
+- SOT_AGENT_021
+- SOT_AGENT_022
+- SOT_AGENT_023

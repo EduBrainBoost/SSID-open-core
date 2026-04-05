@@ -1,0 +1,39 @@
+name: 08_shard_08
+layer: 11_test_simulation
+version: 0.1.0
+title: Chaos Engineering
+capabilities:
+  MUST:
+  - fault_injection
+  - network_partition
+  - resource_starvation
+  SHOULD:
+  - steady_state_hypothesis
+  - experiment_automation
+  COULD:
+  - blast_radius_control
+  - rollback_automation
+  WOULD:
+  - ai_chaos_planning
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

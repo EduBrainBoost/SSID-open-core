@@ -1,0 +1,39 @@
+name: 11_shard_11
+layer: 19_adapters
+version: 0.1.0
+title: Government API Adapter
+capabilities:
+  MUST:
+  - national_registry_adapter
+  - tax_authority_adapter
+  - court_registry_adapter
+  SHOULD:
+  - response_normalization
+  - error_mapping
+  COULD:
+  - async_verification_adapter
+  - bulk_query_adapter
+  WOULD:
+  - ai_gov_api_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

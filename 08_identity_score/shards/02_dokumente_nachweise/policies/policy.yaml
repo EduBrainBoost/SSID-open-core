@@ -1,0 +1,5 @@
+policy_id: 08_identity_score.02_dokumente_nachweise.baseline_policy
+root_id: 08_identity_score
+shard_id: 02_dokumente_nachweise
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

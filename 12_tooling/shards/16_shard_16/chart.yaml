@@ -1,0 +1,39 @@
+name: 16_shard_16
+layer: 12_tooling
+version: 0.1.0
+title: Environment Setup Tools
+capabilities:
+  MUST:
+  - dev_environment_setup
+  - toolchain_installation
+  - configuration_wizard
+  SHOULD:
+  - cloud_dev_environments
+  - container_dev_env
+  COULD:
+  - reproducible_builds
+  - environment_pinning
+  WOULD:
+  - ai_environment_optimization
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

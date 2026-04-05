@@ -1,0 +1,5 @@
+policy_id: 04_deployment.11_shard_11.baseline_policy
+root_id: 04_deployment
+shard_id: 11_shard_11
+mode: advisory
+enforcement: fail_closed_on_missing_contracts

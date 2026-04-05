@@ -1,0 +1,40 @@
+name: 05_shard_05
+layer: 06_data_pipeline
+version: 0.1.0
+title: Data Quality
+capabilities:
+  MUST:
+  - completeness_checks
+  - format_validation
+  - referential_integrity
+  SHOULD:
+  - anomaly_detection
+  - profiling
+  COULD:
+  - data_contracts_enforcement
+  - drift_alerts
+  WOULD:
+  - ai_quality_scoring
+interfaces:
+- openapi
+- json_schema
+policies:
+- hash_only
+- non_custodial
+- data_minimization
+governance:
+  reviewers:
+  - sot_agent_021
+  - sot_agent_022
+  - sot_agent_023
+  - data_architect_reviewer
+  promotion_rules:
+  - chart_present
+  - manifest_present
+  - contracts_present
+  - gate_pass
+maturity: scaffold
+evidence:
+- logging
+- audit_trail
+- registry_binding

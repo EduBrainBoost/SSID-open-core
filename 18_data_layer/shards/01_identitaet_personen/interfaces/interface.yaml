@@ -1,0 +1,5 @@
+interface_id: 18_data_layer.01_identitaet_personen.primary
+root_id: 18_data_layer
+shard_id: 01_identitaet_personen
+kind: bootstrap_contract
+status: active
