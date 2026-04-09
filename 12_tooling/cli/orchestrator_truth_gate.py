@@ -41,7 +41,6 @@ DEFAULT_REPOS = ["EduBrainBoost/SSID", "EduBrainBoost/SSID-EMS"]
 # Untracked files matching these patterns are policy violations (FAIL, not warn)
 FAIL_UNTRACKED_PATTERNS = [
     ".tmp_evidence",
-    "chatgpt-state",
     ".env",
     "*.secret",
     "*.key",

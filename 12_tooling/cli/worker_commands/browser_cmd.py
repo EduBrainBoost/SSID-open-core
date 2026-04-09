@@ -14,6 +14,8 @@ import sys
 from datetime import UTC, datetime
 
 
+
+
 def _check(args: argparse.Namespace) -> int:
     """Check if a URL is reachable via browser."""
     url = args.url
