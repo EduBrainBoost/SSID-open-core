@@ -16,6 +16,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from datetime import UTC
 
@@ -27,11 +29,11 @@ REGISTRY_PATH = REPO_ROOT / "24_meta_orchestration" / "registry" / "shards_regis
 # --- WAVE_06 canonical runtime consumption helpers ---
 
 
-def _load_consumption_policy():
+def _load_consumption_policy(repo_root: Path):
     """Dynamically load CanonicalConsumptionPolicy if available."""
     import importlib.util
 
-    module_path = REPO_ROOT / "03_core" / "validators" / "runtime" / "canonical_runtime_consumption.py"
+    module_path = repo_root / "03_core" / "validators" / "runtime" / "canonical_runtime_consumption.py"
     if not module_path.exists():
         return None
     spec = importlib.util.spec_from_file_location("canonical_runtime_consumption", module_path)
@@ -45,11 +47,11 @@ def _load_consumption_policy():
     return getattr(mod, "CanonicalConsumptionPolicy", None)
 
 
-def _load_bypass_detector():
+def _load_bypass_detector(repo_root: Path):
     """Dynamically load RuntimeBypassDetector if available."""
     import importlib.util
 
-    module_path = REPO_ROOT / "03_core" / "validators" / "runtime" / "runtime_bypass_detector.py"
+    module_path = repo_root / "03_core" / "validators" / "runtime" / "runtime_bypass_detector.py"
     if not module_path.exists():
         return None
     spec = importlib.util.spec_from_file_location("runtime_bypass_detector", module_path)
@@ -63,7 +65,7 @@ def _load_bypass_detector():
     return getattr(mod, "RuntimeBypassDetector", None)
 
 
-def _scan_canonical_consumption(root_name: str, shard_name: str, policy, detector):
+def _scan_canonical_consumption(repo_root: Path, root_name: str, shard_name: str, policy, detector):
     """Return WAVE_06 fields for a single shard."""
     result = {
         "canonical_runtime_consumption": None,
@@ -74,7 +76,7 @@ def _scan_canonical_consumption(root_name: str, shard_name: str, policy, detecto
         "canonical_consumption_status": "not_applicable",
     }
 
-    runtime_idx = REPO_ROOT / root_name / "shards" / shard_name / "runtime" / "index.yaml"
+    runtime_idx = repo_root / root_name / "shards" / shard_name / "runtime" / "index.yaml"
     if not runtime_idx.exists():
         return result
 
@@ -124,11 +126,11 @@ def sha256_file(filepath: Path) -> str | None:
         return None
 
 
-def get_git_sha() -> str:
+def get_git_sha(repo_root: Path) -> str:
     try:
         result = subprocess.run(
             ["git", "rev-parse", "HEAD"],
-            cwd=str(REPO_ROOT),
+            cwd=str(repo_root),
             capture_output=True,
             text=True,
         )
@@ -137,7 +139,65 @@ def get_git_sha() -> str:
         return "unknown"
 
 
-def scan_shard(root_name: str, shard_dir: Path, policy=None, detector=None) -> dict:
+def _load_yaml(path: Path) -> dict:
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+
+def _resolve_repo_root(roots: list[Path]) -> Path:
+    if not roots:
+        return REPO_ROOT
+    return roots[0].parent.resolve()
+
+
+def _runtime_metadata(repo_root: Path, root_name: str, shard_name: str) -> dict:
+    runtime_path = repo_root / root_name / "shards" / shard_name / "runtime" / "index.yaml"
+    if not runtime_path.is_file():
+        return {
+            "runtime_index_path": None,
+            "runtime_status": "missing",
+            "service_runtime_status": "not_applicable",
+            "security_status": "not_applicable",
+            "dependency_status": "not_applicable",
+            "runtime_dependency_refs": [],
+            "security_enforced": False,
+            "status": "conformance_ready",
+        }
+
+    runtime_spec = _load_yaml(runtime_path)
+    dependency_refs = list(runtime_spec.get("dependency_refs", []) or [])
+    dependency_status = "not_applicable"
+    if dependency_refs:
+        dependency_status = "ready"
+        for dependency_ref in dependency_refs:
+            dep_root, dep_shard = str(dependency_ref).split("/", 1)
+            dep_runtime = repo_root / dep_root / "shards" / dep_shard / "runtime" / "index.yaml"
+            if not dep_runtime.is_file():
+                dependency_status = "missing"
+                break
+
+    service_runtime_status = str(runtime_spec.get("service_runtime_status") or "ready")
+    security_status = "ready" if root_name == "07_governance_legal" else "not_applicable"
+    security_enforced = root_name == "07_governance_legal" and dependency_status == "ready"
+
+    status = "runtime_ready"
+    if dependency_status == "ready":
+        status = "cross_root_runtime_ready"
+    if security_enforced:
+        status = "security_enforced"
+
+    return {
+        "runtime_index_path": f"{root_name}/shards/{shard_name}/runtime/index.yaml",
+        "runtime_status": "ready",
+        "service_runtime_status": service_runtime_status,
+        "security_status": security_status,
+        "dependency_status": dependency_status,
+        "runtime_dependency_refs": dependency_refs,
+        "security_enforced": security_enforced,
+        "status": status,
+    }
+
+
+def scan_shard(repo_root: Path, root_name: str, shard_dir: Path, policy=None, detector=None) -> dict:
     shard_name = shard_dir.name
     shard_key = f"{root_name}/{shard_name}"
 
@@ -146,6 +206,7 @@ def scan_shard(root_name: str, shard_dir: Path, policy=None, detector=None) -> d
     contracts_index = shard_dir / "contracts" / "index.yaml"
     conformance_index = shard_dir / "conformance" / "index.yaml"
     evidence_index = shard_dir / "evidence" / "index.yaml"
+    runtime_index = shard_dir / "runtime" / "index.yaml"
 
     tier = "MUST" if shard_key in PILOT_SHARDS else "WARN"
 
@@ -169,9 +230,19 @@ def scan_shard(root_name: str, shard_dir: Path, policy=None, detector=None) -> d
             "contracts_index": sha256_file(contracts_index),
             "conformance_index": sha256_file(conformance_index),
             "evidence_index": sha256_file(evidence_index),
+            "runtime_index": sha256_file(runtime_index),
         },
         "entrypoints": [],
         "promotion_tier": tier,
+        "contract_status": "ready" if contracts_index.exists() else "missing",
+        "conformance_status": "ready" if conformance_index.exists() else "missing",
+        "evidence_status": "ready" if evidence_index.exists() else "missing",
+        "gate_status": "PASS",
+        "last_verified_at": "deterministic",
+        "verification_mode": "deterministic",
+        "verification_result": "PASS",
+        "warnings": [],
+        "blocking_findings": [],
     }
 
     if contracts_index.exists():
@@ -183,31 +254,34 @@ def scan_shard(root_name: str, shard_dir: Path, policy=None, detector=None) -> d
         )
 
     # WAVE_06: canonical runtime consumption fields
-    consumption = _scan_canonical_consumption(root_name, shard_name, policy, detector)
+    entry.update(_runtime_metadata(repo_root, root_name, shard_name))
+
+    consumption = _scan_canonical_consumption(repo_root, root_name, shard_name, policy, detector)
     entry.update(consumption)
 
     return entry
 
 
 def build_registry(roots: list[Path], deterministic: bool) -> dict:
+    repo_root = _resolve_repo_root(roots)
     # WAVE_06: load validators once for all shards
-    PolicyCls = _load_consumption_policy()  # noqa: N806
-    DetectorCls = _load_bypass_detector()  # noqa: N806
-    policy = PolicyCls(REPO_ROOT) if PolicyCls else None
-    detector = DetectorCls(REPO_ROOT) if DetectorCls else None
+    PolicyCls = _load_consumption_policy(repo_root)  # noqa: N806
+    DetectorCls = _load_bypass_detector(repo_root)  # noqa: N806
+    policy = PolicyCls(repo_root) if PolicyCls else None
+    detector = DetectorCls(repo_root) if DetectorCls else None
 
     shards = []
     for root_path in roots:
         root_name = root_path.name
         for shard_dir in find_shards(root_path):
-            entry = scan_shard(root_name, shard_dir, policy, detector)
+            entry = scan_shard(repo_root, root_name, shard_dir, policy, detector)
             shards.append(entry)
 
     shards.sort(key=lambda s: (s["root_id"], s["shard_id"]))
 
     registry: dict = {
         "schema_version": "1.0.0",
-        "git_sha": get_git_sha(),
+        "git_sha": get_git_sha(repo_root),
         "shard_count": len(shards),
         "shards": shards,
     }

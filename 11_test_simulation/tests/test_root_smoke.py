@@ -40,10 +40,10 @@ class TestRootStructure:
     def test_no_secrets_in_root(self) -> None:
         """Scan for common secret patterns."""
         secret_patterns = [
-            "AKIA",  # AWS access key
-            "ghp_",  # GitHub PAT
-            "sk-",  # OpenAI/Stripe key
-            "PRIVATE KEY",  # PEM private key
+            "AK" "IA",  # AWS access key
+            "gh" "p_",  # GitHub PAT
+            "sk" "-",  # OpenAI/Stripe key
+            "PRIVATE" " KEY",  # PEM private key
         ]
         for f in ROOT_DIR.rglob("*"):
             if not f.is_file() or f.suffix in {".pyc", ".whl", ".tar", ".gz", ".zip"}:

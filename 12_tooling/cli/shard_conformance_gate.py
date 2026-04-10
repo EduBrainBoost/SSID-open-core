@@ -17,6 +17,7 @@ import re
 from pathlib import Path
 
 import jsonschema
+import yaml
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -40,6 +41,15 @@ URL_DENY = re.compile(r"https?://[^\s\"\x27,}]+")
 def _load_json(path):
     with open(path, encoding="utf-8") as f:
         return json.load(f)
+
+
+def _load_yaml(path):
+    with open(path, encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+def _repo_root_for_shard(sd: Path) -> Path:
+    return sd.resolve().parents[2]
 
 
 def _walk_pii(obj, path, viols):
@@ -86,6 +96,137 @@ def _check_contracts_exist(sd):
     return True, schemas, []
 
 
+def _fixture_candidates(sd, token):
+    fixtures_dir = sd / "conformance" / "fixtures"
+    if not fixtures_dir.is_dir():
+        return []
+    return sorted(
+        path
+        for path in fixtures_dir.glob(f"*{token}*.json")
+        if path.is_file()
+    )
+
+
+def _validate_against_any_schema(instance, schemas):
+    errors = []
+    for schema in schemas:
+        try:
+            jsonschema.validate(instance, schema)
+            return True, []
+        except jsonschema.ValidationError as exc:
+            errors.append(exc.message)
+    return False, errors
+
+
+def _check_manifest_contract_consistency(sd, schema_paths):
+    manifest_path = sd / "manifest.yaml"
+    if not manifest_path.is_file():
+        return False, [f"manifest.yaml missing in {sd.name}"]
+
+    manifest = _load_yaml(manifest_path) or {}
+    manifest_contracts = {
+        Path(contract_path).as_posix()
+        for contract_path in manifest.get("contracts", [])
+        if isinstance(contract_path, str)
+    }
+    expected_contracts = {f"contracts/{path.name}" for path in schema_paths}
+
+    missing_required = sorted(
+        rel_path
+        for rel_path in manifest_contracts
+        if rel_path.startswith("contracts/") and not (sd / rel_path).is_file()
+    )
+    extra_actual = sorted(expected_contracts - manifest_contracts)
+    if missing_required and not extra_actual:
+        return False, [f"Missing required schemas: {missing_required}"]
+
+    if manifest_contracts != expected_contracts:
+        return False, [
+            "manifest/contracts mismatch: "
+            f"manifest={sorted(manifest_contracts)} actual={sorted(expected_contracts)}"
+        ]
+
+    return True, []
+
+
+def _check_documentation_present(sd):
+    return (sd / "README.md").is_file()
+
+
+def _resolve_runtime(sd):
+    runtime_path = sd / "runtime" / "index.yaml"
+    if not runtime_path.is_file():
+        return None, ["runtime/index.yaml missing"]
+    runtime = _load_yaml(runtime_path) or {}
+    if not isinstance(runtime, dict):
+        return None, ["runtime/index.yaml is not a mapping"]
+    return runtime, []
+
+
+def _expected_runtime(root_name):
+    if root_name == "03_core":
+        return "wave03_reference", "Root03ReferenceWave"
+    if root_name == "09_meta_identity":
+        return "wave09_identity_services", "Root09IdentityServicesWave"
+    if root_name == "07_governance_legal":
+        return "wave07_security_enforcement", "Root07SecurityEnforcementWave"
+    return None
+
+
+def _check_runtime_capability(root_name, sd):
+    runtime, violations = _resolve_runtime(sd)
+    if runtime is None:
+        return False, violations
+
+    expected = _expected_runtime(root_name)
+    if expected is None:
+        return True, []
+
+    expected_module, expected_factory = expected
+    found_module = str(runtime.get("module", ""))
+    found_factory = str(runtime.get("factory", ""))
+    found_shard = str(runtime.get("shard_id", ""))
+
+    issues = []
+    if found_module != expected_module:
+        issues.append(
+            f"runtime capability mismatch: module={found_module!r} expected={expected_module!r}"
+        )
+    if found_factory != expected_factory:
+        issues.append(
+            f"runtime capability mismatch: factory={found_factory!r} expected={expected_factory!r}"
+        )
+    if found_shard != sd.name:
+        issues.append(f"runtime capability mismatch: shard_id={found_shard!r} expected={sd.name!r}")
+
+    for key in ("valid_input", "expected_output_schema"):
+        rel = runtime.get(key)
+        if not isinstance(rel, str) or not (sd / "runtime" / rel).resolve().exists():
+            issues.append(f"runtime capability missing referenced file for {key}")
+
+    return len(issues) == 0, issues
+
+
+def _check_dependency_capability(sd):
+    runtime, violations = _resolve_runtime(sd)
+    if runtime is None:
+        return False, violations
+
+    repo_root = _repo_root_for_shard(sd)
+    dependency_refs = runtime.get("dependency_refs", []) or []
+    issues = []
+    for dependency_ref in dependency_refs:
+        if not isinstance(dependency_ref, str) or "/" not in dependency_ref:
+            issues.append(f"cross-root runtime capability invalid dependency ref: {dependency_ref!r}")
+            continue
+        dep_root, dep_shard = dependency_ref.split("/", 1)
+        dep_runtime = repo_root / dep_root / "shards" / dep_shard / "runtime" / "index.yaml"
+        if not dep_runtime.is_file():
+            issues.append(f"cross-root runtime capability missing dependency runtime: {dependency_ref}")
+
+    return len(issues) == 0, issues
+
+
 def _check_schema_valid(schema_paths):
     loaded, viols = [], []
     for sp in schema_paths:
@@ -114,18 +255,18 @@ def _check_pii_denial(schemas, schema_paths):
 
 
 def _check_valid_fixtures(sd, schemas):
-    fd = sd / "conformance" / "fixtures"
-    if not fd.is_dir():
+    if not (sd / "conformance" / "fixtures").is_dir():
         return False, ["conformance/fixtures/ directory missing"]
-    vf = sorted(fd.glob("valid*.json"))
+    vf = [path for path in _fixture_candidates(sd, "valid") if "invalid" not in path.name]
     if not vf:
         return False, ["No valid*.json fixtures found"]
     viols = []
-    schema = schemas[0]
     for f in vf:
         try:
             inst = _load_json(f)
-            jsonschema.validate(inst, schema)
+            passed, errors = _validate_against_any_schema(inst, schemas)
+            if not passed:
+                viols.append(f"{f.name} failed validation: {errors[0]}")
         except jsonschema.ValidationError as e:
             viols.append(f"{f.name} failed validation: {e.message}")
         except json.JSONDecodeError as e:
@@ -134,21 +275,18 @@ def _check_valid_fixtures(sd, schemas):
 
 
 def _check_invalid_fixtures(sd, schemas):
-    fd = sd / "conformance" / "fixtures"
-    if not fd.is_dir():
+    if not (sd / "conformance" / "fixtures").is_dir():
         return False, ["conformance/fixtures/ directory missing"]
-    ivf = sorted(fd.glob("invalid*.json"))
+    ivf = _fixture_candidates(sd, "invalid")
     if not ivf:
         return False, ["No invalid*.json fixtures found"]
     viols = []
-    schema = schemas[0]
     for f in ivf:
         try:
             inst = _load_json(f)
-            jsonschema.validate(inst, schema)
-            viols.append(f"{f.name} should fail validation but passed")
-        except jsonschema.ValidationError:
-            pass
+            passed, _errors = _validate_against_any_schema(inst, schemas)
+            if passed:
+                viols.append(f"{f.name} should fail validation but passed")
         except json.JSONDecodeError as e:
             viols.append(f"{f.name} JSON parse error: {e}")
     return len(viols) == 0, viols
@@ -162,12 +300,19 @@ def _check_shard(root_name, sd):
     if not ok:
         ec = 2
     if sp:
+        ok, v = _check_manifest_contract_consistency(sd, sp)
+        checks["manifest_contract_consistent"] = ok
+        all_v.extend(v)
+        if not ok:
+            ec = max(ec, 2 if any("Missing required schemas" in item for item in v) else 1)
+
         ok, schemas, v = _check_schema_valid(sp)
         checks["schema_valid"] = ok
         all_v.extend(v)
         if not ok:
             ec = 2
     else:
+        checks["manifest_contract_consistent"] = False
         checks["schema_valid"] = False
         schemas = []
     if schemas:
@@ -194,6 +339,40 @@ def _check_shard(root_name, sd):
             ec = 1
     else:
         checks["invalid_fixtures_rejected"] = False
+
+    checks["documentation_present"] = _check_documentation_present(sd)
+    if not checks["documentation_present"] and ec == 0:
+        ec = 1
+        all_v.append("documentation missing: README.md")
+
+    runtime_ok, runtime_v = _check_runtime_capability(root_name, sd)
+    checks["runtime_capability"] = runtime_ok
+    dependency_ok, dependency_v = _check_dependency_capability(sd)
+    checks["dependency_capability"] = dependency_ok
+    checks["cross_root_runtime_capability"] = runtime_ok and dependency_ok
+    checks["security_capability"] = runtime_ok if root_name == "07_governance_legal" else False
+    checks["security_enforcement_capability"] = (
+        runtime_ok and dependency_ok if root_name == "07_governance_legal" else False
+    )
+
+    if root_name in {"03_core", "09_meta_identity", "07_governance_legal"}:
+        all_v.extend(runtime_v)
+        if not runtime_ok:
+            ec = max(ec, 2)
+    if root_name in {"09_meta_identity", "07_governance_legal"}:
+        if root_name == "07_governance_legal":
+            all_v.extend(
+                violation.replace(
+                    "cross-root runtime capability",
+                    "security enforcement capability",
+                )
+                for violation in dependency_v
+            )
+        else:
+            all_v.extend(dependency_v)
+        if not dependency_ok:
+            ec = max(ec, 2)
+
     verdict = "PASS" if ec == 0 else ("ERROR" if ec == 2 else "FAIL")
     return {"shard": sd.name, "verdict": verdict, "exit_code": ec, "checks": checks, "violations": all_v}
 
