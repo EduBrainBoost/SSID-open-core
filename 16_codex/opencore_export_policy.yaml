@@ -2,35 +2,16 @@
 # Authoritative source: SSID private repo (this file)
 # Defines what MAY and what MUST NOT be mirrored to SSID-open-core
 ---
-schema_version: "2.0.0"
+version: "2.0.0"
 source_repo: "SSID"
 target_repo: "SSID-open-core"
 mode: "filtered"
 
-# All 24 canonical roots are allowed in open-core (Root-24 scaffolding)
+# Only these prefixes are allowed in open-core
 allow_prefixes:
-  - "01_ai_layer/"
-  - "02_audit_logging/"
   - "03_core/"
-  - "04_deployment/"
-  - "05_documentation/"
-  - "06_data_pipeline/"
-  - "07_governance_legal/"
-  - "08_identity_score/"
-  - "09_meta_identity/"
-  - "10_interoperability/"
-  - "11_test_simulation/"
   - "12_tooling/"
-  - "13_ui_layer/"
-  - "14_zero_time_auth/"
-  - "15_infra/"
   - "16_codex/"
-  - "17_observability/"
-  - "18_data_layer/"
-  - "19_adapters/"
-  - "20_foundation/"
-  - "21_post_quantum_crypto/"
-  - "22_datasets/"
   - "23_compliance/"
   - "24_meta_orchestration/"
   # Top-level files
@@ -41,21 +22,27 @@ allow_prefixes:
   - "pytest.ini"
   - "pyproject.toml"
 
-# Allowed file extensions in open-core exports
-allow_extensions:
-  - ".py"
-  - ".yaml"
-  - ".yml"
-  - ".md"
-  - ".toml"
-  - ".cfg"
-  - ".ini"
-  - ".txt"
-  - ".json"
-  - ".sol"
-
-# Maximum file size for export (10 MB)
-max_file_size_bytes: 10485760
+# These roots MUST NOT appear in open-core
+deny_roots:
+  - "01_ai_layer"        # AI/scoring algorithms, IP-sensitive
+  - "02_audit_logging"   # Evidence, WORM storage, quarantine chain
+  - "04_deployment"      # Infrastructure details
+  - "05_documentation"   # Internal docs, partner-specific
+  - "06_data_pipeline"   # Data flow architecture
+  - "07_governance_legal" # Legal/regulatory specifics
+  - "08_identity_score"  # Scoring algorithms, IP-sensitive
+  - "09_meta_identity"   # Identity logic, partner-specific
+  - "10_interoperability" # Partner interfaces, NDA-dependent
+  - "11_test_simulation" # Test infrastructure (public-safe but not core)
+  - "13_ui_layer"        # Product UI, not open-core
+  - "14_zero_time_auth"  # Auth algorithms, security-critical
+  - "15_infra"           # Infrastructure secrets risk
+  - "17_observability"   # Monitoring setup, internal
+  - "18_data_layer"      # Database schemas, internal
+  - "19_adapters"        # Partner adapters, NDA-dependent
+  - "20_foundation"      # Token/foundation, regulatory
+  - "21_post_quantum_crypto" # Crypto implementation, security-critical
+  - "22_datasets"        # PII-adjacent, regulatory
 
 # Glob patterns that must never be exported
 deny_globs:
@@ -67,7 +54,8 @@ deny_globs:
   - "**/*.pem"
   - "**/*.key"
   - "**/*.p12"
-  - "02_audit_logging/storage/**"
+  - "02_audit_logging/**"
+  - "02_audit_logging/storage/worm/**"
   - "02_audit_logging/evidence/**"
   - "24_meta_orchestration/registry/logs/**"
   - "security/results/**"
@@ -91,18 +79,9 @@ enforcement:
   fail_on_deny_match: true
   fail_on_secret_match: true
 
-# Export manifest schema for validation
-export_manifest_schema:
-  required_fields:
-    - "export_id"
-    - "timestamp"
-    - "source_commit"
-    - "files"
-    - "policy_version"
-  format: "json"
-
 # Status note
 note: >
-  As of 2026-04-05, all 24 canonical roots are scaffolded in open-core.
-  Sensitive data (storage, evidence, secrets) is protected via deny_globs.
+  CRITICAL: As of 2026-03-28, SSID-open-core contains all 24 roots
+  but only 5 are allowed. The 19 denied roots must be removed from
+  open-core or explicitly reclassified with governance approval.
   This policy is the authoritative SoT for the export boundary.

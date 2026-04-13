@@ -23,16 +23,20 @@ This repository exposes **5 exported root modules** that form the public API of 
 | `23_compliance` | OPA policies, root-level exception allowlist | ✓ Exported |
 | `24_meta_orchestration` | Canonical dispatcher, SoT artifact registry | ✓ Exported |
 
-### Scaffolded Roots (Not Exported)
+### Repository Structure (ROOT-24)
 
-The repository structure includes 19 additional scaffolded root directories (01_ai_layer, 02_audit_logging, 04_deployment, etc.) that represent the full canonical SSID architecture. These are preserved for structural consistency but contain no public content and are not exported.
+The repository preserves the full 24-root canonical SSID architecture for structural consistency:
+- **Exported roots** (5): Full content, validated for public safety (see table above)
+- **Denied roots** (19): Empty or minimal scaffolds; not exported, not validated for public content
+
+For governance rationale, see [`16_codex/EXPORT_BOUNDARY.md`](16_codex/EXPORT_BOUNDARY.md).
 
 ### Repository Status
 
-- **Exported:** 5 root modules available for public use
-- **Scaffolded:** 19 root module directories (structure only, no public content)
-- **Total:** 24 roots (ROOT-24 architecture immutable)
-- **Distribution:** Open-core subset only; full implementation in private canonical repository
+- **Public API:** 5 root modules available for public use
+- **Repository Structure:** All 24 roots present (ROOT-24-LOCK)
+- **Distribution:** SSID-open-core is a **derivative** (5-root API) of canonical SSID (24-root full implementation)
+- **Governance:** Canonical SSID policy is authoritative source-of-truth
 
 ## Prerequisites
 

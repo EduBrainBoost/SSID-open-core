@@ -34,19 +34,25 @@ All gates must pass. Order matters.
 
 ## Open-Core Root Policy
 
-This repository contains 5 root modules from the canonical SSID architecture:
+This repository is a **derivative** of canonical SSID. Only **5 root modules** are part of the public API and accept contributions:
 
 - `03_core` — SoT validator core, identity primitives
-- `12_tooling` — CLI tools, guard scripts
-- `16_codex` — ADRs, SoT contracts
-- `23_compliance` — OPA policies, exception allowlist
-- `24_meta_orchestration` — Dispatcher, SoT artifact registry
+- `12_tooling` — CLI tools, guard scripts, validators
+- `16_codex` — ADRs, SoT contracts, governance docs
+- `23_compliance` — OPA policies, compliance rules
+- `24_meta_orchestration` — Dispatcher core, artifact registry
 
-Only these 5 roots accept contributions in this repository. Changes to other SSID roots belong in the private canonical repository.
+### Contribution Rules
 
-- Allowed root-level exceptions are defined in `23_compliance/exceptions/root_level_exceptions.yaml`
-- Every new root exception requires an Architecture Decision Record (ADR) in `16_codex/decisions/`
-- The structure guard (`12_tooling/scripts/structure_guard.py`) enforces this policy
+- **Only these 5 roots accept contributions** in this repository
+- Changes to other roots belong in the **private canonical SSID repository**
+- Root exceptions (if needed) require:
+  - RFC in `16_codex/rfcs/`
+  - Security/legal review
+  - Architecture Decision Record (ADR) in `16_codex/decisions/`
+  - Update to `16_codex/EXPORT_BOUNDARY.md`
+
+See [`16_codex/EXPORT_BOUNDARY.md`](../16_codex/EXPORT_BOUNDARY.md) for full policy and rationale.
 
 ## Architecture Decisions
 
