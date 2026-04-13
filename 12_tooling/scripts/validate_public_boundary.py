@@ -143,6 +143,9 @@ def validate_no_local_paths(repo_root: Path) -> list[str]:
             if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json', '.sh']:
                 continue
 
+            # Allow paths in pattern definition files
+            if is_pattern_definition_file(file):
+                continue
             # Allow paths in test files
             if '/tests/' in str(file).replace('\\', '/'):
                 continue
@@ -192,6 +195,9 @@ def validate_no_secrets(repo_root: Path) -> list[str]:
             if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json']:
                 continue
 
+            # Skip pattern definition files
+            if is_pattern_definition_file(file):
+                continue
             # Skip test files
             if 'test' in file.name or '/tests/' in str(file).replace('\\', '/'):
                 continue
