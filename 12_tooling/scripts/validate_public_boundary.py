@@ -75,6 +75,29 @@ EXPORTED_ROOTS = [
     '24_meta_orchestration',
 ]
 
+# These 19 roots must NOT contain meaningful content (derived from canonical SSID policy)
+DENIED_ROOTS = [
+    '01_ai_layer',
+    '02_audit_logging',
+    '04_deployment',
+    '05_documentation',
+    '06_data_pipeline',
+    '07_governance_legal',
+    '08_identity_score',
+    '09_meta_identity',
+    '10_interoperability',
+    '11_test_simulation',
+    '13_ui_layer',
+    '14_zero_time_auth',
+    '15_infra',
+    '17_observability',
+    '18_data_layer',
+    '19_adapters',
+    '20_foundation',
+    '21_post_quantum_crypto',
+    '22_datasets',
+]
+
 
 def is_pattern_definition_file(file_path: Path) -> bool:
     """Check if file is a pattern definition file (allowed to contain patterns)."""
@@ -257,6 +280,37 @@ def validate_no_mainnet_false_claims(repo_root: Path) -> list[str]:
     return violations
 
 
+def validate_denied_roots_empty(repo_root: Path) -> list[str]:
+    """Check that denied roots contain no meaningful code files.
+
+    Allowed: README.md, module.yaml, empty directories, scaffolds
+    Not allowed: Implementation code (*.py with logic), test files, config
+    """
+    warnings = []
+
+    for root in DENIED_ROOTS:
+        root_path = repo_root / root
+        if not root_path.exists():
+            continue
+
+        # Count code/content files (excluding metadata and empty scaffolds)
+        code_files = []
+        for py_file in root_path.rglob('*.py'):
+            # Skip __pycache__ and test stubs
+            if '__pycache__' in str(py_file):
+                continue
+            if py_file.name in ['__init__.py', 'stub.py']:
+                continue
+            # Skip tiny files (likely scaffolds)
+            if py_file.stat().st_size > 100:
+                code_files.append(py_file)
+
+        if code_files:
+            warnings.append(f"{root}: contains {len(code_files)} code file(s) (denied root should be empty scaffold)")
+
+    return warnings
+
+
 def validate_export_scope(repo_root: Path, manifest: dict = None) -> list[str]:
     """Validate that only exported roots should be published."""
     # This is informational only - doesn't fail, just flags scaffolded roots
@@ -308,6 +362,16 @@ def main():
             print(f"      - {claim}")
     else:
         print("    [OK] No unbacked mainnet claims")
+
+    print("[5] Checking that denied roots are empty...")
+    denied_issues = validate_denied_roots_empty(REPO_ROOT)
+    # Denied root warnings are informational; don't fail yet (Phase 3 action)
+    if denied_issues:
+        print(f"    [INFO] {len(denied_issues)} denied root(s) have content (Phase 3: to be removed)")
+        for issue in denied_issues[:5]:
+            print(f"      - {issue}")
+    else:
+        print("    [OK] All denied roots are empty (proper scaffolds)")
 
     print(f"\n=== Boundary Validation Result ===")
     print(f"Total violations: {len(violations)}")
