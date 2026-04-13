@@ -1,0 +1,612 @@
+# SOC 2 Evidence Requirements — SSID Platform
+# SoT v4.1.0 | Classification: Compliance | Internal
+# Framework: SOC 2 Trust Service Criteria (AICPA TSC 2017)
+# Generated: 2026-03-15
+
+framework_id: "soc2"
+document_type: "evidence_requirements"
+version: "1.0.0"
+final_authority: "03_core"
+audit_period: "12_months"
+report_type: "Type II"
+evidence_base_path: "23_compliance/evidence/soc2/"
+
+# ---------------------------------------------------------------------
+# EVIDENCE REQUIREMENTS PER SOC 2 CONTROL
+# Each entry defines what auditors will request for the audit period.
+# population: data set from which samples will be drawn
+# sample_basis: how samples are selected by auditor
+# frequency: how often the control must be performed/evidenced
+# ---------------------------------------------------------------------
+
+evidence_requirements:
+
+  # ---- CC1 CONTROL ENVIRONMENT ----
+
+  - evidence_id: "SOC2-E-001"
+    control_ref: "SOC2-C-001"
+    criteria: ["CC1.1", "CC1.2", "CC1.3"]
+    title: "Governance documentation and policy evidence"
+    evidence_items:
+      - item: "Board-approved information security policy"
+        format: "pdf"
+        source_root: "07_governance_legal"
+        retention_years: 7
+      - item: "Board meeting minutes referencing InfoSec oversight"
+        format: "pdf"
+        source_root: "07_governance_legal"
+        retention_years: 7
+      - item: "Signed code of conduct for all staff"
+        format: "pdf/digital_signature"
+        source_root: "07_governance_legal"
+        retention_years: 7
+      - item: "Organisational chart showing InfoSec reporting lines"
+        format: "pdf"
+        source_root: "07_governance_legal"
+        retention_years: 3
+    population: "All governance documents in effect during audit period"
+    sample_basis: "Full population — no sampling for policy documents"
+    frequency: "annual"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc1/governance/"
+
+  - evidence_id: "SOC2-E-002"
+    control_ref: "SOC2-C-002"
+    criteria: ["CC1.4", "CC1.5"]
+    title: "Accountability and competency evidence"
+    evidence_items:
+      - item: "RACI matrix for InfoSec roles"
+        format: "yaml/pdf"
+        source_root: "07_governance_legal"
+        retention_years: 3
+      - item: "WORM audit log entries showing user action accountability"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+      - item: "Staff competency assessment records for InfoSec-relevant roles"
+        format: "pdf"
+        source_root: "07_governance_legal"
+        retention_years: 3
+    population: "All staff with InfoSec responsibilities during audit period"
+    sample_basis: "25 personnel samples; risk-based for privileged roles"
+    frequency: "annual"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc1/accountability/"
+
+  # ---- CC2 COMMUNICATION AND INFORMATION ----
+
+  - evidence_id: "SOC2-E-003"
+    control_ref: "SOC2-C-003"
+    criteria: ["CC2.1", "CC2.2", "CC2.3"]
+    title: "Communication and data quality evidence"
+    evidence_items:
+      - item: "Data quality validation reports from 18_data_layer"
+        format: "log_export"
+        source_root: "18_data_layer"
+        retention_years: 3
+      - item: "Internal security alert logs and escalation records"
+        format: "log_export"
+        source_root: "17_observability"
+        retention_years: 3
+      - item: "Privacy notice versions published during audit period"
+        format: "screenshot/pdf"
+        source_root: "13_ui_layer"
+        retention_years: 7
+      - item: "External partner security communication samples"
+        format: "email/api_log"
+        source_root: "10_interoperability"
+        retention_years: 3
+    population: "All data quality events and security communications during audit period"
+    sample_basis: "25 samples from data validation logs; full population of privacy notice changes"
+    frequency: "continuous"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc2/"
+
+  # ---- CC3 RISK ASSESSMENT ----
+
+  - evidence_id: "SOC2-E-004"
+    control_ref: "SOC2-C-004"
+    criteria: ["CC3.1", "CC3.2", "CC3.4"]
+    title: "Risk assessment documentation"
+    evidence_items:
+      - item: "Annual risk assessment report with threat model"
+        format: "pdf"
+        source_root: "23_compliance"
+        retention_years: 7
+      - item: "Risk register with treatment status and owner"
+        format: "yaml/pdf"
+        source_root: "23_compliance"
+        retention_years: 7
+      - item: "Risk assessment for significant changes made during audit period"
+        format: "pdf"
+        source_root: "23_compliance"
+        retention_years: 7
+    population: "All risk assessments conducted during audit period"
+    sample_basis: "Full population — risk assessment is a complete set"
+    frequency: "annual + ad-hoc for significant change"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc3/risk_register/"
+
+  - evidence_id: "SOC2-E-005"
+    control_ref: "SOC2-C-005"
+    criteria: ["CC3.3"]
+    title: "Fraud detection control evidence"
+    evidence_items:
+      - item: "Fraud score calculation logs for identity onboardings"
+        format: "log_export"
+        source_root: "08_identity_score"
+        retention_years: 7
+      - item: "Blocked fraud attempt records with audit trail"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+      - item: "Fraud rule configuration and threshold settings"
+        format: "yaml"
+        source_root: "08_identity_score"
+        retention_years: 3
+    population: "All identity onboarding events during audit period"
+    sample_basis: "25 samples across low/medium/high fraud score buckets"
+    frequency: "continuous"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc3/fraud/"
+
+  # ---- CC4 MONITORING ACTIVITIES ----
+
+  - evidence_id: "SOC2-E-006"
+    control_ref: "SOC2-C-006"
+    criteria: ["CC4.1", "CC4.2"]
+    title: "Control monitoring and deficiency evidence"
+    evidence_items:
+      - item: "Observability dashboard screenshots and metric exports"
+        format: "screenshot/csv"
+        source_root: "17_observability"
+        retention_years: 3
+      - item: "Deficiency register with remediation records"
+        format: "yaml/pdf"
+        source_root: "23_compliance"
+        retention_years: 7
+      - item: "Simulation test results from 11_test_simulation"
+        format: "test_report"
+        source_root: "11_test_simulation"
+        retention_years: 3
+      - item: "Management reporting communications on deficiencies"
+        format: "email/pdf"
+        source_root: "23_compliance"
+        retention_years: 7
+    population: "All control evaluations and deficiencies during audit period"
+    sample_basis: "Full population — deficiency register is complete set; 25 monitoring samples"
+    frequency: "continuous"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc4/"
+
+  # ---- CC5 CONTROL ACTIVITIES ----
+
+  - evidence_id: "SOC2-E-007"
+    control_ref: "SOC2-C-007"
+    criteria: ["CC5.1", "CC5.2", "CC5.3"]
+    title: "Policy, procedure, and technology control evidence"
+    evidence_items:
+      - item: "Policy library index with effective dates and approval records"
+        format: "yaml/pdf"
+        source_root: "23_compliance"
+        retention_years: 7
+      - item: "CI/CD pipeline configuration showing security gates"
+        format: "yaml"
+        source_root: "04_deployment"
+        retention_years: 3
+      - item: "Sample of CI pipeline runs showing policy gate enforcement"
+        format: "pipeline_log"
+        source_root: "04_deployment"
+        retention_years: 3
+    population: "All production deployments during audit period; complete policy library"
+    sample_basis: "25 pipeline run samples; full population of policy documents"
+    frequency: "continuous"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc5/"
+
+  # ---- CC6 LOGICAL AND PHYSICAL ACCESS ----
+
+  - evidence_id: "SOC2-E-008"
+    control_ref: "SOC2-C-008"
+    criteria: ["CC6.1", "CC6.2", "CC6.3"]
+    title: "Logical access and identity management evidence"
+    evidence_items:
+      - item: "Access provisioning audit log for new users during audit period"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+      - item: "Role assignment and permission matrix export"
+        format: "yaml/csv"
+        source_root: "14_zero_time_auth"
+        retention_years: 3
+      - item: "Access review records (quarterly reviews)"
+        format: "pdf"
+        source_root: "23_compliance"
+        retention_years: 7
+      - item: "Identity verification completion records for credential issuance"
+        format: "log_export"
+        source_root: "08_identity_score"
+        retention_years: 7
+    population: "All access provisioning events and access reviews during audit period"
+    sample_basis: "25 access provisioning samples; all quarterly access reviews (4 for 12-month period)"
+    frequency: "quarterly_review + continuous_provisioning"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc6/access/"
+
+  - evidence_id: "SOC2-E-009"
+    control_ref: "SOC2-C-009"
+    criteria: ["CC6.5", "CC6.6"]
+    title: "Access termination and external threat evidence"
+    evidence_items:
+      - item: "Access deprovisioning logs for departed staff/role changes"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+      - item: "IDS/IPS alert logs and threat response records"
+        format: "log_export"
+        source_root: "17_observability"
+        retention_years: 3
+      - item: "Network segmentation and firewall rule documentation"
+        format: "yaml/pdf"
+        source_root: "15_infra"
+        retention_years: 3
+    population: "All staff/role changes during audit period; all IDS/IPS alerts"
+    sample_basis: "Full population of departures; 25 samples from IDS alert log"
+    frequency: "continuous"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc6/termination/"
+
+  - evidence_id: "SOC2-E-010"
+    control_ref: "SOC2-C-010"
+    criteria: ["CC6.7", "CC6.8"]
+    title: "Encryption and software integrity evidence"
+    evidence_items:
+      - item: "TLS configuration evidence showing post-quantum cipher suites"
+        format: "ssl_scan_report"
+        source_root: "21_post_quantum_crypto"
+        retention_years: 3
+      - item: "Container image build logs showing immutable base image enforcement"
+        format: "pipeline_log"
+        source_root: "04_deployment"
+        retention_years: 3
+      - item: "Dependency scan results for all production deployments"
+        format: "sca_report"
+        source_root: "12_tooling"
+        retention_years: 3
+    population: "All production deployments during audit period; all encrypted channels"
+    sample_basis: "25 deployment samples; spot-check of 5 external integrations for TLS"
+    frequency: "per_deployment + continuous"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc6/transmission/"
+
+  # ---- CC7 SYSTEM OPERATIONS ----
+
+  - evidence_id: "SOC2-E-011"
+    control_ref: "SOC2-C-011"
+    criteria: ["CC7.1", "CC7.2"]
+    title: "Vulnerability and anomaly monitoring evidence"
+    evidence_items:
+      - item: "Vulnerability scan reports for all production deployments"
+        format: "vulnerability_report"
+        source_root: "12_tooling"
+        retention_years: 3
+      - item: "Anomaly detection alert log and investigation records"
+        format: "log_export"
+        source_root: "17_observability"
+        retention_years: 3
+      - item: "CVE remediation records showing SLA compliance"
+        format: "ticket_export"
+        source_root: "12_tooling"
+        retention_years: 3
+    population: "All vulnerability findings and anomaly alerts during audit period"
+    sample_basis: "All critical/high vulnerabilities (full population); 25 samples from anomaly log"
+    frequency: "continuous"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc7/monitoring/"
+
+  - evidence_id: "SOC2-E-012"
+    control_ref: "SOC2-C-012"
+    criteria: ["CC7.3", "CC7.4", "CC7.5"]
+    title: "Incident management and recovery evidence"
+    evidence_items:
+      - item: "Incident register with severity classification and resolution timeline"
+        format: "pdf/yaml"
+        source_root: "23_compliance"
+        retention_years: 7
+      - item: "Post-incident review reports for P1/P2 incidents"
+        format: "pdf"
+        source_root: "23_compliance"
+        retention_years: 7
+      - item: "Incident response procedure with current version date"
+        format: "pdf"
+        source_root: "23_compliance"
+        retention_years: 7
+      - item: "DR/BCP test report from annual simulation"
+        format: "test_report"
+        source_root: "11_test_simulation"
+        retention_years: 3
+    population: "All incidents during audit period; annual BCP/DR test"
+    sample_basis: "Full population of P1/P2 incidents; 10 samples from P3/P4; BCP test report"
+    frequency: "continuous + annual"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc7/incident_response/"
+
+  # ---- CC8 CHANGE MANAGEMENT ----
+
+  - evidence_id: "SOC2-E-013"
+    control_ref: "SOC2-C-013"
+    criteria: ["CC8.1"]
+    title: "Change management evidence"
+    evidence_items:
+      - item: "CI/CD pipeline logs showing security sign-off gate enforcement"
+        format: "pipeline_log"
+        source_root: "04_deployment"
+        retention_years: 3
+      - item: "Change log from WORM audit trail"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+      - item: "Emergency change records with post-hoc approvals"
+        format: "ticket_export"
+        source_root: "07_governance_legal"
+        retention_years: 7
+      - item: "Rollback execution records (if any during audit period)"
+        format: "pipeline_log"
+        source_root: "04_deployment"
+        retention_years: 3
+    population: "All production changes during audit period"
+    sample_basis: "25 production deployments; full population of emergency changes"
+    frequency: "per_change"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc8/changes/"
+
+  # ---- CC9 RISK MITIGATION ----
+
+  - evidence_id: "SOC2-E-014"
+    control_ref: "SOC2-C-014"
+    criteria: ["CC9.1", "CC9.2"]
+    title: "Risk mitigation and vendor risk evidence"
+    evidence_items:
+      - item: "Risk treatment plans with implementation status"
+        format: "yaml/pdf"
+        source_root: "23_compliance"
+        retention_years: 7
+      - item: "Vendor security assessments for all active third-party integrations"
+        format: "pdf"
+        source_root: "23_compliance"
+        retention_years: 7
+      - item: "Vendor contract security annexes"
+        format: "pdf"
+        source_root: "07_governance_legal"
+        retention_years: 7
+      - item: "Annual vendor review meeting records"
+        format: "meeting_minutes"
+        source_root: "23_compliance"
+        retention_years: 7
+    population: "All active vendors and risk treatments during audit period"
+    sample_basis: "All critical vendors (full population); 10 samples from standard vendor list"
+    frequency: "annual"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/cc9/risk_mitigation/"
+
+  # ---- AVAILABILITY ----
+
+  - evidence_id: "SOC2-E-015"
+    control_ref: "SOC2-C-015"
+    criteria: ["A1.1", "A1.2", "A1.3"]
+    title: "Availability and disaster recovery evidence"
+    evidence_items:
+      - item: "Uptime metrics for audit period showing SLA performance"
+        format: "metric_export"
+        source_root: "17_observability"
+        retention_years: 3
+      - item: "Capacity planning reports and auto-scaling event logs"
+        format: "log_export/pdf"
+        source_root: "15_infra"
+        retention_years: 3
+      - item: "DR/BCP test report with RTO/RPO achievement evidence"
+        format: "test_report"
+        source_root: "11_test_simulation"
+        retention_years: 3
+      - item: "Cloud provider availability SLA certifications"
+        format: "pdf"
+        source_root: "15_infra"
+        retention_years: 3
+    population: "12-month uptime metrics; annual BCP/DR test result"
+    sample_basis: "Continuous uptime data (full 12-month export); BCP/DR test report"
+    frequency: "continuous + annual"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/availability/"
+
+  # ---- PROCESSING INTEGRITY ----
+
+  - evidence_id: "SOC2-E-016"
+    control_ref: "SOC2-C-016"
+    criteria: ["PI1.1", "PI1.2", "PI1.3"]
+    title: "Processing integrity evidence"
+    evidence_items:
+      - item: "Identity attestation processing logs showing validation steps"
+        format: "log_export"
+        source_root: "03_core"
+        retention_years: 7
+      - item: "Error rate monitoring reports from 17_observability"
+        format: "metric_export"
+        source_root: "17_observability"
+        retention_years: 3
+      - item: "Output delivery confirmation logs with recipient verification"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+    population: "All identity attestation events during audit period"
+    sample_basis: "25 attestation samples across shard types; all error events (full population)"
+    frequency: "continuous"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/processing_integrity/"
+    ssid_shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/02_dokumente_nachweise"
+
+  # ---- CONFIDENTIALITY ----
+
+  - evidence_id: "SOC2-E-017"
+    control_ref: "SOC2-C-017"
+    criteria: ["C1.1", "C1.2"]
+    title: "Confidentiality and data disposal evidence"
+    evidence_items:
+      - item: "Data classification register with asset inventory"
+        format: "yaml/pdf"
+        source_root: "23_compliance"
+        retention_years: 3
+      - item: "Encryption configuration evidence (at-rest and in-transit)"
+        format: "configuration_export"
+        source_root: "21_post_quantum_crypto"
+        retention_years: 3
+      - item: "Secure deletion/cryptographic erasure audit log"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+      - item: "Key lifecycle management records (creation, rotation, destruction)"
+        format: "hsm_log_export"
+        source_root: "21_post_quantum_crypto"
+        retention_years: 7
+    population: "All data disposal events; complete asset inventory"
+    sample_basis: "All deletion events (full population); spot-check 5 encryption configs"
+    frequency: "continuous"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/confidentiality/"
+    ssid_shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/05_gesundheit_medizin"
+      - "23_compliance/shards/10_finanzen_banking"
+
+  # ---- PRIVACY ----
+
+  - evidence_id: "SOC2-E-018"
+    control_ref: "SOC2-C-018"
+    criteria: ["P1.1", "P2.1"]
+    title: "Privacy notice and consent evidence"
+    evidence_items:
+      - item: "Privacy notice versions with effective dates"
+        format: "screenshot/pdf"
+        source_root: "13_ui_layer"
+        retention_years: 7
+      - item: "Consent records with timestamp and granularity"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+      - item: "Consent withdrawal records showing timely processing"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+    population: "All consent events and privacy notice changes during audit period"
+    sample_basis: "25 consent records; all withdrawals (full population); all notice versions"
+    frequency: "continuous"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/privacy/consent/"
+    ssid_shards:
+      - "23_compliance/shards/01_identitaet_personen"
+
+  - evidence_id: "SOC2-E-019"
+    control_ref: "SOC2-C-019"
+    criteria: ["P3.1", "P4.1"]
+    title: "Purpose limitation and data minimisation evidence"
+    evidence_items:
+      - item: "Processing purpose registry per shard category"
+        format: "yaml"
+        source_root: "23_compliance"
+        retention_years: 3
+      - item: "Hash-only evidence configuration confirming no raw PII persistence"
+        format: "configuration_export"
+        source_root: "03_core"
+        retention_years: 3
+      - item: "Purpose gate violation attempts log (should be empty or near-empty)"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+    population: "Processing purpose registry; all purpose gate events"
+    sample_basis: "Full processing purpose registry; all gate violation events (full population)"
+    frequency: "continuous"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/privacy/purpose_limitation/"
+    ssid_shards:
+      - "23_compliance/shards/01_identitaet_personen"
+
+  - evidence_id: "SOC2-E-020"
+    control_ref: "SOC2-C-020"
+    criteria: ["P5.1", "P6.1", "P7.1", "P8.1"]
+    title: "Data subject rights fulfilment evidence"
+    evidence_items:
+      - item: "Subject rights request register with request type and resolution date"
+        format: "yaml/pdf"
+        source_root: "23_compliance"
+        retention_years: 7
+      - item: "Access request fulfilment records showing data export"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+      - item: "Deletion request records with cryptographic erasure proof"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+      - item: "Third-party disclosure audit log with consent verification"
+        format: "log_export"
+        source_root: "02_audit_logging"
+        retention_years: 7
+      - item: "SLA compliance metrics: % of requests handled within 30 days"
+        format: "metric_export"
+        source_root: "17_observability"
+        retention_years: 3
+    population: "All data subject rights requests during audit period"
+    sample_basis: "Full population of rights requests (typically low volume); all disclosures"
+    frequency: "per_request + quarterly_sla_review"
+    collection_root: "23_compliance"
+    evidence_path: "23_compliance/evidence/soc2/privacy/subject_rights/"
+    ssid_shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/02_dokumente_nachweise"
+
+# ---------------------------------------------------------------------
+# EVIDENCE COLLECTION CALENDAR
+# ---------------------------------------------------------------------
+
+collection_calendar:
+  continuous:
+    description: "Automated collection from audit log stream and observability layer"
+    roots: ["02_audit_logging", "17_observability"]
+    format: "log_export / metric_export"
+
+  quarterly:
+    - activity: "Access rights review and export"
+      evidence_ids: ["SOC2-E-008"]
+      responsible: "CISO"
+    - activity: "Control deficiency report to management"
+      evidence_ids: ["SOC2-E-006"]
+      responsible: "Compliance Team"
+
+  annual:
+    - activity: "Risk assessment and risk register update"
+      evidence_ids: ["SOC2-E-004"]
+      responsible: "CISO"
+    - activity: "Policy library review and approval"
+      evidence_ids: ["SOC2-E-001", "SOC2-E-007"]
+      responsible: "CISO + Legal"
+    - activity: "BCP/DR simulation test"
+      evidence_ids: ["SOC2-E-012", "SOC2-E-015"]
+      responsible: "Infrastructure Team"
+    - activity: "Vendor security review"
+      evidence_ids: ["SOC2-E-014"]
+      responsible: "Compliance Team"
+    - activity: "Penetration test"
+      evidence_ids: ["SOC2-E-011"]
+      responsible: "Security Team (external vendor)"
+
+  pre_audit:
+    description: "Evidence package preparation 4 weeks before audit window"
+    activities:
+      - "Export all WORM audit logs for audit period"
+      - "Generate uptime and SLA metric reports"
+      - "Compile incident register and PIR reports"
+      - "Prepare personnel samples for access reviews"
+      - "Collect all policy versions with effective dates"
+      - "Export CI/CD pipeline run samples"
+      - "Generate vulnerability scan summary report"

@@ -1,0 +1,32 @@
+task_id: PH3_VERIFY_SCRIPT_001
+title: "Testnet MVP: verification script (hasProof/addProof round-trip)"
+task_type: tooling
+scope_allowlist:
+  - "12_tooling/cli/"
+  - "02_audit_logging/agent_runs/"
+forbidden_paths:
+  - "./"
+  - "/mnt/data"
+  - "**/.git/**"
+  - "**/secrets/**"
+  - "**/*.sol"
+required_checks:
+  - "python 12_tooling/cli/stability_gate.py --run"
+  - "python 12_tooling/cli/sot_validator.py --verify-all"
+  - "python -m pytest -q"
+acceptance_criteria:
+  - "verify_testnet.py exists under 12_tooling/cli/"
+  - "Script reads CONTRACT_ADDRESS, RPC_URL, PRIVATE_KEY from ENV only"
+  - "Verification flow: hasProof(hash)=false -> addProof(hash) -> hasProof(hash)=true"
+  - "Script writes verify_report.json to 02_audit_logging/agent_runs/PH3_VERIFY_SCRIPT_001/"
+  - "verify_report.json contains: result (PASS/FAIL), tx_hashes, chain_id, contract_address"
+  - "No secrets or private keys in verify_report.json"
+  - "Exit code 0 on PASS, 1 on FAIL"
+evidence_outputs:
+  - "02_audit_logging/agent_runs/PH3_VERIFY_SCRIPT_001/evidence.json"
+  - "02_audit_logging/agent_runs/PH3_VERIFY_SCRIPT_001/patch.diff"
+agent_cmd: "manual"
+notes: >
+  verify_testnet.py performs the canonical round-trip test on the deployed
+  proof registry. All secrets from ENV. Output is PASS/FAIL with tx hashes
+  only. No secret material in any output file.

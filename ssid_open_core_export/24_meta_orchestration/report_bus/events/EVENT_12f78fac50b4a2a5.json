@@ -1,0 +1,20 @@
+{
+  "event_id": "12f78fac50b4a2a5f2e05b052790702ca9fe754c5244083cb5eeff58735fbc8d",
+  "event_type": "merge_recorded",
+  "merge_sha": "2a6b4b8799c5e1cd1c24c7dff71109c7d713621d",
+  "observed_utc": "2026-02-28T01:51:42Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 15,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-2a6b4b8/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "2a6b4b8799c5e1cd1c24c7dff71109c7d713621d",
+  "summary": "feat: add smoke e2e verification to automation_loop (#15)",
+  "task_id": null
+}

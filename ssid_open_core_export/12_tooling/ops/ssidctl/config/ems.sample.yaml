@@ -1,0 +1,38 @@
+# EMS Configuration Sample
+# Copy to ems.yaml and adjust paths for your system.
+# Schema: 16_codex/contracts/ssidctl/ems.schema.json
+
+mode: local
+
+paths:
+  ssid_repo: "${SSID_PATH:-.}"
+  ems_repo: "${EMS_REPO_PATH:-.}"
+  state_dir: "${EMS_REPO_PATH:-.}/state"
+  evidence_dir: "${EMS_REPO_PATH:-.}/evidence"
+  vault_dir: "${EMS_REPO_PATH:-.}/vault"
+
+concurrency: 1
+
+claude:
+  command: claude
+  timeout_seconds: 120
+
+guards:
+  token_legal_lexicon_enabled: true
+
+scope_defaults:
+  max_changed_files: 12
+  max_changed_lines: 600
+  allowed_file_types:
+    - ".py"
+    - ".yaml"
+    - ".yml"
+    - ".json"
+    - ".md"
+    - ".txt"
+    - ".toml"
+
+identity:
+  identities_path: "identities.yaml"
+  env_var: SSID_IDENTITY
+  default_role: readonly

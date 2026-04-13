@@ -1,0 +1,20 @@
+{
+  "event_id": "4c43324321c7edbf7c6042d0e5434a6d30c3a80ca212658743aa277792d33f30",
+  "event_type": "merge_recorded",
+  "merge_sha": "0dc86ab903ae1d3791ad7b6b30a30d1066662621",
+  "observed_utc": "2026-02-28T00:58:30Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 9,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-0dc86ab/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "0dc86ab903ae1d3791ad7b6b30a30d1066662621",
+  "summary": "PHASE3_TASKSPECS_001: testnet mvp (hash-only proof registry) spec pack (spec-only) (#9)",
+  "task_id": null
+}

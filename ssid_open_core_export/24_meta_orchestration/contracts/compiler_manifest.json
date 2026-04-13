@@ -1,0 +1,20 @@
+{
+  "contract_name": "ProofRegistry",
+  "solc_version": "0.8.29",
+  "evm_target": "cancun",
+  "optimization": {
+    "enabled": true,
+    "runs": 200
+  },
+  "artifacts": {
+    "abi": {
+      "file": "proof_registry_abi.json",
+      "sha256": "a967bd615e4bb440479250dc63a2b7e37d9f5944c642c5bf09f0e2df2b9aaff4"
+    },
+    "bytecode": {
+      "file": "proof_registry_bytecode.json",
+      "sha256": "345d608a546fe4f2bf5ff534f073ee582902f82ab2b8ea84bb5226855905f487"
+    }
+  },
+  "compilation_notes": "Compiled with solc 0.8.29 targeting cancun EVM. No source .sol files in repository per governance policy. Bytecode is deterministic and reproducible with the specified compiler settings."
+}

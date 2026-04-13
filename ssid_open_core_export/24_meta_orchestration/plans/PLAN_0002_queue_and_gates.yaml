@@ -1,0 +1,19 @@
+task_id: "PLAN_0002_queue_and_gates"
+scope: "24_meta_orchestration/12_tooling"
+allowed_paths:
+  - "24_meta_orchestration/dispatcher"
+  - "24_meta_orchestration/queue"
+  - "12_tooling/cli"
+acceptance_checks:
+  - policy
+  - sot
+  - qa
+do_not_touch:
+  - "16_codex/contracts/sot"
+  - "23_compliance/policies/sot"
+stop_conditions:
+  fail_after: 1
+  on_missing_paths: true
+definition_of_done:
+  - "Queue run remains deterministic"
+  - "Duplicate-guard enforced before merge/apply"

@@ -1,0 +1,61 @@
+{
+  "package_id": "SSID-PHASE1-20260326",
+  "generated_at_utc": "2026-03-26T19:52:01Z",
+  "files": [
+    {
+      "file": "00_PHASE1_EXECUTION_PLAN.md",
+      "sha256": "0c604b2db45cd49130ece8c5fe68fea712fcdaa55ed857c1bb38ad8a924a7bd8",
+      "size_bytes": 4483
+    },
+    {
+      "file": "01_PHASE1_MASTER_PROMPT_EMS.md",
+      "sha256": "1a40018fce7f694932c453827ff8594478b2069bba0dd2227c7f677fe3ab5cce",
+      "size_bytes": 4953
+    },
+    {
+      "file": "02_PHASE1_BASELINE_SCOPE.yaml",
+      "sha256": "ccab526bd204d1ccccb48651f51bd233a48ff59656603ae1d163dd8940e45cfc",
+      "size_bytes": 1573
+    },
+    {
+      "file": "03_PHASE1_ROOT_MODULE_MATRIX.md",
+      "sha256": "2aca367c4f8a109841aeceb821639d2e9063e7c0f819f71198dcf01ff729f9db",
+      "size_bytes": 1259
+    },
+    {
+      "file": "04_PHASE1_GAP_MATRIX.md",
+      "sha256": "3c8536716d8bdfea11e89b1bce018be0dd8a92608635263521cbf4ca96820a26",
+      "size_bytes": 1447
+    },
+    {
+      "file": "05_PHASE1_ACCEPTANCE_GATES.md",
+      "sha256": "86c89fa8d31791cbbf397045cd2d1bf3e8c7ebe21e57dd11de55bdb3aba10828",
+      "size_bytes": 1640
+    },
+    {
+      "file": "06_PHASE1_REGISTRY_STUB.json",
+      "sha256": "7e22e87a2bad40d1578427012ded0598b4339dacde859c30a4f926bc48abecfe",
+      "size_bytes": 1893
+    },
+    {
+      "file": "07_PHASE1_AUDIT_REPORT.json",
+      "sha256": "9347cc2ade9e68c82ba4f64d56f0f55da92bc8fb8af6bce619e0f2ae574527e3",
+      "size_bytes": 700
+    },
+    {
+      "file": "08_PHASE1_BADGE.md",
+      "sha256": "b21099f03ea299c7911d0ab9266db13db46cd5c8e28f49bb774b52df77fc9222",
+      "size_bytes": 119
+    },
+    {
+      "file": "09_PHASE1_TEST_MATRIX.md",
+      "sha256": "c561deeeb97765b83e9529a93153e8f1819db2f8e55d8bae171a9c7de9d1dcb4",
+      "size_bytes": 755
+    },
+    {
+      "file": "10_PHASE1_TASKSPEC.json",
+      "sha256": "7d4003949316318435301ea108efa77a2d53d6ec6e76bda586264e2e7f98cfbf",
+      "size_bytes": 708
+    }
+  ]
+}

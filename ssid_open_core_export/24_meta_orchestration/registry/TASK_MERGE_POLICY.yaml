@@ -1,0 +1,51 @@
+# TASK_MERGE_POLICY — Regeln fuer Task-Zusammenlegung
+# Generated: 2026-03-29T16:00:00Z
+# Agent: HARD_REALITY_RESET
+
+version: "1.0.0"
+
+merge_rules:
+  - rule_id: "TM-001"
+    name: "MERGE_REQUIRES_TARGET_ACTIVE"
+    description: "Ein Task darf nur in einen anderen Task gemergt werden, wenn der Ziel-Task ACTIVE oder EXECUTING ist. Merge in QUEUED Tasks ist verboten, da QUEUED Tasks nicht garantiert ausgefuehrt werden."
+    enforcement: "MANDATORY"
+    violation_example: "T-015 wurde in T-014 gemergt, aber T-014 war QUEUED und wurde nie ausgefuehrt. Ergebnis: T-015 ging verloren."
+
+  - rule_id: "TM-002"
+    name: "TRANSITIVE_LOSS_GUARD"
+    description: "Bei Merge-Ketten (A -> B -> C) muss der Root-Task (C) EXECUTING sein. Wenn C faellt, fallen alle ab."
+    enforcement: "MANDATORY"
+
+  - rule_id: "TM-003"
+    name: "MERGE_EVIDENCE_REQUIRED"
+    description: "Jeder Merge muss im Ledger dokumentiert werden mit: source_task, target_task, merge_reason, merge_timestamp."
+    enforcement: "MANDATORY"
+
+  - rule_id: "TM-004"
+    name: "MAX_MERGE_DEPTH"
+    description: "Maximale Merge-Tiefe ist 2 (A -> B, nicht A -> B -> C). Tiefere Ketten muessen aufgeloest werden."
+    enforcement: "RECOMMENDED"
+    max_depth: 2
+
+  - rule_id: "TM-005"
+    name: "QUEUE_STARVATION_ALERT"
+    description: "Tasks die laenger als 30 Minuten in QUEUED stehen, muessen einen Alert ausloesen. Nach 60 Minuten werden sie automatisch als AT_RISK markiert."
+    enforcement: "MANDATORY"
+    alert_threshold_minutes: 30
+    at_risk_threshold_minutes: 60
+
+allowed_merge_targets:
+  - "ACTIVE"
+  - "EXECUTING"
+  - "IN_PROGRESS"
+
+forbidden_merge_targets:
+  - "QUEUED"
+  - "DEFERRED"
+  - "REJECTED"
+  - "DONE"
+
+post_merge_obligations:
+  - "Verify merged scope appears in target task's artifact list"
+  - "Update PROMPT_BACKLOG_LEDGER.json with merge record"
+  - "If target task completes, verify merged scope was covered"

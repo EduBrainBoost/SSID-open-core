@@ -1,0 +1,8 @@
+{
+  "$schema": "./schema_v2.json",
+  "version": 2,
+  "description": "Execution index mapping PR merges to report bus events. Populated at runtime by evidence_chain.py scan --pr-only.",
+  "pr_merges": [],
+  "last_rebuilt": null,
+  "total_events": 0
+}

@@ -1,0 +1,20 @@
+{
+  "event_id": "56a403ac17039a17aa9246f517aec9645719a30e908a4b854d573f5d92133347",
+  "event_type": "merge_recorded",
+  "merge_sha": "836ab0699bf8a7829d753ad0cd2801a95fd1780d",
+  "observed_utc": "2026-03-03T20:00:05Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 13,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-836ab06/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "836ab0699bf8a7829d753ad0cd2801a95fd1780d",
+  "summary": "feat(codex): local stack manifest with port policy (#13)",
+  "task_id": null
+}

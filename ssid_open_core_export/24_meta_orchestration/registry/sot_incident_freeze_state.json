@@ -1,0 +1,10 @@
+{
+  "state_id": "FRZ-INITIAL-0001",
+  "updated_at_utc": "2026-03-11T00:00:00Z",
+  "freeze_level": "none",
+  "incident_id": "INC-NONE",
+  "reason": "No active incident freeze.",
+  "set_by": "system",
+  "scope": "canonical_sot",
+  "evidence_hash": "4d63dfe8fb72bd435be885398673f1c5a6910b71a3c26b26e73f896e7e0ff345"
+}

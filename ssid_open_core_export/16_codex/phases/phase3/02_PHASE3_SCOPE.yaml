@@ -1,0 +1,40 @@
+{
+  "phase": 3,
+  "name": "manifest_materialization",
+  "timestamp_utc": "2026-03-26T20:09:26Z",
+  "mode": "plan_approval_apply",
+  "root_count": 24,
+  "shard_count_per_root": 16,
+  "total_shards": 384,
+  "goal": "Materialize manifest.yaml only for real implementations",
+  "binding_rules": [
+    "root_24_lock",
+    "safe_fix",
+    "chart_is_what_manifest_is_how",
+    "contract_first",
+    "deterministic_outputs",
+    "evidence_required",
+    "no_fake_manifests",
+    "non_custodial",
+    "hash_only"
+  ],
+  "readiness_classes": [
+    "READY_FOR_MANIFEST",
+    "BLOCKED_NO_IMPLEMENTATION",
+    "BLOCKED_NO_CONTRACTS",
+    "BLOCKED_NO_TESTS",
+    "BLOCKED_NO_REGISTRY",
+    "BLOCKED_POLICY_MISMATCH",
+    "BLOCKED_EVIDENCE_MISSING"
+  ],
+  "outputs": [
+    "eligibility_matrix",
+    "template_spec",
+    "readiness_matrix_csv",
+    "registry_json",
+    "audit_report_json",
+    "hashes_json",
+    "decision_log_jsonl",
+    "score_json"
+  ]
+}

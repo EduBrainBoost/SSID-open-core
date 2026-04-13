@@ -1,0 +1,20 @@
+{
+  "event_id": "33adf2fccb4bdfe5671130bd7375e2121e2ba9c7424871fea4480b249962589c",
+  "event_type": "merge_recorded",
+  "merge_sha": "873e9d7d81358d68411e5d3ff0f70bf4fa4be925",
+  "observed_utc": "2026-03-04T03:41:55Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 18,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-873e9d7/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "873e9d7d81358d68411e5d3ff0f70bf4fa4be925",
+  "summary": "Merge pull request #18 from EduBrainBoost/feat/meta-continuum-readiness-gate",
+  "task_id": null
+}

@@ -1,0 +1,30 @@
+{
+  "event_id": "1e2fb9062a1b6773d45d6aa72f14e141a8617aef584588369968d59eac84bf8e",
+  "event_type": "ops",
+  "merge_sha": null,
+  "observed_utc": "2026-03-05T06:58:00Z",
+  "origin": "imported",
+  "payload": {
+    "ems_env_mode": "dev",
+    "ems_jwt_secret_rotated": true,
+    "env": "local",
+    "jwt_secret_fingerprint_sha256": "5cf7ee46218064b451104c63a4bb5f513267a5827bd82201b3b1650e9d23caeb",
+    "method": "hard_rotation_variant_b",
+    "note": "Initial JWT secret set (was previously unset, backend crashed on startup). Variant B — no prior sessions to invalidate. Secret stored as Windows User env var (not in repo).",
+    "restart_method": "pm2 restart ems-backend --update-env",
+    "secret_store": "windows_user_env_var",
+    "status": "DONE",
+    "verification": {
+      "backend_startup": "PASS",
+      "login_test": "PASS",
+      "token_decode_test": "PASS"
+    }
+  },
+  "pr_number": null,
+  "refs": {},
+  "repo": "SSID-EMS",
+  "severity": "info",
+  "sha": "596c4ed368cefab569cd61f0579c00c526a6703f",
+  "summary": "EMS_JWT_SECRET rotation: DONE (local/dev) — backend functional, login+token verified",
+  "task_id": null
+}

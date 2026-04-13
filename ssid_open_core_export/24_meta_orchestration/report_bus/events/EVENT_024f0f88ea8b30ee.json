@@ -1,0 +1,20 @@
+{
+  "event_id": "024f0f88ea8b30ee0a4f4ad77d6c67e5d864c80ae35590a398bf177b47811b16",
+  "event_type": "merge_recorded",
+  "merge_sha": "ffc3d8dfd8bdf504916813ae474ed0f9d29ad9e6",
+  "observed_utc": "2026-02-28T01:41:57Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 10,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-ffc3d8d/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "ffc3d8dfd8bdf504916813ae474ed0f9d29ad9e6",
+  "summary": "PHASE3_IMPL_TASKSPECS_001: split implementation into artifacts/scripts/e2e (#10)",
+  "task_id": null
+}

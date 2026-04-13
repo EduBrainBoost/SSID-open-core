@@ -1,0 +1,20 @@
+manifest_version: "1.0"
+generated_at_utc: "2026-03-27T03:15:56.771341+00:00"
+root_id: "23_compliance"
+shard_id: "01_identitaet_personen"
+implementation_status: "active"
+implementation_type: "python"
+entrypoints:
+  - "src/policy_engine.py"
+source_paths:
+  - "23_compliance/shards/01_identitaet_personen/implementations/python/"
+test_paths:
+  []
+security_constraints:
+  - "hash_only"
+  - "non_custodial"
+  - "no_pii"
+owner: "SSID Architecture Board"
+last_verified_at: "2026-03-27T03:15:56.771341+00:00"
+parity_with_chart: true
+notes: "Real implementation - Phase 4+ vertical slice"

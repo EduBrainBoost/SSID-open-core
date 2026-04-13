@@ -1,0 +1,12 @@
+contract_id: agentswarm.v1
+version: 1.0.0
+rules:
+  exact_agent_count: 86
+  exact_pair_count: 43
+  no_orphan_agents: true
+  no_orphan_pairs: true
+  every_pair_has_primary_and_sentinel: true
+  no_agent_without_pair_id: true
+  no_duplicate_agent_id: true
+  no_duplicate_pair_id: true
+  fail_closed_on_violation: true

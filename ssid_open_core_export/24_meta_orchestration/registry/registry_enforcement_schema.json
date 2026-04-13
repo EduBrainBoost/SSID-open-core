@@ -1,0 +1,321 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.internal/schemas/registry_enforcement_schema.json",
+  "title": "Registry Enforcement Report",
+  "description": "Schema for registry enforcement reports. Each report captures the enforcement state of all tracked artifacts across repositories, including integrity checks, status, and gate decisions.",
+  "type": "object",
+  "required": [
+    "version",
+    "generated_at",
+    "run_id",
+    "canonical_repo",
+    "artifacts",
+    "summary",
+    "findings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version of this enforcement report."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp when this enforcement report was generated."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "Unique identifier for the enforcement run that produced this report."
+    },
+    "canonical_repo": {
+      "type": "string",
+      "description": "Name of the canonical repository being enforced."
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/artifact" },
+      "description": "Array of artifact enforcement entries."
+    },
+    "summary": {
+      "$ref": "#/definitions/summary",
+      "description": "Aggregated summary of all artifact enforcement results."
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/finding" },
+      "description": "Array of individual enforcement findings (same format as sot_finding_schema.json)."
+    }
+  },
+  "definitions": {
+    "artifact": {
+      "type": "object",
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "repo",
+        "path",
+        "sha256",
+        "status",
+        "generated_at",
+        "evidence_ref",
+        "source_of_truth_ref",
+        "decision",
+        "severity"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[A-Z_]+-[a-z0-9_-]+$",
+          "description": "Unique artifact identifier in the format PREFIX-suffix (e.g. SOT-integrity-manifest)."
+        },
+        "artifact_type": {
+          "type": "string",
+          "enum": [
+            "sot_artifact",
+            "policy",
+            "validator",
+            "cli_tool",
+            "report",
+            "export",
+            "schema",
+            "config",
+            "test",
+            "manifest",
+            "shard"
+          ],
+          "description": "Classification of the artifact type."
+        },
+        "repo": {
+          "type": "string",
+          "enum": ["ssid", "ssid-ems", "ssid-open-core"],
+          "description": "Repository in which the artifact resides."
+        },
+        "path": {
+          "type": "string",
+          "description": "File path relative to the repository root."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of the artifact content. Always raw hex, no prefix."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "deprecated", "placeholder", "missing"],
+          "description": "Current lifecycle status of the artifact."
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC timestamp when this artifact entry was generated or last verified."
+        },
+        "evidence_ref": {
+          "$ref": "#/definitions/evidence_ref",
+          "description": "Reference to the evidence backing this artifact's integrity."
+        },
+        "source_of_truth_ref": {
+          "type": "string",
+          "description": "Reference to the canonical source-of-truth path for this artifact."
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["pass", "warn", "deny", "error"],
+          "description": "Enforcement gate decision for this artifact."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "warn", "deny"],
+          "description": "Severity level of any enforcement issue detected."
+        },
+        "evidence_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of evidence content. Retained for backward compatibility; prefer evidence_ref."
+        },
+        "registry_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "References to related registry entries."
+        },
+        "compliance_scope": {
+          "type": "string",
+          "description": "Compliance scope or domain this artifact belongs to."
+        },
+        "version": {
+          "type": "string",
+          "description": "Version string of the artifact."
+        }
+      }
+    },
+    "evidence_ref": {
+      "type": "object",
+      "required": ["hash", "type", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of the evidence content."
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of evidence (e.g. sha256_manifest, convergence_report, gate_output)."
+        },
+        "path": {
+          "type": "string",
+          "description": "Path to the evidence artifact."
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total",
+        "by_status",
+        "by_type",
+        "by_severity",
+        "decision"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of artifacts in this report."
+        },
+        "by_status": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "active": { "type": "integer", "minimum": 0 },
+            "deprecated": { "type": "integer", "minimum": 0 },
+            "placeholder": { "type": "integer", "minimum": 0 },
+            "missing": { "type": "integer", "minimum": 0 }
+          },
+          "description": "Artifact counts grouped by lifecycle status."
+        },
+        "by_type": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "sot_artifact",
+              "policy",
+              "validator",
+              "cli_tool",
+              "report",
+              "export",
+              "schema",
+              "config",
+              "test",
+              "manifest",
+              "shard"
+            ]
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Artifact counts grouped by artifact type."
+        },
+        "by_severity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "info": { "type": "integer", "minimum": 0 },
+            "warn": { "type": "integer", "minimum": 0 },
+            "deny": { "type": "integer", "minimum": 0 }
+          },
+          "description": "Artifact counts grouped by severity level."
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["pass", "warn", "deny", "error"],
+          "description": "Overall enforcement gate decision based on aggregated artifact results."
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "id",
+        "class",
+        "severity",
+        "source",
+        "path",
+        "details",
+        "timestamp",
+        "repo"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z_]+-[a-z_]+-[a-f0-9]+$",
+          "description": "Unique finding identifier in the format SOURCE-CLASS-HASH."
+        },
+        "class": {
+          "type": "string",
+          "enum": [
+            "missing_file",
+            "extra_file",
+            "content_drift",
+            "stale_binding",
+            "config_mismatch",
+            "metadata_divergence",
+            "schema_violation",
+            "rule_gap",
+            "rule_conflict",
+            "phantom_rule",
+            "scope_leak",
+            "threshold_breach",
+            "version_mismatch",
+            "coverage_gap"
+          ],
+          "description": "Classification of the enforcement finding."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "warn", "deny"],
+          "description": "Severity level of the finding."
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "scanner",
+            "manifest_gen",
+            "sync_validator",
+            "policy_engine",
+            "gate"
+          ],
+          "description": "Component that produced this finding."
+        },
+        "path": {
+          "type": "string",
+          "description": "File path relative to the repository root."
+        },
+        "details": {
+          "type": "string",
+          "description": "Human-readable description of the finding."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC timestamp when this finding was detected."
+        },
+        "repo": {
+          "type": "string",
+          "enum": ["ssid", "ssid-ems", "ssid-open-core"],
+          "description": "Repository in which the finding was detected."
+        },
+        "evidence_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of the relevant content for audit trail purposes."
+        }
+      }
+    }
+  }
+}

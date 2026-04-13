@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Report Bus Event v2",
+  "description": "Schema for SSID report bus events (event-store model)",
+  "type": "object",
+  "required": ["event_id", "ts_utc", "repo", "sha", "source", "kind", "severity", "summary"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "SHA-256 hash of canonical event content",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "ts_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp in ISO 8601 format"
+    },
+    "repo": {
+      "type": "string",
+      "description": "Repository name (e.g., SSID, SSID-EMS)",
+      "enum": ["SSID", "SSID-EMS", "SSID-orchestrator", "SSID-docs", "SSID-open-core"]
+    },
+    "sha": {
+      "type": "string",
+      "description": "Git commit SHA",
+      "pattern": "^[a-f0-9]{7,40}$"
+    },
+    "source": {
+      "type": "string",
+      "description": "Event source identifier (gate name, tool name, agent ID)"
+    },
+    "kind": {
+      "type": "string",
+      "description": "Event classification",
+      "enum": ["gate_pass", "gate_fail", "evidence_created", "pr_merged", "backfill", "migration", "manual"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["info", "warning", "error", "critical"]
+    },
+    "summary": {
+      "type": "string",
+      "description": "Human-readable one-line summary",
+      "maxLength": 200
+    },
+    "origin": {
+      "type": "string",
+      "description": "How this event was generated",
+      "enum": ["observed", "constructed", "imported"],
+      "default": "observed"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Arbitrary structured payload data",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

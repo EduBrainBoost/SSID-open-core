@@ -1,0 +1,20 @@
+{
+  "event_id": "2f97ed700f68fc67057f63e6f529eb959f2d84e2f2ccca984152081d5f5dfe42",
+  "event_type": "merge_recorded",
+  "merge_sha": "15ff64a2cb913d2b0f47281bea66669761f7c25e",
+  "observed_utc": "2026-02-28T02:07:23Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 17,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-15ff64a/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "15ff64a2cb913d2b0f47281bea66669761f7c25e",
+  "summary": "PH3_CONTRACT_ARTIFACTS_001: hash-only proof registry artifacts (no .sol) (#17)",
+  "task_id": "PH3_CONTRACT_ARTIFACTS_001"
+}

@@ -1,0 +1,135 @@
+# TASK_ROUTING_POLICY.yaml
+# T-019 WP3 — Sub-Orchestrator Routing Rules
+# Generated: 2026-03-29
+# Scope: Welcher Sub-Orchestrator ist fuer welchen Auftragstyp zustaendig.
+---
+policy_id: orchestrator.task_routing
+version: 1.0.0
+enforcement: fail_closed
+
+routing_table:
+  structure_orchestrator:
+    scope:
+      - Root-24 Struktur
+      - Shard-Zuordnung
+      - Pfad-Validierung
+      - Root-Ordner-Hygiene
+    triggers:
+      - root_scope_change
+      - shard_creation
+      - path_violation
+      - structure_audit
+    agents_dispatched:
+      - ssidctl.l2.* (root-level)
+      - ssidctl.l3.* (shard-level)
+      - ssidctl.l4.structure_guardian
+    verifier: structure_verifier
+    evidence_required: true
+
+  policy_orchestrator:
+    scope:
+      - SoT-Validierung
+      - Rego-Policy-Checks
+      - Compliance-Gates
+      - Policy-Drift-Erkennung
+    triggers:
+      - sot_change
+      - policy_update
+      - compliance_audit
+      - drift_detection
+    agents_dispatched:
+      - ssidctl.l4.policy_enforcer
+      - ssidctl.l4.contract_guard
+      - ssidctl.l5.policy_mapping_analyst
+      - ssidctl.l5.compliance_evidence_clerk
+    verifier: policy_verifier
+    evidence_required: true
+
+  runtime_orchestrator:
+    scope:
+      - ssidctl CLI Ausfuehrung
+      - Hook-Management
+      - Subprocess-Steuerung
+      - Worker-Resolution
+    triggers:
+      - cli_dispatch
+      - hook_execution
+      - worker_request
+      - subprocess_spawn
+    agents_dispatched:
+      - ssidctl.l4.worker_resolver
+      - ssidctl.l4.sandbox_controller
+      - ssidctl.l5.orchestrator_server_engineer
+    verifier: runtime_verifier
+    evidence_required: true
+
+  agent_orchestrator:
+    scope:
+      - Agent-Registry-Konsistenz
+      - Agent-Enablement
+      - Skill-Binding
+      - Activation-Profile
+    triggers:
+      - agent_registration
+      - skill_binding_change
+      - activation_profile_update
+      - registry_sync
+    agents_dispatched:
+      - ssidctl.l4.state_registry_keeper
+      - ssidctl.l4.prompt_compiler
+      - ssidctl.l0.master_orchestrator
+    verifier: agent_verifier
+    evidence_required: true
+
+  verification_orchestrator:
+    scope:
+      - Gate-Pruefungen
+      - Test-Ausfuehrung
+      - Evidence-Validierung
+      - Abschluss-Verifikation
+    triggers:
+      - gate_check_request
+      - test_run
+      - evidence_seal
+      - closure_verification
+    agents_dispatched:
+      - ssidctl.l4.test_orchestrator
+      - ssidctl.l4.ci_gatekeeper
+      - ssidctl.l4.evidence_sealer
+      - ssidctl.l4.hash_chain_auditor
+    verifier: final_closure_verifier
+    evidence_required: true
+
+  repo_sync_orchestrator:
+    scope:
+      - Git-Push-Operationen
+      - Branch-Management
+      - Worktree-Steuerung
+      - Cross-Repo-Sync
+    triggers:
+      - push_request
+      - branch_create
+      - worktree_allocate
+      - cross_repo_sync
+    agents_dispatched:
+      - ssidctl.l4.branch_lock_manager
+      - ssidctl.l4.worktree_manager
+      - ssidctl.l1.repo_ssid
+      - ssidctl.l1.repo_ems
+      - ssidctl.l1.repo_orchestrator
+      - ssidctl.l1.repo_open_core
+      - ssidctl.l1.repo_docs
+    verifier: repo_sync_verifier
+    evidence_required: true
+
+routing_rules:
+  - rule: Ein Task wird an genau EINEN Sub-Orchestrator geroutet
+  - rule: Bei Scope-Ueberlappung entscheidet der Master-Orchestrator
+  - rule: Kein Task ohne Routing-Entscheidung
+  - rule: Routing-Entscheidung wird im Task-Ledger protokolliert
+  - rule: Fehlrouting fuehrt zu sofortigem Re-Route, nicht zu stillem Fehler
+
+forbidden:
+  - Task an mehrere Sub-Orchestratoren gleichzeitig ohne explizites Split
+  - Routing ohne Verifier-Zuweisung
+  - Routing-Aenderung ohne Ledger-Eintrag

@@ -1,0 +1,94 @@
+version: "1.0.0"
+root: "24_meta_orchestration"
+generated_utc: "2026-03-15T00:00:00Z"
+sot_version: "4.1.0"
+status: "ROOT-24-LOCK"
+
+description: >
+  Policy definitions for the Meta-Orchestration module. Governs the global
+  registry, DAO treasury policy, agent orchestration, and cross-module
+  coordination. This root holds the authoritative registry for all platform
+  modules and agents.
+
+policies:
+  - id: "AC-ORCH-001"
+    category: "access_control"
+    title: "Registry Write Authority"
+    requirement: >
+      The global registry in registry/ is the single source of truth for module
+      and agent registration. Write access requires dual-review approval.
+      Unilateral registry entries are prohibited.
+    enforcement: "strict"
+    evidence_required: true
+    references:
+      - "07_governance_legal/approvals/approval_workflow.yaml"
+
+  - id: "AC-ORCH-002"
+    category: "access_control"
+    title: "DAO Treasury Policy Governance"
+    requirement: >
+      The dao_treasury_policy.yaml requires governance token holder approval
+      via the documented DAO governance process. Administrative overrides
+      of treasury policy require compliance_reviewer documentation.
+    enforcement: "strict"
+    evidence_required: true
+    references:
+      - "24_meta_orchestration/dao_treasury_policy.yaml"
+
+  - id: "AC-ORCH-003"
+    category: "access_control"
+    title: "Agent Deployment Authorization"
+    requirement: >
+      Agent deployments listed in agents/ must be registered before activation.
+      Unregistered agent deployments in production are prohibited.
+      Agent scope changes require architecture_reviewer approval.
+    enforcement: "strict"
+    evidence_required: true
+
+  - id: "DH-ORCH-001"
+    category: "data_handling"
+    title: "Contract Immutability"
+    requirement: >
+      Executed contracts in contracts/ are immutable once signed. Post-execution
+      modifications require a documented contract amendment process with
+      dual-review.
+    enforcement: "strict"
+    evidence_required: true
+
+  - id: "OP-ORCH-001"
+    category: "operational"
+    title: "Registry Consistency Enforcement"
+    requirement: >
+      The global registry must remain consistent with all deployed modules.
+      Registry drift (registered but undeployed, or deployed but unregistered)
+      must be detected and resolved within 24 hours.
+    enforcement: "strict"
+    evidence_required: false
+
+  - id: "OP-ORCH-002"
+    category: "operational"
+    title: "Agent Human-in-the-Loop"
+    requirement: >
+      Agents registered in the meta-orchestration layer MUST NOT have autonomous
+      merge or deploy authority. Human merge authority is mandatory for all
+      consequential operations.
+    enforcement: "strict"
+    evidence_required: false
+
+  - id: "CO-ORCH-001"
+    category: "compliance"
+    title: "DAO Governance Regulatory Compliance"
+    requirement: >
+      DAO governance mechanisms must comply with applicable regulations (MiCA
+      for governance tokens, relevant corporate governance laws). Legal review
+      of DAO governance processes is required annually.
+    enforcement: "strict"
+    evidence_required: true
+    references:
+      - "23_compliance/mappings/mica/"
+      - "07_governance_legal/"
+
+enforcement_defaults:
+  mode: "strict"
+  override_requires: "dual_review"
+  evidence_base: "23_compliance/evidence/meta_orchestration/"

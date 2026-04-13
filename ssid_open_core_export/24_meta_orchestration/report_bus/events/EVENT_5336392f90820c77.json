@@ -1,0 +1,20 @@
+{
+  "event_id": "5336392f90820c77a787b23ca2e862c058160a6dd2e0f321823dd0c308ff60fa",
+  "event_type": "merge_recorded",
+  "merge_sha": "b842e1adf883c0eb242f43cd227bcc1c7adb3ffd",
+  "observed_utc": "2026-02-28T12:08:42Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 25,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-b842e1a/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "b842e1adf883c0eb242f43cd227bcc1c7adb3ffd",
+  "summary": "fix(root02): B1a audit logging SoT-conformance (6 patches) (#25)",
+  "task_id": null
+}

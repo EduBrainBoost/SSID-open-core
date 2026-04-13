@@ -1,0 +1,169 @@
+# eIDAS 2.0 Mapping for SSID
+# Regulation: EU Regulation 2024/1183 amending Regulation 910/2014 (eIDAS 2.0)
+# Context: Decentralized identity, EUDI Wallet interoperability
+# Version: 1.0.0
+# Last updated: 2026-03-15
+
+regulation_id: "EU-2024-1183"
+name: "eIDAS 2.0 (European Digital Identity Framework)"
+base_regulation: "EU-910-2014"
+amendment: "EU-2024-1183"
+effective_date: "2024-05-20"
+wallet_deadline: "2026-11-01"
+description: >
+  eIDAS 2.0 revises the EU electronic identification and trust services
+  framework. It mandates European Digital Identity Wallets (EUDI Wallets)
+  for all EU citizens and establishes a framework for qualified and
+  non-qualified electronic attestations of attributes. SSID aligns its
+  identity layer to be interoperable with the EUDI Wallet ecosystem.
+
+trust_services:
+  - service_id: "eIDAS-TS-01"
+    name: "Qualified Electronic Signatures (QES)"
+    eidas_article: "Art. 28-34"
+    ssid_relevance: "medium"
+    description: >
+      QES have legal equivalence to handwritten signatures.
+      SSID does not issue QES but can integrate QES providers
+      as identity verification sources.
+
+  - service_id: "eIDAS-TS-02"
+    name: "Qualified Electronic Seals"
+    eidas_article: "Art. 35-40"
+    ssid_relevance: "low"
+    description: >
+      Electronic seals for legal persons. SSID can consume
+      seal-based attestations from qualified trust service providers.
+
+  - service_id: "eIDAS-TS-03"
+    name: "Qualified Electronic Time Stamps"
+    eidas_article: "Art. 41-42"
+    ssid_relevance: "medium"
+    description: >
+      Qualified timestamps for evidence integrity. SSID's
+      audit logging can integrate qualified timestamp services
+      for regulatory-grade evidence.
+
+  - service_id: "eIDAS-TS-04"
+    name: "Qualified Electronic Attestation of Attributes (QEAA)"
+    eidas_article: "Art. 45a-45f (new)"
+    ssid_relevance: "high"
+    description: >
+      QEAAs are verifiable attestations issued by qualified trust
+      service providers. SSID identity scores and attestations
+      can be structured to be consumable alongside QEAAs.
+
+  - service_id: "eIDAS-TS-05"
+    name: "Non-Qualified Electronic Attestation of Attributes (EAA)"
+    eidas_article: "Art. 45a (new)"
+    ssid_relevance: "high"
+    description: >
+      Non-qualified attestations with lower assurance levels.
+      SSID identity attestations map naturally to EAAs for
+      use cases not requiring qualified trust services.
+
+  - service_id: "eIDAS-TS-06"
+    name: "Qualified Electronic Ledgers"
+    eidas_article: "Art. 45i-45k (new)"
+    ssid_relevance: "medium"
+    description: >
+      New trust service type for electronic ledgers (DLT/blockchain).
+      SSID's hash-only evidence chain may qualify as an electronic
+      ledger if operated by a QTSP.
+
+ssid_identity_mapping:
+  - mapping_id: "eIDAS-MAP-01"
+    eidas_concept: "Person Identification Data (PID)"
+    eidas_article: "Art. 5a, Annex VI"
+    ssid_component: "08_identity_score"
+    description: >
+      PID includes name, date of birth, nationality, unique identifier.
+      SSID stores only hashed representations of PID. Verifiable
+      presentations can prove PID attributes without exposing raw data.
+    data_handling: "hash_only"
+
+  - mapping_id: "eIDAS-MAP-02"
+    eidas_concept: "Level of Assurance (LoA)"
+    eidas_article: "Art. 8"
+    ssid_component: "08_identity_score"
+    description: >
+      eIDAS defines three LoA levels: low, substantial, high.
+      SSID identity scores map to these levels based on the
+      verification methods used.
+    loa_mapping:
+      low: "ssid_score >= 20 (self-declared attributes)"
+      substantial: "ssid_score >= 50 (verified by one provider)"
+      high: "ssid_score >= 80 (multi-factor, multi-provider verified)"
+
+  - mapping_id: "eIDAS-MAP-03"
+    eidas_concept: "Electronic Attestation of Attributes"
+    eidas_article: "Art. 45a"
+    ssid_component: "09_meta_identity"
+    description: >
+      SSID meta-identity attestations can be formatted as
+      W3C Verifiable Credentials, which are interoperable
+      with eIDAS 2.0 attestation formats (SD-JWT VC, mDL/mDoc).
+
+  - mapping_id: "eIDAS-MAP-04"
+    eidas_concept: "Relying Party Registration"
+    eidas_article: "Art. 5b(7)"
+    ssid_component: "19_adapters"
+    description: >
+      Relying parties must register and authenticate with the
+      EUDI Wallet ecosystem. SSID adapters support relying party
+      registration flows.
+
+wallet_requirements:
+  - requirement_id: "eIDAS-WR-01"
+    name: "EUDI Wallet Interoperability"
+    eidas_article: "Art. 5a"
+    description: >
+      Member states must provide EUDI Wallets that are interoperable
+      across the EU. SSID must support credential exchange with
+      EUDI Wallets.
+    ssid_implementation: "19_adapters/eudi_wallet_adapter"
+    protocol: "OpenID4VC (OID4VCI, OID4VP)"
+
+  - requirement_id: "eIDAS-WR-02"
+    name: "Selective Disclosure"
+    eidas_article: "Art. 5a(4)(c)"
+    description: >
+      Wallets must enable selective disclosure of attributes.
+      SSID supports selective disclosure via ZKP and SD-JWT.
+    ssid_implementation: "14_zero_time_auth"
+
+  - requirement_id: "eIDAS-WR-03"
+    name: "User Control and Consent"
+    eidas_article: "Art. 5a(4)(a)"
+    description: >
+      Users must have full control over their data. SSID's
+      non-custodial architecture inherently satisfies this
+      requirement as users hold their own credentials.
+    ssid_implementation: "03_core/identity"
+
+  - requirement_id: "eIDAS-WR-04"
+    name: "Certification of EUDI Wallets"
+    eidas_article: "Art. 5c"
+    description: >
+      EUDI Wallets must be certified against the EU cybersecurity
+      certification framework. SSID wallet components should
+      pursue Common Criteria or equivalent certification.
+    ssid_implementation: "23_compliance/standards"
+
+  - requirement_id: "eIDAS-WR-05"
+    name: "Offline Functionality"
+    eidas_article: "Art. 5a(4)(g)"
+    description: >
+      EUDI Wallets should support proximity-based offline
+      verification. SSID supports offline credential
+      verification via pre-signed attestations.
+    ssid_implementation: "14_zero_time_auth"
+
+  - requirement_id: "eIDAS-WR-06"
+    name: "Pseudonymous Authentication"
+    eidas_article: "Art. 5a(4)(e)"
+    description: >
+      Wallets must support pseudonymous authentication where
+      legally permitted. SSID's hash-based identity allows
+      pseudonymous proofs by default.
+    ssid_implementation: "08_identity_score"

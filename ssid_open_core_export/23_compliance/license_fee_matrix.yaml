@@ -1,0 +1,14 @@
+# License Fee Matrix — Compliance
+schema_version: "1.0"
+root: "23_compliance"
+fee_type: developer_reward
+reward_nature: "non-custodial, autonomous, immutable"
+
+modules:
+  - module_id: "comp_runtime_checker"
+    name: "Runtime Checker"
+    description: "Validates runtime compliance against EU AI Act and regulatory standards"
+    fee_percent: 0.15
+    responsible_maintainer: "SSID Core Team"
+    hook_contract: "IdentityFeeRouter.sol"
+    category: "C"

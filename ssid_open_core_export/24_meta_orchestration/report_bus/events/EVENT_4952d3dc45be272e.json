@@ -1,0 +1,20 @@
+{
+  "event_id": "4952d3dc45be272e17df5dd7ee3e7ef3a969d64daedce076db21b037ea6ad59a",
+  "event_type": "merge_recorded",
+  "merge_sha": "be3da59f526b26ef7c844df0b19ad6b85d29ca69",
+  "observed_utc": "2026-03-03T15:16:56Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 7,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-be3da59/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "be3da59f526b26ef7c844df0b19ad6b85d29ca69",
+  "summary": "chore(audit): ignore ephemeral E2E run reports in repo (#7)",
+  "task_id": null
+}

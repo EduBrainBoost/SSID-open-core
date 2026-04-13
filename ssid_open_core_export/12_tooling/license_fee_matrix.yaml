@@ -1,0 +1,8 @@
+# License Fee Matrix — Tooling
+schema_version: "1.0"
+root: "12_tooling"
+fee_type: developer_reward
+reward_nature: "non-custodial, autonomous, immutable"
+
+modules: []
+notes: "no_src_modules — tooling root contains no fee-generating code modules"

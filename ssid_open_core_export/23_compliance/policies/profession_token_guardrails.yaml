@@ -1,0 +1,6 @@
+policy_id: compliance.profession_token_guardrails
+no_profit_yield_for_any_role: true
+sensitive_sectors_confidential: true
+military_police_always_high_risk: true
+patient_data_always_confidential: true
+enforcement: fail_closed

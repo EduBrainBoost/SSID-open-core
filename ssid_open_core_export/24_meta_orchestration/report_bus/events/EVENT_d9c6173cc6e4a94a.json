@@ -1,0 +1,20 @@
+{
+  "event_id": "d9c6173cc6e4a94acfd2beba0446bba3c02f8315915815e963bbdbe566d96586",
+  "event_type": "merge_recorded",
+  "merge_sha": "a77df23542d1ec8ebfd2038a10368270d1ddbebe",
+  "observed_utc": "2026-03-01T02:59:06Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 6,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-a77df23/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "a77df23542d1ec8ebfd2038a10368270d1ddbebe",
+  "summary": "chore(deps-dev): bump pnpm (#6)",
+  "task_id": null
+}

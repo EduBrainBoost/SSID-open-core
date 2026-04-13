@@ -1,0 +1,58 @@
+{
+  "package_id": "SSID-PHASE1-20260326",
+  "generated_at_utc": "2026-03-26T19:52:01Z",
+  "phase": 1,
+  "status": "READY_FOR_EXECUTION",
+  "decision_model": {
+    "root_24_lock": true,
+    "safe_fix": true,
+    "new_wins_old_evidence_only": true,
+    "manifest_only_for_real_implementations": true,
+    "ems_first": true,
+    "local_first": true,
+    "no_quarantine_for_structure_policy_depth": true
+  },
+  "scope": {
+    "primary_targets": [
+      "02_audit_logging/agent_runs",
+      "05_documentation/phase1",
+      "24_meta_orchestration/registry/tasks",
+      "24_meta_orchestration/registry/manifests",
+      "23_compliance/evidence/phase1",
+      "17_observability/score"
+    ],
+    "root_common_must": [
+      "module.yaml",
+      "README.md",
+      "docs/",
+      "src/",
+      "tests/"
+    ],
+    "registry_semantics": {
+      "logs_allowed": [
+        "*.log",
+        "*.log.jsonl"
+      ],
+      "locks_required": true,
+      "manifests_required": true,
+      "intake_chat_ingest_required": true,
+      "registry_audit_target": "23_compliance/evidence/registry/registry_audit.yaml"
+    },
+    "known_phase1_gaps": [
+      "charts_scaffold_only",
+      "manifests_missing",
+      "tests_empty",
+      "ai_cli_logbook_missing",
+      "task_specs_missing",
+      "compliance_mappings_incomplete"
+    ]
+  },
+  "forbidden_during_phase1": [
+    "contract_deployments",
+    "mainnet_actions",
+    "public_mirror_push",
+    "feature_implementation_beyond_baseline",
+    "historical_structure_restore",
+    "manifest_generation_without_real_implementation_intent"
+  ]
+}

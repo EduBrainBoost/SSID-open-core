@@ -1,0 +1,42 @@
+task_id: PH3_IMPL_SCRIPTS_002
+title: "Testnet MVP: implement deploy + verify + e2e scripts (ENV-only)"
+task_type: tooling
+scope_allowlist:
+  - "12_tooling/cli/"
+  - "04_deployment/"
+  - "02_audit_logging/agent_runs/"
+forbidden_paths:
+  - "./"
+  - "/mnt/data"
+  - "**/.git/**"
+  - "**/secrets/**"
+  - "**/*.sol"
+required_checks:
+  - "python 12_tooling/cli/stability_gate.py --run"
+  - "python 12_tooling/cli/sot_validator.py --verify-all"
+  - "python -m pytest -q"
+acceptance_criteria:
+  - "deploy_testnet.py exists under 12_tooling/cli/"
+  - "verify_testnet.py exists under 12_tooling/cli/"
+  - "Both scripts read RPC_URL, CHAIN_ID, PRIVATE_KEY from ENV only"
+  - "deploy_testnet.py loads ABI/bytecode from 24_meta_orchestration/contracts/"
+  - "deploy_testnet.py writes deployment.json to 02_audit_logging/agent_runs/PH3_IMPL_SCRIPTS_002/"
+  - "deployment.json contains: contract_address, tx_hash, chain_id, deployer (redacted)"
+  - "verify_testnet.py reads CONTRACT_ADDRESS from ENV"
+  - "verify_testnet.py implements: hasProof(hash)=false -> addProof(hash) -> hasProof(hash)=true"
+  - "verify_testnet.py writes verify_report.json to 02_audit_logging/agent_runs/PH3_IMPL_SCRIPTS_002/"
+  - "verify_report.json contains: result (PASS/FAIL), tx_hashes, chain_id, contract_address"
+  - "No secrets, private keys, or RPC URLs in any output file"
+  - "Scripts never log or print secret values"
+  - "Exit code 0 on success, 1 on failure"
+  - "Deterministic timeouts on all RPC calls (no infinite waits)"
+evidence_outputs:
+  - "02_audit_logging/agent_runs/PH3_IMPL_SCRIPTS_002/evidence.json"
+  - "02_audit_logging/agent_runs/PH3_IMPL_SCRIPTS_002/patch.diff"
+agent_cmd: "manual"
+notes: >
+  Implementation of PH3_DEPLOY_SCRIPT_001 and PH3_VERIFY_SCRIPT_001 specs.
+  deploy_testnet.py and verify_testnet.py are deterministic scripts that
+  read all secrets from environment variables. Output is redacted: no secret
+  material in evidence, deployment.json, or verify_report.json.
+  Uses web3.py or eth-abi for contract interaction.

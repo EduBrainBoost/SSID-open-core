@@ -1,0 +1,125 @@
+# FATF Travel Rule Mapping for SSID
+# Regulation: FATF Recommendation 16 (Travel Rule)
+# Context: Non-custodial, hash-only identity infrastructure
+# Version: 1.0.0
+# Last updated: 2026-03-15
+
+rule_id: "FATF-R16"
+name: "FATF Travel Rule (Recommendation 16)"
+description: >
+  FATF Recommendation 16 requires Virtual Asset Service Providers (VASPs)
+  to obtain, hold, and transmit originator and beneficiary information
+  during virtual asset transfers. SSID operates as non-custodial
+  infrastructure and does not qualify as a VASP. However, SSID provides
+  identity attestation primitives that VASPs can use to satisfy
+  Travel Rule obligations.
+
+applicability:
+  ssid_role: "infrastructure_provider"
+  vasp_status: false
+  rationale: >
+    SSID is non-custodial and does not transfer, hold, or manage
+    virtual assets. It provides cryptographic identity proofs that
+    VASPs may consume to fulfill their own Travel Rule obligations.
+
+requirements:
+  - requirement_id: "TR-REQ-01"
+    name: "Originator Information"
+    fatf_reference: "R.16, INR.16 para 7(a)"
+    description: >
+      VASPs must obtain and transmit originator name, account number,
+      and address/national ID/customer ID/date-and-place-of-birth.
+    threshold: "USD/EUR 1,000"
+    ssid_relevance: "high"
+
+  - requirement_id: "TR-REQ-02"
+    name: "Beneficiary Information"
+    fatf_reference: "R.16, INR.16 para 7(b)"
+    description: >
+      VASPs must obtain beneficiary name and account number.
+    ssid_relevance: "high"
+
+  - requirement_id: "TR-REQ-03"
+    name: "Record Keeping"
+    fatf_reference: "R.11"
+    description: >
+      Transaction records and identification data must be retained
+      for at least five years.
+    ssid_relevance: "medium"
+
+  - requirement_id: "TR-REQ-04"
+    name: "Sanctions Screening"
+    fatf_reference: "R.6, R.7"
+    description: >
+      VASPs must screen originators and beneficiaries against
+      sanctions lists (UN, OFAC, EU).
+    ssid_relevance: "medium"
+
+  - requirement_id: "TR-REQ-05"
+    name: "Counterparty VASP Due Diligence"
+    fatf_reference: "R.16, INR.16 para 12-18"
+    description: >
+      Ordering VASP must identify the beneficiary VASP and ensure
+      it is not a sanctioned entity.
+    ssid_relevance: "low"
+
+ssid_controls:
+  - control_id: "SSID-TR-C01"
+    name: "Hash-Based Identity Attestation"
+    description: >
+      SSID provides SHA-256 hashed identity proofs. VASPs can request
+      a verifiable attestation that originator/beneficiary identity
+      has been verified, without receiving raw PII.
+    maps_to:
+      - "TR-REQ-01"
+      - "TR-REQ-02"
+    implementation: "08_identity_score"
+
+  - control_id: "SSID-TR-C02"
+    name: "Zero-Knowledge Proof of Identity"
+    description: >
+      SSID supports ZKP-based selective disclosure allowing VASPs
+      to verify identity attributes (e.g., jurisdiction, KYC level)
+      without exposing underlying personal data.
+    maps_to:
+      - "TR-REQ-01"
+      - "TR-REQ-02"
+    implementation: "14_zero_time_auth"
+
+  - control_id: "SSID-TR-C03"
+    name: "Audit Trail (Hash-Only)"
+    description: >
+      Immutable, append-only evidence logs with SHA-256 hashes
+      enable five-year record-keeping compliance without storing PII.
+    maps_to:
+      - "TR-REQ-03"
+    implementation: "02_audit_logging"
+
+  - control_id: "SSID-TR-C04"
+    name: "Sanctions List Integration Point"
+    description: >
+      SSID provides a sanctions-check interface that VASPs can
+      invoke. SSID itself does not maintain sanctions lists but
+      supports integration with OFAC SDN, EU Consolidated List,
+      and UN Security Council lists.
+    maps_to:
+      - "TR-REQ-04"
+    implementation: "23_compliance/standards"
+
+evidence_type: "hash_manifest_only"
+evidence_artifacts:
+  - "23_compliance/evidence/compliance/fatf_travel_rule_attestation.json"
+  - "02_audit_logging/evidence/travel_rule_audit.json"
+
+non_custodial_exemptions:
+  - exemption_id: "NCE-FATF-01"
+    description: >
+      FATF Updated Guidance (2021) para 68: Peer-to-peer transactions
+      without VASP intermediation are outside the scope of R.16.
+      SSID as infrastructure does not intermediate transactions.
+  - exemption_id: "NCE-FATF-02"
+    description: >
+      FATF Updated Guidance (2021) para 117-120: Software providers
+      that merely provide communication or identity verification
+      tools are not VASPs and are not directly subject to FATF
+      Recommendations.

@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at_utc": "2026-03-28T19:54:00Z",
+  "description": "Consolidated SoT source file reference — GAP-003",
+  "source_count": 6,
+  "total_lines": 6441,
+  "sources": [
+    {
+      "file": "SSID_structure_gebuehren_abo_modelle.md",
+      "path": "16_codex\\SSID_structure_gebuehren_abo_modelle.md",
+      "lines": 981,
+      "sha256": "45eb3a1b40d014fb6c72846975053123f155bb72dd699f39b2d0642053bdf46c"
+    },
+    {
+      "file": "SSID_structure_gebuehren_abo_modelle_ROOTS_16_21_ADDENDUM.md",
+      "path": "16_codex\\SSID_structure_gebuehren_abo_modelle_ROOTS_16_21_ADDENDUM.md",
+      "lines": 564,
+      "sha256": "bd05db1ecd975826688d7a5ce81dae38c74877bb014954b5164e9ed47e4a8eb8"
+    },
+    {
+      "file": "SSID_structure_level3_part1_MAX.md",
+      "path": "16_codex\\SSID_structure_level3_part1_MAX.md",
+      "lines": 1257,
+      "sha256": "3e7dcb0af16507a6d585b01f95dfe8e872a4a3097dbed268b90e45ea2c0869e8"
+    },
+    {
+      "file": "SSID_structure_level3_part2_MAX.md",
+      "path": "16_codex\\SSID_structure_level3_part2_MAX.md",
+      "lines": 1366,
+      "sha256": "782758ed2d594f0007fe62457bfcede899f75c51bc0c73f057a446d2b996108f"
+    },
+    {
+      "file": "SSID_structure_level3_part3_MAX.md",
+      "path": "16_codex\\SSID_structure_level3_part3_MAX.md",
+      "lines": 1210,
+      "sha256": "00bb2fe9691cc29f1a6cb4593f53dc3dcc476ed8e17afb13d34e865a0c0848f8"
+    },
+    {
+      "file": "ssid_master_definition_corrected_v1.1.1.md",
+      "path": "16_codex\\ssid_master_definition_corrected_v1.1.1.md",
+      "lines": 1063,
+      "sha256": "0be2f269bdba163cf2a49fe3f868e82f05c0288283583e83bc257f61fbe61d41"
+    }
+  ],
+  "combined_hash": "65156e7a4583a1db59eebfef528cecb901db9d7c6c9651834916f2a1c5de56b9"
+}

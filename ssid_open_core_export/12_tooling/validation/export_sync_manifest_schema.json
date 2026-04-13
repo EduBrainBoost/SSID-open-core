@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.internal/schemas/export_sync_manifest_schema.json",
+  "title": "SSID Open-Core Export Sync Manifest",
+  "description": "Schema for export sync manifests produced by the open-core derivation sync validator. Each manifest captures the synchronization state between the canonical SSID repository and its derivative SSID-open-core repository.",
+  "type": "object",
+  "required": [
+    "scan_time_utc",
+    "canonical_repo",
+    "derivative_repo",
+    "contract_path",
+    "contract_version",
+    "contract_sha256",
+    "derivation_mode",
+    "allowed_exports",
+    "actual_exports",
+    "missing_exports",
+    "forbidden_exports",
+    "stale_bindings",
+    "registry_binding_status",
+    "findings",
+    "status",
+    "evidence_sha256"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "scan_time_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of the export sync scan."
+    },
+    "canonical_repo": {
+      "type": "string",
+      "description": "Name of the canonical (source) repository."
+    },
+    "derivative_repo": {
+      "type": "string",
+      "description": "Name of the derivative (target) repository."
+    },
+    "contract_path": {
+      "type": "string",
+      "description": "Repo-relative path to the SoT contract used for this scan."
+    },
+    "contract_version": {
+      "type": "string",
+      "description": "Semantic version of the SoT contract."
+    },
+    "contract_sha256": {
+      "type": "string",
+      "description": "SHA-256 hash of the SoT contract file at scan time."
+    },
+    "derivation_mode": {
+      "type": "string",
+      "enum": ["public_subset", "sanitized_export", "filtered_archive"],
+      "description": "Mode of derivation as defined in the export policy."
+    },
+    "allowed_exports": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of canonical artifact paths that are allowed for export (not denied by policy)."
+    },
+    "actual_exports": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of artifact paths actually present in the derivative repository."
+    },
+    "missing_exports": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of allowed canonical artifacts that are absent from the derivative."
+    },
+    "forbidden_exports": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of derivative artifacts that match deny-glob patterns (policy violations)."
+    },
+    "stale_bindings": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/stale_binding" },
+      "description": "List of derivative artifacts that are stale relative to their canonical counterpart."
+    },
+    "registry_binding_status": {
+      "type": "string",
+      "enum": ["consistent", "inconsistent", "unknown"],
+      "description": "Consistency status of registry bindings between canonical and derivative."
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/sync_finding" },
+      "description": "All sync findings detected during the validation scan."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail"],
+      "description": "Overall sync validation status."
+    },
+    "evidence_sha256": {
+      "type": "string",
+      "description": "SHA-256 hash of the manifest evidence payload for audit trails."
+    }
+  },
+  "definitions": {
+    "stale_binding": {
+      "type": "object",
+      "required": ["path", "canonical_mtime", "derivative_mtime"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Repo-relative path of the stale artifact."
+        },
+        "canonical_mtime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification time of the canonical file (ISO 8601 UTC)."
+        },
+        "derivative_mtime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification time of the derivative file (ISO 8601 UTC)."
+        }
+      }
+    },
+    "sync_finding": {
+      "type": "object",
+      "required": ["class", "path", "detail", "severity"],
+      "additionalProperties": false,
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": [
+            "forbidden_export",
+            "missing_expected_export",
+            "contract_hash_mismatch",
+            "stale_derivative_binding",
+            "registry_binding_missing",
+            "unsanctioned_public_artifact",
+            "export_scope_violation"
+          ],
+          "description": "Classification of the sync finding."
+        },
+        "path": {
+          "type": "string",
+          "description": "File path related to the finding."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Human-readable description of the finding."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"],
+          "description": "Severity level of the finding."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EMS Configuration",
+  "description": "ssidctl EMS configuration. Paths, concurrency, guards, scope defaults.",
+  "type": "object",
+  "required": ["mode", "paths"],
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": ["local", "ci", "test"],
+      "description": "Operating mode"
+    },
+    "paths": {
+      "type": "object",
+      "required": ["ssid_repo", "ems_repo", "state_dir", "evidence_dir", "vault_dir"],
+      "properties": {
+        "ssid_repo": {"type": "string"},
+        "ems_repo": {"type": "string"},
+        "state_dir": {"type": "string"},
+        "evidence_dir": {"type": "string"},
+        "vault_dir": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "concurrency": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1,
+      "default": 1,
+      "description": "Must be 1. Single-flight enforcement."
+    },
+    "claude": {
+      "type": "object",
+      "properties": {
+        "command": {"type": "string", "default": "claude"},
+        "timeout_seconds": {"type": "integer", "minimum": 10, "default": 120}
+      },
+      "additionalProperties": false
+    },
+    "guards": {
+      "type": "object",
+      "properties": {
+        "token_legal_lexicon_enabled": {"type": "boolean", "default": true}
+      },
+      "additionalProperties": false
+    },
+    "scope_defaults": {
+      "type": "object",
+      "properties": {
+        "max_changed_files": {"type": "integer", "minimum": 1, "default": 12},
+        "max_changed_lines": {"type": "integer", "minimum": 1, "default": 600},
+        "allowed_file_types": {
+          "type": "array",
+          "items": {"type": "string"},
+          "default": [".py", ".yaml", ".yml", ".json", ".md", ".txt", ".toml"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "identity": {
+      "type": "object",
+      "properties": {
+        "identities_path": {
+          "type": "string",
+          "description": "Path to identities.yaml. Relative to ems config dir or absolute."
+        },
+        "env_var": {
+          "type": "string",
+          "default": "SSID_IDENTITY",
+          "description": "ENV var for identity override"
+        },
+        "default_role": {
+          "type": "string",
+          "enum": ["readonly", "contributor"],
+          "default": "readonly"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

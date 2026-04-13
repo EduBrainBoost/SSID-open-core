@@ -1,0 +1,38 @@
+task_id: TS017
+title: "Evidence-Chain Backfill (Agent-Runs + Report-Bus + Mapping)"
+mode: PLAN -> APPROVAL -> APPLY
+repo: SSID
+branch: feat/evidence-chain-backfill-v1
+status: APPLY
+
+problem:
+  merge_commits_without_agent_run: true
+  merge_commits_without_report_event: true
+  no_canonical_mapping_layer: true
+
+deliverables:
+  tooling:
+    - 12_tooling/cli/evidence_chain.py
+    - 12_tooling/ops/evidence_chain/evidence_chain_lib.py
+    - 12_tooling/ops/evidence_chain/targets.default.yaml
+    - 12_tooling/ops/evidence_chain/README.md
+  schemas:
+    - 16_codex/contracts/evidence_chain/agent_run.schema.json
+    - 16_codex/contracts/evidence_chain/report_bus_event.schema.json
+    - 16_codex/contracts/evidence_chain/execution_index.schema.json
+  indices:
+    - 24_meta_orchestration/registry/execution_index.json
+  backfill_outputs:
+    - 02_audit_logging/agent_runs/backfill/AGENT_RUN_{merge_sha}.json
+    - 24_meta_orchestration/report_bus/events/BACKFILL_EVENT_{merge_sha}.json
+  audit_reports:
+    - 02_audit_logging/reports/EVIDENCE_CHAIN_BACKFILL_V1.md
+    - 02_audit_logging/reports/EVIDENCE_CHAIN_GAPS_V1.json
+
+constraints:
+  - SAFE-FIX enforced
+  - ROOT-24-LOCK enforced
+  - no secrets in repo/logs
+  - PASS/FAIL only
+  - additive only (no history rewrites)
+  - idempotent (rerun produces no diffs)

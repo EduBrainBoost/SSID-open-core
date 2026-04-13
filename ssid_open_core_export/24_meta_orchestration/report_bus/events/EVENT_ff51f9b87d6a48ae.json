@@ -1,0 +1,20 @@
+{
+  "event_id": "ff51f9b87d6a48ae52b4e6e1fd5aa296920118e87253b672070fc3e3e6837cf6",
+  "event_type": "merge_recorded",
+  "merge_sha": "b559f4dcdce7d6238d57df2248e82982d21ceb8b",
+  "observed_utc": "2026-02-28T00:45:26Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 7,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-b559f4d/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "b559f4dcdce7d6238d57df2248e82982d21ceb8b",
+  "summary": "PHASE2_TASKSPECS_001: automation loop e2e task pack (spec-only) (#7)",
+  "task_id": null
+}

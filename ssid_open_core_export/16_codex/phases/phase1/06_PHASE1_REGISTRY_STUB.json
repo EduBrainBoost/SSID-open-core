@@ -1,0 +1,64 @@
+{
+  "package_id": "SSID-PHASE1-20260326",
+  "generated_at_utc": "2026-03-26T19:52:01Z",
+  "registry_scope": "phase1_repo_baseline_completion",
+  "status": "READY_FOR_EXECUTION",
+  "owner": "Bruder",
+  "artifacts": [
+    {
+      "path": "02_audit_logging/agent_runs/20260326T000000Z_phase1_multi_ai_cli_integration_baseline.md",
+      "kind": "audit_log"
+    },
+    {
+      "path": "05_documentation/phase1/PHASE1_ROOT_MODULE_MATRIX.md",
+      "kind": "documentation"
+    },
+    {
+      "path": "05_documentation/phase1/PHASE1_GAP_MATRIX.md",
+      "kind": "documentation"
+    },
+    {
+      "path": "05_documentation/phase1/PHASE1_BASELINE_COMPLETION_REPORT.md",
+      "kind": "documentation"
+    },
+    {
+      "path": "24_meta_orchestration/registry/tasks/TASK_PHASE1_ROOT_BASELINE_01_AI_LAYER.json",
+      "kind": "taskspec"
+    },
+    {
+      "path": "24_meta_orchestration/registry/tasks/TASK_PHASE1_ROOT_BASELINE_02_AUDIT_LOGGING.json",
+      "kind": "taskspec"
+    },
+    {
+      "path": "24_meta_orchestration/registry/tasks/TASK_PHASE1_ROOT_BASELINE_03_CORE.json",
+      "kind": "taskspec"
+    },
+    {
+      "path": "24_meta_orchestration/registry/tasks/TASK_PHASE1_ROOT_BASELINE_04_TO_24_SERIES.json",
+      "kind": "taskspec"
+    },
+    {
+      "path": "24_meta_orchestration/registry/manifests/phase1_integrity_checksums.json",
+      "kind": "registry_manifest"
+    },
+    {
+      "path": "23_compliance/evidence/phase1/phase1_baseline_audit.json",
+      "kind": "evidence"
+    },
+    {
+      "path": "23_compliance/evidence/phase1/phase1_decision_log.jsonl",
+      "kind": "evidence"
+    },
+    {
+      "path": "17_observability/score/phase1_status.json",
+      "kind": "score"
+    }
+  ],
+  "phase2_blockers_until_phase1_complete": [
+    "no root module matrix",
+    "no gap matrix",
+    "no ai cli logbook entry",
+    "no root task specs",
+    "no phase1 evidence package"
+  ]
+}

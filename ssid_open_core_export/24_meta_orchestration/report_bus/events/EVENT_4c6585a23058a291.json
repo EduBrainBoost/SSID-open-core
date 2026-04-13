@@ -1,0 +1,20 @@
+{
+  "event_id": "4c6585a23058a291587f00b4af2f0daeefcc1b402b55ef7c262c8cebd9b2d16d",
+  "event_type": "merge_recorded",
+  "merge_sha": "0c8b8dd3be34582604815625064c913cc72be1f9",
+  "observed_utc": "2026-03-04T11:28:14Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 25,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-0c8b8dd/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "0c8b8dd3be34582604815625064c913cc72be1f9",
+  "summary": "Merge pull request #25 from EduBrainBoost/feat/ph3-contract-artifacts-20260304T111629Z",
+  "task_id": null
+}

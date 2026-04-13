@@ -1,0 +1,20 @@
+{
+  "event_id": "a7f359703ee3c9cfeaac92d279ba4b54b55b934a2563684e76bdabc2a66a8c3c",
+  "event_type": "merge_recorded",
+  "merge_sha": "f16b1dc4033d13f9ed4612ce6ab585ff2e52e2ae",
+  "observed_utc": "2026-03-02T19:34:46Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 3,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-f16b1dc/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "f16b1dc4033d13f9ed4612ce6ab585ff2e52e2ae",
+  "summary": "Fix: ADR path canonicalization for repo_separation_guard (#3)",
+  "task_id": null
+}

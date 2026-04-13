@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-03-16T00:00:00+00:00",
+  "module_health": [
+    {"module_name": "fee_distribution_engine", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T00:00:00+00:00"},
+    {"module_name": "subscription_revenue_distributor", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T00:00:00+00:00"},
+    {"module_name": "governance_reward_engine", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T00:00:00+00:00"},
+    {"module_name": "license_fee_splitter", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T00:00:00+00:00"},
+    {"module_name": "identity_fee_router", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T00:00:00+00:00"},
+    {"module_name": "reward_handler", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T00:00:00+00:00"},
+    {"module_name": "fee_proof_engine", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T00:00:00+00:00"},
+    {"module_name": "policy_enforcer", "status": "healthy", "version": "1.0.0", "last_checked_utc": "2026-03-16T00:00:00+00:00"}
+  ],
+  "flow_statuses": [
+    {
+      "flow_id": "probe_subscription_denied",
+      "flow_name": "subscription_revenue",
+      "status": "denied",
+      "allow_or_deny": "deny",
+      "input_hash": "PLACEHOLDER_HASH",
+      "output_hash": "",
+      "proof_hash": null,
+      "determinism_hash": "",
+      "policy_decisions": [{"action": "deny", "rule_type": "max_fee", "reason": "fee exceeds maximum allowed", "context": {"max_fee": "500", "actual_fee": "1000"}, "decided_at": "2026-03-16T00:00:00+00:00"}],
+      "timestamp_utc": "2026-03-16T00:00:00+00:00",
+      "schema_version": "1.0.0"
+    }
+  ]
+}

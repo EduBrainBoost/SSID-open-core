@@ -1,0 +1,156 @@
+---
+# TOP_ORCHESTRATOR_POLICY.yaml — T-019 WP2
+# Generated: 2026-03-29
+# Purpose: Defines the governance rules for Claude Code as Layer 0 Top-Orchestrator
+
+schema_version: "1.0.0"
+task_id: T-019
+generated: "2026-03-29T00:00:00Z"
+
+top_orchestrator:
+  identity: "Claude Code"
+  layer: L0
+  role: "Single entry point for all SSID system operations"
+
+policies:
+  P01_task_id_mandatory:
+    rule: "Kein Lauf ohne Task-ID"
+    description: >
+      Every operation must be associated with a unique Task-ID (T-XXX format).
+      No agent may execute without a registered task reference.
+    enforcement: HARD_BLOCK
+    violation_action: REJECT
+
+  P02_repo_target_mandatory:
+    rule: "Kein Lauf ohne Repo-Ziel"
+    description: >
+      Every task must specify exactly which repo(s) are in scope:
+      SSID, SSID-EMS, SSID-orchestrator, SSID-open-core, SSID-docs.
+      No unscoped operations allowed.
+    enforcement: HARD_BLOCK
+    violation_action: REJECT
+
+  P03_sub_orchestrator_mandatory:
+    rule: "Kein Agent ohne Sub-Orchestrator"
+    description: >
+      Every L2-L5 agent must be assigned to exactly one Sub-Orchestrator
+      (structure, policy, runtime, agent, verification, repo_sync).
+      Orphaned agents are not permitted.
+    enforcement: HARD_BLOCK
+    violation_action: REJECT
+
+  P04_verifier_mandatory:
+    rule: "Kein Abschluss ohne Verifier"
+    description: >
+      No task may be marked COMPLETED without a verifier agent or gate
+      confirming the result. Self-verification is only allowed for L0.
+    enforcement: HARD_BLOCK
+    violation_action: BLOCK_COMPLETION
+
+  P05_no_silent_drop:
+    rule: "Kein stilles Droppen"
+    description: >
+      No task, result, or error may be silently discarded.
+      Every intake must result in one of: ROUTED, DEFERRED, REJECTED.
+      Every execution must result in: PASS, FAIL, TIMEOUT, BLOCKED.
+      The task ledger must reflect the final state.
+    enforcement: HARD_BLOCK
+    violation_action: AUDIT_ALERT
+
+  P06_hash_equality:
+    rule: "'gleich' nur bei identischem Hash"
+    description: >
+      Two artifacts are considered 'equal' only if their SHA-256 hashes match.
+      No fuzzy matching, no "close enough", no string comparison for equality claims.
+    enforcement: HARD_BLOCK
+    violation_action: REJECT_CLAIM
+
+  P07_append_only_ledger:
+    rule: "append-only task ledger Pflicht"
+    description: >
+      The task ledger is append-only. No entries may be modified or deleted.
+      Every state transition is a new entry with timestamp and agent_id.
+    enforcement: HARD_BLOCK
+    violation_action: INTEGRITY_ALERT
+
+  P08_evidence_on_write:
+    rule: "Jeder Schreibvorgang erzeugt Evidence"
+    description: >
+      Before any file write: compute SHA-256 of existing content (or null).
+      After write: compute SHA-256 of new content.
+      Both hashes logged to evidence with ISO8601 timestamp.
+    enforcement: HARD_BLOCK
+    violation_action: BLOCK_WRITE
+
+  P09_root24_lock:
+    rule: "ROOT-24-LOCK unveraenderlich"
+    description: >
+      The 24 canonical root directories may not be added to, removed,
+      or renamed. Structure Guardian enforces this on every write path.
+    enforcement: HARD_BLOCK
+    violation_action: REJECT
+
+  P10_safe_fix_only:
+    rule: "SAFE-FIX only — kein blindes Ueberschreiben"
+    description: >
+      Existing files may only be overwritten with explicit SAFE-FIX confirmation.
+      Additive writes are the default. Destructive overwrites require prior approval.
+    enforcement: HARD_BLOCK
+    violation_action: BLOCK_WRITE
+
+  P11_no_fake_success:
+    rule: "Kein Fake-Success"
+    description: >
+      A PASS claim must be backed by real evidence (test output, hash, screenshot).
+      Claims without evidence are automatically classified as FAKE_SUCCESS.
+    enforcement: HARD_BLOCK
+    violation_action: REJECT_CLAIM
+
+  P12_one_scope_one_lock:
+    rule: "Ein Agent = ein Scope = keine Ueberschneidung"
+    description: >
+      No two agents may write to the same file path simultaneously without
+      explicit lock coordination through the Branch Lock Manager.
+    enforcement: HARD_BLOCK
+    violation_action: BLOCK_WRITE
+
+routing_rules:
+  intake: "L0 receives all tasks, classifies by repo+root+shard, routes to Sub-Orchestrator"
+  dispatch: "Sub-Orchestrator selects appropriate L2-L5 agent based on scope"
+  verification: "Result flows back through verifier chain to L0 for final verdict"
+  closure: "L0 seals evidence, updates ledger, produces final status"
+
+task_lifecycle:
+  - state: INTAKE
+    owner: L0
+    next: [ROUTED, DEFERRED, REJECTED]
+  - state: ROUTED
+    owner: Sub-Orchestrator
+    next: [DISPATCHED]
+  - state: DISPATCHED
+    owner: Agent
+    next: [RUNNING]
+  - state: RUNNING
+    owner: Agent
+    next: [COMPLETED, FAILED, TIMEOUT]
+  - state: COMPLETED
+    owner: Verifier
+    next: [VERIFIED, REJECTED]
+  - state: VERIFIED
+    owner: L0
+    next: [CLOSED]
+  - state: FAILED
+    owner: L0
+    next: [REMEDIATED, CLOSED]
+  - state: TIMEOUT
+    owner: L0
+    next: [RETRIED, CLOSED]
+  - state: DEFERRED
+    owner: L0
+    next: [ROUTED, CLOSED]
+  - state: REJECTED
+    owner: L0
+    next: [CLOSED]
+  - state: CLOSED
+    owner: L0
+    terminal: true

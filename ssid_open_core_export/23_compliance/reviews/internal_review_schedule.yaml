@@ -1,0 +1,105 @@
+internal_review_schedule:
+  version: "1.0.0"
+  description: >
+    Schedule for internal compliance reviews within SSID.
+    Defines review types, cadence, responsible parties,
+    and deliverable requirements.
+
+reviews:
+  - review_id: IR-Q1
+    name: Q1 Internal Compliance Review
+    type: quarterly
+    scheduled_date: "2026-03-15"
+    deadline: "2026-03-31"
+    scope:
+      - kyc_provider_performance
+      - aml_screening_effectiveness
+      - data_handling_compliance
+      - access_control_review
+    reviewers:
+      - compliance_officer
+      - security_lead
+    deliverables:
+      - review_report
+      - findings_register
+      - remediation_plan
+
+  - review_id: IR-Q2
+    name: Q2 Internal Compliance Review
+    type: quarterly
+    scheduled_date: "2026-06-15"
+    deadline: "2026-06-30"
+    scope:
+      - regulatory_change_impact
+      - policy_adherence
+      - incident_response_review
+      - vendor_compliance
+    reviewers:
+      - compliance_officer
+      - legal_counsel
+    deliverables:
+      - review_report
+      - updated_risk_register
+
+  - review_id: IR-Q3
+    name: Q3 Internal Compliance Review
+    type: quarterly
+    scheduled_date: "2026-09-15"
+    deadline: "2026-09-30"
+    scope:
+      - ai_bias_audit_results
+      - privacy_impact_assessment_review
+      - sanctions_list_coverage
+      - training_effectiveness
+    reviewers:
+      - compliance_officer
+      - ai_ethics_officer
+    deliverables:
+      - review_report
+      - bias_audit_summary
+
+  - review_id: IR-Q4
+    name: Q4 Internal Compliance Review
+    type: quarterly
+    scheduled_date: "2026-12-15"
+    deadline: "2026-12-31"
+    scope:
+      - annual_summary_preparation
+      - external_audit_readiness
+      - policy_refresh
+      - jurisdiction_expansion_review
+    reviewers:
+      - compliance_officer
+      - cto
+      - legal_counsel
+    deliverables:
+      - annual_review_report
+      - external_audit_preparation_pack
+
+  - review_id: IR-ANNUAL
+    name: Annual Comprehensive Review
+    type: annual
+    scheduled_date: "2027-01-15"
+    deadline: "2027-02-28"
+    scope:
+      - full_regulatory_compliance_assessment
+      - governance_framework_review
+      - risk_appetite_review
+      - strategic_compliance_planning
+    reviewers:
+      - compliance_committee
+      - board_representative
+    deliverables:
+      - annual_compliance_report
+      - strategic_compliance_plan
+      - board_presentation
+
+process:
+  notification_days_before: 14
+  evidence_collection_start_days_before: 30
+  template_ref: 23_compliance/reviews/templates/internal_quarterly_review_template_enterprise.md
+  findings_tracker: 23_compliance/reviews/review_log_enterprise.json
+  escalation:
+    critical_findings: immediate_to_board
+    high_findings: within_5_business_days
+    medium_findings: within_review_cycle

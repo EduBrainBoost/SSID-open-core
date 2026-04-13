@@ -1,0 +1,20 @@
+{
+  "event_id": "0c470ca28a1787cdae0e722800328f8b2f7da80062e2a0075603966280ba233f",
+  "event_type": "merge_recorded",
+  "merge_sha": "e4162c7a78f58a52e414b71773a448b6f6aa7c76",
+  "observed_utc": "2026-02-28T02:34:05Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 19,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-e4162c7/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "e4162c7a78f58a52e414b71773a448b6f6aa7c76",
+  "summary": "TESTNET_WORKFLOW_DISPATCH_001: run deploy+verify+e2e on testnet (no secrets) (#19)",
+  "task_id": null
+}

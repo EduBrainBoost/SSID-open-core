@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "generated": "2026-03-09T12:00:00Z",
+  "description": "Dispatcher Blueprint 4.1 Registry — kanonischer lokaler Non-Interactive Entry-Point",
+  "artifacts": [
+    {
+      "id": "dispatcher_e2e",
+      "canonical_path": "24_meta_orchestration/dispatcher/e2e_dispatcher.py",
+      "hash": "6b1a9743026fe4df1ced97fb720b82366aae91e03e62a6a55d0213132973cb45",
+      "hash_algorithm": "sha256",
+      "status": "active",
+      "timestamp": "2026-03-09T12:00:00Z",
+      "enforcement_flags": ["ROOT-24-LOCK", "SAFE-FIX", "NON-INTERACTIVE", "SHA256-LOGGED"]
+    },
+    {
+      "id": "dispatcher_cli",
+      "canonical_path": "12_tooling/cli/ssid_dispatcher.py",
+      "hash": "e518cc1047259aba6ae31d2425fa1412459ee67b2069ab74d4c3188b5ba3584d",
+      "hash_algorithm": "sha256",
+      "status": "active",
+      "timestamp": "2026-03-09T12:00:00Z",
+      "enforcement_flags": ["THIN-WRAPPER"]
+    },
+    {
+      "id": "dispatcher_adr",
+      "canonical_path": "16_codex/decisions/ADR_0071_dispatcher_blueprint_4_1.md",
+      "hash": "20515e6ae09ffe1923b35fe636aeae1097e95f1e27d5a849d6207de9249d9026",
+      "hash_algorithm": "sha256",
+      "status": "accepted",
+      "timestamp": "2026-03-09T12:00:00Z",
+      "enforcement_flags": []
+    }
+  ]
+}

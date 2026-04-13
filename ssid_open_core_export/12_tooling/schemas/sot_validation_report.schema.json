@@ -1,0 +1,231 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.internal/schemas/sot_validation_report.schema.json",
+  "title": "SoT Validation Report",
+  "description": "Schema for the full validation report produced by a SoT convergence run. Contains all findings, the gate decision, run identity, and cryptographic evidence hashes.",
+  "type": "object",
+  "required": [
+    "version",
+    "generated_at",
+    "run_id",
+    "decision",
+    "run_identity",
+    "findings",
+    "summary",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version of this validation report."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp when this report was generated."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^\\d{4}\\d{2}\\d{2}T\\d{2}\\d{2}\\d{2}Z$",
+      "description": "Unique run identifier in compact ISO 8601 UTC format (e.g. 20260310T120000Z)."
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail"],
+      "description": "Overall gate decision for this validation run."
+    },
+    "run_identity": {
+      "$ref": "sot_run_identity_schema.json",
+      "description": "Full run identity linking contract, commits, and evidence hashes."
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/finding" },
+      "description": "Array of all findings from this validation run."
+    },
+    "summary": {
+      "$ref": "#/definitions/summary",
+      "description": "Aggregated summary of all findings."
+    },
+    "evidence": {
+      "$ref": "#/definitions/evidence",
+      "description": "Cryptographic hashes of the report and evidence archive."
+    }
+  },
+  "definitions": {
+    "finding": {
+      "type": "object",
+      "required": [
+        "id",
+        "class",
+        "severity",
+        "source",
+        "path",
+        "details",
+        "timestamp",
+        "repo"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z_]+-[a-z_]+-[a-f0-9]+$",
+          "description": "Unique finding identifier in the format SOURCE-CLASS-HASH."
+        },
+        "class": {
+          "type": "string",
+          "enum": [
+            "missing_file",
+            "extra_file",
+            "content_drift",
+            "stale_binding",
+            "config_mismatch",
+            "metadata_divergence",
+            "schema_violation",
+            "rule_gap",
+            "rule_conflict",
+            "phantom_rule",
+            "scope_leak",
+            "threshold_breach",
+            "version_mismatch",
+            "coverage_gap"
+          ],
+          "description": "Classification of the convergence finding."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "warn", "deny"],
+          "description": "Severity level of the finding."
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "scanner",
+            "manifest_gen",
+            "sync_validator",
+            "policy_engine",
+            "gate"
+          ],
+          "description": "Component that produced this finding."
+        },
+        "path": {
+          "type": "string",
+          "description": "File path relative to the repository root."
+        },
+        "details": {
+          "type": "string",
+          "description": "Human-readable description of the finding."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC timestamp when this finding was detected."
+        },
+        "repo": {
+          "type": "string",
+          "enum": ["ssid", "ssid-ems", "ssid-open-core"],
+          "description": "Repository in which the finding was detected."
+        },
+        "evidence_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of the relevant content for audit trail purposes."
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total",
+        "by_severity",
+        "by_class",
+        "by_source",
+        "decision"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of findings in this report."
+        },
+        "by_severity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "info": { "type": "integer", "minimum": 0 },
+            "warn": { "type": "integer", "minimum": 0 },
+            "deny": { "type": "integer", "minimum": 0 }
+          },
+          "description": "Finding counts grouped by severity level."
+        },
+        "by_class": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "missing_file",
+              "extra_file",
+              "content_drift",
+              "stale_binding",
+              "config_mismatch",
+              "metadata_divergence",
+              "schema_violation",
+              "rule_gap",
+              "rule_conflict",
+              "phantom_rule",
+              "scope_leak",
+              "threshold_breach",
+              "version_mismatch",
+              "coverage_gap"
+            ]
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Finding counts grouped by finding class."
+        },
+        "by_source": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "scanner",
+              "manifest_gen",
+              "sync_validator",
+              "policy_engine",
+              "gate"
+            ]
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Finding counts grouped by source component."
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["pass", "warn", "fail"],
+          "description": "Overall gate decision based on aggregated findings."
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["report_sha256", "evidence_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "report_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of this validation report."
+        },
+        "evidence_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of the evidence archive."
+        }
+      }
+    }
+  }
+}

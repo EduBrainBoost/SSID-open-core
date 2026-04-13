@@ -1,0 +1,36 @@
+task_id: P1_REPORT_BUS_001
+title: "P1-1 Report Bus: Canonical append-only event bus"
+task_type: feature
+scope_allowlist:
+  - "12_tooling/cli/report_bus.py"
+  - "12_tooling/cli/run_all_gates.py"
+  - "11_test_simulation/tests_compliance/test_report_bus.py"
+  - "16_codex/decisions/ADR_0062_p1_1_report_bus.md"
+  - "16_codex/contracts/report_bus/report_bus.schema.json"
+  - "02_audit_logging/inbox/report_bus.jsonl"
+  - "24_meta_orchestration/tasks/specs/P1_REPORT_BUS_001.yaml"
+forbidden_paths:
+  - "./"
+  - "/mnt/data"
+  - "**/.git/**"
+  - "**/secrets/**"
+required_checks:
+  - "python 12_tooling/cli/sot_validator.py --verify-all"
+  - "python 12_tooling/cli/run_all_gates.py"
+  - "python -m pytest -q"
+acceptance_criteria:
+  - "report_bus.py provides validate_event, make_event, append_event functions"
+  - "Events appended to 02_audit_logging/inbox/report_bus.jsonl (append-only JSONL)"
+  - "Canonical event schema: ts_utc, repo, sha, source, kind, severity, summary, payload"
+  - "JSON Schema at 16_codex/contracts/report_bus/report_bus.schema.json"
+  - "run_all_gates.py --report-bus appends exactly 1 bus event (PASS or FAIL)"
+  - "Stop-on-first-fail: bus event written before exit"
+  - "Ingest adapters: e2e_run, run_log, cron_runs (read-only from existing sources)"
+  - "Exit codes: 0=PASS, 1=FAIL, 2=Guard FAIL (reserved)"
+  - "No scores, percentages, or bundles in output"
+  - "Deterministic JSON (sorted keys, ensure_ascii=False)"
+  - "pytest tests cover validation, append, make, ingest, no-score contract"
+evidence_outputs:
+  - "02_audit_logging/inbox/report_bus.jsonl"
+agent_cmd: "manual"
+notes: "Phase 1-1 infrastructure. Rewrite from Gate Report Collector to append-only event bus."

@@ -1,0 +1,24 @@
+task_id: PH2_LOOP_TST_001
+title: "Edge-case tests for automation_loop spec validation and allowlist enforcement"
+task_type: tests
+scope_allowlist:
+  - "11_test_simulation/tests_tooling/"
+forbidden_paths:
+  - "./"
+  - "/mnt/data"
+  - "**/.git/**"
+  - "**/secrets/**"
+required_checks:
+  - "python 12_tooling/cli/stability_gate.py --run"
+  - "python 12_tooling/cli/sot_validator.py --verify-all"
+  - "python -m pytest -q"
+acceptance_criteria:
+  - "Edge-case tests for missing required fields in TaskSpec YAML"
+  - "Edge-case tests for forbidden_paths enforcement violations"
+  - "Edge-case tests for scope_allowlist boundary checks"
+  - "All tests pass including new ones"
+evidence_outputs:
+  - "02_audit_logging/agent_runs/PH2_LOOP_TST_001/evidence.json"
+  - "02_audit_logging/agent_runs/PH2_LOOP_TST_001/patch.diff"
+agent_cmd: "manual"
+notes: "Test-only changes. No production code modified."

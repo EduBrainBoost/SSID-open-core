@@ -1,0 +1,35 @@
+task_id: PH3_RUNBOOK_ENV_001
+title: "Testnet MVP: runbook for ENV setup and 1-command deploy+verify flow"
+task_type: docs
+scope_allowlist:
+  - "12_tooling/cli/docs/"
+  - "02_audit_logging/agent_runs/"
+forbidden_paths:
+  - "./"
+  - "/mnt/data"
+  - "**/.git/**"
+  - "**/secrets/**"
+  - "**/*.sol"
+required_checks:
+  - "python 12_tooling/cli/stability_gate.py --run"
+  - "python 12_tooling/cli/sot_validator.py --verify-all"
+  - "python -m pytest -q"
+acceptance_criteria:
+  - "TESTNET_RUNBOOK.md exists under 12_tooling/cli/docs/"
+  - "Runbook lists all required ENV vars: RPC_URL, CHAIN_ID, PRIVATE_KEY, CONTRACT_ADDRESS"
+  - "No secrets, example keys, or real RPC URLs in the runbook"
+  - "Runbook explains GitHub Environment 'testnet' for CI keys"
+  - "Runbook explains local-only policy for prod keys (never in CI)"
+  - "Runbook documents 1-command flow: deploy -> verify -> e2e"
+  - "Runbook includes troubleshooting section for common ENV errors"
+  - "Runbook references PH3_DEPLOY_SCRIPT_001, PH3_VERIFY_SCRIPT_001, PH3_E2E_PYTEST_001"
+evidence_outputs:
+  - "02_audit_logging/agent_runs/PH3_RUNBOOK_ENV_001/evidence.json"
+  - "02_audit_logging/agent_runs/PH3_RUNBOOK_ENV_001/patch.diff"
+agent_cmd: "manual"
+notes: >
+  Runbook is the single-source documentation for testnet ENV setup.
+  Testnet keys go into GitHub Environment 'testnet'; prod keys stay
+  local-only (never committed, never in CI). The 1-command flow is:
+  deploy_testnet.py -> verify_testnet.py -> pytest -m testnet.
+  No secrets or example credentials in the runbook itself.

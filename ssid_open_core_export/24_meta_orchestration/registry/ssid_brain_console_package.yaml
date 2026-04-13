@@ -1,0 +1,62 @@
+# ssid-brain-console Package Registry Entry
+# Wave 3: Contract-Tests + Registry + Evidence
+---
+package:
+  name: ssid-brain-console
+  version: "0.1.0"
+  description: "SSID Brain Console — context assembly, session memory, evidence logging"
+  location: "13_ui_layer/src/"
+  build_system: hatchling
+  python_requires: ">=3.11"
+  dependencies: []  # stdlib-only
+  license: Proprietary
+
+exports:
+  - BrainContextAssembler
+  - BrainContext
+  - MemoryManager
+  - SessionMemory
+  - BrainEvidenceLogger
+  - EvidenceEntry
+
+consumers:
+  - repo: SSID-EMS
+    file: portal/backend/routers/brain_console.py
+    integration: "Wave 2 consumer adapter (PR #190)"
+    fallback: "inline MVP stubs if package not installed"
+
+source_files:
+  __init__.py:
+    sha256: d0be2fe5dfab8f5e54a681c3
+  context_assembler.py:
+    sha256: f77a09b262030862967a7e7b
+  session_memory.py:
+    sha256: dda51e4a0af93b5f1fb3e7fe
+  evidence_logger.py:
+    sha256: 4feb8f9ee9cedc05426ebc28
+  pyproject.toml:
+    sha256: 183e997bc4eb41e865319410
+
+contract_tests:
+  file: 11_test_simulation/tests_meta/test_brain_console_contract.py
+  coverage:
+    - package_exports
+    - context_assembler_api
+    - memory_manager_api
+    - evidence_logger_api
+    - canonical_zone_blocking
+    - role_scoping
+    - evidence_disk_persistence
+
+integration_decision:
+  model: pip_package
+  rationale: "stdlib-only, minimal surface, version-pinnable, auditable"
+  alternatives_rejected:
+    - git_subtree: "drift risk, no auto-update signal"
+    - code_copy: "anti-duplication violation"
+    - http_service: "overkill for 3 small modules"
+
+waves:
+  wave_1: "Packaging (PR #80, merged)"
+  wave_2: "EMS Consumer Adapter (PR #190, merged)"
+  wave_3: "Contract Tests + Registry (this file)"

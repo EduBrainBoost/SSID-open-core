@@ -1,0 +1,20 @@
+{
+  "event_id": "0656504a0f3e98de74ab3fab7c0731435001f08248f0ca2503438270bc51970f",
+  "event_type": "merge_recorded",
+  "merge_sha": "77f61bdb6cd201b4f9a8c939dbc06af5ad6d0e88",
+  "observed_utc": "2026-03-02T21:42:11Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 6,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-77f61bd/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "77f61bdb6cd201b4f9a8c939dbc06af5ad6d0e88",
+  "summary": "TS015+TS016+TS018: manifests global + L3 scaffold + quarantine hardening (#6)",
+  "task_id": "TS015"
+}

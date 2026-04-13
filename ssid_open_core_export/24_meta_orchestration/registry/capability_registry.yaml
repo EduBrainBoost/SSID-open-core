@@ -1,0 +1,488 @@
+schema_version: "1.0.0"
+generated_at_utc: "2026-03-15T00:00:00Z"
+description: >
+  All capabilities mapped from chart.yaml files across all roots and shards.
+  Grouped by root, then shard. Capability tiers: must / should / could / would.
+  implementation_status reflects the shard-level status field in chart.yaml.
+  All 24 roots share the same 16 shards (shard_count=384 per shards_registry.json).
+
+# Shard reference list (used by all roots):
+shards:
+  - "01_identitaet_personen"
+  - "02_dokumente_nachweise"
+  - "03_zugang_berechtigungen"
+  - "04_kommunikation_daten"
+  - "05_gesundheit_medizin"
+  - "06_bildung_qualifikationen"
+  - "07_familie_soziales"
+  - "08_mobilitaet_fahrzeuge"
+  - "09_arbeit_karriere"
+  - "10_finanzen_banking"
+  - "11_versicherungen_risiken"
+  - "12_immobilien_grundstuecke"
+  - "13_unternehmen_gewerbe"
+  - "14_vertraege_vereinbarungen"
+  - "15_handel_transaktionen"
+  - "16_behoerden_verwaltung"
+
+roots:
+
+  # ── 01_ai_layer ─ all 16 shards: status=active ───────────────────────────
+  - root: 01_ai_layer
+    shard_status: active  # all 16 shards
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - ai_identity_proof_validation
+        - biometric_anomaly_detection
+        - did_risk_score_inference
+        - deepfake_detection_inference
+      should:
+        - explainable_identity_ai_decisions
+        - liveness_detection_model
+        - identity_graph_analysis
+      could:
+        - federated_biometric_learning
+        - zero_shot_identity_recognition
+      would:
+        - autonomous_identity_model_retraining
+        - cross_jurisdiction_identity_ai
+    note: >
+      Capabilities above are for shard 01_identitaet_personen; each of the 16 shards
+      carries domain-specific variants of the same tier pattern. All shards: status=active.
+
+  # ── 02_audit_logging ─ all 16 shards: status=active ──────────────────────
+  - root: 02_audit_logging
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - capture_identity_verification_events
+        - worm_store_identity_audit_records
+        - hash_chain_identity_events
+        - pii_redact_before_storage
+      should:
+        - blockchain_anchor_identity_evidence
+        - identity_event_correlation
+        - did_lifecycle_audit_trail
+      could:
+        - cross_root_identity_audit_aggregation
+        - real_time_identity_event_streaming
+      would:
+        - zk_proof_identity_audit_anchoring
+        - decentralized_identity_audit_registry
+
+  # ── 03_core ─ all 16 shards: status=active ───────────────────────────────
+  - root: 03_core
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - identity_domain_model_definition
+        - did_creation_and_resolution_api
+        - person_attribute_schema_management
+        - identity_proof_verification_service
+      should:
+        - identity_lifecycle_management_service
+        - multi_did_method_support
+        - identity_event_domain_events
+      could:
+        - identity_graph_domain_service
+        - cross_chain_did_resolution
+      would:
+        - self_sovereign_identity_orchestration
+        - autonomous_identity_lifecycle_service
+
+  # ── 04_deployment ─ 16 shards (status presumed active per shards_registry) ─
+  - root: 04_deployment
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - deploy_identity_contracts_to_network
+        - verify_deployment_artifacts
+        - record_deployment_manifest
+      should:
+        - rollback_deployment_support
+        - multi_network_deployment
+      could:
+        - blue_green_deployment_identity
+      would:
+        - autonomous_deployment_orchestration
+
+  # ── 05_documentation ─────────────────────────────────────────────────────
+  - root: 05_documentation
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - api_specification_documentation
+        - architecture_decision_record
+        - compliance_documentation
+      should:
+        - interactive_api_explorer
+        - changelog_generation
+      could:
+        - multilingual_documentation
+      would:
+        - autonomous_documentation_generation
+
+  # ── 06_data_pipeline ─ all 16 shards: status=active ─────────────────────
+  - root: 06_data_pipeline
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - ingest_identity_data_from_source
+        - preprocess_identity_data_for_ml
+        - pii_scrub_and_hash_identity_data
+        - validate_identity_data_schema
+      should:
+        - train_identity_risk_model
+        - evaluate_identity_model_quality
+        - identity_feature_engineering_pipeline
+        - deploy_identity_trained_model
+      could:
+        - streaming_ingestion_identity_data
+        - federated_learning_identity_pipeline
+        - synthetic_identity_data_generation
+      would:
+        - autonomous_identity_pipeline_optimization
+        - real_time_identity_ml_inference_pipeline
+
+  # ── 07_governance_legal ─ all 16 shards: status=active ───────────────────
+  - root: 07_governance_legal
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - legal_framework_mapping_identity
+        - regulatory_compliance_policy_identity
+        - gdpr_lawful_basis_documentation_identity
+        - risk_register_entry_identity
+      should:
+        - data_protection_impact_assessment_identity
+        - legal_opinion_documentation_identity
+        - regulatory_change_monitoring_identity
+        - compliance_gap_analysis_identity
+      could:
+        - multi_jurisdiction_compliance_matrix_identity
+        - regulatory_sandbox_evaluation_identity
+      would:
+        - autonomous_regulatory_compliance_update_identity
+        - ai_driven_legal_risk_assessment_identity
+
+  # ── 08_identity_score ─ all 16 shards: status=active ─────────────────────
+  - root: 08_identity_score
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - score_model_personal_identity_calculation
+        - trust_factor_extraction_personal_identity
+        - score_rules_engine_personal_identity
+        - score_api_personal_identity_endpoint
+      should:
+        - score_explanation_personal_identity
+        - score_history_personal_identity_tracking
+        - score_threshold_policy_personal_identity
+        - score_decay_model_personal_identity
+      could:
+        - cross_shard_score_aggregation_personal_identity
+        - score_simulation_personal_identity
+        - score_benchmark_personal_identity
+      would:
+        - autonomous_score_model_retraining_personal_identity
+        - real_time_score_update_personal_identity
+        - ai_driven_score_personalization_personal_identity
+
+  # ── 09_meta_identity ─────────────────────────────────────────────────────
+  - root: 09_meta_identity
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - meta_identity_aggregation
+        - cross_root_identity_linkage
+        - did_namespace_management
+      should:
+        - identity_federation_support
+        - meta_identity_versioning
+      could:
+        - cross_chain_identity_graph
+      would:
+        - autonomous_meta_identity_resolution
+
+  # ── 10_interoperability ───────────────────────────────────────────────────
+  - root: 10_interoperability
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - cross_system_identity_protocol_bridge
+        - adapter_registration
+        - protocol_translation
+      should:
+        - openid_connect_bridge
+        - w3c_vc_interop
+      could:
+        - legacy_identity_system_adapter
+      would:
+        - autonomous_protocol_negotiation
+
+  # ── 11_test_simulation ────────────────────────────────────────────────────
+  - root: 11_test_simulation
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - unit_test_execution
+        - compliance_gate_validation
+        - shard_conformance_testing
+      should:
+        - e2e_simulation_run
+        - load_test_scenario
+      could:
+        - chaos_testing
+        - adversarial_simulation
+      would:
+        - autonomous_test_generation
+
+  # ── 12_tooling ────────────────────────────────────────────────────────────
+  - root: 12_tooling
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - cli_gate_runner
+        - shard_registry_build
+        - sot_enforcement_gate
+        - secret_scanning
+      should:
+        - sbom_generation
+        - supply_chain_validation
+        - automation_loop
+      could:
+        - parallel_gate_execution
+        - testnet_deployment_scripts
+      would:
+        - autonomous_ci_self_repair
+
+  # ── 13_ui_layer ───────────────────────────────────────────────────────────
+  - root: 13_ui_layer
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - identity_dashboard_ui
+        - proof_submission_ui
+        - score_display_ui
+      should:
+        - mobile_responsive_ui
+        - wallet_connect_integration
+      could:
+        - accessibility_wcag_compliance
+      would:
+        - autonomous_ui_personalisation
+
+  # ── 14_zero_time_auth ────────────────────────────────────────────────────
+  - root: 14_zero_time_auth
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - zero_latency_auth_token_issue
+        - zk_proof_auth_verification
+        - session_token_management
+      should:
+        - multi_factor_auth_integration
+        - biometric_auth_binding
+      could:
+        - hardware_security_key_support
+      would:
+        - autonomous_auth_policy_adaptation
+
+  # ── 15_infra ─────────────────────────────────────────────────────────────
+  - root: 15_infra
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - container_orchestration
+        - secrets_management
+        - ci_cd_pipeline
+      should:
+        - infrastructure_as_code
+        - auto_scaling
+      could:
+        - multi_cloud_deployment
+      would:
+        - autonomous_infra_self_healing
+
+  # ── 16_codex ─────────────────────────────────────────────────────────────
+  - root: 16_codex
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - sot_contract_enforcement
+        - codex_rule_registry
+        - compliance_code_generation
+      should:
+        - codex_versioning
+        - rule_conflict_detection
+      could:
+        - natural_language_rule_authoring
+      would:
+        - autonomous_codex_evolution
+
+  # ── 17_observability ─ 3 draft / 13 scaffold shards ─────────────────────
+  - root: 17_observability
+    shard_status_breakdown:
+      draft: 3
+      scaffold: 13
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - identity_verification_metrics
+        - proof_latency_monitoring
+        - identity_error_rate_tracking
+        - audit_trail_logging
+      should:
+        - identity_sla_alerting
+        - verification_throughput_dashboard
+      could:
+        - anomaly_detection_identity
+        - provider_performance_comparison
+      would:
+        - predictive_identity_load_forecast
+    note: >
+      Most shards at scaffold status; only 3 fully drafted. The src/ modules
+      (AuditEventMonitor, RuntimeHealthEngine, PolicyDriftDetector, etc.)
+      are fully implemented regardless of chart scaffold status.
+
+  # ── 18_data_layer ────────────────────────────────────────────────────────
+  - root: 18_data_layer
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - on_chain_data_registry
+        - data_hash_storage
+        - data_retrieval_api
+      should:
+        - ipfs_integration
+        - data_provenance_tracking
+      could:
+        - cross_chain_data_bridge
+      would:
+        - autonomous_data_archival
+
+  # ── 19_adapters ───────────────────────────────────────────────────────────
+  - root: 19_adapters
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - adapter_registry
+        - external_api_connector
+        - protocol_adapter
+      should:
+        - rate_limiting
+        - circuit_breaker
+      could:
+        - graphql_adapter
+      would:
+        - autonomous_adapter_discovery
+
+  # ── 20_foundation ─────────────────────────────────────────────────────────
+  - root: 20_foundation
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - tokenomics_model
+        - verification_payment_contract
+        - reward_token_management
+      should:
+        - fee_treasury_management
+        - token_vesting_schedule
+      could:
+        - governance_token_voting
+      would:
+        - autonomous_tokenomics_adjustment
+
+  # ── 21_post_quantum_crypto ─ 2 draft / 14 scaffold shards ────────────────
+  - root: 21_post_quantum_crypto
+    shard_status_breakdown:
+      draft: 2
+      scaffold: 14
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - ml_kem_identity_key_encapsulation
+        - ml_dsa_person_signature_scheme
+        - identity_pqc_keystore_management
+        - pqc_identity_certificate_binding
+      should:
+        - identity_pqc_migration_adapter
+        - person_hybrid_classical_pqc_mode
+      could:
+        - identity_pqc_benchmark_suite
+        - person_pqc_performance_profiling
+      would:
+        - autonomous_identity_pqc_agility_management
+    note: >
+      Most shards are scaffold-only; the src/ modules (pqc_core, pqc_integration,
+      key_manager) are fully implemented with Kyber768 and Dilithium3 support.
+
+  # ── 22_datasets ───────────────────────────────────────────────────────────
+  - root: 22_datasets
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - dataset_versioning
+        - dataset_access_control
+        - pii_free_dataset_validation
+      should:
+        - synthetic_dataset_generation
+        - dataset_quality_metrics
+      could:
+        - federated_dataset_sharing
+      would:
+        - autonomous_dataset_curation
+
+  # ── 23_compliance ─────────────────────────────────────────────────────────
+  - root: 23_compliance
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - regulatory_framework_mapping
+        - compliance_evidence_collection
+        - anti_gaming_validation
+      should:
+        - gap_analysis_reporting
+        - compliance_coverage_calculation
+      could:
+        - automated_regulatory_alerts
+      would:
+        - autonomous_compliance_resolution
+
+  # ── 24_meta_orchestration ─────────────────────────────────────────────────
+  - root: 24_meta_orchestration
+    shard_status: active
+    representative_shard: 01_identitaet_personen
+    capabilities:
+      must:
+        - agent_dispatch
+        - registry_synchronization
+        - gate_pipeline_orchestration
+      should:
+        - parallel_execution
+        - rollback_management
+      could:
+        - predictive_dispatch
+      would:
+        - autonomous_workflow_evolution

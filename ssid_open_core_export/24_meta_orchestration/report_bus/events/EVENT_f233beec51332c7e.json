@@ -1,0 +1,20 @@
+{
+  "event_id": "f233beec51332c7e8c37de7b011ab2d5961163e5037700a85f281ac4e7559338",
+  "event_type": "merge_recorded",
+  "merge_sha": "3ae05c45d9b3521ec35fb0749a5ed8d286a689aa",
+  "observed_utc": "2026-02-28T21:18:29Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 47,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-3ae05c4/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "3ae05c45d9b3521ec35fb0749a5ed8d286a689aa",
+  "summary": "feat(root06-07): A1 Common MUST artefacts parity â€” docs, src, tests, module.yaml (#47)",
+  "task_id": null
+}

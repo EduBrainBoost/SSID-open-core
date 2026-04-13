@@ -1,0 +1,100 @@
+{
+  "$schema": "urn:ssid:registry:admin_audit:v1",
+  "registry_type": "admin_audit_evidence",
+  "version": "1.0.0",
+  "created": "2026-03-28T00:00:00Z",
+  "description": "Audit and evidence registry for the SSID Admin Dashboard. Tracks evidence writers, chain verification, and archive policies.",
+  "evidence_format": {
+    "schema_version": "1.0",
+    "required_fields": [
+      "timestamp",
+      "agent_id",
+      "operation",
+      "file_affected",
+      "sha256_before",
+      "sha256_after",
+      "safe_fix_confirmed"
+    ],
+    "hash_algorithm": "sha256",
+    "timestamp_format": "ISO8601",
+    "encoding": "utf-8"
+  },
+  "evidence_chain": {
+    "type": "append_only_log",
+    "integrity_verification": "each entry links to previous entry sha256",
+    "tamper_detection": "re-hash full chain on read, compare to stored anchor",
+    "anchor_location": "24_meta_orchestration/registry/anchors/admin_dashboard_anchor.json"
+  },
+  "storage": {
+    "primary": ".ssid-system/evidence/",
+    "archive": "02_audit_logging/archives/",
+    "retention_days": 365,
+    "compression": "gzip",
+    "max_file_size_mb": 50
+  },
+  "components": {
+    "evidence_writer": {
+      "path": "02_audit_logging/admin_evidence/evidence_writer.py",
+      "sha256": "PENDING_BUILD_HASH",
+      "description": "Core evidence writer. Computes SHA-256 before/after, appends to chain.",
+      "exports": ["write_evidence", "verify_evidence_entry", "get_chain_head"]
+    },
+    "evidence_reader": {
+      "path": "02_audit_logging/admin_evidence/evidence_reader.py",
+      "sha256": "PENDING_BUILD_HASH",
+      "description": "Read-only evidence reader for audit queries.",
+      "exports": ["read_evidence", "list_evidence", "filter_by_agent"]
+    },
+    "chain_verifier": {
+      "path": "02_audit_logging/admin_evidence/chain_verifier.py",
+      "sha256": "PENDING_BUILD_HASH",
+      "description": "Verifies integrity of the full evidence chain against anchor hashes.",
+      "exports": ["verify_chain", "verify_entry", "compute_chain_hash"]
+    },
+    "archive_manager": {
+      "path": "02_audit_logging/admin_evidence/archive_manager.py",
+      "sha256": "PENDING_BUILD_HASH",
+      "description": "Rotates and compresses old evidence files. Preserves chain integrity.",
+      "exports": ["rotate_evidence", "compress_archive", "verify_archive"]
+    }
+  },
+  "audit_events": [
+    {
+      "event": "admin.login",
+      "severity": "info",
+      "captures": ["user_hash", "ip_hash", "timestamp", "auth_method"]
+    },
+    {
+      "event": "admin.login_failed",
+      "severity": "warning",
+      "captures": ["user_hash", "ip_hash", "timestamp", "failure_reason"]
+    },
+    {
+      "event": "admin.config_change",
+      "severity": "critical",
+      "captures": ["user_hash", "config_key", "sha256_before", "sha256_after", "timestamp"]
+    },
+    {
+      "event": "admin.evidence_write",
+      "severity": "info",
+      "captures": ["agent_id", "file_affected", "sha256_before", "sha256_after"]
+    },
+    {
+      "event": "admin.policy_evaluation",
+      "severity": "info",
+      "captures": ["policy_id", "result", "timestamp"]
+    },
+    {
+      "event": "admin.session_terminated",
+      "severity": "warning",
+      "captures": ["user_hash", "reason", "timestamp"]
+    }
+  ],
+  "compliance": {
+    "gdpr_dpia_ref": "07_governance_legal/GDPR_DPIA_SUMMARY.md",
+    "data_minimization": true,
+    "pii_stored": false,
+    "hash_only": true,
+    "right_to_erasure": "not applicable - no PII stored, only SHA3-256 hashes"
+  }
+}

@@ -1,0 +1,190 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [
+      { "name": "initialOwner", "type": "address", "internalType": "address" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "inputs": [{ "name": "newOwner", "type": "address", "internalType": "address" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "addReporter",
+    "inputs": [{ "name": "reporter", "type": "address", "internalType": "address" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "removeReporter",
+    "inputs": [{ "name": "reporter", "type": "address", "internalType": "address" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "isReporter",
+    "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "deposit",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "rewardPoolBalance",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "reportContribution",
+    "inputs": [
+      { "name": "contributionId", "type": "bytes32", "internalType": "bytes32" },
+      { "name": "contributor",    "type": "address", "internalType": "address" },
+      { "name": "shardId",        "type": "bytes32", "internalType": "bytes32" },
+      { "name": "rewardWei",      "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "claimReward",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "pendingRewards",
+    "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "totalPendingRewards",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getContribution",
+    "inputs": [
+      { "name": "contributionId", "type": "bytes32", "internalType": "bytes32" }
+    ],
+    "outputs": [
+      {
+        "name": "contribution",
+        "type": "tuple",
+        "internalType": "struct CodexRewardReporter.Contribution",
+        "components": [
+          { "name": "contributor",    "type": "address", "internalType": "address" },
+          { "name": "shardId",        "type": "bytes32", "internalType": "bytes32" },
+          { "name": "contributionId", "type": "bytes32", "internalType": "bytes32" },
+          { "name": "rewardWei",      "type": "uint256", "internalType": "uint256" },
+          { "name": "reportedAt",     "type": "uint64",  "internalType": "uint64"  },
+          { "name": "claimed",        "type": "bool",    "internalType": "bool"    }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "hasBeenReported",
+    "inputs": [
+      { "name": "contributionId", "type": "bytes32", "internalType": "bytes32" }
+    ],
+    "outputs": [{ "name": "reported", "type": "bool", "internalType": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "receive",
+    "stateMutability": "payable"
+  },
+  {
+    "type": "event",
+    "name": "ContributionReported",
+    "inputs": [
+      { "name": "contributionId", "type": "bytes32", "indexed": true  },
+      { "name": "contributor",    "type": "address", "indexed": true  },
+      { "name": "shardId",        "type": "bytes32", "indexed": true  },
+      { "name": "rewardWei",      "type": "uint256", "indexed": false }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RewardClaimed",
+    "inputs": [
+      { "name": "contributor", "type": "address", "indexed": true  },
+      { "name": "amount",      "type": "uint256", "indexed": false }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "FundsDeposited",
+    "inputs": [
+      { "name": "funder", "type": "address", "indexed": true  },
+      { "name": "amount", "type": "uint256", "indexed": false }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ReporterAdded",
+    "inputs": [
+      { "name": "reporter", "type": "address", "indexed": true }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ReporterRemoved",
+    "inputs": [
+      { "name": "reporter", "type": "address", "indexed": true }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "OwnershipTransferred",
+    "inputs": [
+      { "name": "previousOwner", "type": "address", "indexed": true },
+      { "name": "newOwner",      "type": "address", "indexed": true }
+    ],
+    "anonymous": false
+  },
+  { "type": "error", "name": "Unauthorized",                    "inputs": [] },
+  { "type": "error", "name": "ZeroAddress",                     "inputs": [] },
+  { "type": "error", "name": "ZeroReward",                      "inputs": [] },
+  { "type": "error", "name": "DuplicateContribution",           "inputs": [{ "name": "contributionId", "type": "bytes32" }] },
+  { "type": "error", "name": "ContributionNotFound",            "inputs": [{ "name": "contributionId", "type": "bytes32" }] },
+  { "type": "error", "name": "AlreadyClaimed",                  "inputs": [{ "name": "contributionId", "type": "bytes32" }] },
+  { "type": "error", "name": "NothingToClaim",                  "inputs": [] },
+  { "type": "error", "name": "InsufficientContractBalance",     "inputs": [{ "name": "available", "type": "uint256" }, { "name": "required", "type": "uint256" }] },
+  { "type": "error", "name": "TransferFailed",                  "inputs": [] }
+]

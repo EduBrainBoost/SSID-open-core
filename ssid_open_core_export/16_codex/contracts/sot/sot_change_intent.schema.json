@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SoT Change Intent",
+  "description": "Declarative change intent for canonical SoT artifact modifications",
+  "type": "object",
+  "required": ["intent_id", "created_at_utc", "author", "reason", "change_type", "affected_artifacts"],
+  "properties": {
+    "intent_id": {"type": "string"},
+    "created_at_utc": {"type": "string", "format": "date-time"},
+    "author": {"type": "string"},
+    "reason": {"type": "string"},
+    "change_type": {
+      "type": "string",
+      "enum": ["rule_addition", "rule_modification", "metadata_only", "report_refresh", "registry_refresh", "breaking_change"]
+    },
+    "affected_artifacts": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1
+    },
+    "expected_followup_artifacts": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "expected_rule_count_delta": {"type": ["integer", "null"]},
+    "requires_baseline_refresh": {"type": "boolean"},
+    "evidence_ref": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}

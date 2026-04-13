@@ -1,0 +1,20 @@
+{
+  "event_id": "c36d95ed6347699e98753bb577a877ec1922d0ccb0c5a89673e7babdfa045412",
+  "event_type": "merge_recorded",
+  "merge_sha": "f1fce09a77b0bbf71ae5be28743cfc02e13effc8",
+  "observed_utc": "2026-02-28T00:02:56Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 3,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-f1fce09/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "f1fce09a77b0bbf71ae5be28743cfc02e13effc8",
+  "summary": "refactor: extract internal helpers in automation_loop.py (#3)",
+  "task_id": null
+}

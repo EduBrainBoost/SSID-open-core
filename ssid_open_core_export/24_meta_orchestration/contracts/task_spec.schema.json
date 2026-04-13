@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SSID Task Spec",
+  "type": "object",
+  "required": [
+    "task_id",
+    "scope",
+    "allowed_paths",
+    "expected_artifacts",
+    "acceptance_checks",
+    "agent_roles",
+    "patch_strategy",
+    "log_mode",
+    "prompt"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "scope": {
+      "type": "object"
+    },
+    "allowed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "expected_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acceptance_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "agent_roles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Planner",
+          "Implementer",
+          "ComplianceAuditor",
+          "TestRunner",
+          "ReleaseIntegrator"
+        ]
+      }
+    },
+    "patch_strategy": {
+      "type": "string",
+      "enum": [
+        "single-commit",
+        "no-rewrites"
+      ]
+    },
+    "log_mode": {
+      "type": "string",
+      "enum": [
+        "MINIMAL",
+        "FORENSIC"
+      ]
+    },
+    "prompt": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

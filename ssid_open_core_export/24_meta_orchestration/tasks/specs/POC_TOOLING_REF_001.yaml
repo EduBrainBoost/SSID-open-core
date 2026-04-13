@@ -1,0 +1,24 @@
+task_id: POC_TOOLING_REF_001
+title: "Refactor automation_loop internal function split (pure refactor)"
+task_type: tooling
+scope_allowlist:
+  - "12_tooling/cli/"
+forbidden_paths:
+  - "./"
+  - "/mnt/data"
+  - "**/.git/**"
+  - "**/secrets/**"
+required_checks:
+  - "python 12_tooling/cli/stability_gate.py --run"
+  - "python 12_tooling/cli/sot_validator.py --verify-all"
+  - "python -m pytest -q"
+acceptance_criteria:
+  - "No behavior change in automation_loop.py"
+  - "All existing tests pass without modification"
+  - "Internal functions extracted for testability"
+  - "stability_gate --run returns PASS"
+evidence_outputs:
+  - "02_audit_logging/agent_runs/POC_TOOLING_REF_001/evidence.json"
+  - "02_audit_logging/agent_runs/POC_TOOLING_REF_001/patch.diff"
+agent_cmd: "manual"
+notes: "Pure refactor only. No new features. No scope_allowlist expansion."

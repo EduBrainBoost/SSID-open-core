@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Hash chain for registry lock integrity verification.",
+  "chain": [
+    {
+      "entry_id": "genesis-001",
+      "bundle_id": "WAVE1_FORENSIC_REMEDIATION_20260329",
+      "parent_id": null,
+      "entry_hash": "35cfd9734d7a729cd51e711387ea0452621eab34f54c8122f85e601e42456eb4",
+      "timestamp": "2026-03-29T02:36:08Z",
+      "agent_id": "forensic_auditor",
+      "outcome": "GENESIS_INITIALIZED_FROM_REGISTRY_LOCK"
+    },
+    {
+      "entry_id": "wave2-f002-001",
+      "bundle_id": "WAVE2_WORM_APPEND_ONLY_CORRECTION_20260329",
+      "parent_id": "genesis-001",
+      "entry_hash": "4f5cfc7b29b866aec19d1265ad9a8d585f706c6fb77994bc96348522b343b32e",
+      "timestamp": "2026-03-29T14:00:00Z",
+      "agent_id": "wave2_f002_remediation",
+      "outcome": "APPEND_ONLY_CORRECTIONS_FOR_9_SEALED_WORM_MANIFESTS"
+    }
+  ],
+  "last_updated": "2026-03-29T14:00:00Z",
+  "genesis_hash": "35cfd9734d7a729cd51e711387ea0452621eab34f54c8122f85e601e42456eb4"
+}

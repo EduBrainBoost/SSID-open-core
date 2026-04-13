@@ -1,0 +1,10 @@
+shard_id: 12_immobilien_grundstuecke
+root_id: 12_tooling
+version: 1.0.0
+generated_utc: '2026-03-02T19:39:34Z'
+implementation_stack: generated
+contracts: []
+conformance: []
+policies:
+- ref: hash_only
+- ref: non_custodial

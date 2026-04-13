@@ -1,0 +1,49 @@
+schema_version: "1.0.0"
+gate_name: "meta_continuum_readiness"
+description: >
+  Defines criteria that must ALL be satisfied before meta-continuum
+  status can advance beyond SINGLE_SYSTEM_ONLY.
+  Until every criterion is MET, the system correctly reports NOT_READY.
+
+current_status: "NOT_READY"
+
+criteria:
+  - id: "MC-01"
+    name: "Interfederation Proof Snapshot"
+    description: "A valid interfederation proof snapshot must exist with both SSID and open-core commits."
+    check: "proof_snapshot_exists"
+    status: "NOT_MET"
+
+  - id: "MC-02"
+    name: "Claims Guard Clean"
+    description: "Zero forbidden interfederation claims detected in repo scan."
+    check: "claims_guard_clean"
+    status: "MET"
+
+  - id: "MC-03"
+    name: "Open-Core Export Allowlist Enforced"
+    description: "open_core_export_allowlist.yaml exists and repo separation guard passes."
+    check: "open_core_allowlist_enforced"
+    status: "MET"
+
+  - id: "MC-04"
+    name: "All SoT Hashes Valid"
+    description: "sot_validator --verify-all returns PASS with zero mismatches."
+    check: "sot_hashes_valid"
+    status: "MET"
+
+  - id: "MC-05"
+    name: "Gate Chain Full PASS"
+    description: "Full gate chain (run_all_gates.py) returns exit 0."
+    check: "gate_chain_pass"
+    status: "MET"
+
+  - id: "MC-06"
+    name: "External System Handshake"
+    description: "A cryptographic handshake with an external system has been completed and recorded."
+    check: "external_handshake_recorded"
+    status: "NOT_MET"
+
+advancement_rule: >
+  ALL criteria must have status MET. If any criterion is NOT_MET,
+  current_status remains NOT_READY. No partial advancement.

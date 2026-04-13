@@ -1,0 +1,84 @@
+{
+  "$schema": "urn:ssid:registry:admin_observer:v1",
+  "registry_type": "admin_observer",
+  "version": "1.0.0",
+  "created": "2026-03-28T00:00:00Z",
+  "description": "Observer registry for the SSID Admin Dashboard. Defines the read-only observer daemon, its endpoints, report schema, and scheduling.",
+  "observer": {
+    "daemon": {
+      "path": "17_observability/observer_daemon.py",
+      "sha256": "PENDING_BUILD_HASH",
+      "exports": ["collect_metrics", "write_report"],
+      "mode": "read_only",
+      "description": "Python daemon that polls the admin API for health/metrics and writes structured JSON reports. Never modifies application state."
+    }
+  },
+  "data_sources": [
+    {
+      "name": "health",
+      "endpoint": "/api/v1/admin/health",
+      "method": "GET",
+      "auth_required": false,
+      "poll_interval_seconds": 60,
+      "description": "System health status of all admin dashboard components."
+    },
+    {
+      "name": "metrics",
+      "endpoint": "/api/v1/admin/metrics",
+      "method": "GET",
+      "auth_required": true,
+      "auth_role": "observer",
+      "poll_interval_seconds": 60,
+      "description": "Aggregated performance and throughput metrics."
+    },
+    {
+      "name": "components",
+      "endpoint": "/api/v1/admin/components",
+      "method": "GET",
+      "auth_required": true,
+      "auth_role": "observer",
+      "poll_interval_seconds": 300,
+      "description": "Component registry status and version information."
+    }
+  ],
+  "report_schema": {
+    "format": "json",
+    "output_directory": "17_observability/reports",
+    "filename_pattern": "observer_report_{ISO_TIMESTAMP}.json",
+    "fields": {
+      "report_type": "string",
+      "generated_at": "ISO8601",
+      "source_timestamp": "ISO8601",
+      "data": {
+        "timestamp": "ISO8601",
+        "collector_version": "semver",
+        "api_base": "url",
+        "health": "object",
+        "metrics": "object",
+        "components": "object",
+        "content_sha256": "hex_string"
+      },
+      "report_sha256": "hex_string"
+    },
+    "retention_days": 90,
+    "max_reports": 10000
+  },
+  "scheduling": {
+    "default_interval_seconds": 60,
+    "configurable_via_env": {
+      "SSID_OBSERVER_INTERVAL": "Poll interval in seconds",
+      "SSID_ADMIN_API_BASE": "Base URL of the admin API",
+      "SSID_OBSERVER_REPORT_DIR": "Output directory for reports"
+    },
+    "systemd_unit": "ssid-observer.service",
+    "docker_healthcheck": "python -c 'from observer_daemon import collect_metrics; print(collect_metrics())'"
+  },
+  "constraints": {
+    "read_only": true,
+    "http_methods_allowed": ["GET"],
+    "state_modification": "never",
+    "write_targets": ["17_observability/reports/"],
+    "max_memory_mb": 128,
+    "max_cpu_percent": 5
+  }
+}

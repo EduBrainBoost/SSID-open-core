@@ -1,0 +1,149 @@
+# Data Minimization Controls — Non-Custodial / Hash-Only Mapping
+# SSID Privacy-by-Design Controls
+# SAFE-FIX: No PII, no secrets. Pure control mapping.
+# Generated: 2026-03-29 | Agent: A8-COMPLIANCE-MAPPING-CLOSURE
+
+regulation_id: "SSID_DATA_MIN"
+regulation_name: "SSID Data Minimization Controls"
+version: "1.0.0"
+last_reviewed: "2026-03-29"
+
+description: >
+  Comprehensive mapping of SSID's data minimization controls that enforce
+  the non-custodial, hash-only architectural principle. These controls
+  underpin compliance with GDPR Art. 5(1)(c), Art. 25, and the broader
+  privacy-by-design philosophy.
+
+non_custodial_principle: >
+  SSID NEVER stores raw PII. Only SHA3-256 hashes are persisted.
+  Users hold their own data and keys. This is enforced at architectural,
+  technical, and policy levels across all 24 canonical roots.
+
+controls:
+  - control_id: "DM-001"
+    title: "SHA3-256 hash-only storage"
+    description: "All identity attributes stored as SHA3-256 hashes only"
+    ssid_root: "03_core"
+    ssid_shard: "identity/hash_store"
+    control_type: "technical"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/hash_only_storage.json"
+    regulations_supported:
+      - "GDPR Art. 5(1)(c)"
+      - "GDPR Art. 25"
+    enforcement: "23_compliance/policies/hash_only_data.rego"
+
+  - control_id: "DM-002"
+    title: "Per-user salted hashing"
+    description: "Each user has a unique salt for hash derivation"
+    ssid_root: "03_core"
+    ssid_shard: "identity/salt_management"
+    control_type: "technical"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/salted_hashing.json"
+    regulations_supported:
+      - "GDPR Art. 32"
+    notes: "Prevents rainbow table attacks; salt stored in user-controlled vault"
+
+  - control_id: "DM-003"
+    title: "Crypto-shredding for erasure"
+    description: "Delete user salt/key to render hashes permanently unrecoverable"
+    ssid_root: "03_core"
+    ssid_shard: "identity/crypto_shredding"
+    control_type: "technical"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/crypto_shredding.json"
+    regulations_supported:
+      - "GDPR Art. 17"
+    enforcement: "23_compliance/policies/gdpr_erasure.rego"
+
+  - control_id: "DM-004"
+    title: "Zero-knowledge proof selective disclosure"
+    description: "ZKP proofs reveal only necessary attributes"
+    ssid_root: "14_zero_time_auth"
+    ssid_shard: "zkp/selective_disclosure"
+    control_type: "technical"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/zkp_selective_disclosure.json"
+    regulations_supported:
+      - "GDPR Art. 5(1)(c)"
+      - "eIDAS 2.0 Art. 5a(4)(c)"
+
+  - control_id: "DM-005"
+    title: "No cross-service tracking"
+    description: "Different hashes per relying party prevent cross-service correlation"
+    ssid_root: "03_core"
+    ssid_shard: "identity/pairwise_identifiers"
+    control_type: "technical"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/core/pairwise_identifiers.json"
+    regulations_supported:
+      - "GDPR Art. 5(1)(b)"
+
+  - control_id: "DM-006"
+    title: "Non-custodial key management"
+    description: "Users hold their own private keys; SSID never has access"
+    ssid_root: "03_core"
+    ssid_shard: "identity/key_management"
+    control_type: "architectural"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/non_custodial_keys.json"
+    regulations_supported:
+      - "GDPR Art. 25"
+    enforcement: "23_compliance/policies/non_custodial_enforcement.rego"
+
+  - control_id: "DM-007"
+    title: "Hash TTL and retention limits"
+    description: "Hashes expire based on configurable TTL policies"
+    ssid_root: "18_data_layer"
+    ssid_shard: "retention/ttl_policy"
+    control_type: "technical"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/data_pipeline/hash_ttl.json"
+    regulations_supported:
+      - "GDPR Art. 5(1)(e)"
+
+  - control_id: "DM-008"
+    title: "Audit log data minimization"
+    description: "Audit logs contain operation hashes, not raw data"
+    ssid_root: "02_audit_logging"
+    ssid_shard: "audit/log_minimization"
+    control_type: "technical"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/audit/log_minimization.json"
+    regulations_supported:
+      - "GDPR Art. 5(1)(c)"
+
+  - control_id: "DM-009"
+    title: "KYC proof-only policy"
+    description: "KYC verification stores proof result only, not source documents"
+    ssid_root: "08_identity_score"
+    ssid_shard: "kyc/proof_only"
+    control_type: "policy"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/kyc_proof_only.json"
+    regulations_supported:
+      - "GDPR Art. 5(1)(c)"
+      - "GDPR Art. 25"
+    enforcement: "23_compliance/policies/kyc_proof_only_policy.yaml"
+
+  - control_id: "DM-010"
+    title: "Frontend secret prohibition"
+    description: "No secrets, PII, or raw identity data in frontend code"
+    ssid_root: "13_ui_layer"
+    ssid_shard: "security/frontend_secrets_guard"
+    control_type: "technical"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/frontend_secrets_guard.json"
+    regulations_supported:
+      - "GDPR Art. 32"
+    enforcement: "12_tooling/scripts/secret_scanner.py"
+
+coverage_summary:
+  total_controls: 10
+  implemented: 8
+  partial: 2
+  coverage_level: "comprehensive"
+
+review_cycle: "quarterly"
+next_review: "2026-06-29"

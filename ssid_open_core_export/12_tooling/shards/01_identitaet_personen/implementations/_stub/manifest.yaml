@@ -1,0 +1,6 @@
+version: "0.0.0"
+root: "12_tooling"
+shard: "01_identitaet_personen"
+impl_id: "_stub"
+status: "SKELETON"
+files: []

@@ -1,0 +1,69 @@
+# 16_codex - Module Descriptor
+# SoT v4.1.0 | ROOT-24-LOCK | Classification: Governance
+# Generated: 2026-02-28 | Updated: 2026-03-29
+
+module_id: "16_codex"
+name: "Source of Truth & System Documentation"
+version: "4.1.0"
+status: "ROOT-24-LOCK"
+classification: "Governance"
+purpose: "governance_codex"
+final_authority: "03_core"
+
+structure:
+  must_dirs:
+    - "docs"
+    - "architecture"
+    - "agents"
+    - "contracts"
+    - "decisions"
+    - "governance"
+    - "phases"
+    - "archives"
+    - "local_stack"
+    - "config"
+  must_files:
+    - "module.yaml"
+    - "README.md"
+    - "opencore_export_policy.yaml"
+  forbidden_paths:
+    - "compliance_policies"
+    - "audit_storage"
+    - "runtime_data"
+
+interfaces:
+  outputs:
+    - ref: "17_observability/logs/codex"
+      type: "log_sink"
+      description: "Codex change and governance event logging"
+  evidence:
+    - ref: "23_compliance/evidence/codex"
+      type: "evidence_target"
+      description: "Codex evidence (hash-only)"
+
+capabilities:
+  - id: "sot_authority"
+    description: "Authoritative Source of Truth for system architecture"
+    status: "active"
+  - id: "agent_definitions"
+    description: "Agent prompt contracts and capability definitions"
+    status: "active"
+  - id: "governance_contracts"
+    description: "System-wide governance and interface contracts"
+    status: "active"
+  - id: "phase_tracking"
+    description: "Phase-based development lifecycle documentation"
+    status: "active"
+  - id: "opencore_policy"
+    description: "Open-core export boundary and licensing policy"
+    status: "active"
+  - id: "level3_specifications"
+    description: "Level 3 MAX structure specifications"
+    status: "active"
+
+shard_count: 16
+evidence_strategy: "hash_manifest_only"
+governance_rules:
+  - "SOT_AGENT_CODEX_001"
+  - "SOT_AGENT_CODEX_002"
+  - "SOT_AGENT_CODEX_003"

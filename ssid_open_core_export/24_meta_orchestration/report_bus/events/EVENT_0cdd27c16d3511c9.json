@@ -1,0 +1,20 @@
+{
+  "event_id": "0cdd27c16d3511c9bb777fdaea146bee6ea09b0fb4ab29862ae3b7feb6f6f2ad",
+  "event_type": "merge_recorded",
+  "merge_sha": "c263e3b5ed01224cc41d14c779c7add4cf9ff51b",
+  "observed_utc": "2026-02-28T21:14:01Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 27,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-c263e3b/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "c263e3b5ed01224cc41d14c779c7add4cf9ff51b",
+  "summary": "fix(root02): Phase C â€” registry binding + SoT enforcement (APPLY) (#27)",
+  "task_id": null
+}

@@ -1,0 +1,84 @@
+package_id: SSID-PHASE0-20260326
+generated_at_utc: '2026-03-26T19:13:43Z'
+phase: 0
+status: READY_FOR_EXECUTION
+decision_model:
+  root_24_lock: true
+  safe_fix: true
+  new_wins_old_evidence_only: true
+  manifest_only_for_real_implementations: true
+  ems_first: true
+  local_first: true
+source_priority:
+- tier: 0
+  role: canonical_primary
+  files:
+  - ssid_master_definition_corrected_v1.1.1.md
+  - SSID_structure_level3_part1_MAX.md
+  - SSID_structure_level3_part2_MAX.md
+  - SSID_structure_level3_part3_MAX.md
+  - SSID_structure_gebühren_abo_modelle.md
+  - SSID_structure_gebühren_abo_modelle_ROOTS_16_21_ADDENDUM.md
+  use_for:
+  - root lock
+  - shard architecture
+  - chart/manifest separation
+  - fee and subscription architecture
+  - cross-root mapping
+  - canonical naming
+  override_rule: Nothing outside Tier 0 may override Tier 0.
+- tier: 1
+  role: binding_context
+  files:
+  - Ssid Protection Report.pdf
+  - SSID_Maximalstand_Bericht_20250914_162116.pdf
+  - SSID_OpenCore_Maximalstand_Bericht.pdf
+  use_for:
+  - protection model
+  - workflow and evidence model
+  - open-core/public mirror boundary
+  - release controls
+  override_rule: May clarify operation and packaging, but may not contradict Tier
+    0.
+- tier: 2
+  role: strategic_support
+  files:
+  - Technische Grundlagen von SSI.pdf
+  - Technische Grundlagen von SSI-2.pdf
+  - Embedding a Permissionless SSID Token_ Applications Value Maximization.pdf
+  use_for:
+  - technical rationale
+  - market narrative
+  - ecosystem and token utility hypotheses
+  override_rule: Support only, never structure-defining.
+- tier: 3
+  role: risk_and_exclusion
+  files:
+  - Überblick über SSID und das SSID-Token.pdf
+  use_for:
+  - namespace collision risk
+  - public launch naming hygiene
+  - market confusion mitigation
+  override_rule: Risk intelligence only.
+external_standards_baseline:
+- name: W3C DID Core 1.0
+  status: active
+- name: W3C Verifiable Credentials Data Model 2.0
+  status: active
+- name: OpenID4VCI 1.0
+  status: active
+- name: OpenID4VP 1.0
+  status: active
+- name: EUDI Wallet / eIDAS 2 framework
+  status: active
+- name: MiCA
+  status: active
+- name: EU AI Act
+  status: active
+forbidden_during_phase0:
+- deployments
+- mainnet actions
+- public mirror publishing
+- contract changes
+- unsanctioned structure restoration
+- manifest generation without real implementation

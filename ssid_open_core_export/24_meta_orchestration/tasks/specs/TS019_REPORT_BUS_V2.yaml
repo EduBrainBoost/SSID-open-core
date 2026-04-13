@@ -1,0 +1,56 @@
+task_id: TS019
+title: "Report Bus v2: Event-Store + Legacy Migration + PR-Merge Backfill + Gate"
+mode: PLAN -> APPROVAL -> APPLY
+repo: SSID
+branch: feat/report-bus-v2-event-store
+status: APPLY
+supersedes: [TS017, TS018]
+
+problem:
+  report_bus_only_6_events: true
+  130_all_commit_backfills_committed_as_noise: true
+  no_event_store_model: true
+  no_rebuild_command: true
+  no_ci_gate: true
+
+decisions:
+  - "Backfill only for 28 merged PRs (not all 130 commits)"
+  - "130 all-commit backfills removed from git, archived locally"
+  - "Event-store model: events/ dir as source, JSONL rebuilt deterministically"
+  - "Legacy 6 events migrated with origin=imported"
+  - "New fields: event_id (sha256), origin (observed|constructed|imported)"
+
+deliverables:
+  tooling:
+    - 12_tooling/cli/report_bus.py        # v2: rebuild, migrate-legacy, event_id
+    - 12_tooling/cli/evidence_chain.py    # v2: --pr-only, backfill-merges
+    - 12_tooling/ops/evidence_chain/evidence_chain_lib.py  # v2: pr_only scan+backfill
+  schemas:
+    - 16_codex/contracts/report_bus/report_bus_event_v2.schema.json
+  event_store:
+    - 24_meta_orchestration/report_bus/events/EVENT_*.json
+  indices:
+    - 24_meta_orchestration/registry/execution_index.json  # v2, pr_merges_only
+  agent_runs:
+    - 02_audit_logging/agent_runs/run-merge-{sha7}/  # canonical evidence path
+  legacy_archive:
+    - 02_audit_logging/archives/report_bus_legacy/REPORT_BUS_LEGACY_*.jsonl
+  gate:
+    - .github/workflows/report_bus_gate.yml
+  gap_report:
+    - 02_audit_logging/reports/EVIDENCE_CHAIN_GAPS_MERGES_V1.json
+
+acceptance:
+  - "PASS: report_bus.py rebuild --verify (idempotent)"
+  - "PASS: 6 legacy events migrated to EVENT files"
+  - "PASS: 28 PR-merge backfill events + agent_runs created"
+  - "PASS: execution_index.json scope=pr_merges_only"
+  - "PASS: CI gate workflow present"
+
+constraints:
+  - SAFE-FIX enforced
+  - ROOT-24-LOCK enforced
+  - no secrets in repo/logs
+  - PASS/FAIL only
+  - additive only (no history rewrites)
+  - idempotent (rerun produces no diffs)

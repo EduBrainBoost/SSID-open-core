@@ -1,0 +1,21 @@
+task_id: "PLAN_0003_testnet_proof_mvp"
+scope: "testnet_mvp"
+allowed_paths:
+  - "03_core"
+  - "10_interoperability"
+  - "13_ui_layer"
+  - "17_observability"
+acceptance_checks:
+  - policy
+  - sot
+  - qa
+do_not_touch:
+  - "02_audit_logging/archives"
+  - "16_codex/contracts/sot"
+  - "24_meta_orchestration/registry"
+stop_conditions:
+  fail_after: 1
+  on_missing_paths: true
+definition_of_done:
+  - "Proof-MVP task artifacts are hash-only compliant"
+  - "No non-allowlisted writes detected"

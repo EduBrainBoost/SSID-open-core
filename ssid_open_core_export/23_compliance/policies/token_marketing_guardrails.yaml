@@ -1,0 +1,41 @@
+policy_id: compliance.token_marketing_guardrails
+version: 1.0.0
+forbidden_words:
+- investment
+- yield
+- APR
+- ROI
+- passive income
+- guaranteed returns
+- profit
+- dividend
+- staking rewards
+- holder return
+- price appreciation
+- moon
+- pump
+forbidden_phrases:
+- 100% nicht-erlaubnispflichtig
+- rechtssicher final
+- keine Erlaubnis noetig
+- guaranteed profit
+- risk-free
+allowed_utility_language:
+- identity verification
+- governance participation
+- reputation staking
+- compute access
+- review bounty
+- role badge
+mica_sensitive_terms:
+- E-Money Token
+- Asset-Referenced Token
+- redemption at par
+- price stabilization
+- reserve assets
+enforcement: fail_closed
+review_required_before:
+- website_publish
+- exchange_listing
+- press_release
+- social_media_campaign

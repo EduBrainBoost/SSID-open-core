@@ -1,0 +1,184 @@
+# Gate Convergence Matrix
+# Defines the gate_convergence_check gate within the SSID CI/CD pipeline.
+# Read-only gate -- never modifies source files or protected paths.
+
+gate_name: gate_convergence_check
+gate_version: "1.0.0"
+description: >
+  SoT convergence gate that runs drift detection against sot_contract.yaml,
+  generates a convergence manifest, and evaluates policy compliance.
+  Read-only -- no self-healing, no file modifications.
+
+# ---------------------------------------------------------------------------
+# Pipeline position
+# ---------------------------------------------------------------------------
+sequence_position:
+  after: policy_check    # Gate 8
+  before: sot_check      # Gate 9
+  ordinal: 8.5
+  phase: convergence_verification
+
+# ---------------------------------------------------------------------------
+# Trigger scope
+# ---------------------------------------------------------------------------
+trigger_scope: full_repo
+trigger_conditions:
+  - on_pr: true
+  - on_push_to_main: true
+  - on_schedule: weekly
+  - manual: true
+
+# ---------------------------------------------------------------------------
+# Inputs
+# ---------------------------------------------------------------------------
+inputs:
+  required:
+    - path: 16_codex/contracts/sot/sot_contract.yaml
+      description: Canonical SoT contract defining rules, bindings, and agent stack
+      type: yaml
+
+    - path: 24_meta_orchestration/registry/sot_registry.json
+      description: SoT registry with artifact paths and expected hashes
+      type: json
+
+    - path: 24_meta_orchestration/registry/structure_spec.json
+      description: Repository structure specification with MUST paths and forbidden zones
+      type: json
+
+  optional:
+    - path: 23_compliance/policies/sot/*.rego
+      description: OPA/Rego policy files for SoT enforcement
+      type: rego
+
+    - path: 11_test_simulation/tests_compliance/test_sot_*.py
+      description: Compliance test files for SoT rules
+      type: python
+
+# ---------------------------------------------------------------------------
+# Outputs
+# ---------------------------------------------------------------------------
+outputs:
+  artifacts:
+    - name: convergence_manifest.json
+      description: Deterministic JSON manifest with full scan result and metadata
+      format: json
+      schema_version: "1.0.0"
+
+    - name: convergence_report.md
+      description: Human-readable Markdown report of convergence findings
+      format: markdown
+
+    - name: gate_report.json
+      description: Gate-level report with exit code, policy evaluation, and evidence hashes
+      format: json
+
+# ---------------------------------------------------------------------------
+# Exit states
+# ---------------------------------------------------------------------------
+exit_states:
+  PASS:
+    code: 0
+    meaning: No drift detected, all convergence checks passed
+  FAIL:
+    code: 1
+    meaning: Critical drift or missing artifacts detected
+  WARN:
+    code: 2
+    meaning: Non-critical drift findings present, review recommended
+
+# ---------------------------------------------------------------------------
+# Fail conditions (trigger exit code 1)
+# ---------------------------------------------------------------------------
+fail_conditions:
+  - condition: status==FAIL
+    description: Scanner reports overall FAIL status with critical/high findings
+
+  - condition: missing_critical_artifacts
+    description: >
+      Registry-listed artifacts not found on disk
+      (drift class: missing_required_artifact)
+
+  - condition: protected_scope_attempt
+    description: >
+      Content detected in forbidden zones defined by structure_spec
+      (drift class: protected_scope_attempt, severity: critical)
+
+  - condition: registry_missing
+    description: >
+      sot_registry.json not found at expected path
+      (drift class: registry_missing, severity: critical)
+
+  - condition: export_violation
+    description: >
+      Derivative repo contains canonical contract or other export violations
+      (drift class: export_violation, severity: critical)
+
+# ---------------------------------------------------------------------------
+# Warn conditions (trigger exit code 2)
+# ---------------------------------------------------------------------------
+warn_conditions:
+  - condition: drift_findings_present
+    description: >
+      Non-critical drift findings detected (medium/low severity only,
+      no fail-class findings)
+
+  - condition: non_critical_missing
+    description: >
+      Optional or non-critical artifacts missing (e.g., missing .rego files
+      or test files that don't block the pipeline)
+
+  - condition: enforcement_gap
+    description: >
+      Contract rules with mode != hard_fail detected
+      (drift class: enforcement_gap, severity: medium)
+
+  - condition: stale_derivative_binding
+    description: >
+      Hash mismatch between registry expectation and actual file
+      when no fail-class findings are present
+
+# ---------------------------------------------------------------------------
+# Evidence artifacts
+# ---------------------------------------------------------------------------
+evidence_artifacts:
+  - name: manifest_sha256
+    source: convergence_manifest.json
+    hash_algorithm: sha256
+    description: SHA-256 hash of the generated convergence manifest
+
+  - name: report_sha256
+    source: convergence_report.md
+    hash_algorithm: sha256
+    description: SHA-256 hash of the generated convergence report
+
+# ---------------------------------------------------------------------------
+# Dependencies
+# ---------------------------------------------------------------------------
+dependencies:
+  primary:
+    - path: 16_codex/contracts/sot/sot_contract.yaml
+      description: Canonical SoT contract -- gate cannot run without this
+      required: true
+
+  tools:
+    - path: 12_tooling/validation/sot_convergence_scanner.py
+      description: PR-1 drift detection scanner
+      required: true
+
+    - path: 12_tooling/validation/convergence_manifest_gen.py
+      description: Manifest generator and report renderer
+      required: true
+
+    - path: 12_tooling/cli/gate_convergence_check.py
+      description: This gate's CLI entry point
+      required: true
+
+# ---------------------------------------------------------------------------
+# Runtime configuration
+# ---------------------------------------------------------------------------
+runtime:
+  read_only: true
+  self_healing: false
+  protected_paths_policy: report_only
+  timeout_seconds: 120
+  retry_on_failure: false

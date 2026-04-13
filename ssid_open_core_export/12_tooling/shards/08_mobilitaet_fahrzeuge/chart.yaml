@@ -1,0 +1,101 @@
+version: "1.0.0"
+generated_utc: "2026-02-11T10:06:31Z"
+root: "12_tooling"
+shard: "08_mobilitaet_fahrzeuge"
+title: "Mobilität & Fahrzeuge"
+status: "draft"
+capabilities:
+  must:
+    - "cli_tool_framework_mobility_vehicle"
+    - "gate_pipeline_executor_mobility_vehicle"
+    - "validator_toolkit_mobility_vehicle"
+    - "developer_utilities_mobility_vehicle"
+  should: []
+  could: []
+  would: []
+policies:
+  - id: "hash_only"
+    requirement: "No PII stored; proofs/hashes only."
+  - id: "non_custodial"
+    requirement: "No custody; peer-to-peer flows; autonomous smart contracts."
+interfaces: []
+governance:
+  reviewers:
+    architecture:
+      - "architecture_board"
+    devops:
+      - "devops_team"
+  promotion_rules:
+    - from: "SHOULD"
+      to: "MUST"
+      conditions:
+        - "90d_production_runtime"
+        - "sla_99_5_percent"
+        - "coverage_95_percent"
+evidence:
+  strategy: "hash_ledger_with_anchoring"
+
+# --- Phase 2 Chart-Fill (auto-generated from Tier-0 SoT) ---
+root_name: "Werkzeuge"
+purpose: "CLI, SDKs, CI-Helper, Linter, Automation Scripts fuer Mobilitaet & Fahrzeuge"
+scope: "Fuehrerschein, KFZ-Zulassung, Fahrzeugpapiere, Maut, Versicherung"
+responsibilities:
+  - "Fachliche SoT-Beschreibung fuer Werkzeuge im Kontext Mobilitaet & Fahrzeuge"
+dependencies:
+  - "03_core (zentrale Logik)"
+  - "23_compliance (Regeltreue)"
+  - "24_meta_orchestration (Registry)"
+observability:
+  metrics: "17_observability/metrics/12_tooling.yaml"
+  logs: "17_observability/logs/12_tooling/"
+  traces: "distributed tracing via OpenTelemetry"
+  alerts: "17_observability/alerts/12_tooling.yaml"
+  health_checks: "liveness and readiness probes required"
+testing:
+  unit: "tests/unit/"
+  integration: "tests/integration/"
+  contract: "conformance tests against OpenAPI/JSON-Schema"
+  conformance: "conformance/"
+  performance: "load tests via locust"
+  security: "SAST/DAST scans, dependency audit"
+implementation_handoff:
+  allowed_impl_types:
+    - "python"
+    - "typescript"
+    - "solidity"
+    - "rust"
+  manifest_preconditions:
+    - "chart.yaml at COMPLETE_SOT"
+    - "contracts/schemas defined"
+    - "tests skeleton present"
+  tech_constraints:
+    - "hash-only data model"
+    - "non-custodial architecture"
+    - "no PII storage"
+release:
+  maturity: "draft"
+  blockers:
+    - "chart-fill incomplete"
+    - "no real implementation"
+  exit_criteria:
+    - "all MUST capabilities implemented"
+    - "unit + integration tests green"
+    - "evidence trail complete"
+    - "promotion gate passed"
+  documentation_targets:
+    - "API docs"
+    - "developer guide"
+    - "compliance mapping"
+maturity: "draft"
+exclusions:
+  - "No PII storage"
+  - "No custodial operations"
+  - "No mainnet deployment without audit"
+sot_sources:
+  - "16_codex/ssid_master_definition_corrected_v1.1.1.md"
+  - "16_codex/SSID_structure_level3_part1_MAX.md"
+  - "16_codex/SSID_structure_level3_part2_MAX.md"
+  - "16_codex/SSID_structure_level3_part3_MAX.md"
+owner: "SSID Architecture Board"
+last_reviewed_at: "2026-03-27T02:30:44Z"
+

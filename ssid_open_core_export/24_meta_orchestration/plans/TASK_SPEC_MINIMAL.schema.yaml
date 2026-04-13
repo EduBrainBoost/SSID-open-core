@@ -1,0 +1,21 @@
+version: "1.0"
+required:
+  - task_id
+  - scope
+  - allowed_paths
+  - acceptance_checks
+  - do_not_touch
+  - stop_conditions
+constraints:
+  acceptance_checks_allowed:
+    - policy
+    - sot
+    - qa
+  stop_conditions_required:
+    - fail_after
+    - on_missing_paths
+notes:
+  executable_unit: "task-spec only"
+  non_executable_docs:
+    - "16_codex/roadmap/ROADMAP_PUBLIC.md"
+    - "16_codex/roadmap/ROADMAP_INTERNAL.md"

@@ -1,0 +1,332 @@
+# EU AI Act / ISO 42001 — AI Governance Compliance Mapping
+# Regulation (EU) 2024/1689 (AI Act)
+# ISO/IEC 42001:2023 (AI Management System)
+# SSID Compliance Mapping
+#
+# SAFE-FIX: No PII, no secrets. Pure regulatory mapping.
+# Generated: 2026-03-29
+
+regulation:
+  id: AI_ACT
+  full_name: "Regulation laying down harmonised rules on artificial intelligence"
+  reference: "Regulation (EU) 2024/1689"
+  entry_into_force: "2024-08-01"
+  phased_application:
+    prohibited_practices: "2025-02-02"
+    gpai_obligations: "2025-08-02"
+    high_risk_annex_iii: "2026-08-02"
+    high_risk_annex_i: "2027-08-02"
+  companion_standard:
+    id: "ISO/IEC 42001:2023"
+    full_name: "Information technology — Artificial intelligence — Management system"
+    description: >
+      International standard for establishing, implementing, maintaining,
+      and continually improving an AI management system (AIMS). Provides
+      a structured approach to managing AI risks and opportunities.
+      Supports AI Act compliance through certifiable management system.
+
+scope: >
+  The AI Act establishes a risk-based regulatory framework for AI systems
+  placed on the EU market or used within the EU. It classifies AI systems
+  into risk tiers (prohibited, high-risk, limited-risk, minimal-risk)
+  and imposes obligations proportional to risk level.
+
+ssid_applicability: >
+  SSID's 01_ai_layer implements AI components for identity scoring,
+  bias detection, anomaly detection, and decision support. These AI
+  systems interact with identity verification, financial risk assessment,
+  and access control — domains that may trigger high-risk classification
+  under Annex III. The applicability is SIGNIFICANT for AI-driven
+  identity and scoring components.
+
+coverage_level: partial
+
+risk_classification:
+  ssid_ai_components:
+
+    - component: "Identity Score Engine"
+      location: "01_ai_layer / 08_identity_score"
+      description: "AI-based scoring of identity trust levels"
+      risk_classification: high_risk
+      classification_rationale: >
+        Annex III, Area 1 (Biometrics): AI systems intended for remote
+        biometric identification. Annex III, Area 3 (Employment/Essential
+        services): AI systems for evaluating creditworthiness or
+        establishing credit scores. Identity scoring that influences
+        access to financial services qualifies as high-risk.
+      applicable_articles:
+        - "Art. 6 — Classification rules for high-risk AI systems"
+        - "Art. 9 — Risk management system"
+        - "Art. 10 — Data and data governance"
+        - "Art. 11 — Technical documentation"
+        - "Art. 12 — Record-keeping"
+        - "Art. 13 — Transparency and provision of information to deployers"
+        - "Art. 14 — Human oversight"
+        - "Art. 15 — Accuracy, robustness, and cybersecurity"
+
+    - component: "Bias Detection Module"
+      location: "01_ai_layer"
+      description: "Algorithmic fairness monitoring and bias mitigation"
+      risk_classification: minimal_risk
+      classification_rationale: >
+        Bias detection is a compliance/audit tool, not a decision-making
+        AI system. It supports rather than creates risk. However, its
+        outputs feed into high-risk system governance.
+      applicable_articles:
+        - "Art. 9 — Risk management (supporting role)"
+
+    - component: "Anomaly Detection"
+      location: "01_ai_layer"
+      description: "AI-based detection of fraudulent or anomalous identity patterns"
+      risk_classification: limited_risk
+      classification_rationale: >
+        Fraud detection AI in financial services context. Not explicitly
+        listed in Annex III but used in high-risk adjacent workflows.
+        Transparency obligations apply under Art. 50 if the system
+        interacts with natural persons.
+      applicable_articles:
+        - "Art. 50 — Transparency obligations for certain AI systems"
+        - "Art. 9 — Risk management (supporting role)"
+
+    - component: "Decision Support / Recommendation Engine"
+      location: "01_ai_layer"
+      description: "AI-assisted recommendations for identity verification decisions"
+      risk_classification: high_risk
+      classification_rationale: >
+        Annex III, Area 3: AI systems for evaluating access to essential
+        private or public services. Identity verification decisions that
+        gate access to financial services are high-risk.
+      applicable_articles:
+        - "Art. 6-15 — Full high-risk AI system obligations"
+        - "Art. 26 — Obligations of deployers of high-risk AI systems"
+
+high_risk_obligations:
+
+  - obligation: "Art. 9 — Risk Management System"
+    description: >
+      Continuous iterative risk management process throughout the AI
+      system lifecycle. Must identify and analyse known and foreseeable
+      risks, estimate and evaluate risks, and adopt risk management
+      measures.
+    ssid_relevance: critical
+    coverage: partial
+    gaps:
+      - "Formal AI risk management process document per Art. 9"
+      - "Systematic risk identification for identity scoring AI"
+      - "Residual risk documentation and acceptance criteria"
+    ssid_root_mapping:
+      - root: 01_ai_layer
+        rationale: "AI system risk management implementation"
+      - root: 07_governance_legal
+        rationale: "Risk management governance and documentation"
+
+  - obligation: "Art. 10 — Data and Data Governance"
+    description: >
+      Training, validation, and testing data must be subject to
+      appropriate data governance and management practices. Data sets
+      must be relevant, sufficiently representative, and free of errors.
+      Bias examination is mandatory.
+    ssid_relevance: critical
+    coverage: partial
+    gaps:
+      - "Data governance framework for AI training datasets"
+      - "Bias examination documentation for training data"
+      - "Data quality metrics and monitoring"
+    ssid_root_mapping:
+      - root: 22_datasets
+        rationale: "Training and validation dataset governance"
+      - root: 01_ai_layer
+        rationale: "Bias examination and data quality in AI pipeline"
+      - root: 06_data_pipeline
+        rationale: "Data processing and quality assurance"
+
+  - obligation: "Art. 11 — Technical Documentation"
+    description: >
+      Technical documentation must be drawn up before the AI system is
+      placed on the market or put into service. Must include system
+      description, design specifications, development process, monitoring,
+      and validation/testing procedures.
+    ssid_relevance: critical
+    coverage: gap
+    gaps:
+      - "AI Act compliant technical documentation package"
+      - "Annex IV format documentation for each high-risk component"
+      - "Development process documentation with validation results"
+    ssid_root_mapping:
+      - root: 05_documentation
+        rationale: "Technical documentation creation and maintenance"
+      - root: 16_codex
+        rationale: "System-of-truth documentation for AI components"
+
+  - obligation: "Art. 12 — Record-Keeping (Logging)"
+    description: >
+      High-risk AI systems must allow automatic recording of events
+      (logs) throughout the system lifetime. Logging must enable
+      traceability and monitoring of system operation.
+    ssid_relevance: high
+    coverage: partial
+    gaps:
+      - "AI-specific audit logging per Art. 12 requirements"
+      - "Traceability from input to output for each AI decision"
+    ssid_root_mapping:
+      - root: 02_audit_logging
+        rationale: "Event logging and traceability infrastructure"
+      - root: 17_observability
+        rationale: "AI system monitoring and operational logging"
+
+  - obligation: "Art. 13 — Transparency and Information to Deployers"
+    description: >
+      High-risk AI systems must be designed to ensure transparent
+      operation. Deployers must receive sufficient information to
+      interpret the system output and use it appropriately.
+    ssid_relevance: high
+    coverage: gap
+    gaps:
+      - "Deployer information package per Art. 13"
+      - "Interpretability documentation for identity scoring"
+      - "Instructions for use covering capabilities and limitations"
+    ssid_root_mapping:
+      - root: 01_ai_layer
+        rationale: "AI system interpretability and explainability"
+      - root: 05_documentation
+        rationale: "Deployer-facing transparency documentation"
+
+  - obligation: "Art. 14 — Human Oversight"
+    description: >
+      High-risk AI systems must be designed to allow effective human
+      oversight during use. Must enable human intervention, override,
+      and the ability to disregard or reverse AI output.
+    ssid_relevance: critical
+    coverage: partial
+    gaps:
+      - "Human-in-the-loop mechanism for identity scoring decisions"
+      - "Override and reversal capabilities documentation"
+      - "Oversight interface for deployers"
+    ssid_root_mapping:
+      - root: 13_ui_layer
+        rationale: "Human oversight interface"
+      - root: 01_ai_layer
+        rationale: "Override and intervention mechanisms"
+      - root: 03_core
+        rationale: "Decision reversal capability in core logic"
+
+  - obligation: "Art. 15 — Accuracy, Robustness, and Cybersecurity"
+    description: >
+      High-risk AI systems must achieve appropriate levels of accuracy,
+      robustness, and cybersecurity. Must be resilient to errors, faults,
+      inconsistencies, and adversarial attacks.
+    ssid_relevance: high
+    coverage: partial
+    gaps:
+      - "Accuracy metrics and benchmarks for AI components"
+      - "Adversarial robustness testing programme"
+      - "AI-specific cybersecurity assessment"
+    ssid_root_mapping:
+      - root: 01_ai_layer
+        rationale: "Accuracy metrics and adversarial robustness"
+      - root: 11_test_simulation
+        rationale: "AI testing and adversarial simulation"
+      - root: 21_post_quantum_crypto
+        rationale: "Cryptographic security of AI pipeline"
+
+transparency_obligations:
+
+  - obligation: "Art. 50 — Transparency for Certain AI Systems"
+    description: >
+      AI systems intended to interact with natural persons must disclose
+      that they are interacting with AI. Deployers of emotion recognition
+      or biometric categorisation systems must inform exposed persons.
+    ssid_relevance: medium
+    coverage: gap
+    gaps:
+      - "AI interaction disclosure mechanism"
+      - "Biometric categorisation notification (if applicable)"
+    ssid_root_mapping:
+      - root: 13_ui_layer
+        rationale: "User-facing AI disclosure"
+      - root: 09_meta_identity
+        rationale: "Identity context for AI interaction transparency"
+
+iso_42001_alignment:
+  description: >
+    ISO/IEC 42001 provides a certifiable management system framework
+    that supports AI Act compliance. Implementing an AIMS aligned to
+    ISO 42001 demonstrates systematic AI governance.
+  key_clauses:
+    - clause: "4 — Context of the Organization"
+      mapping: "Understand regulatory context including AI Act classification"
+    - clause: "5 — Leadership"
+      mapping: "Management commitment to responsible AI governance"
+    - clause: "6 — Planning"
+      mapping: "AI risk assessment aligned to Art. 9 risk management"
+    - clause: "7 — Support"
+      mapping: "Competence, awareness, and resources for AI governance"
+    - clause: "8 — Operation"
+      mapping: "AI system lifecycle management per high-risk obligations"
+    - clause: "9 — Performance Evaluation"
+      mapping: "Monitoring, measurement, and internal audit of AI systems"
+    - clause: "10 — Improvement"
+      mapping: "Continual improvement of AI management system"
+  ssid_certification_status: not_started
+  ssid_certification_assessment: >
+    ISO 42001 certification would provide structured evidence of AI
+    governance maturity and support AI Act conformity assessment.
+    Recommended as a medium-term goal for 01_ai_layer governance.
+
+quarterly_bias_audit:
+  requirement: "EU AI Act Art. 10 + SSID AI Compliance Rules"
+  description: >
+    Quarterly bias audit is required per SSID AI compliance policy.
+    Must cover all AI components in 01_ai_layer with documented
+    fairness metrics.
+  ssid_root_mapping:
+    - root: 01_ai_layer
+      rationale: "Bias detection and fairness metrics implementation"
+    - root: 02_audit_logging
+      rationale: "Bias audit evidence and logging"
+    - root: 23_compliance
+      rationale: "Quarterly audit scheduling and tracking"
+
+root_coverage_summary:
+  primary_roots:
+    - 01_ai_layer
+    - 02_audit_logging
+    - 05_documentation
+    - 07_governance_legal
+    - 22_datasets
+  secondary_roots:
+    - 03_core
+    - 06_data_pipeline
+    - 09_meta_identity
+    - 11_test_simulation
+    - 13_ui_layer
+    - 16_codex
+    - 17_observability
+    - 21_post_quantum_crypto
+    - 23_compliance
+
+action_items:
+  - priority: critical
+    item: "Complete AI risk classification for all 01_ai_layer components"
+    target_root: 01_ai_layer
+  - priority: critical
+    item: "Create Annex IV technical documentation for high-risk AI systems"
+    target_root: 05_documentation
+  - priority: critical
+    item: "Implement human oversight mechanisms for identity scoring"
+    target_root: 01_ai_layer
+  - priority: high
+    item: "Establish data governance framework for AI training datasets"
+    target_root: 22_datasets
+  - priority: high
+    item: "Create deployer transparency package per Art. 13"
+    target_root: 05_documentation
+  - priority: high
+    item: "Implement AI interaction disclosure in UI layer"
+    target_root: 13_ui_layer
+  - priority: medium
+    item: "Evaluate ISO 42001 certification pathway"
+    target_root: 07_governance_legal
+  - priority: medium
+    item: "Establish adversarial robustness testing for AI components"
+    target_root: 11_test_simulation

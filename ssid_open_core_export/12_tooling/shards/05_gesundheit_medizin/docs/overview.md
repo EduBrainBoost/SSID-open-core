@@ -1,0 +1,22 @@
+# Gesundheit & Medizin - Technical Overview
+
+## Scope
+
+Tooling capabilities applied to the health and medicine domain.
+
+## Architecture
+
+This shard follows the SSID non-custodial pattern:
+all data references are SHA3-256 hashes. No PII is stored or transmitted.
+
+## Key Components
+
+- **ToolRunner**: Core logic class for health and medicine operations
+- **Evidence Trail**: SHA256-based audit logging for every operation
+- **Policy Enforcement**: hash_only and non_custodial policies enforced at runtime
+
+## Dependencies
+
+- `03_core` for foundational logic
+- `23_compliance` for regulatory rule evaluation
+- `17_observability` for metrics and tracing

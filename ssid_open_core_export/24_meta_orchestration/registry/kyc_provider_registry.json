@@ -1,0 +1,23 @@
+{
+  "registry_id": "kyc_provider_decision.v2",
+  "generated_at_utc": "2026-03-28T13:45:00Z",
+  "provider_count": 10,
+  "pilot_default": "Didit",
+  "provider_ranking": {
+    "user_pays_direct_tier1": ["D-Trust_sign-me", "Namirial", "InfoCert"],
+    "web3_tier": ["Quadrata"],
+    "ssi_native_tier": ["KILT"],
+    "pilot_low_friction": ["Didit"],
+    "regulated_b2b_scale": ["Verimi", "IDnow", "Signicat"],
+    "backup_only": ["Identomat"],
+    "deprecated": ["Swisscom_April2026_sunset"]
+  },
+  "artifacts": {
+    "csv": "22_datasets/providers/kyc_provider_decision_matrix.csv",
+    "policy": "20_foundation/tokenomics/provider_policy.yaml",
+    "guardrails": "23_compliance/policies/provider_selection_guardrails.yaml",
+    "docs": "05_documentation/providers/kyc_provider_decision_matrix.md"
+  },
+  "status": "active",
+  "notes": "Updated based on operator analysis: D-Trust/Namirial/InfoCert best for user-pays-direct model. Swisscom deprecated due to April 2026 sunset."
+}

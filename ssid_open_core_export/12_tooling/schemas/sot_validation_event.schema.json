@@ -1,0 +1,227 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.internal/schemas/sot_validation_event.schema.json",
+  "title": "SoT Validation Event",
+  "description": "Schema for the validation event sent to EMS after a SoT convergence run. Captures the gate decision, findings summary, evidence references, and policy engine metadata.",
+  "type": "object",
+  "required": [
+    "event_type",
+    "ts",
+    "run_id",
+    "source",
+    "repo",
+    "severity",
+    "status",
+    "summary",
+    "findings",
+    "artifacts",
+    "evidence_refs",
+    "policy_engine",
+    "rego_policy_version",
+    "python_policy_version",
+    "pipeline_version"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "const": "sot_validation",
+      "description": "Discriminator for this event type."
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp when this event was emitted."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^\\d{4}\\d{2}\\d{2}T\\d{2}\\d{2}\\d{2}Z$",
+      "description": "Unique run identifier in compact ISO 8601 UTC format (e.g. 20260310T120000Z)."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["run_sot_convergence", "gate_convergence_check", "manual"],
+      "description": "Origin of this validation event."
+    },
+    "repo": {
+      "type": "string",
+      "description": "Repository name that was validated."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["info", "warn", "deny"],
+      "description": "Highest severity level among all findings."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail", "error"],
+      "description": "Overall validation status of this run."
+    },
+    "summary": {
+      "$ref": "#/definitions/event_summary",
+      "description": "Aggregated finding counts and gate decision."
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/finding_ref" },
+      "description": "Array of finding references from this validation run."
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Paths to report artifacts produced by this run."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/evidence_ref" },
+      "description": "Cryptographic evidence references for audit trail."
+    },
+    "policy_engine": {
+      "type": "string",
+      "enum": ["python", "opa"],
+      "description": "Policy engine used for this validation run."
+    },
+    "rego_policy_version": {
+      "type": "string",
+      "description": "Version of the Rego policy applied."
+    },
+    "python_policy_version": {
+      "type": "string",
+      "description": "Version of the Python policy applied."
+    },
+    "pipeline_version": {
+      "type": "string",
+      "default": "1.0.0",
+      "description": "Version of the validation pipeline that executed this run."
+    },
+    "run_identity": {
+      "$ref": "sot_run_identity_schema.json",
+      "description": "Full run identity linking contract, commits, and evidence hashes."
+    },
+    "canonical_commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$",
+      "description": "Git commit SHA of the canonical repository at scan time."
+    },
+    "derivative_commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$",
+      "description": "Git commit SHA of the derivative repository at scan time."
+    },
+    "contract_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of the convergence contract used."
+    },
+    "report_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of the validation report produced."
+    },
+    "evidence_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of the evidence archive produced."
+    },
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Wall-clock duration of the validation run in seconds."
+    }
+  },
+  "definitions": {
+    "event_summary": {
+      "type": "object",
+      "required": ["total", "deny", "warn", "info", "decision"],
+      "additionalProperties": false,
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of findings."
+        },
+        "deny": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of deny-level findings."
+        },
+        "warn": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of warn-level findings."
+        },
+        "info": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of info-level findings."
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["pass", "warn", "fail"],
+          "description": "Overall gate decision based on aggregated findings."
+        }
+      }
+    },
+    "finding_ref": {
+      "type": "object",
+      "required": ["id", "class", "severity", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z_]+-[a-z_]+-[a-f0-9]+$",
+          "description": "Unique finding identifier in the format SOURCE-CLASS-HASH."
+        },
+        "class": {
+          "type": "string",
+          "enum": [
+            "missing_file",
+            "extra_file",
+            "content_drift",
+            "stale_binding",
+            "config_mismatch",
+            "metadata_divergence",
+            "schema_violation",
+            "rule_gap",
+            "rule_conflict",
+            "phantom_rule",
+            "scope_leak",
+            "threshold_breach",
+            "version_mismatch",
+            "coverage_gap"
+          ],
+          "description": "Classification of the convergence finding."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "warn", "deny"],
+          "description": "Severity level of the finding."
+        },
+        "path": {
+          "type": "string",
+          "description": "File path relative to the repository root."
+        }
+      }
+    },
+    "evidence_ref": {
+      "type": "object",
+      "required": ["hash", "type", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of the evidence artifact."
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of evidence artifact (e.g. report, log, manifest)."
+        },
+        "path": {
+          "type": "string",
+          "description": "Path to the evidence artifact."
+        }
+      }
+    }
+  }
+}

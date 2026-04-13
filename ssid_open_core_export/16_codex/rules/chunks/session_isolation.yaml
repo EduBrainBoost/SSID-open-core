@@ -1,0 +1,22 @@
+rule_id: "RULE-005"
+name: "SESSION-ISOLATION"
+version: "1.0.0"
+enforcement_level: "MANDATORY"
+description: >
+  Jeder Agent laeuft in eigener Session mit eigenem CWD, Lock und
+  Portkontext. Session-Vertrag definiert ID, Lock-Datei, Evidence-Pfad.
+constraints:
+  - "Session-ID Format: <agent-id>_<env>_<yyyymmdd>_<seq>"
+  - "Lock-Datei: .ssid-system/locks/<agent-id>.lock"
+  - "Evidence-Pfad: .ssid-system/evidence/<agent-id>/<session-id>/"
+  - "Session-Contract: .ssid-system/sessions/<session-id>.json"
+  - "Lebenszyklus: START -> ARBEIT -> STOP (oder FEHLER)"
+  - "START: Prompt-Compiler baut Prompt, Session-Allocator prueft Locks"
+  - "ARBEIT: Jede Schreiboperation ins Evidence-Log, Path/Port Guard aktiv"
+  - "STOP: Lock-Datei loeschen, Evidence finalisieren"
+  - "FEHLER: Recovery Controller greift ein, Lock-Status auf error"
+violations:
+  - "Fremde Sessions uebernehmen"
+  - "Fremde Lock-Dateien aendern"
+  - "Ohne Lock schreiben"
+  - "Mehrere Agenten im selben Worktree ohne Lock"

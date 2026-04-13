@@ -1,0 +1,90 @@
+version: '1.0'
+generated_utc: '2026-04-13T12:20:00Z'
+deprecated: false
+classification: PUBLIC - CI Guard Enforcement
+
+allowed_directories:
+  - .auto-claude
+  - .claude
+  - .codex
+  - .continue
+  - .coverage
+  - .git
+  - .github
+  - .githooks
+  - .planning
+  - .pytest_cache
+  - .pytest_tmp
+  - .ruff_cache
+  - .ssid-system
+  - .ssid_sandbox
+  - .venv
+  - __pycache__
+
+allowed_files:
+  # Standard GitHub files
+  - .auto-claude-security.json
+  - .claude_settings.json
+  - .coverage
+  - .env
+  - .env.example
+  - .env.local
+  - .gitattributes
+  - .gitignore
+  - .mailmap
+  - .pre-commit-config.yaml
+  - .semgrepignore
+  - __init__.py
+
+  # Standard repository documentation
+  - AGENTS.md
+  - CHANGELOG.md
+  - CLAUDE.md
+  - CONTRIBUTING.md
+  - DCO.txt
+  - LICENSE
+  - README.md
+  - SECURITY.md
+
+  # Project configuration
+  - conftest.py
+  - pyproject.toml
+  - pytest.ini
+  - requirements.lock
+
+  # Authorized Phase/Project Documentation (2026-04-13)
+  - EXTERNAL_BLOCKER_RESOLUTION_PLAYBOOK.md
+  - HANDOVER_STATUS_INDEX.md
+  - IMPLEMENTATION_PLAN_CORRIGENDUM_INTEGRATION_2026-04-13.md
+  - PHASE_1-5_DEPLOYMENT_READINESS.md
+  - PHASE_1-5_EVIDENCE_LEDGER.md
+  - PHASE_1-7_FINAL_CLOSEOUT.md
+  - PHASE_1-7_HANDOVER_STATUS_CORRIGENDUM_2026-04-13.md
+  - PHASE_1_COMPLETION_REPORT.md
+  - PHASE_2_TEST_REPORT.md
+  - PHASE_3_DEPLOYMENT_RUNBOOK.md
+  - PHASE_4_TEST_EXPANSION_REPORT.md
+  - PHASE_5_INTEGRATION_TESTING_REPORT.md
+  - RELEASE_NOTES_v1.0-RC2.md
+  - SECURITY_AUDIT_REPORT.md
+  - SESSION_COMPLETION_SUMMARY.md
+  - SSID_AUTHORITATIVE_BASELINE_2026_02_25.md
+  - SSID_DECLARATION_OF_STATUS.md
+
+  # Legacy root-level files (already on main, pending relocation)
+  - BASELINE_FREEZE.json
+  - BASELINE_FREEZE.md
+  - EXECUTION_KICKOFF_REPORT_2026_04_01.md
+  - G016_G017_G018_CLOSURE.md
+  - MASTER_ABSCHLUSSBERICHT_2026_04_01.md
+  - MASTER_EXECUTOR_PHASE0_TO_6.py
+  - MASTER_EXECUTOR_PHASES_7_TO_10.py
+  - MASTER_GAP_REGISTER.csv
+  - MASTER_INVENTORY_ALL_CONTENT.csv
+  - PHASE4_APPLY_EXECUTOR_PATH_A.py
+  - PHASE5_PHASE6_FINAL_EXECUTOR.py
+  - phase7_environment_gate_checker.py
+  - sbom-automation.sh
+  - SURFACE_MATRIX.csv
+  - SURFACE_MATRIX_REPORT.md
+  - VALIDATION_CHECKS_CORRIGENDUM_INTEGRATION.sh

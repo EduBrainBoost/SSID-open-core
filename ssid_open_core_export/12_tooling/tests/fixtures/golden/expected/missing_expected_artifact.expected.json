@@ -1,0 +1,54 @@
+{
+  "class_counts": {
+    "policy_deny": 2,
+    "policy_info": 2
+  },
+  "decision": "fail",
+  "exit_code": 2,
+  "exit_label": "deny",
+  "findings": [
+    {
+      "class": "policy_deny",
+      "details": "CONVERGENCE_DENY: repo SSID reported status FAIL",
+      "id": "policy-0000",
+      "path": "",
+      "repo": "SSID",
+      "severity": "critical",
+      "source": "policy"
+    },
+    {
+      "class": "policy_deny",
+      "details": "CONVERGENCE_DENY: canonical repo SSID has 2 missing artifacts: ['03_core/README.md', '12_tooling/module.yaml']",
+      "id": "policy-0001",
+      "path": "",
+      "repo": "SSID",
+      "severity": "critical",
+      "source": "policy"
+    },
+    {
+      "class": "policy_info",
+      "details": "DERIVATION_INFO: full export completeness \u2014 all 3 allowed artifacts present",
+      "id": "policy-0002",
+      "path": "",
+      "repo": "SSID-open-core",
+      "severity": "info",
+      "source": "policy"
+    },
+    {
+      "class": "policy_info",
+      "details": "DERIVATION_INFO: derivation mode is 'selective' for SSID -> SSID-open-core",
+      "id": "policy-0003",
+      "path": "",
+      "repo": "SSID-open-core",
+      "severity": "info",
+      "source": "policy"
+    }
+  ],
+  "fixture_name": "Canonical repo missing expected artifacts. Scanner reports FAIL. Expected: DENY (fail).",
+  "max_severity": "critical",
+  "severity_counts": {
+    "critical": 2,
+    "info": 2
+  },
+  "total_findings": 4
+}

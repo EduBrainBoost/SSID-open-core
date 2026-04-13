@@ -1,0 +1,10 @@
+schema_version: "1.0.0"
+shard_id: "03_core/01_identitaet_personen"
+gate_target: "shard_conformance_gate.py --root 03_core --shard 01_identitaet_personen"
+fixtures:
+  - path: "fixtures/valid.json"
+    expect: "pass"
+  - path: "fixtures/invalid_format.json"
+    expect: "fail"
+  - path: "fixtures/invalid_pii.json"
+    expect: "fail"

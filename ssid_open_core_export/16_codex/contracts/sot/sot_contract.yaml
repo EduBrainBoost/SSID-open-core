@@ -1,0 +1,173 @@
+version: 4.1.0
+contract_type: sot
+rules:
+  - id: SOT_AGENT_001
+    description: Dispatcher must be single entry point
+    severity: critical
+    mode: hard_fail
+  - id: SOT_AGENT_002
+    description: Documentation must follow canonical paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_003
+    description: Data minimization principles applied
+    severity: medium
+    mode: hard_fail
+  - id: SOT_AGENT_004
+    description: Artifacts must follow canonical paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_005
+    description: No duplicate or inconsistent rule definitions
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_006
+    description: Root 01 AI Layer structure conforms to MUST paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_007
+    description: Root 01 AI Layer has no shadow files or forbidden copies
+    severity: critical
+    mode: hard_fail
+  - id: SOT_AGENT_008
+    description: Root 01 AI Layer interfaces reference central paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_009
+    description: Root 02 Audit Logging structure conforms to MUST paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_010
+    description: Root 02 Audit Logging has no shadow files or forbidden copies
+    severity: critical
+    mode: hard_fail
+  - id: SOT_AGENT_011
+    description: Root 02 Audit Logging interfaces reference central paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_012
+    description: Root 03 Core structure conforms to MUST paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_013
+    description: Root 03 Core has no shadow files or forbidden copies
+    severity: critical
+    mode: hard_fail
+  - id: SOT_AGENT_014
+    description: Root 03 Core interfaces reference central paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_015
+    description: Root 04 Deployment structure conforms to MUST paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_016
+    description: Root 04 Deployment has no shadow files or forbidden copies
+    severity: critical
+    mode: hard_fail
+  - id: SOT_AGENT_017
+    description: Root 04 Deployment interfaces reference central paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_018
+    description: Root 05 Documentation structure conforms to MUST paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_019
+    description: Root 05 Documentation has no shadow files or forbidden copies
+    severity: critical
+    mode: hard_fail
+  - id: SOT_AGENT_020
+    description: Root 05 Documentation interfaces reference central paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_021
+    description: Root 06 Data Pipeline structure conforms to MUST paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_022
+    description: Root 06 Data Pipeline has no shadow files or forbidden copies
+    severity: critical
+    mode: hard_fail
+  - id: SOT_AGENT_023
+    description: Root 06 Data Pipeline interfaces reference central paths
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_024
+    description: Root 07 Governance Legal investment_disclaimers.yaml MUST exist
+    severity: critical
+    mode: hard_fail
+  - id: SOT_AGENT_025
+    description: Root 07 Governance Legal approval_workflow.yaml MUST exist
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_026
+    description: Root 07 Governance Legal regulatory_map_index.yaml MUST exist
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_027
+    description: Root 07 Governance Legal legal_positioning.md MUST exist
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_028
+    description: Root 07 Governance Legal README.md MUST exist
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_029
+    description: Root 08 Identity Score module.yaml MUST exist
+    severity: critical
+    mode: hard_fail
+  - id: SOT_AGENT_030
+    description: Root 08 Identity Score README.md MUST exist
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_031
+    description: Root 08 Identity Score docs/ MUST exist
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_032
+    description: Root 08 Identity Score src/ MUST exist
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_033
+    description: Root 08 Identity Score tests/ MUST exist
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_034
+    description: Root 08 Identity Score models/ MUST exist
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_035
+    description: Root 08 Identity Score rules/ MUST exist
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_036
+    description: Root 08 Identity Score api/ MUST exist
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_037
+    description: Phase-5 FeeParticipant module exists in 03_core
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_038
+    description: Phase-5 RevenueParticipant module exists in 03_core
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_039
+    description: Phase-5 fee_proof_engine module exists in 03_core
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_040
+    description: Phase-5 identity_fee_router module exists in 03_core
+    severity: high
+    mode: hard_fail
+  - id: SOT_AGENT_041
+    description: Phase-5 license_fee_splitter module exists in 03_core
+    severity: high
+    mode: hard_fail
+agent_stack:
+  - planner
+  - implementer
+  - compliance_auditor
+  - test_runner
+  - release_integrator

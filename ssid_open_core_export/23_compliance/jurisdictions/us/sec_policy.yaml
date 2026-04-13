@@ -1,0 +1,126 @@
+# SEC — US Jurisdiction Compliance Policy
+# SSID-open-core | 23_compliance/jurisdictions/us/
+# Classification: Compliance | Level-3 Specification
+# Generated: 2026-03-15
+
+policy:
+  id: "US-SEC-001"
+  name: "SEC Digital Asset Regulatory Framework"
+  version: "1.0.0"
+  status: "active"
+  regulatory_references:
+    - ref: "Securities Act of 1933"
+      note: "Registration requirements for securities offerings"
+    - ref: "Securities Exchange Act of 1934"
+      note: "Broker-dealer and exchange regulation"
+    - ref: "Investment Advisers Act of 1940"
+      note: "Investment adviser obligations"
+    - ref: "SEC Staff Bulletin 2022-01"
+      note: "Accounting for crypto-asset custodial obligations (SAB 121)"
+    - ref: "SEC v. Ripple Labs Inc. (2020)"
+      note: "Howey test application to digital assets"
+    - ref: "SEC Cybersecurity Risk Management Rules (2023)"
+      note: "Cybersecurity disclosure requirements"
+  issuing_body: "U.S. Securities and Exchange Commission"
+  reference_url: "https://www.sec.gov/crypto"
+  jurisdiction: "United States of America"
+  scope: "Digital assets potentially qualifying as securities; broker-dealers; investment advisers"
+  last_reviewed: "2026-03-15"
+
+applicability:
+  entities:
+    - "Issuers of digital assets that may be securities"
+    - "Broker-dealers handling digital asset securities"
+    - "Investment advisers with digital asset exposure"
+    - "Exchanges listing potential securities tokens"
+  howey_test:
+    description: "Investment contract test — SEC v. W.J. Howey Co. (1946)"
+    elements:
+      - "Investment of money"
+      - "In a common enterprise"
+      - "With expectation of profits"
+      - "Derived from efforts of others"
+    ssid_position: >
+      SSID provides identity infrastructure, not investment products.
+      SSID tokens/credentials are utility instruments — not investment contracts.
+      Legal opinion required per issuance.
+
+requirements:
+  registration_and_disclosure:
+    securities_offering:
+      - "Registration on Form S-1 or Regulation D exemption (private placement)"
+      - "Material disclosure of risks, management, financials"
+    broker_dealer:
+      - "FINRA membership or SEC direct registration"
+      - "Net capital requirements (Rule 15c3-1)"
+      - "Customer protection rule (Rule 15c3-3)"
+
+  kyc_aml:
+    customer_identification:
+      - field: "customer_name_hash"
+        format: "sha256_hash"
+        basis: "BSA/AML CIP requirements via SEC-regulated entities"
+      - field: "ssn_or_ein_hash"
+        format: "sha256_hash"
+        note: "SSN/EIN — stored as hash only, never plaintext"
+      - field: "address_hash"
+        format: "sha256_hash"
+      - field: "dob_hash"
+        format: "sha256_hash"
+    beneficial_ownership:
+      threshold: "25% ownership or control"
+      format: "sha256_hash of beneficial owner identity"
+
+  cybersecurity:
+    rule: "SEC Cybersecurity Risk Management, Strategy, Governance, and Incident Disclosure Rules (Aug 2023)"
+    requirements:
+      - "Material cybersecurity incident disclosure within 4 business days (Form 8-K)"
+      - "Annual cybersecurity risk management disclosure (Form 10-K)"
+      - "Board cybersecurity expertise disclosure"
+    ssid_controls:
+      - "Shard-based architecture limits blast radius"
+      - "Hash-only storage — breach does not expose PII"
+      - "Incident classification: hash exposure ≠ PII breach"
+
+  safeguarding:
+    rule: "Safeguarding Rule Proposal (2023) — Investment Adviser Act"
+    requirements:
+      - "Qualified custodian for customer assets"
+      - "Segregation of customer assets"
+    ssid_position: >
+      SSID is non-custodial. No customer assets held. Compliance with
+      safeguarding rules achieved by architectural design (non-custody).
+
+ssid_compliance:
+  approach: "hash_only_non_custodial"
+  data_handling: "hash_only"
+  storage: "non_custodial"
+  pii: "never_stored"
+  evidence_chain: "sha256_chain"
+
+  capability_mapping:
+    customer_identity: "sha256(name_normalized) — SSID identity layer"
+    ssn_ein: "sha256(ssn_or_ein) — SSID credential shard, separated by salt"
+    address: "sha256(address_normalized)"
+    dob: "sha256(dob_normalized)"
+    beneficial_owner: "sha256(owner_identity) — 25%+ threshold check via ZK-proof"
+
+  securities_status:
+    ssid_credentials: "Utility credential — legal opinion required per jurisdiction"
+    pii_breach_risk: "Minimal — hash-only storage; breach exposes no readable PII"
+
+evidence_requirements:
+  format: "SHA-256 hash manifest"
+  storage_path: "23_compliance/evidence/compliance/"
+  retention_years: 7
+  regulatory_minimum_years: 6
+  audit_trail: "SEC-compliant immutable transaction log"
+
+governance:
+  owner: "23_compliance"
+  review_cycle: "annual"
+  related_policies:
+    - "jurisdictions/us/fincen_policy.yaml"
+    - "global/fatf/travel_rule/fatf_travel_rule.yaml"
+  regulatory_body: "U.S. Securities and Exchange Commission (SEC)"
+  self_regulatory: "FINRA (Financial Industry Regulatory Authority)"

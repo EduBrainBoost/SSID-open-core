@@ -1,0 +1,20 @@
+{
+  "event_id": "fc7e59ce02d62615f5e2d35e90247f58236380f92d140c1c79a7effa8a9419e8",
+  "event_type": "merge_recorded",
+  "merge_sha": "d6488575a8a19edae416700234d676ef0bc8e068",
+  "observed_utc": "2026-03-03T21:01:02Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 14,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-d648857/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "d6488575a8a19edae416700234d676ef0bc8e068",
+  "summary": "feat(tooling): add supply-chain SBOM export (MUST-PR-3) (#14)",
+  "task_id": null
+}

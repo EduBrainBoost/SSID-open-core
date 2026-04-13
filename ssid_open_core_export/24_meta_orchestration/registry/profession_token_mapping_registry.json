@@ -1,0 +1,12 @@
+{
+  "registry_id": "profession_token_mapping.v1",
+  "generated_at_utc": "2026-03-28T13:07:50Z",
+  "row_count": 66,
+  "artifacts": {
+    "csv": "22_datasets/token/profession_token_mapping_matrix.csv",
+    "policy": "20_foundation/tokenomics/profession_token_mapping_policy.yaml",
+    "artifact_model": "20_foundation/tokenomics/profession_token_artifact_model.yaml",
+    "guardrails": "23_compliance/policies/profession_token_guardrails.yaml"
+  },
+  "status": "active"
+}

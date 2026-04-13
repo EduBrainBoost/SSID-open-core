@@ -1,0 +1,103 @@
+
+#!/usr/bin/env python3
+"""
+Unit tests for SoT Validator
+Minimal bootstrap tests - PASS/FAIL only, no numerical scores.
+"""
+import unittest
+import sys
+from pathlib import Path
+
+# Add the core path to import the validator
+REPO_ROOT = Path(__file__).resolve().parents[3]
+CORE_PATH = REPO_ROOT / "03_core" / "validators" / "sot" / "sot_validator_core.py"
+
+sys.path.insert(0, str(CORE_PATH.parent))
+
+try:
+    import sot_validator_core as sot_core
+except ImportError as e:
+    print(f"ERROR: Could not import sot_validator_core: {e}")
+    sys.exit(1)
+
+class TestSoTValidator(unittest.TestCase):
+
+    def setUp(self):
+        self.temp_dir = "temp_test_repo"
+        os.makedirs(self.temp_dir, exist_ok=True)
+        self.validator = SoTValidatorCore(root_dir=self.temp_dir)
+
+        # Create dummy directories/files to simulate a repository structure
+        os.makedirs(os.path.join(self.temp_dir, "05_documentation"), exist_ok=True)
+        os.makedirs(os.path.join(self.temp_dir, "02_audit_logging", "reports"), exist_ok=True)
+        with open(os.path.join(self.temp_dir, ".gitignore"), "w") as f:
+            f.write("*.log\n")
+        # Ensure dispatcher.py exists for positive tests
+        with open(os.path.join(self.temp_dir, "dispatcher.py"), "w") as f:
+            f.write("# Dummy dispatcher")
+
+    def tearDown(self):
+        if os.path.exists(self.temp_dir):
+            shutil.rmtree(self.temp_dir)
+
+    def test_sot_agent_001_dispatcher_exists(self):
+        # Test case: dispatcher.py exists, validate should pass this rule
+        passed, violations = self.validator.validate()
+        self.assertTrue(passed) # All rules should pass with default setup
+        self.assertFalse(any(v['rule'] == "SOT_AGENT_001" for v in violations))
+
+    def test_sot_agent_001_dispatcher_missing(self):
+        # Test case: dispatcher.py is missing
+        os.remove(os.path.join(self.temp_dir, "dispatcher.py"))
+        passed, violations = self.validator.validate()
+        self.assertFalse(passed)
+        self.assertTrue(any(v['rule'] == "SOT_AGENT_001" for v in violations))
+
+    def test_sot_agent_002_canonical_doc_paths_exists(self):
+        # Test case: 05_documentation exists, validate should pass this rule
+        passed, violations = self.validator.validate()
+        self.assertTrue(passed)
+        self.assertFalse(any(v['rule'] == "SOT_AGENT_002" for v in violations))
+
+    def test_sot_agent_002_canonical_doc_paths_missing(self):
+        # Test case: 05_documentation is missing
+        shutil.rmtree(os.path.join(self.temp_dir, "05_documentation"))
+        passed, violations = self.validator.validate()
+        self.assertFalse(passed)
+        self.assertTrue(any(v['rule'] == "SOT_AGENT_002" for v in violations))
+
+    def test_sot_agent_003_data_minimization_exists(self):
+        # Test case: .gitignore exists (minimal check), validate should pass this rule
+        passed, violations = self.validator.validate()
+        self.assertTrue(passed)
+        self.assertFalse(any(v['rule'] == "SOT_AGENT_003" for v in violations))
+
+    def test_sot_agent_003_data_minimization_missing_gitignore(self):
+        # Test case: .gitignore is missing
+        os.remove(os.path.join(self.temp_dir, ".gitignore"))
+        passed, violations = self.validator.validate()
+        self.assertFalse(passed)
+        self.assertTrue(any(v['rule'] == "SOT_AGENT_003" for v in violations))
+
+    def test_sot_agent_004_canonical_artifact_paths_exists(self):
+        # Test case: 02_audit_logging/reports exists, validate should pass this rule
+        passed, violations = self.validator.validate()
+        self.assertTrue(passed)
+        self.assertFalse(any(v['rule'] == "SOT_AGENT_004" for v in violations))
+
+    def test_sot_agent_004_canonical_artifact_paths_missing(self):
+        # Test case: 02_audit_logging/reports is missing
+        shutil.rmtree(os.path.join(self.temp_dir, "02_audit_logging", "reports"))
+        passed, violations = self.validator.validate()
+        self.assertFalse(passed)
+        self.assertTrue(any(v['rule'] == "SOT_AGENT_004" for v in violations))
+
+    def test_all_rules_pass_on_minimal_valid_tree(self):
+        # This test ensures that when all conditions are met, validate returns True and no violations
+        # Setup already creates a valid tree
+        passed, violations = self.validator.validate()
+        self.assertTrue(passed)
+        self.assertEqual(len(violations), 0)
+
+if __name__ == '__main__':
+    unittest.main()

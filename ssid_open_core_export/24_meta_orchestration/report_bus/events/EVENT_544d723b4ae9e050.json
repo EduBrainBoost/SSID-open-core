@@ -1,0 +1,20 @@
+{
+  "event_id": "544d723b4ae9e0506e87087683a719e1d23b550803548530cf2a53322021dd1b",
+  "event_type": "merge_recorded",
+  "merge_sha": "5823f83e42af4771a2dd367d5d42642d58a2daec",
+  "observed_utc": "2026-02-28T21:40:14Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 48,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-5823f83/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "5823f83e42af4771a2dd367d5d42642d58a2daec",
+  "summary": "feat/openc-002-opencore-scripts (#48)",
+  "task_id": null
+}

@@ -1,0 +1,20 @@
+{
+  "event_id": "3f16eac413d15a8720267ec039b5dc3867c935a695de5349deaef7a7f0c5fdc9",
+  "event_type": "merge_recorded",
+  "merge_sha": "23e3904ae27449d6aa59fe1d43b4250f0fea95ec",
+  "observed_utc": "2026-02-28T02:06:04Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 16,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-23e3904/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "23e3904ae27449d6aa59fe1d43b4250f0fea95ec",
+  "summary": "PH3_RUNBOOK+PYTEST_001: testnet env runbook + pytest scaffold (#16)",
+  "task_id": null
+}

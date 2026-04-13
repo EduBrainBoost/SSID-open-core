@@ -1,0 +1,129 @@
+# MiCA — Markets in Crypto-Assets Regulation Mapping
+# Regulation (EU) 2023/1114
+# SAFE-FIX: No PII, no secrets. Pure regulatory mapping.
+# Generated: 2026-03-29 | Agent: A8-COMPLIANCE-MAPPING-CLOSURE
+
+regulation_id: "MICA"
+regulation_name: "Markets in Crypto-Assets Regulation"
+reference: "Regulation (EU) 2023/1114"
+version: "1.0.0"
+effective_date: "2023-06-29"
+full_application: "2024-12-30"
+last_reviewed: "2026-03-29"
+
+ssid_context: >
+  SSID issues a utility token that provides access to identity verification
+  services on the network. Under MiCA, this classifies as a crypto-asset
+  other than ART/EMT, falling under Title II. SSID is NOT a CASP
+  (Crypto-Asset Service Provider) — it provides infrastructure, not
+  custody, exchange, or trading services.
+
+non_custodial_note: >
+  MiCA CASP obligations (Title V) do NOT apply to SSID because SSID
+  provides non-custodial infrastructure. The token holder retains
+  full control. SSID is subject to Title II (issuance of crypto-assets
+  other than ARTs or EMTs) and must comply with white paper and
+  marketing requirements.
+
+articles:
+  - article_id: "Art. 2(1)"
+    title: "Scope — crypto-asset definition"
+    ssid_root: "07_governance_legal"
+    ssid_shard: "legal/token_classification"
+    control_type: "legal_analysis"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/token_classification.json"
+    notes: "SSID token classified as utility token per Art. 3(1)(9)"
+
+  - article_id: "Art. 3(1)(9)"
+    title: "Utility token definition"
+    ssid_root: "07_governance_legal"
+    ssid_shard: "legal/token_classification"
+    control_type: "legal_analysis"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/utility_token_analysis.json"
+    non_custodial_relevance: "high"
+    notes: "Token provides access to identity services; no investment/yield claims"
+
+  - article_id: "Art. 4"
+    title: "Offers to the public — general requirements"
+    ssid_root: "07_governance_legal"
+    ssid_shard: "legal/token_offer"
+    control_type: "organizational"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/core/public_offer_compliance.json"
+    notes: "Public offer requirements documented; small-scale exemptions assessed"
+
+  - article_id: "Art. 6"
+    title: "Crypto-asset white paper"
+    ssid_root: "07_governance_legal"
+    ssid_shard: "legal/white_paper"
+    control_type: "organizational"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/documentation/white_paper_compliance.json"
+    notes: "White paper draft exists; MiCA Art. 6 compliance review pending (GAP-03)"
+
+  - article_id: "Art. 7"
+    title: "Marketing communications"
+    ssid_root: "07_governance_legal"
+    ssid_shard: "legal/marketing_compliance"
+    control_type: "organizational"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/core/marketing_compliance.json"
+    notes: "Marketing guardrails defined in token_marketing_guardrails.yaml"
+
+  - article_id: "Art. 12"
+    title: "Right of withdrawal"
+    ssid_root: "03_core"
+    ssid_shard: "token/withdrawal"
+    control_type: "technical"
+    implementation_status: "implemented"
+    evidence_path: "23_compliance/evidence/core/withdrawal_right.json"
+    notes: "14-day withdrawal period for token purchases"
+
+  - article_id: "Art. 14"
+    title: "Obligations of offerors — ongoing"
+    ssid_root: "07_governance_legal"
+    ssid_shard: "legal/ongoing_disclosure"
+    control_type: "organizational"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/core/ongoing_disclosure.json"
+    notes: "Continuous disclosure obligations documented"
+
+  - article_id: "Art. 59-73 (Title V)"
+    title: "CASP authorisation and obligations"
+    ssid_root: "23_compliance"
+    ssid_shard: "mappings/mica"
+    control_type: "legal_analysis"
+    implementation_status: "not_applicable"
+    evidence_path: "23_compliance/evidence/core/casp_exemption.json"
+    non_custodial_relevance: "critical"
+    notes: "SSID is NOT a CASP — non-custodial, no exchange/trading/custody services"
+
+  - article_id: "Art. 76"
+    title: "Prevention of market abuse"
+    ssid_root: "23_compliance"
+    ssid_shard: "anti_gaming/market_abuse"
+    control_type: "technical"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/core/market_abuse_prevention.json"
+    notes: "Anti-gaming module monitors for suspicious token activity patterns"
+
+  - article_id: "Art. 92-96"
+    title: "Cooperation with competent authorities"
+    ssid_root: "02_audit_logging"
+    ssid_shard: "audit/regulatory_reporting"
+    control_type: "organizational"
+    implementation_status: "partial"
+    evidence_path: "23_compliance/evidence/audit/regulatory_cooperation.json"
+    notes: "Audit log exports for regulatory requests; hash-only data sharing"
+
+coverage_summary:
+  total_articles_mapped: 10
+  implemented: 3
+  partial: 6
+  not_applicable: 1
+  coverage_level: "substantial"
+
+review_cycle: "quarterly"
+next_review: "2026-06-29"

@@ -1,0 +1,60 @@
+version: "1.0"
+generated_utc: "2026-03-28T00:00:00Z"
+deprecated: false
+classification: "PUBLIC - Governance"
+description: >
+  Defines the maintainer model for SSID enterprise governance.
+  All changes to core roots (03_core, 16_codex, 24_meta_orchestration)
+  require L0 approval. Other roots follow standard CODEOWNERS rules.
+
+governance_model: "tiered_approval"
+
+tiers:
+  - name: "L0"
+    description: "Core architecture decisions, ROOT-24-LOCK changes, kernel logic"
+    scope:
+      - "03_core/**"
+      - "16_codex/**"
+      - "24_meta_orchestration/**"
+      - "23_compliance/policies/**"
+    required_approvers: 1
+    approval_type: "explicit"
+
+  - name: "L1"
+    description: "Security, cryptography, identity systems"
+    scope:
+      - "14_zero_time_auth/**"
+      - "21_post_quantum_crypto/**"
+      - "08_identity_score/**"
+      - "09_meta_identity/**"
+    required_approvers: 1
+    approval_type: "codeowner"
+
+  - name: "L2"
+    description: "Infrastructure, deployment, observability"
+    scope:
+      - "04_deployment/**"
+      - "15_infra/**"
+      - "17_observability/**"
+      - "12_tooling/**"
+    required_approvers: 1
+    approval_type: "codeowner"
+
+  - name: "L3"
+    description: "Documentation, compliance, testing, all other roots"
+    scope:
+      - "**"
+    required_approvers: 1
+    approval_type: "auto_or_codeowner"
+
+rules:
+  - "ROOT-24-LOCK enforcement is mandatory at all tiers"
+  - "SAFE-FIX protocol applies to all write operations"
+  - "No PR may be merged without passing structure_guard"
+  - "Kernel logic changes (03_core/dispatcher.py) require L0 explicit approval"
+  - "Emergency hotfixes require post-merge L0 ratification within 24 hours"
+
+escalation:
+  path: "L3 -> L2 -> L1 -> L0"
+  timeout_hours: 48
+  auto_escalate: true

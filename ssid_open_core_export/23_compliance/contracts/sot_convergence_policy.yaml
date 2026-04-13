@@ -1,0 +1,40 @@
+# Contract: sot_convergence_policy
+# Source: 23_compliance/policies/sot/sot_convergence_policy.rego
+# Generated: Phase 2 — A02_A03_COMPLETION
+# SoT Reference: 16_codex/contracts/sot/
+contract_id: "sot_convergence_policy-contract"
+rule_id: "sot_convergence_policy"
+package: "sot.convergence"
+type: compliance_contract
+version: "1.0.0"
+derived_from: "23_compliance/policies/sot/sot_convergence_policy.rego"
+enforcement: rego_policy
+status: active
+description: >
+  Evaluates convergence manifests against compliance rules.
+  Deny rules block merges; warn rules are advisory.
+deny_conditions:
+  - id: "CONVERGENCE_DENY_D001"
+    trigger: "overall status == FAIL"
+  - id: "CONVERGENCE_DENY_D002"
+    trigger: "canonical repo has missing artifacts"
+  - id: "CONVERGENCE_DENY_D003"
+    trigger: "protected_scope_attempt drift finding"
+  - id: "CONVERGENCE_DENY_D004"
+    trigger: "critical-severity drift finding"
+warn_conditions:
+  - id: "CONVERGENCE_WARN_W001"
+    trigger: "any drift findings present"
+  - id: "CONVERGENCE_WARN_W002"
+    trigger: "derivative repo not export-ready"
+  - id: "CONVERGENCE_WARN_W003"
+    trigger: "high-severity drift finding"
+  - id: "CONVERGENCE_WARN_W004"
+    trigger: "stale_derivative_binding drift finding"
+input_schema:
+  repo_name: "string"
+  repo_role: "canonical | derivative"
+  status: "PASS | FAIL"
+  missing_artifacts: "list"
+  drift_findings: "list of {path, detail, severity, class}"
+  export_ready: "bool"

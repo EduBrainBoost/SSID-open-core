@@ -1,0 +1,173 @@
+schema_version: "1.0.0"
+mapping_id: SSID-ESG-MAP-001
+title: ESG Compliance Mapping
+status: active
+effective_date: "2026-03-29"
+description: >
+  Maps ESG requirements to SSID roots, shards, and existing
+  compliance frameworks. Links environmental, social, and
+  governance obligations to enforcement points.
+
+esg_to_root_mapping:
+  environmental:
+    - requirement: Carbon Neutrality Target 2027
+      roots:
+        - 04_deployment  # Infrastructure configuration
+        - 15_infra  # Cloud provider selection
+        - 17_observability  # Energy monitoring
+      evidence: 02_audit_logging/reports
+      enforcement: annual_carbon_audit
+
+    - requirement: Renewable Infrastructure 2026
+      roots:
+        - 15_infra  # Cloud region selection
+        - 04_deployment  # Deployment configuration
+      evidence: 15_infra/config
+      enforcement: provider_certification_check
+
+    - requirement: Energy-Efficient Consensus
+      roots:
+        - 03_core  # Consensus integration
+        - 10_interoperability  # Chain selection
+      evidence: 03_core/config
+      enforcement: no_pow_chain_policy
+
+    - requirement: Data Minimization (Hash-Only)
+      roots:
+        - 03_core  # Hash storage
+        - 18_data_layer  # Data architecture
+        - 08_identity_score  # Score computation
+      evidence: 02_audit_logging/evidence
+      enforcement: pii_scan_ci_pipeline
+
+  social:
+    - requirement: WCAG 2.1 AA Accessibility
+      roots:
+        - 13_ui_layer  # Frontend accessibility
+        - 05_documentation  # Doc accessibility
+      evidence: 11_test_simulation/tests
+      enforcement: accessibility_audit_annual
+
+    - requirement: No Discrimination in Verification
+      roots:
+        - 01_ai_layer  # AI fairness
+        - 08_identity_score  # Score equity
+        - 19_adapters  # Provider adapters
+      evidence: 02_audit_logging/reports
+      enforcement: quarterly_bias_audit
+
+    - requirement: Free Tier and Reduced Cost Programs
+      roots:
+        - 03_core  # Fee logic
+        - 07_governance_legal  # Fee policies
+      evidence: 07_governance_legal/policies
+      enforcement: fee_policy_review
+
+    - requirement: Diversity in Governance
+      roots:
+        - 07_governance_legal  # Governance config
+        - 24_meta_orchestration  # DAO operations
+      evidence: 07_governance_legal/reports
+      enforcement: annual_diversity_review
+
+    - requirement: Multi-Language Support
+      roots:
+        - 13_ui_layer  # UI i18n
+        - 05_documentation  # Doc i18n
+      evidence: 13_ui_layer/src
+      enforcement: i18n_coverage_check
+
+  governance:
+    - requirement: Transparent DAO Operations
+      roots:
+        - 07_governance_legal  # Governance defaults
+        - 24_meta_orchestration  # DAO execution
+      evidence: 07_governance_legal/governance_defaults.yaml
+      enforcement: public_record_audit
+
+    - requirement: Quarterly Bias Audits
+      roots:
+        - 01_ai_layer  # AI models
+        - 02_audit_logging  # Audit reports
+        - 23_compliance  # Compliance checks
+      evidence: 02_audit_logging/reports/bias_audit_*
+      enforcement: proof_of_fairness_policy
+
+    - requirement: Non-Custodial Architecture
+      roots:
+        - 03_core  # Core architecture
+        - 07_governance_legal  # Legal notice
+        - 18_data_layer  # Data handling
+      evidence: 07_governance_legal/LEGAL_NON_CUSTODIAL_NOTICE.md
+      enforcement: architecture_review
+
+    - requirement: RFC Process for Core Changes
+      roots:
+        - 03_core  # Core code
+        - 07_governance_legal  # RFC policy
+        - 16_codex  # SoT documentation
+      evidence: 07_governance_legal/approvals
+      enforcement: rfc_gate_ci
+
+regulatory_cross_references:
+  gdpr:
+    mapping_path: 23_compliance/mappings/gdpr
+    esg_relevance: >
+      GDPR compliance supports Social pillar through
+      data protection and user rights.
+  mica:
+    mapping_path: 23_compliance/mappings/mica
+    esg_relevance: >
+      MiCA compliance supports Governance pillar.
+      Non-custodial model avoids MiCA custody requirements.
+    non_custodial_note: >
+      ESG statements must not imply custody. SSID is not
+      a custodian under MiCA Art. 3(1)(5).
+  eidas2:
+    mapping_path: 23_compliance/mappings/eidas2_eudi
+    esg_relevance: >
+      eIDAS 2.0 alignment supports interoperability
+      and digital inclusion goals.
+  dora:
+    mapping_path: 23_compliance/mappings/dora
+    esg_relevance: >
+      DORA compliance supports operational resilience
+      as a governance commitment.
+  ai_act:
+    mapping_path: 23_compliance/mappings/ai_act
+    esg_relevance: >
+      EU AI Act compliance supports Social pillar through
+      algorithmic fairness and transparency requirements.
+  psd2:
+    mapping_path: 23_compliance/mappings/psd2
+    esg_relevance: >
+      PSD2 not applicable. ESG statements must not imply
+      payment service provision.
+    non_custodial_note: >
+      No PSD2 custody implications from ESG commitments.
+
+evidence_paths:
+  esg_reports: 02_audit_logging/reports
+  bias_audits: 02_audit_logging/reports/bias_audit_*
+  governance_records: 07_governance_legal/reports
+  compliance_evidence: 23_compliance/evidence
+  sustainability_config: 23_compliance/social_ecosystem/esg_sustainability_config.yaml
+  diversity_config: 23_compliance/social_ecosystem/diversity_inclusion_config.yaml
+  esg_policies: 07_governance_legal/esg
+
+consistency_checks:
+  non_custodial_compliance:
+    rule: >
+      No ESG policy may create custody obligations or imply
+      that SSID holds user data, funds, or assets.
+    enforced_by: architecture_review
+  no_false_certifications:
+    rule: >
+      No ESG documentation may claim certifications or ratings
+      that have not been independently verified and issued.
+    enforced_by: compliance_officer_review
+  psd2_mica_safety:
+    rule: >
+      ESG sustainability statements must not create PSD2 or
+      MiCA custody implications through operational language.
+    enforced_by: legal_review

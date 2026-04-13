@@ -1,0 +1,142 @@
+# US Compliance Framework for SSID (Minimal)
+# Jurisdiction: United States
+# Context: Non-custodial, hash-only, utility-token infrastructure
+# Version: 1.0.0
+# Last updated: 2026-03-15
+
+jurisdiction_id: "US"
+name: "United States Compliance Framework"
+description: >
+  Minimal regulatory mapping for SSID operations relevant to the
+  United States. US crypto regulation is fragmented across multiple
+  federal agencies (SEC, CFTC, FinCEN, OCC) and state regulators.
+  SSID's non-custodial, utility-token architecture minimizes
+  regulatory exposure.
+
+applicable_regulations:
+  - regulation_id: "US-BSA"
+    name: "Bank Secrecy Act (BSA) / FinCEN Regulations"
+    agency: "FinCEN (Financial Crimes Enforcement Network)"
+    ssid_impact: "low"
+    description: >
+      BSA requires Money Services Businesses (MSBs) to register
+      with FinCEN and implement AML/KYC programs. SSID is not
+      an MSB as it does not transmit money or convertible virtual
+      currency on behalf of users.
+    ssid_position: >
+      Non-custodial infrastructure does not meet the definition
+      of a money transmitter under 31 CFR 1010.100(ff)(5).
+      See FinCEN Guidance FIN-2019-G001 (May 2019).
+
+  - regulation_id: "US-SEC-HOWEY"
+    name: "Securities Laws (Howey Test)"
+    agency: "SEC (Securities and Exchange Commission)"
+    ssid_impact: "medium"
+    description: >
+      The Howey Test determines whether an asset is a security
+      based on: (1) investment of money, (2) in a common enterprise,
+      (3) with expectation of profit, (4) from efforts of others.
+    ssid_position: >
+      SSID token is a utility token providing access to identity
+      verification services. No investment returns, yield, or
+      profit-sharing is offered. Token documentation explicitly
+      states utility-only purpose.
+    ssid_controls:
+      - "No investment/yield/profit claims in any documentation"
+      - "Token provides functional access to network services"
+      - "Decentralized governance reduces 'efforts of others' prong"
+      - "Legal opinion on utility token classification"
+
+  - regulation_id: "US-CFTC"
+    name: "Commodity Futures Trading"
+    agency: "CFTC (Commodity Futures Trading Commission)"
+    ssid_impact: "low"
+    description: >
+      CFTC has jurisdiction over commodity derivatives and spot
+      commodity fraud. Utility tokens generally not classified
+      as commodities.
+    ssid_position: "Minimal exposure; SSID token is utility, not commodity."
+
+  - regulation_id: "US-OFAC"
+    name: "OFAC Sanctions Compliance"
+    agency: "OFAC (Office of Foreign Assets Control)"
+    ssid_impact: "medium"
+    description: >
+      OFAC sanctions apply to all US persons and entities.
+      SSID must ensure its infrastructure is not used to
+      circumvent sanctions.
+    ssid_controls:
+      - "Sanctions list screening integration point"
+      - "SDN list and sectoral sanctions check support"
+      - "Geo-blocking capabilities for sanctioned jurisdictions"
+      - "Cross-reference: 23_compliance/global/fatf_travel_rule.yaml"
+
+  - regulation_id: "US-STATE-MTL"
+    name: "State Money Transmitter Licenses"
+    agency: "Various State Regulators"
+    ssid_impact: "low"
+    description: >
+      Most US states require money transmitter licenses for
+      businesses that transmit money or monetary value.
+    ssid_position: >
+      Non-custodial infrastructure does not transmit money
+      or monetary value. No state MTL required.
+    notable_states:
+      - state: "NY"
+        name: "New York BitLicense"
+        regulation: "23 NYCRR Part 200"
+        ssid_impact: "low"
+        notes: "BitLicense required for virtual currency businesses. Non-custodial exempt."
+      - state: "WY"
+        name: "Wyoming Digital Asset Laws"
+        regulation: "Wyoming SF0125, HB0070"
+        ssid_impact: "informational"
+        notes: "Progressive framework; utility tokens classified as intangible personal property."
+
+  - regulation_id: "US-FIT21"
+    name: "Financial Innovation and Technology for the 21st Century Act"
+    agency: "Congress"
+    ssid_impact: "medium"
+    status: "pending_legislation"
+    description: >
+      Proposed framework clarifying SEC/CFTC jurisdiction over
+      digital assets. Would establish criteria for classifying
+      digital assets as securities or commodities. If enacted,
+      SSID utility token likely falls under CFTC jurisdiction
+      as a digital commodity.
+
+privacy_regulations:
+  - regulation_id: "US-CCPA-CPRA"
+    name: "California Consumer Privacy Act / California Privacy Rights Act"
+    state: "CA"
+    ssid_impact: "medium"
+    description: >
+      CCPA/CPRA grants California residents rights over personal
+      information. SSID's hash-only architecture minimizes
+      compliance burden.
+    ssid_controls:
+      - "Right to know: transparency about hash-only processing"
+      - "Right to delete: crypto-shredding mechanism"
+      - "Right to opt-out of sale: SSID does not sell data"
+      - "Data minimization: hash-only by design"
+
+  - regulation_id: "US-STATE-PRIVACY"
+    name: "Other State Privacy Laws"
+    description: >
+      Multiple states have enacted privacy laws (Virginia VCDPA,
+      Colorado CPA, Connecticut CTDPA, etc.). SSID's hash-only
+      approach provides broad compliance.
+    ssid_impact: "low"
+
+ssid_non_custodial_position:
+  statement: >
+    SSID operates as non-custodial identity infrastructure in the US.
+    It does not qualify as a money transmitter, broker-dealer, or
+    investment adviser. The SSID token is a utility token providing
+    access to identity verification services with no investment
+    return, yield, or profit-sharing features.
+  key_exemptions:
+    - "FinCEN: Not an MSB (non-custodial, FIN-2019-G001)"
+    - "SEC: Utility token, not a security (Howey Test analysis)"
+    - "State MTL: Not a money transmitter (non-custodial)"
+    - "OFAC: Compliance via sanctions screening integration"

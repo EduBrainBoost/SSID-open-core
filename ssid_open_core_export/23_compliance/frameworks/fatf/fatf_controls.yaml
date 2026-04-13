@@ -1,0 +1,163 @@
+# FATF Controls — SSID Platform
+# SoT v4.1.0 | Classification: Compliance
+# Framework: FATF 40 Recommendations (2012, updated 2023)
+# Generated: 2026-03-15
+
+framework_id: "fatf"
+version: "1.0.0"
+final_authority: "03_core"
+
+controls:
+
+  - control_id: "FATF-C-001"
+    recommendation: "R.1"
+    title: "Risk-based approach — customer risk scoring"
+    description: >
+      Automated customer risk classification (low/medium/high) based on
+      identity attributes, country of origin, industry, and behaviour.
+      Risk score drives CDD intensity and monitoring frequency.
+    implementation_root: "08_identity_score"
+    supporting_roots: ["03_core", "23_compliance"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/10_finanzen_banking"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/fatf/risk_scoring/"
+
+  - control_id: "FATF-C-002"
+    recommendation: "R.10"
+    title: "Customer Due Diligence — identity verification"
+    description: >
+      Four-step CDD: (1) identify customer, (2) verify identity,
+      (3) identify UBO, (4) understand nature/purpose of relationship.
+      Risk-based: simplified/standard/enhanced.
+    implementation_root: "08_identity_score"
+    supporting_roots: ["03_core", "09_meta_identity"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/02_dokumente_nachweise"
+      - "23_compliance/shards/13_unternehmen_gewerbe"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/fatf/cdd/"
+
+  - control_id: "FATF-C-003"
+    recommendation: "R.12"
+    title: "PEP identification and EDD"
+    description: >
+      Automated PEP screening at onboarding and continuously.
+      Senior management sign-off gate for PEP business relationships.
+      Source of wealth and funds determination for all PEPs.
+    implementation_root: "08_identity_score"
+    supporting_roots: ["03_core"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/09_arbeit_karriere"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/fatf/pep/"
+
+  - control_id: "FATF-C-004"
+    recommendation: "R.15"
+    title: "VASP risk assessment — ML/TF risk of virtual assets"
+    description: >
+      Pre-launch risk assessment for new virtual asset products/services.
+      VASP customer KYC and transaction monitoring. Sanctions screening
+      against OFAC, UN, EU consolidated lists.
+    implementation_root: "08_identity_score"
+    supporting_roots: ["10_interoperability", "03_core", "21_post_quantum_crypto"]
+    shards:
+      - "23_compliance/shards/10_finanzen_banking"
+      - "23_compliance/shards/15_handel_transaktionen"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/fatf/vasp/"
+
+  - control_id: "FATF-C-005"
+    recommendation: "R.16"
+    title: "Travel Rule — IVMS101 data transmission"
+    description: >
+      Transmit IVMS101-formatted originator and beneficiary data with
+      all qualifying transfers. Threshold: USD/EUR 1000. Verify
+      beneficiary VASP via TRISA or equivalent before transmission.
+    implementation_root: "10_interoperability"
+    supporting_roots: ["03_core", "21_post_quantum_crypto", "02_audit_logging"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/15_handel_transaktionen"
+      - "23_compliance/shards/10_finanzen_banking"
+    type: "preventive"
+    status: "required"
+    data_model: "IVMS101"
+    protocols_supported:
+      - "TRISA v8"
+      - "OpenVASP"
+      - "SWIFT gpi (for wire transfers)"
+    evidence_path: "23_compliance/evidence/fatf/travel_rule/"
+
+  - control_id: "FATF-C-006"
+    recommendation: "R.24"
+    title: "UBO identification — legal persons"
+    description: >
+      Identify and verify natural persons with >25% ownership or control.
+      Recursive corporate structure resolution. UBO register cross-check.
+    implementation_root: "03_core"
+    supporting_roots: ["08_identity_score", "10_interoperability"]
+    shards:
+      - "23_compliance/shards/13_unternehmen_gewerbe"
+      - "23_compliance/shards/01_identitaet_personen"
+    type: "preventive"
+    status: "required"
+    ubo_threshold_pct: 25
+    evidence_path: "23_compliance/evidence/fatf/ubo/"
+
+  - control_id: "FATF-C-007"
+    recommendation: "R.25"
+    title: "Trust and legal arrangement transparency"
+    description: >
+      Identify and verify all parties to a trust: settlor, trustee(s),
+      protector, beneficiaries, and any other natural persons exercising control.
+    implementation_root: "03_core"
+    supporting_roots: ["08_identity_score"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/13_unternehmen_gewerbe"
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/fatf/trusts/"
+
+  - control_id: "FATF-C-008"
+    recommendation: "R.16"
+    title: "Beneficiary VASP verification — counterparty due diligence"
+    description: >
+      Before sending travel rule data, verify that beneficiary VASP
+      is registered and compliant. Block transfers to unregistered VASPs
+      in high-risk jurisdictions.
+    implementation_root: "10_interoperability"
+    supporting_roots: ["03_core", "23_compliance"]
+    shards: []
+    type: "preventive"
+    status: "required"
+    evidence_path: "23_compliance/evidence/fatf/vasp_verification/"
+
+  - control_id: "FATF-C-009"
+    recommendation: "R.1 + R.15"
+    title: "Sanctions screening — real-time"
+    description: >
+      Real-time screening against UN, EU, OFAC, and national sanctions lists
+      at onboarding and before every qualifying transaction. Automatic block
+      on positive match; alert generated for compliance review.
+    implementation_root: "08_identity_score"
+    supporting_roots: ["03_core", "17_observability"]
+    shards:
+      - "23_compliance/shards/01_identitaet_personen"
+      - "23_compliance/shards/13_unternehmen_gewerbe"
+    type: "preventive"
+    status: "required"
+    sanctions_lists:
+      - "UN Security Council Consolidated List"
+      - "EU Consolidated Financial Sanctions List"
+      - "OFAC SDN List"
+      - "HM Treasury Financial Sanctions"
+    evidence_path: "23_compliance/evidence/fatf/sanctions/"

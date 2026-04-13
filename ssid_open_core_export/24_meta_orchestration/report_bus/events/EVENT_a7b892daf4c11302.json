@@ -1,0 +1,20 @@
+{
+  "event_id": "a7b892daf4c1130284103501414a7f97001381b21f2f35562eb870ce4e93de31",
+  "event_type": "merge_recorded",
+  "merge_sha": "e7e158d310d04d8964d3fbe368bda4e64fbbb2d0",
+  "observed_utc": "2026-02-28T11:59:29Z",
+  "origin": "constructed",
+  "payload": {
+    "backfill": true,
+    "backfill_date_utc": "2026-03-05T06:31:26Z"
+  },
+  "pr_number": 24,
+  "refs": {
+    "agent_run": "02_audit_logging/agent_runs/run-merge-e7e158d/run_manifest.json"
+  },
+  "repo": "SSID",
+  "severity": "info",
+  "sha": "e7e158d310d04d8964d3fbe368bda4e64fbbb2d0",
+  "summary": "fix(sot): canonicalize 16_codex sources â€” archive legacy geb#U00fchren variants (#24)",
+  "task_id": null
+}

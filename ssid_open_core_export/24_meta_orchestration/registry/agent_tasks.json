@@ -1,0 +1,28 @@
+{
+  "tasks": [
+    {
+      "id": "task-001",
+      "prompt": "Pruefe ob alle 24 Roots eine module.yaml haben. Liste fehlende Roots auf.",
+      "status": "pending",
+      "result_hash": null,
+      "created": "2026-03-29T00:00:00Z",
+      "completed": null
+    },
+    {
+      "id": "task-002",
+      "prompt": "Liste alle .sol Dateien im Repo rekursiv auf.",
+      "status": "pending",
+      "result_hash": null,
+      "created": "2026-03-29T00:00:00Z",
+      "completed": null
+    },
+    {
+      "id": "task-003",
+      "prompt": "Pruefe ob sot_validator_core.py importierbar ist. Gib den Pfad und etwaige ImportErrors aus.",
+      "status": "pending",
+      "result_hash": null,
+      "created": "2026-03-29T00:00:00Z",
+      "completed": null
+    }
+  ]
+}

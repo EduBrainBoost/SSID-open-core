@@ -1,0 +1,9 @@
+version: "1.0.0"
+generated_utc: "2026-02-11T10:06:31Z"
+root: "12_tooling"
+shard: "03_zugang_berechtigungen"
+implementation: "python"
+files: []
+dependencies: []
+entrypoints: []
+tests: []
