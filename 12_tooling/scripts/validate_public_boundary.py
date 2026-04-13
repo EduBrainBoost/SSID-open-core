@@ -64,11 +64,29 @@ PATTERN_DEFINITION_FILES = [
     '16_codex/opencore_export_policy.yaml',
 ]
 
+# Only these 5 roots are exported and subject to boundary validation
+EXPORTED_ROOTS = [
+    '03_core',
+    '12_tooling',
+    '16_codex',
+    '23_compliance',
+    '24_meta_orchestration',
+]
+
 
 def is_pattern_definition_file(file_path: Path) -> bool:
     """Check if file is a pattern definition file (allowed to contain patterns)."""
     rel_path = str(file_path.relative_to(REPO_ROOT)).replace('\\', '/')
     return any(rel_path.endswith(pattern) for pattern in PATTERN_DEFINITION_FILES)
+
+
+def is_in_exported_root(file_path: Path) -> bool:
+    """Check if file is within one of the 5 exported roots."""
+    rel_path = str(file_path.relative_to(REPO_ROOT)).replace('\\', '/')
+    for root in EXPORTED_ROOTS:
+        if rel_path.startswith(root + '/'):
+            return True
+    return False
 
 
 def validate_no_private_repo_refs(repo_root: Path) -> list[str]:
@@ -77,6 +95,8 @@ def validate_no_private_repo_refs(repo_root: Path) -> list[str]:
 
     for file in repo_root.rglob('*'):
         if not file.is_file():
+            continue
+        if not is_in_exported_root(file):
             continue
         if is_pattern_definition_file(file):
             continue
@@ -101,6 +121,8 @@ def validate_no_local_paths(repo_root: Path) -> list[str]:
 
     for file in repo_root.rglob('*'):
         if not file.is_file():
+            continue
+        if not is_in_exported_root(file):
             continue
         if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json', '.sh']:
             continue
@@ -131,6 +153,8 @@ def validate_no_secrets(repo_root: Path) -> list[str]:
     for file in repo_root.rglob('*'):
         if not file.is_file():
             continue
+        if not is_in_exported_root(file):
+            continue
 
         # Blocked extensions
         for pattern in BLOCKED_FILE_PATTERNS:
@@ -141,6 +165,8 @@ def validate_no_secrets(repo_root: Path) -> list[str]:
     # Check for secret patterns in source files
     for file in repo_root.rglob('*'):
         if not file.is_file():
+            continue
+        if not is_in_exported_root(file):
             continue
         if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json']:
             continue
@@ -166,6 +192,8 @@ def validate_no_mainnet_false_claims(repo_root: Path) -> list[str]:
     violations = []
 
     for file in repo_root.rglob('*.md'):
+        if not is_in_exported_root(file):
+            continue
         if '/tests/' in str(file).replace('\\', '/'):
             continue
 
@@ -185,10 +213,6 @@ def validate_no_mainnet_false_claims(repo_root: Path) -> list[str]:
                     'testnet', 'readiness', 'planned', 'future', 'will',
                     'https://', 'http://', 'link', 'reference'
                 ]):
-                    continue
-
-                # Also allow in 05_documentation which is scaffolded
-                if '05_documentation' in str(file):
                     continue
 
                 violations.append(f"{file.relative_to(repo_root)}:{i+1}: unbacked mainnet claim")
