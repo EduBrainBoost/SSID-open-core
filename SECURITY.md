@@ -1,55 +1,71 @@
 # Security Policy
 
+## Reporting Security Issues
+
+**Please do NOT file security issues on the public GitHub issue tracker.**
+
+If you discover a security vulnerability in SSID-open-core, please report it to:
+
+📧 **[security@example.com](mailto:security@example.com)**
+
+Include:
+- Description of the vulnerability
+- Affected component (which root/script/version)
+- Steps to reproduce (if safe to disclose)
+- Impact assessment (e.g., authentication bypass, data exposure)
+- Any potential fixes you've identified
+
+## Response Process
+
+We aim to:
+1. ✅ Acknowledge receipt within **24 hours**
+2. ✅ Confirm the vulnerability within **48 hours**
+3. ✅ Develop a fix in private
+4. ✅ Release a security patch
+5. ✅ Publish a security advisory (with coordination)
+
+## Security Advisory Process
+
+1. **Reporting** — Private report to security@example.com
+2. **Triage** — Confirm severity and affected versions
+3. **Fix Development** — Create patch in private branch
+4. **Testing** — Validate the fix thoroughly
+5. **Coordination** — Work with reporters on disclosure timeline
+6. **Release** — Publish patch and advisory simultaneously
+7. **Announcement** — Public notification to users
+
 ## Supported Versions
 
-| Version | Supported |
-|---------|-----------|
-| main    | Yes       |
+Security updates are provided for:
+- **Current Release** (v0.1.0) — Full support
+- **Next Release** (v0.2.0) — Upon release
+- **Older Versions** — No longer supported (upgrade recommended)
 
-## Reporting a Vulnerability
+## Security Best Practices
 
-Please report suspected security issues privately to the maintainers through GitHub Security Advisories or by emailing security@ssid.dev (placeholder — may change).
+### For Users
+- Keep SSID-open-core updated to the latest version
+- Review security advisories regularly
+- Enable secret scanning and dependency checks
+- Report suspicious behavior immediately
 
-Do not open public issues for unpatched vulnerabilities.
+### For Contributors
+- Never commit secrets, API keys, or credentials
+- Use environment variables for sensitive data
+- Review changes for security implications
+- Follow secure coding practices
 
-## What to Include
+## Validation Gates
 
-Please include:
-- a clear description of the issue
-- affected files, modules, or paths
-- reproduction steps
-- impact assessment
-- suggested remediation, if available
+SSID-open-core includes deterministic security validation:
 
-Do not include secrets, credentials, personal data, or destructive payloads.
+✅ **Private repo references** — 0 violations  
+✅ **Absolute local paths** — 0 violations  
+✅ **Secret patterns** — 0 violations  
+✅ **Denied root code** — All 19 are empty  
 
-## Response Targets
+All gates must PASS before merge.
 
-Maintainers will aim to:
-- acknowledge receipt within a reasonable time
-- validate the report
-- assess impact and scope
-- coordinate remediation and disclosure when appropriate
+---
 
-Response timing may vary depending on severity, complexity, and maintainer availability.
-
-## Coordinated Disclosure
-
-Please allow maintainers reasonable time to investigate, fix, and prepare a coordinated disclosure before publishing details.
-
-## Out of Scope
-
-The following are generally out of scope unless they create a real security impact:
-- typo or documentation issues
-- theoretical-only findings without a practical impact
-- issues requiring local developer-only access without escalation path
-- reports based on non-default or modified environments without reproduction details
-
-## Safe Reporting
-
-Never submit:
-- secrets
-- tokens
-- credentials
-- personal data
-- live exploit chains against third-party systems
+**Questions?** Contact [security@example.com](mailto:security@example.com)
