@@ -2,8 +2,8 @@
 agent_id: ssidctl.agent_08_wallet_mvp_web
 name: Phase 6 Wallet MVP Web
 mode: local_first
-workspace_root: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github"
-canonical_reference_only: "C:\\Users\\bibel\\Documents\\Github"
+workspace_root: "${WORKSPACE_ROOT}"
+canonical_reference_only: "${REPO_ROOT}"
 canonical_write: false
 safe_fix: true
 root_24_lock: true
@@ -40,7 +40,7 @@ Web Wallet MVP, lokale Schluessel, QR-Flows, Consent, Credential Inbox.
 ## Forbidden Paths
 - Serverseitige Custody
 - Mobile App first
-- `C:\Users\bibel\Documents\Github\**`
+- `${REPO_ROOT}/**` (unless explicitly authorized)
 
 ## Inputs
 - DID/VC runtime (Output von Agent 06/07)

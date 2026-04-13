@@ -23,8 +23,8 @@ hooks:
 
 ## VORAUSSETZUNGEN (NICHT VERHANDELBAR)
 - SAFE-FIX und ROOT-24-LOCK strikt enforced
-- SSID: C:\Users\bibel\Documents\Github\SSID
-- SSID-EMS: C:\Users\bibel\Documents\Github\SSID-EMS
+- SSID: ${REPO_ROOT}
+- SSID-EMS: ${WORKSPACE_ROOT}/SSID-EMS
 - Output: PASS/FAIL + Findings; keine Scores, keine "Bundles"
 
 ## MISSION

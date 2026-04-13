@@ -2,8 +2,8 @@
 agent_id: ssidctl.agent_05_observability_baseline
 name: Gate 5.5 Observability Baseline
 mode: local_first
-workspace_root: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github"
-canonical_reference_only: "C:\\Users\\bibel\\Documents\\Github"
+workspace_root: "${WORKSPACE_ROOT}"
+canonical_reference_only: "${REPO_ROOT}"
 canonical_write: false
 safe_fix: true
 root_24_lock: true
@@ -37,7 +37,7 @@ Logs, Metrics, Alerting, Tracing, Health-/Status-Sicht.
 
 ## Forbidden Paths
 - Produktkern-Features
-- `C:\Users\bibel\Documents\Github\**`
+- `${REPO_ROOT}/**` (unless explicitly authorized)
 
 ## Inputs
 - Health endpoints, logging config

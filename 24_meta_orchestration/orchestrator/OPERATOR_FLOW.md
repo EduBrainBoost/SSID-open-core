@@ -7,7 +7,7 @@ Stand: 2026-03-29 | Task: T-019
 ## Voraussetzungen
 
 - Claude Code CLI aktiv
-- SSID-Workspace unter `C:\Users\bibel\SSID-Workspace\SSID-Arbeitsbereich\Github\SSID`
+- SSID-Workspace unter `${WORKSPACE_ROOT}/SSID`
 - SSIDCTL Agent Registry geladen (87 Agents, 12 Skills, 11 Worker-Commands)
 - Policies unter `24_meta_orchestration/orchestrator/` vorhanden
 

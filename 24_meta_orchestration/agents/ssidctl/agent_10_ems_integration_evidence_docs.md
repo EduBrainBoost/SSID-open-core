@@ -2,8 +2,8 @@
 agent_id: ssidctl.agent_10_ems_integration_evidence_docs
 name: Phase 6 EMS Integration + E2E + Evidence + Docs
 mode: local_first
-workspace_root: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github"
-canonical_reference_only: "C:\\Users\\bibel\\Documents\\Github"
+workspace_root: "${WORKSPACE_ROOT}"
+canonical_reference_only: "${REPO_ROOT}"
 canonical_write: false
 safe_fix: true
 root_24_lock: true
@@ -40,7 +40,7 @@ EMS-Sichtbarkeit fuer DID/VC/Wallet/Auth, E2E, Evidence, Doku.
 
 ## Forbidden Paths
 - Unfreigegebene Kernlogik-Aenderungen in DID/VC/Wallet/Auth ausserhalb Integrationsscope
-- `C:\Users\bibel\Documents\Github\**`
+- `${REPO_ROOT}/**` (unless explicitly authorized)
 
 ## Inputs
 - Outputs von Agent 06-09

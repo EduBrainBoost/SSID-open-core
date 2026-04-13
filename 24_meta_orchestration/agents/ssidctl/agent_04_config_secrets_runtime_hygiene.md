@@ -2,8 +2,8 @@
 agent_id: ssidctl.agent_04_config_secrets_runtime_hygiene
 name: Gate 5.5 Config + Secrets + Runtime Hygiene
 mode: local_first
-workspace_root: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github"
-canonical_reference_only: "C:\\Users\\bibel\\Documents\\Github"
+workspace_root: "${WORKSPACE_ROOT}"
+canonical_reference_only: "${REPO_ROOT}"
 canonical_write: false
 safe_fix: true
 root_24_lock: true
@@ -40,7 +40,7 @@ Pfade, Env, Secrets-Hygiene, fail-open/fail-closed, Runtime-Konfig.
 ## Forbidden Paths
 - Echte Secrets committen
 - Globale User-Configs
-- `C:\Users\bibel\Documents\Github\**`
+- `${REPO_ROOT}/**` (unless explicitly authorized)
 
 ## Inputs
 - env files, config.ts, runtime maps

@@ -23,8 +23,8 @@ hooks:
 
 ## VORAUSSETZUNGEN (NICHT VERHANDELBAR)
 - SAFE-FIX und ROOT-24-LOCK strikt enforced
-- SSID: C:\Users\bibel\Documents\Github\SSID
-- SSID-EMS: C:\Users\bibel\Documents\Github\SSID-EMS
+- SSID: ${REPO_ROOT}
+- SSID-EMS: ${WORKSPACE_ROOT}/SSID-EMS
 - SoT nur lokal; keine live-MD als SoT
 - Dispatcher Blueprint 4.1 non-interactive aktiv
 - Output: PASS/FAIL + Findings; keine Scores, keine "Bundles"

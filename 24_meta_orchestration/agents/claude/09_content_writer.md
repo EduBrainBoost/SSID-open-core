@@ -19,7 +19,7 @@ hooks:
 
 ## VORAUSSETZUNGEN (NICHT VERHANDELBAR)
 - SAFE-FIX und ROOT-24-LOCK strikt enforced
-- SSID-EMS: C:\Users\bibel\Documents\Github\SSID-EMS
+- SSID-EMS: ${WORKSPACE_ROOT}/SSID-EMS
 - Output: PASS/FAIL + Findings; keine Scores, keine "Bundles"
 - Content-Dateien nur im EMS-Storage, NICHT im SSID-Repo
 

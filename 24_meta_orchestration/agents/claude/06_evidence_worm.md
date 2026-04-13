@@ -23,8 +23,8 @@ hooks:
 
 ## VORAUSSETZUNGEN (NICHT VERHANDELBAR)
 - SAFE-FIX und ROOT-24-LOCK strikt enforced
-- SSID: C:\Users\bibel\Documents\Github\SSID
-- SSID-EMS: C:\Users\bibel\Documents\Github\SSID-EMS
+- SSID: ${REPO_ROOT}
+- SSID-EMS: ${WORKSPACE_ROOT}/SSID-EMS
 - PR-only; keine direkten Writes auf main
 - Evidence/WORM extern im EMS; im SSID-Repo nur kanonische Evidence-Pfade (wenn TaskSpec verlangt)
 - Append-only logs (locks/), registry semantics strikt

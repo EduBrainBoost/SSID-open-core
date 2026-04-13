@@ -2,8 +2,8 @@
 agent_id: ssidctl.agent_09_zero_time_auth_webauthn
 name: Phase 6 Zero-Time Auth + WebAuthn/DID Binding
 mode: local_first
-workspace_root: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github"
-canonical_reference_only: "C:\\Users\\bibel\\Documents\\Github"
+workspace_root: "${WORKSPACE_ROOT}"
+canonical_reference_only: "${REPO_ROOT}"
 canonical_write: false
 safe_fix: true
 root_24_lock: true
@@ -39,7 +39,7 @@ Zero-Time Auth, WebAuthn/FIDO2, DID-bound session binding.
 
 ## Forbidden Paths
 - Unsichere Session-Hacks
-- `C:\Users\bibel\Documents\Github\**`
+- `${REPO_ROOT}/**` (unless explicitly authorized)
 - Mainnet
 
 ## Inputs

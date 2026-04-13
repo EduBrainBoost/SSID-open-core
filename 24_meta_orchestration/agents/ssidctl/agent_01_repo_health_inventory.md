@@ -2,8 +2,8 @@
 agent_id: ssidctl.agent_01_repo_health_inventory
 name: Gate 5.5 Inventory + Repo Health + Current State
 mode: local_first
-workspace_root: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github"
-canonical_reference_only: "C:\\Users\\bibel\\Documents\\Github"
+workspace_root: "${WORKSPACE_ROOT}"
+canonical_reference_only: "${REPO_ROOT}"
 canonical_write: false
 safe_fix: true
 root_24_lock: true
@@ -41,7 +41,7 @@ Repo-Health, Branch-/Dirty-State, Current-State, Strukturpruefung.
 ## Forbidden Paths
 - Produktive Runtime-Logik
 - Secrets
-- `C:\Users\bibel\Documents\Github\**`
+- `${REPO_ROOT}/**` (unless explicitly authorized)
 
 ## Inputs
 - git status, branch state, repo trees

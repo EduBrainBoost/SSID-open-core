@@ -2,8 +2,8 @@
 agent_id: ssidctl.agent_03_tests_coverage_ci
 name: Gate 5.5 Tests + Coverage + CI Gate Matrix
 mode: local_first
-workspace_root: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github"
-canonical_reference_only: "C:\\Users\\bibel\\Documents\\Github"
+workspace_root: "${WORKSPACE_ROOT}"
+canonical_reference_only: "${REPO_ROOT}"
 canonical_write: false
 safe_fix: true
 root_24_lock: true
@@ -38,7 +38,7 @@ Tests, Coverage, CI-Gates, Fail-Klassifikation.
 
 ## Forbidden Paths
 - Kernlogik-Aenderungen ohne direkt testbedingten Fix
-- `C:\Users\bibel\Documents\Github\**`
+- `${REPO_ROOT}/**` (unless explicitly authorized)
 
 ## Inputs
 - pytest/vitest outputs, coverage reports

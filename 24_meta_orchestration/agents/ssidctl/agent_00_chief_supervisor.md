@@ -2,8 +2,8 @@
 agent_id: ssidctl.agent_00_chief_supervisor
 name: Chief Supervisor / Run Control / Final Consolidation
 mode: local_first
-workspace_root: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github"
-canonical_reference_only: "C:\\Users\\bibel\\Documents\\Github"
+workspace_root: "${WORKSPACE_ROOT}"
+canonical_reference_only: "${REPO_ROOT}"
 canonical_write: false
 safe_fix: true
 root_24_lock: true
@@ -38,7 +38,7 @@ Globale Steuerung ueber alle Subagenten. Orchestriert Gate 5.5 (Agents 01-05) un
 - `SSID-docs/**` — read only
 
 ## Forbidden Paths
-- `C:\Users\bibel\Documents\Github\**`
+- `${REPO_ROOT}/**` (unless explicitly authorized by subagent)
 - Produktkern-Dateien ohne freigegebenen Subagent-Output
 
 ## Skills / Faehigkeiten

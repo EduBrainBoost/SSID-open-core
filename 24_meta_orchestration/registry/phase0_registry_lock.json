@@ -3,7 +3,7 @@
   "title": "canonical_freeze_registry_lock",
   "generated_at_utc": "2026-03-27T00:00:00Z",
   "status": "LOCKED",
-  "workspace": "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github\\SSID",
+  "workspace": "${WORKSPACE_ROOT}/SSID",
   "canonical_sot_hierarchy": {
     "tier_0": {
       "role": "canonical_primary",

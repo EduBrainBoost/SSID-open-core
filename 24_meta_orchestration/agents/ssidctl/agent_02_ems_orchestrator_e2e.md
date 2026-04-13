@@ -2,8 +2,8 @@
 agent_id: ssidctl.agent_02_ems_orchestrator_e2e
 name: Gate 5.5 EMS / Orchestrator E2E + Provider/Worker Resolution
 mode: local_first
-workspace_root: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github"
-canonical_reference_only: "C:\\Users\\bibel\\Documents\\Github"
+workspace_root: "${WORKSPACE_ROOT}"
+canonical_reference_only: "${REPO_ROOT}"
 canonical_write: false
 safe_fix: true
 root_24_lock: true
@@ -39,7 +39,7 @@ EMS zu Orchestrator Laufkette, Provider-/Worker-Resolution, terminal state, evid
 
 ## Forbidden Paths
 - Wallet/DID/VC-Produktcode
-- `C:\Users\bibel\Documents\Github\**`
+- `${REPO_ROOT}/**` (unless explicitly authorized)
 - Mainnet/Testnet
 
 ## Inputs

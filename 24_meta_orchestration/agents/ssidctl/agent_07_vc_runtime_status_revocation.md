@@ -2,8 +2,8 @@
 agent_id: ssidctl.agent_07_vc_runtime_status_revocation
 name: Phase 6 VC Runtime + Status/Revocation
 mode: local_first
-workspace_root: "C:\\Users\\bibel\\SSID-Workspace\\SSID-Arbeitsbereich\\Github"
-canonical_reference_only: "C:\\Users\\bibel\\Documents\\Github"
+workspace_root: "${WORKSPACE_ROOT}"
+canonical_reference_only: "${REPO_ROOT}"
 canonical_write: false
 safe_fix: true
 root_24_lock: true
@@ -40,7 +40,7 @@ VC issuance, verification, presentation, status/revocation.
 ## Forbidden Paths
 - Wallet surface
 - Mainnet
-- `C:\Users\bibel\Documents\Github\**`
+- `${REPO_ROOT}/**` (unless explicitly authorized)
 - PII on-chain
 
 ## Inputs
