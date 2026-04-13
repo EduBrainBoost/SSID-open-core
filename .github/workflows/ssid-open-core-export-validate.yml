@@ -1,0 +1,55 @@
+name: SSID-Open-Core Export Validation
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'ssid_open_core_export/**', '.github/workflows/ssid-open-core-export-validate.yml' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Validate allowed roots
+        run: |
+          for root in 03_core 12_tooling 16_codex 23_compliance 24_meta_orchestration; do
+            [ -d "ssid_open_core_export/$root" ] && echo "✓ $root present" || (echo "✗ $root missing" && exit 1)
+          done
+      
+      - name: Validate denied roots excluded
+        run: |
+          for denied in 01_ai_layer 02_audit_logging 04_deployment 05_documentation 06_data_pipeline 07_governance_legal 08_identity_score 09_meta_identity 10_interoperability 11_test_simulation 13_ui_layer 14_zero_time_auth 15_infra 17_observability 18_data_layer 19_adapters 20_foundation 21_post_quantum_crypto 22_datasets; do
+            [ -d "ssid_open_core_export/$denied" ] && (echo "✗ Denied root found: $denied" && exit 1) || true
+          done
+          echo "✓ All denied roots excluded"
+      
+      - name: Validate manifests
+        run: |
+          for manifest in README.md EXPORT_MANIFEST.json EXPORT_INDEX.json export.sha256.txt; do
+            [ -f "ssid_open_core_export/$manifest" ] && echo "✓ $manifest present" || (echo "✗ $manifest missing" && exit 1)
+          done
+      
+      - name: Verify SHA256 hashes
+        run: |
+          cd ssid_open_core_export
+          hash_count=$(wc -l < export.sha256.txt)
+          [ "$hash_count" -gt 2000 ] && echo "✓ $hash_count hashes found" || (echo "✗ Insufficient hashes" && exit 1)
+          sha256sum -c export.sha256.txt > /dev/null 2>&1 && echo "✓ All hashes valid" || (echo "✗ Hash verification failed" && exit 1)
+      
+      - name: File count regression test
+        run: |
+          file_count=$(find ssid_open_core_export -type f ! -path '*/\.*' | wc -l)
+          [ "$file_count" -gt 2500 ] && [ "$file_count" -lt 4000 ] && echo "✓ File count $file_count within range" || (echo "✗ File count out of range: $file_count" && exit 1)
+      
+      - name: Upload manifests
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: export-manifests
+          path: |
+            ssid_open_core_export/EXPORT_MANIFEST.json
+            ssid_open_core_export/EXPORT_INDEX.json
+            ssid_open_core_export/export.sha256.txt
