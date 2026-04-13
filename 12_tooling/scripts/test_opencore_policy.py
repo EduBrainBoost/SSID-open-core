@@ -4,6 +4,7 @@ PASS/FAIL only — no scores.
 
 SoT v4.1.0 | ROOT-24-LOCK
 """
+
 from __future__ import annotations
 
 from pathlib import Path

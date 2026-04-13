@@ -6,6 +6,7 @@ Usage:
   python 12_tooling/cli/evidence_chain.py backfill-merges [--write]
   python 12_tooling/cli/evidence_chain.py scan --last-merge --require-agent-run --require-report-event
 """
+
 from __future__ import annotations
 
 import argparse
@@ -44,13 +45,18 @@ def cmd_scan(args: argparse.Namespace) -> int:
         print(f"PASS: merge {sha[:7]} has required evidence")
         return 0
     result = ecl.scan(repo, limit=args.limit, pr_only=args.pr_only)
-    print(json.dumps({
-        "total_commits": result["total_commits"],
-        "commits_with_agent_run": result["commits_with_agent_run"],
-        "commits_with_report_event": result["commits_with_report_event"],
-        "missing_agent_runs": result["missing_agent_runs"],
-        "missing_report_events": result["missing_report_events"],
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "total_commits": result["total_commits"],
+                "commits_with_agent_run": result["commits_with_agent_run"],
+                "commits_with_report_event": result["commits_with_report_event"],
+                "missing_agent_runs": result["missing_agent_runs"],
+                "missing_report_events": result["missing_report_events"],
+            },
+            indent=2,
+        )
+    )
     if result["missing_agent_runs"] > 0 or result["missing_report_events"] > 0:
         print(f"\nGaps: {result['missing_agent_runs']} missing runs, {result['missing_report_events']} missing events")
         return 1
@@ -77,6 +83,7 @@ def cmd_backfill_merges(args: argparse.Namespace) -> int:
         print(f"Wrote gap report: {gap_path}")
         sys.path.insert(0, str(REPO_ROOT / "12_tooling" / "cli"))
         import report_bus as rb_mod
+
         rb_mod.rebuild_jsonl()
         print("Rebuilt report_bus.jsonl from events/")
     print(f"\nAgent runs created: {len(backfill_result['created_agent_runs'])}")

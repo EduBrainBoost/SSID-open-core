@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 PHASE 7 — ENVIRONMENT GATE CHECKER
 Local runtime validation for SSID ↔ SSID-EMS integration.
@@ -9,12 +8,12 @@ Produces evidence artefacts for remote orchestration.
 import hashlib
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.error import URLError
 from urllib.request import urlopen
 
-sys.stdout.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(encoding="utf-8")
 
 # Pfade
 SSID_REPO = Path("C:\\Users\\bibel\\Documents\\Github\\SSID")
@@ -26,28 +25,32 @@ ENV_GATE_PATH = EVIDENCE_ROOT / "ENVIRONMENT_GATE.md"
 BLOCKERBERICHT_PATH = EVIDENCE_ROOT / "BLOCKERBERICHT.md"
 SHA256_PATH = EVIDENCE_ROOT / "SHA256SUMS.txt"
 
+
 def ensure_dirs():
     """Create evidence directories."""
     EVIDENCE_ROOT.mkdir(parents=True, exist_ok=True)
     MANIFEST_DIR.mkdir(parents=True, exist_ok=True)
+
 
 def sha256_file(fpath):
     """Compute SHA256 of a file."""
     if not fpath.exists():
         return None
     h = hashlib.sha256()
-    with open(fpath, 'rb') as f:
+    with open(fpath, "rb") as f:
         h.update(f.read())
     return h.hexdigest()
 
+
 def sha256_string(s):
     """Compute SHA256 of a string."""
-    return hashlib.sha256(s.encode('utf-8')).hexdigest()
+    return hashlib.sha256(s.encode("utf-8")).hexdigest()
+
 
 def log_work(item_num, item_name, status, befund, evidence_path=None, evidence_hash=None):
     """Log to WORKLOG.jsonl."""
     entry = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "phase": "PHASE7_ENVIRONMENT_GATE",
         "item": f"{item_num}",
         "name": item_name,
@@ -58,6 +61,7 @@ def log_work(item_num, item_name, status, befund, evidence_path=None, evidence_h
     }
     with open(WORKLOG_PATH, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry) + "\n")
+
 
 def item_1_ems_repo_exists():
     """Item 1: SSID-EMS Repo lokal vorhanden"""
@@ -101,6 +105,7 @@ def item_1_ems_repo_exists():
     log_work(1, "SSID-EMS Repo lokal vorhanden", status, befund, evidence_file, evidence_hash)
     return True
 
+
 def item_2_ems_backend_reachable():
     """Item 2: EMS Backend erreichbar auf http://localhost:8000"""
     print("\n[ITEM 2] EMS Backend erreichbar (http://localhost:8000)")
@@ -110,7 +115,7 @@ def item_2_ems_backend_reachable():
     try:
         response = urlopen(url, timeout=5)
         status_code = response.status
-        response_text = response.read().decode('utf-8')
+        response_text = response.read().decode("utf-8")
 
         if status_code == 200:
             status = "PASS"
@@ -124,7 +129,7 @@ def item_2_ems_backend_reachable():
         # Evidence
         evidence_file = EVIDENCE_ROOT / "item2_backend_health.json"
         evidence_data = {
-            "timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "timestamp_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "url": url,
             "status_code": status_code,
             "response_text": response_text[:500],  # First 500 chars
@@ -142,6 +147,7 @@ def item_2_ems_backend_reachable():
         print(f"  [{status}] {befund}")
         log_work(2, "EMS Backend erreichbar", status, befund)
         return False
+
 
 def item_3_ems_frontend_reachable():
     """Item 3: EMS Frontend erreichbar auf http://localhost:3000"""
@@ -165,7 +171,7 @@ def item_3_ems_frontend_reachable():
         # Evidence
         evidence_file = EVIDENCE_ROOT / "item3_frontend_health.json"
         evidence_data = {
-            "timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "timestamp_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "url": url,
             "status_code": status_code,
             "reachable": True,
@@ -184,6 +190,7 @@ def item_3_ems_frontend_reachable():
         log_work(3, "EMS Frontend erreichbar", status, befund)
         return False
 
+
 def item_4_dev_test_environment():
     """Item 4: Dev/Test-Environment vorhanden"""
     print("\n[ITEM 4] Dev/Test-Environment vorhanden")
@@ -191,11 +198,11 @@ def item_4_dev_test_environment():
     # Check for common dev/test indicators
     docker_compose = EMS_REPO / "docker-compose.yml"
     env_files = list(EMS_REPO.glob(".env*"))
-    test_dir = EMS_REPO / "tests" or EMS_REPO / "test"
+    EMS_REPO / "tests" or EMS_REPO / "test"
 
     evidence_file = EVIDENCE_ROOT / "item4_dev_test_env.json"
     evidence_data = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "docker_compose_exists": docker_compose.exists(),
         "env_files": [f.name for f in env_files],
         "has_tests": any([EMS_REPO.glob("test*"), EMS_REPO.glob("*test*")]),
@@ -221,17 +228,18 @@ def item_4_dev_test_environment():
     log_work(4, "Dev/Test-Environment vorhanden", status, befund, evidence_file, evidence_hash)
     return status == "PASS"
 
+
 def item_5_testaccount_safe():
     """Item 5: Testaccount sicher nutzbar"""
     print("\n[ITEM 5] Testaccount sicher nutzbar")
 
     # Check if backend .env or config has test credentials
     # This is a soft check; actual credentials should be in Vault
-    env_file = EMS_REPO / ".env.test" or EMS_REPO / ".env.local"
+    EMS_REPO / ".env.test" or EMS_REPO / ".env.local"
 
     evidence_file = EVIDENCE_ROOT / "item5_testaccount_check.json"
     evidence_data = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "vault_or_env_detected": False,
         "manual_check_required": True,
     }
@@ -257,6 +265,7 @@ def item_5_testaccount_safe():
     # UNCLEAR = proceed with caution, not FAIL
     return status != "FAIL"
 
+
 def item_6_contract_rpc_event():
     """Item 6: Contract/RPC/Event-Zugänge vorhanden"""
     print("\n[ITEM 6] Contract/RPC/Event-Zugänge vorhanden")
@@ -267,7 +276,7 @@ def item_6_contract_rpc_event():
 
     evidence_file = EVIDENCE_ROOT / "item6_contract_rpc_check.json"
     evidence_data = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "backend_env_files": [f.name for f in backend_env_files],
         "docker_compose_exists": docker_compose.exists(),
         "manual_check_required": True,
@@ -276,7 +285,7 @@ def item_6_contract_rpc_event():
     # Check if docker-compose might have contract/RPC services
     rpc_indicators = []
     if docker_compose.exists():
-        with open(docker_compose, "r", encoding="utf-8") as f:
+        with open(docker_compose, encoding="utf-8") as f:
             content = f.read().lower()
             if "rpc" in content or "hardhat" in content or "ganache" in content:
                 rpc_indicators.append("RPC/Contract-Services in docker-compose erkannt")
@@ -298,6 +307,7 @@ def item_6_contract_rpc_event():
     log_work(6, "Contract/RPC/Event-Zugänge vorhanden", status, befund, evidence_file, evidence_hash)
     return status != "FAIL"
 
+
 def item_7_no_production_access():
     """Item 7: Kein Production-Zugriff erforderlich"""
     print("\n[ITEM 7] Kein Production-Zugriff erforderlich")
@@ -315,16 +325,16 @@ def item_7_no_production_access():
     for fpath in files_to_check:
         if fpath.exists():
             try:
-                with open(fpath, "r", encoding="utf-8") as f:
+                with open(fpath, encoding="utf-8") as f:
                     content = f.read().lower()
                     if "production" in content and "localhost" not in content:
                         prod_indicators.append(f"{fpath.name} hat Production-Hinweise")
-            except:
+            except OSError:
                 pass
 
     evidence_file = EVIDENCE_ROOT / "item7_production_check.json"
     evidence_data = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "prod_indicators": prod_indicators,
         "expected_scope": "localhost:3000 / localhost:8000",
     }
@@ -345,9 +355,10 @@ def item_7_no_production_access():
     log_work(7, "Kein Production-Zugriff erforderlich", status, befund, evidence_file, evidence_hash)
     return status == "PASS"
 
+
 def write_environment_gate_report(all_pass, results):
     """Write final ENVIRONMENT_GATE.md report."""
-    items_text = "\n".join([f"- Item {i+1}: {results[i]}" for i in range(7)])
+    items_text = "\n".join([f"- Item {i + 1}: {results[i]}" for i in range(7)])
 
     if all_pass:
         verdict = "**PASS** — Alle Umgebungsprüfungen bestanden. Gate 1–5 können starten."
@@ -364,7 +375,7 @@ def write_environment_gate_report(all_pass, results):
         next_steps = "\n## Nächste Schritte\nBehebe die Blocker und führe ENVIRONMENT GATE erneut aus.\n"
 
     report = f"""# ENVIRONMENT GATE REPORT
-Timestamp: {datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')}
+Timestamp: {datetime.now(UTC).isoformat().replace("+00:00", "Z")}
 
 ## Gesamtstatus
 {verdict}
@@ -392,12 +403,13 @@ SHA256-Hashes siehe SHA256SUMS.txt
 
     return report
 
+
 def write_blockerbericht(failed_items):
     """Write BLOCKERBERICHT.md if there are failures."""
-    items_text = "\n".join([f"- **Item {i+1}:** {msg}" for i, msg in enumerate(failed_items)])
+    items_text = "\n".join([f"- **Item {i + 1}:** {msg}" for i, msg in enumerate(failed_items)])
 
     report = f"""# BLOCKERBERICHT — ENVIRONMENT GATE FAIL
-Timestamp: {datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')}
+Timestamp: {datetime.now(UTC).isoformat().replace("+00:00", "Z")}
 
 ## Fehlgeschlagene Items
 {items_text}
@@ -418,6 +430,7 @@ Siehe WORKLOG.jsonl für detaillierte Einträge.
     with open(BLOCKERBERICHT_PATH, "w", encoding="utf-8") as f:
         f.write(report)
 
+
 def write_sha256_sums(evidence_files):
     """Write SHA256SUMS.txt for all evidence files."""
     sums = []
@@ -429,10 +442,11 @@ def write_sha256_sums(evidence_files):
     with open(SHA256_PATH, "w", encoding="utf-8") as f:
         f.write("\n".join(sums))
 
+
 def main():
-    print("="*70)
+    print("=" * 70)
     print("PHASE 7 — ENVIRONMENT GATE CHECKER")
-    print("="*70)
+    print("=" * 70)
 
     ensure_dirs()
 
@@ -472,16 +486,16 @@ def main():
     all_pass = all(statuses)
     failed = [msg for msg, stat in results if stat == "FAIL"]
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("SUMMARY")
-    print("="*70)
+    print("=" * 70)
     for msg, stat in results:
         print(f"{msg:.<50} [{stat}]")
 
     print(f"\nGesamtstatus: {'PASS' if all_pass else 'FAIL'}")
 
     # Write reports
-    report = write_environment_gate_report(all_pass, [s[1] for s in results])
+    write_environment_gate_report(all_pass, [s[1] for s in results])
     print(f"\nReport geschrieben: {ENV_GATE_PATH}")
 
     # Collect evidence files for SHA256
@@ -498,6 +512,7 @@ def main():
         print("\nPHASE 7 ENVIRONMENT GATE: PASS")
         print("Ready for GATE 1–5")
         return 0
+
 
 if __name__ == "__main__":
     exit(main())

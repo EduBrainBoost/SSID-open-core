@@ -13,6 +13,7 @@ Usage:
   python 12_tooling/cli/evidence_verifier.py verify --file PATH
   python 12_tooling/cli/evidence_verifier.py chain --dir DIR
 """
+
 from __future__ import annotations
 
 import argparse
@@ -72,7 +73,7 @@ def verify_hash(file_path: str) -> dict[str, str]:
         return result
 
     # Check declared hash fields
-    declared_sha256 = data.get("sha256_after") or data.get("sha256")
+    data.get("sha256_after") or data.get("sha256")
     declared_sha3 = data.get("sha3_256")
 
     if declared_sha3:
@@ -134,6 +135,7 @@ def verify_chain(directory: str) -> list[dict[str, str]]:
 # ---------------------------------------------------------------------------
 # CLI interface
 # ---------------------------------------------------------------------------
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(

@@ -11,9 +11,11 @@ log = logging.getLogger(__name__)
 
 EXIT_CODE = 24
 
+
 def die(msg: str) -> None:
     print(f"STRUCTURE_GUARD_FAIL: {msg}")
     raise SystemExit(EXIT_CODE)
+
 
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[2]
@@ -62,6 +64,7 @@ def main() -> int:
 
     print("STRUCTURE_GUARD_PASS")
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

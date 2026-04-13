@@ -12,19 +12,21 @@ Exit codes:
   1 = FAIL (artifacts drifted, dead, or tampered)
   2 = ERROR (gate execution error)
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import sys
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
 @dataclass
 class GateFinding:
     """Unified finding across G019/G020/G021."""
+
     gate: str  # "DRIFT", "DEAD", "TAMPER"
     path: str
     detail: str
@@ -33,7 +35,7 @@ class GateFinding:
 
     def __post_init__(self):
         if not self.timestamp:
-            self.timestamp = datetime.now(timezone.utc).isoformat()
+            self.timestamp = datetime.now(UTC).isoformat()
 
 
 class ArtifactDriftGateV2:
@@ -80,33 +82,39 @@ class ArtifactDriftGateV2:
             deploy_path = self.deploy_dir / fname
 
             if not sot_path.exists():
-                drift_findings.append(GateFinding(
-                    gate="DRIFT",
-                    path=str(sot_path.relative_to(self.repo_root)),
-                    detail=f"SoT artifact missing: {fname}",
-                    severity="critical",
-                ))
+                drift_findings.append(
+                    GateFinding(
+                        gate="DRIFT",
+                        path=str(sot_path.relative_to(self.repo_root)),
+                        detail=f"SoT artifact missing: {fname}",
+                        severity="critical",
+                    )
+                )
                 continue
 
             if not deploy_path.exists():
-                drift_findings.append(GateFinding(
-                    gate="DRIFT",
-                    path=str(deploy_path.relative_to(self.repo_root)),
-                    detail=f"Deploy artifact missing: {fname}",
-                    severity="critical",
-                ))
+                drift_findings.append(
+                    GateFinding(
+                        gate="DRIFT",
+                        path=str(deploy_path.relative_to(self.repo_root)),
+                        detail=f"Deploy artifact missing: {fname}",
+                        severity="critical",
+                    )
+                )
                 continue
 
             sot_hash = self._sha256(sot_path)
             deploy_hash = self._sha256(deploy_path)
 
             if sot_hash != deploy_hash:
-                drift_findings.append(GateFinding(
-                    gate="DRIFT",
-                    path=fname,
-                    detail=f"Hash mismatch: SoT={sot_hash[:16]}... vs deploy={deploy_hash[:16]}...",
-                    severity="critical",
-                ))
+                drift_findings.append(
+                    GateFinding(
+                        gate="DRIFT",
+                        path=fname,
+                        detail=f"Hash mismatch: SoT={sot_hash[:16]}... vs deploy={deploy_hash[:16]}...",
+                        severity="critical",
+                    )
+                )
 
         return drift_findings
 
@@ -130,15 +138,16 @@ class ArtifactDriftGateV2:
                 continue
 
             if fpath.stat().st_size == 0:
-                dead_findings.append(GateFinding(
-                    gate="DEAD",
-                    path=str(fpath.relative_to(self.repo_root)),
-                    detail="Empty file (0 bytes)",
-                    severity="warning",
-                ))
+                dead_findings.append(
+                    GateFinding(
+                        gate="DEAD",
+                        path=str(fpath.relative_to(self.repo_root)),
+                        detail="Empty file (0 bytes)",
+                        severity="warning",
+                    )
+                )
 
         # Check for placeholder files (< 50 bytes, only comments)
-        comment_patterns = [r"^\s*#", r"^\s*//", r"^\s*<!--", r"^\s*$"]
         for fpath in self.repo_root.glob("**/*.py"):
             if any(skip in fpath.parts for skip in skip_dirs):
                 continue
@@ -151,12 +160,14 @@ class ArtifactDriftGateV2:
                     content = fpath.read_text(encoding="utf-8", errors="replace")
                     lines = [l.strip() for l in content.splitlines() if l.strip()]
                     if all(any(c in l for c in ["#", "//"]) for l in lines):
-                        dead_findings.append(GateFinding(
-                            gate="DEAD",
-                            path=str(fpath.relative_to(self.repo_root)),
-                            detail=f"Placeholder file ({size} bytes, only comments)",
-                            severity="info",
-                        ))
+                        dead_findings.append(
+                            GateFinding(
+                                gate="DEAD",
+                                path=str(fpath.relative_to(self.repo_root)),
+                                detail=f"Placeholder file ({size} bytes, only comments)",
+                                severity="info",
+                            )
+                        )
             except Exception:
                 pass
 
@@ -182,12 +193,14 @@ class ArtifactDriftGateV2:
         for repo_name in repos_to_check:
             repo_path = self.workspace_root / repo_name
             if not repo_path.exists():
-                tamper_findings.append(GateFinding(
-                    gate="TAMPER",
-                    path=repo_name,
-                    detail="Repo not found in workspace",
-                    severity="warning",
-                ))
+                tamper_findings.append(
+                    GateFinding(
+                        gate="TAMPER",
+                        path=repo_name,
+                        detail="Repo not found in workspace",
+                        severity="warning",
+                    )
+                )
                 continue
 
             for key_file, relative_path in cross_repo_keys.items():
@@ -207,12 +220,14 @@ class ArtifactDriftGateV2:
                 first_hash = next(iter(repo_hashes.values()))
                 for repo_name, file_hash in repo_hashes.items():
                     if file_hash != first_hash:
-                        tamper_findings.append(GateFinding(
-                            gate="TAMPER",
-                            path=f"{repo_name}/{key_file}",
-                            detail=f"Hash mismatch across repos: {file_hash[:16]}... vs canonical {first_hash[:16]}...",
-                            severity="critical",
-                        ))
+                        tamper_findings.append(
+                            GateFinding(
+                                gate="TAMPER",
+                                path=f"{repo_name}/{key_file}",
+                                detail=f"Hash mismatch across repos: {file_hash[:16]}... vs canonical {first_hash[:16]}...",
+                                severity="critical",
+                            )
+                        )
 
         return tamper_findings
 
@@ -268,7 +283,7 @@ class ArtifactDriftGateV2:
 
         # Determine exit code based on severity
         critical_count = sum(1 for f in self.findings if f.severity == "critical")
-        print(f"\n{'='*70}")
+        print(f"\n{'=' * 70}")
         print(f"RESULT: {len(self.findings)} total findings ({critical_count} critical)")
 
         if critical_count > 0:
@@ -282,7 +297,7 @@ class ArtifactDriftGateV2:
         """Export findings as JSON for CI/CD integration."""
         output_path = Path(output_path)
         report = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "total_findings": len(self.findings),
             "by_gate": {},
             "findings": [asdict(f) for f in self.findings],

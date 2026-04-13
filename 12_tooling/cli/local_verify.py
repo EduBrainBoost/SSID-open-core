@@ -10,23 +10,19 @@ Exit codes:
   1 = at least one hard error detected
 """
 
-import sys
-import subprocess
 import re
-import yaml
+import subprocess
+import sys
 from pathlib import Path
-from typing import List, Tuple
 
-def check_ruff_lint() -> Tuple[bool, List[str]]:
+import yaml
+
+
+def check_ruff_lint() -> tuple[bool, list[str]]:
     """Check code style with ruff."""
     errors = []
     try:
-        result = subprocess.run(
-            ["ruff", "check", "."],
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
+        result = subprocess.run(["ruff", "check", "."], capture_output=True, text=True, timeout=30)
         if result.returncode != 0:
             errors.append(f"Ruff lint failed:\n{result.stdout}")
         return result.returncode == 0, errors
@@ -34,16 +30,12 @@ def check_ruff_lint() -> Tuple[bool, List[str]]:
         errors.append(f"Ruff lint check error: {e}")
         return False, errors
 
-def check_ruff_format() -> Tuple[bool, List[str]]:
+
+def check_ruff_format() -> tuple[bool, list[str]]:
     """Check code formatting with ruff."""
     errors = []
     try:
-        result = subprocess.run(
-            ["ruff", "format", "--check", "."],
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
+        result = subprocess.run(["ruff", "format", "--check", "."], capture_output=True, text=True, timeout=30)
         if result.returncode != 0:
             errors.append(f"Ruff format check failed:\n{result.stdout}")
         return result.returncode == 0, errors
@@ -51,10 +43,11 @@ def check_ruff_format() -> Tuple[bool, List[str]]:
         errors.append(f"Ruff format check error: {e}")
         return False, errors
 
-def check_module_yaml() -> Tuple[bool, List[str]]:
+
+def check_module_yaml() -> tuple[bool, list[str]]:
     """Validate all module.yaml files."""
     errors = []
-    REQUIRED_KEYS = {'module_id', 'name', 'version', 'status'}
+    REQUIRED_KEYS = {"module_id", "name", "version", "status"}
 
     modules = list(Path(".").glob("*/module.yaml"))
     if not modules:
@@ -81,7 +74,8 @@ def check_module_yaml() -> Tuple[bool, List[str]]:
 
     return len(errors) == 0, errors
 
-def check_export_policy() -> Tuple[bool, List[str]]:
+
+def check_export_policy() -> tuple[bool, list[str]]:
     """Validate export policy YAML."""
     errors = []
     policy_path = Path("16_codex/opencore_export_policy.yaml")
@@ -94,9 +88,15 @@ def check_export_policy() -> Tuple[bool, List[str]]:
             policy = yaml.safe_load(f)
 
         required = {
-            'version', 'source_repo', 'target_repo', 'mode',
-            'allow_prefixes', 'deny_roots', 'deny_globs',
-            'secret_scan_regex', 'enforcement'
+            "version",
+            "source_repo",
+            "target_repo",
+            "mode",
+            "allow_prefixes",
+            "deny_roots",
+            "deny_globs",
+            "secret_scan_regex",
+            "enforcement",
         }
         missing = required - set(policy.keys())
         if missing:
@@ -108,7 +108,8 @@ def check_export_policy() -> Tuple[bool, List[str]]:
     except Exception as e:
         return False, [f"Export policy validation error: {e}"]
 
-def check_deny_globs() -> Tuple[bool, List[str]]:
+
+def check_deny_globs() -> tuple[bool, list[str]]:
     """Verify no deny-glob files present on disk."""
     errors = []
     policy_path = Path("16_codex/opencore_export_policy.yaml")
@@ -120,7 +121,7 @@ def check_deny_globs() -> Tuple[bool, List[str]]:
         with open(policy_path) as f:
             policy = yaml.safe_load(f)
 
-        deny_globs = policy.get('deny_globs', [])
+        deny_globs = policy.get("deny_globs", [])
         violations = []
 
         for p in Path(".").rglob("*"):
@@ -129,6 +130,7 @@ def check_deny_globs() -> Tuple[bool, List[str]]:
             posix = p.as_posix()
             for pattern in deny_globs:
                 import fnmatch
+
                 if fnmatch.fnmatch(posix, pattern):
                     violations.append(f"{posix} matches deny pattern: {pattern}")
                     break
@@ -143,7 +145,8 @@ def check_deny_globs() -> Tuple[bool, List[str]]:
     except Exception as e:
         return False, [f"Deny-glob check error: {e}"]
 
-def check_secrets() -> Tuple[bool, List[str]]:
+
+def check_secrets() -> tuple[bool, list[str]]:
     """Scan for leaked secrets."""
     errors = []
     policy_path = Path("16_codex/opencore_export_policy.yaml")
@@ -155,14 +158,14 @@ def check_secrets() -> Tuple[bool, List[str]]:
         with open(policy_path) as f:
             policy = yaml.safe_load(f)
 
-        secret_patterns = policy.get('secret_scan_regex', [])
+        secret_patterns = policy.get("secret_scan_regex", [])
         violations = []
 
         for p in Path(".").rglob("*"):
             if not p.is_file() or ".git" in str(p) or p.suffix in [".pyc", ".o"]:
                 continue
             try:
-                content = p.read_text(errors='ignore')
+                content = p.read_text(errors="ignore")
                 for pattern in secret_patterns:
                     if re.search(pattern, content):
                         violations.append(f"{p}: matches secret pattern")
@@ -180,12 +183,11 @@ def check_secrets() -> Tuple[bool, List[str]]:
     except Exception as e:
         return False, [f"Secret scan error: {e}"]
 
-def check_structure() -> Tuple[bool, List[str]]:
+
+def check_structure() -> tuple[bool, list[str]]:
     """Verify module directories have required files."""
     errors = []
-    required_roots = [
-        "03_core", "12_tooling", "16_codex", "23_compliance", "24_meta_orchestration"
-    ]
+    required_roots = ["03_core", "12_tooling", "16_codex", "23_compliance", "24_meta_orchestration"]
 
     for root in required_roots:
         root_path = Path(root)
@@ -202,6 +204,7 @@ def check_structure() -> Tuple[bool, List[str]]:
         print(f"PASS: all {len(required_roots)} exported roots have required files")
 
     return len(errors) == 0, errors
+
 
 def main():
     """Run all verification gates."""
@@ -244,6 +247,7 @@ def main():
         print("VERIFICATION FAIL: One or more gates failed ❌")
         print("=" * 70)
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -17,92 +17,91 @@ import re
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Boundary rules
 PRIVATE_REPO_PATTERNS = [
-    r'(?i)ssid-private',  # SSID-private repo specifically
-    r'(?i)ssid-internal',  # SSID-internal repo
-    r'(?i)local\.ssid',  # local.ssid development variant
-    r'(?i)local-ssid',  # local-ssid variant
-    r'(?i)localssid',  # localssid variant
-    r'(?i)ssid-workspace',  # workspace-local variant
+    r"(?i)ssid-private",  # SSID-private repo specifically
+    r"(?i)ssid-internal",  # SSID-internal repo
+    r"(?i)local\.ssid",  # local.ssid development variant
+    r"(?i)local-ssid",  # local-ssid variant
+    r"(?i)localssid",  # localssid variant
+    r"(?i)ssid-workspace",  # workspace-local variant
 ]
 
 ABSOLUTE_PATH_PATTERNS = [
-    r'C:\\Users',
-    r'C:/Users',
-    r'/home/.*SSID',
-    r'/mnt/.*SSID',
+    r"C:\\Users",
+    r"C:/Users",
+    r"/home/.*SSID",
+    r"/mnt/.*SSID",
 ]
 
 SECRET_PATTERNS = [
-    r'BEGIN (RSA|OPENSSH|EC) PRIVATE KEY',
-    r'AKIA[0-9A-Z]{16}',
-    r'xox[baprs]-',
-    r'ghp_[A-Za-z0-9]{36}',
-    r'-----BEGIN PRIVATE KEY-----',
-    r'sk-[A-Za-z0-9]{48}',
-    r'glpat-[A-Za-z0-9]{20}',
+    r"BEGIN (RSA|OPENSSH|EC) PRIVATE KEY",
+    r"AKIA[0-9A-Z]{16}",
+    r"xox[baprs]-",
+    r"ghp_[A-Za-z0-9]{36}",
+    r"-----BEGIN PRIVATE KEY-----",
+    r"sk-[A-Za-z0-9]{48}",
+    r"glpat-[A-Za-z0-9]{20}",
 ]
 
 BLOCKED_FILE_PATTERNS = [
-    r'\.env$',
-    r'\.key$',
-    r'\.pem$',
-    r'\.p12$',
-    r'\.pfx$',
+    r"\.env$",
+    r"\.key$",
+    r"\.pem$",
+    r"\.p12$",
+    r"\.pfx$",
 ]
 
 # Files/patterns that are allowed to contain pattern definitions (for validation)
 PATTERN_DEFINITION_FILES = [
-    'validate_public_boundary.py',
-    'build_public_export.py',
-    'verify_export.py',
-    '.github/workflows/public_export_integrity.yml',
-    '23_compliance/public_export_policy.rego',
-    '23_compliance/public_export_rules.yaml',
-    '16_codex/opencore_export_policy.yaml',
+    "validate_public_boundary.py",
+    "build_public_export.py",
+    "verify_export.py",
+    ".github/workflows/public_export_integrity.yml",
+    "23_compliance/public_export_policy.rego",
+    "23_compliance/public_export_rules.yaml",
+    "16_codex/opencore_export_policy.yaml",
 ]
 
 # Only these 5 roots are exported and subject to boundary validation
 EXPORTED_ROOTS = [
-    '03_core',
-    '12_tooling',
-    '16_codex',
-    '23_compliance',
-    '24_meta_orchestration',
+    "03_core",
+    "12_tooling",
+    "16_codex",
+    "23_compliance",
+    "24_meta_orchestration",
 ]
 
 # These 19 roots must NOT contain meaningful content (derived from canonical SSID policy)
 DENIED_ROOTS = [
-    '01_ai_layer',
-    '02_audit_logging',
-    '04_deployment',
-    '05_documentation',
-    '06_data_pipeline',
-    '07_governance_legal',
-    '08_identity_score',
-    '09_meta_identity',
-    '10_interoperability',
-    '11_test_simulation',
-    '13_ui_layer',
-    '14_zero_time_auth',
-    '15_infra',
-    '17_observability',
-    '18_data_layer',
-    '19_adapters',
-    '20_foundation',
-    '21_post_quantum_crypto',
-    '22_datasets',
+    "01_ai_layer",
+    "02_audit_logging",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
 ]
 
 
 def is_pattern_definition_file(file_path: Path) -> bool:
     """Check if file is a pattern definition file (allowed to contain patterns)."""
     try:
-        rel_path = str(file_path.resolve().relative_to(REPO_ROOT.resolve())).replace('\\', '/')
+        rel_path = str(file_path.resolve().relative_to(REPO_ROOT.resolve())).replace("\\", "/")
     except ValueError:
         return False
     return any(rel_path.endswith(pattern) for pattern in PATTERN_DEFINITION_FILES)
@@ -110,11 +109,8 @@ def is_pattern_definition_file(file_path: Path) -> bool:
 
 def is_in_exported_root(file_path: Path) -> bool:
     """Check if file is within one of the 5 exported roots."""
-    rel_path = str(file_path.relative_to(REPO_ROOT)).replace('\\', '/')
-    for root in EXPORTED_ROOTS:
-        if rel_path.startswith(root + '/'):
-            return True
-    return False
+    rel_path = str(file_path.relative_to(REPO_ROOT)).replace("\\", "/")
+    return any(rel_path.startswith(root + "/") for root in EXPORTED_ROOTS)
 
 
 def validate_no_private_repo_refs(repo_root: Path) -> list[str]:
@@ -128,16 +124,16 @@ def validate_no_private_repo_refs(repo_root: Path) -> list[str]:
         if not root_path.exists():
             continue
 
-        for file in root_path.rglob('*'):
+        for file in root_path.rglob("*"):
             if not file.is_file():
                 continue
             if is_pattern_definition_file(file):
                 continue
-            if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json', '.sh']:
+            if file.suffix not in [".py", ".md", ".yaml", ".yml", ".json", ".sh"]:
                 continue
 
             try:
-                content = file.read_text(encoding='utf-8', errors='ignore')
+                content = file.read_text(encoding="utf-8", errors="ignore")
                 for pattern in PRIVATE_REPO_PATTERNS:
                     if re.search(pattern, content):
                         rel_path = file.resolve().relative_to(repo_abs)
@@ -160,23 +156,23 @@ def validate_no_local_paths(repo_root: Path) -> list[str]:
         if not root_path.exists():
             continue
 
-        for file in root_path.rglob('*'):
+        for file in root_path.rglob("*"):
             if not file.is_file():
                 continue
-            if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json', '.sh']:
+            if file.suffix not in [".py", ".md", ".yaml", ".yml", ".json", ".sh"]:
                 continue
 
             # Allow paths in pattern definition files
             if is_pattern_definition_file(file):
                 continue
             # Allow paths in test files
-            if '/tests/' in str(file).replace('\\', '/'):
+            if "/tests/" in str(file).replace("\\", "/"):
                 continue
-            if 'test_' in file.name:
+            if "test_" in file.name:
                 continue
 
             try:
-                content = file.read_text(encoding='utf-8', errors='ignore')
+                content = file.read_text(encoding="utf-8", errors="ignore")
                 for pattern in ABSOLUTE_PATH_PATTERNS:
                     if re.search(pattern, content):
                         rel_path = file.resolve().relative_to(repo_abs)
@@ -200,7 +196,7 @@ def validate_no_secrets(repo_root: Path) -> list[str]:
             continue
 
         # Check for blocked file extensions
-        for file in root_path.rglob('*'):
+        for file in root_path.rglob("*"):
             if not file.is_file():
                 continue
 
@@ -212,21 +208,21 @@ def validate_no_secrets(repo_root: Path) -> list[str]:
                     break
 
         # Check for secret patterns in source files
-        for file in root_path.rglob('*'):
+        for file in root_path.rglob("*"):
             if not file.is_file():
                 continue
-            if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json']:
+            if file.suffix not in [".py", ".md", ".yaml", ".yml", ".json"]:
                 continue
 
             # Skip pattern definition files
             if is_pattern_definition_file(file):
                 continue
             # Skip test files
-            if 'test' in file.name or '/tests/' in str(file).replace('\\', '/'):
+            if "test" in file.name or "/tests/" in str(file).replace("\\", "/"):
                 continue
 
             try:
-                content = file.read_text(encoding='utf-8', errors='ignore')
+                content = file.read_text(encoding="utf-8", errors="ignore")
                 for pattern in SECRET_PATTERNS:
                     if re.search(pattern, content):
                         rel_path = file.resolve().relative_to(repo_abs)
@@ -249,30 +245,40 @@ def validate_no_mainnet_false_claims(repo_root: Path) -> list[str]:
         if not root_path.exists():
             continue
 
-        for file in root_path.rglob('*.md'):
-            if '/tests/' in str(file).replace('\\', '/'):
+        for file in root_path.rglob("*.md"):
+            if "/tests/" in str(file).replace("\\", "/"):
                 continue
 
             try:
-                content = file.read_text(encoding='utf-8', errors='ignore')
-                lines = content.split('\n')
+                content = file.read_text(encoding="utf-8", errors="ignore")
+                lines = content.split("\n")
 
                 for i, line in enumerate(lines):
-                    if not any(word in line.lower() for word in ['mainnet', 'production', 'live']):
+                    if not any(word in line.lower() for word in ["mainnet", "production", "live"]):
                         continue
 
                     # Check if this is properly contextualized
-                    context = '\n'.join(lines[max(0, i-2):min(len(lines), i+3)])
+                    context = "\n".join(lines[max(0, i - 2) : min(len(lines), i + 3)])
 
                     # Allowed contexts
-                    if any(keyword in context.lower() for keyword in [
-                        'testnet', 'readiness', 'planned', 'future', 'will',
-                        'https://', 'http://', 'link', 'reference'
-                    ]):
+                    if any(
+                        keyword in context.lower()
+                        for keyword in [
+                            "testnet",
+                            "readiness",
+                            "planned",
+                            "future",
+                            "will",
+                            "https://",
+                            "http://",
+                            "link",
+                            "reference",
+                        ]
+                    ):
                         continue
 
                     rel_path = file.resolve().relative_to(repo_abs)
-                    violations.append(f"{rel_path}:{i+1}: unbacked mainnet claim")
+                    violations.append(f"{rel_path}:{i + 1}: unbacked mainnet claim")
 
             except Exception:
                 pass
@@ -295,11 +301,11 @@ def validate_denied_roots_empty(repo_root: Path) -> list[str]:
 
         # Count code/content files (excluding metadata and empty scaffolds)
         code_files = []
-        for py_file in root_path.rglob('*.py'):
+        for py_file in root_path.rglob("*.py"):
             # Skip __pycache__ and test stubs
-            if '__pycache__' in str(py_file):
+            if "__pycache__" in str(py_file):
                 continue
-            if py_file.name in ['__init__.py', 'stub.py']:
+            if py_file.name in ["__init__.py", "stub.py"]:
                 continue
             # Skip tiny files (likely scaffolds)
             if py_file.stat().st_size > 100:
@@ -373,18 +379,18 @@ def main():
     else:
         print("    [OK] All denied roots are empty (proper scaffolds)")
 
-    print(f"\n=== Boundary Validation Result ===")
+    print("\n=== Boundary Validation Result ===")
     print(f"Total violations: {len(violations)}")
 
     # Critical violations (must fail)
-    critical = [v for v in violations if 'private repo reference' in v]
+    critical = [v for v in violations if "private repo reference" in v]
     if critical:
         print(f"\n[CRITICAL] Private repo references found: {len(critical)}")
         return 1
 
     # Warnings (report but don't fail if only test-related)
     if violations and not critical:
-        print(f"\n[WARNING] Non-critical violations detected (see above)")
+        print("\n[WARNING] Non-critical violations detected (see above)")
         print("Boundary validation: PASS (warnings only)")
         return 0
 
@@ -392,5 +398,5 @@ def main():
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

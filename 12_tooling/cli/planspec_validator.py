@@ -13,6 +13,7 @@ Checks:
 Exit codes: 0 = PASS, 1 = FAIL, 2 = ERROR
 Output contract: PASS/FAIL + findings only. No scores.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -155,8 +156,7 @@ def validate(path: Path, check_refs: bool = False) -> tuple[str, list[str]]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate a PlanSpec YAML file.")
     parser.add_argument("path", help="Path to the PlanSpec YAML file")
-    parser.add_argument("--check-refs", action="store_true",
-                        help="Also check that task_ids exist as TaskSpec files")
+    parser.add_argument("--check-refs", action="store_true", help="Also check that task_ids exist as TaskSpec files")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     args = parser.parse_args()
 

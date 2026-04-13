@@ -11,7 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 KNOWN_PROVIDERS = [
     "sumsub",
@@ -37,7 +37,7 @@ def _health(args: argparse.Namespace) -> int:
     if provider not in KNOWN_PROVIDERS and provider != "all":
         error = {
             "command": "provider.health",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "provider": provider,
             "error": f"Unknown provider. Known: {KNOWN_PROVIDERS}",
             "status": "failed",
@@ -51,13 +51,13 @@ def _health(args: argparse.Namespace) -> int:
         results[p] = {
             "tier": PROVIDER_TIERS.get(p, "unknown"),
             "reachable": None,
-            "last_check": datetime.now(timezone.utc).isoformat(),
+            "last_check": datetime.now(UTC).isoformat(),
             "note": "Health check stub — no live API call",
         }
 
     output = {
         "command": "provider.health",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "providers_checked": len(targets),
         "results": results,
         "status": "checked",
@@ -75,7 +75,7 @@ def _failover(args: argparse.Namespace) -> int:
         if p not in KNOWN_PROVIDERS:
             error = {
                 "command": "provider.failover",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "error": f"Unknown provider: {p}",
                 "status": "failed",
             }
@@ -84,7 +84,7 @@ def _failover(args: argparse.Namespace) -> int:
 
     output = {
         "command": "provider.failover",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "from_provider": from_p,
         "to_provider": to_p,
         "failover_status": "initiated",
@@ -98,7 +98,7 @@ def _status(args: argparse.Namespace) -> int:
     """Report provider worker status."""
     output = {
         "command": "provider.status",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "known_providers": KNOWN_PROVIDERS,
         "provider_count": len(KNOWN_PROVIDERS),
         "tier_model": "two-tier (api + cli)",
@@ -138,7 +138,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         error = {
             "command": f"provider.{args.action}",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "error": str(exc),
             "status": "failed",
         }

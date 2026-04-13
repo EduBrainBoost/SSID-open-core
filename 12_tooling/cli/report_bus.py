@@ -14,6 +14,7 @@ Commands:
 
 Output contract: PASS/FAIL + findings only. No scores. Deterministic JSON.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -35,20 +36,21 @@ LEGACY_ARCHIVE = PROJECT_ROOT / "02_audit_logging" / "archives" / "report_bus_le
 
 VALID_REPOS = ("SSID", "SSID-EMS", "SSID-docs", "SSID-open-core", "SSID-orchestrator")
 VALID_EVENT_TYPES = (
-    "merge_recorded", "agent_run_backfilled", "evidence_imported",
-    "task_linked", "seal_merge", "docs_publish_merge", "ops", "legacy_migrated",
+    "merge_recorded",
+    "agent_run_backfilled",
+    "evidence_imported",
+    "task_linked",
+    "seal_merge",
+    "docs_publish_merge",
+    "ops",
+    "legacy_migrated",
 )
 VALID_ORIGINS = ("observed", "constructed", "imported")
 VALID_SEVERITIES = ("info", "warn", "error", "critical")
 
 
 def _utc_now() -> str:
-    return (
-        dt.datetime.now(dt.timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def compute_event_id(event: dict[str, Any]) -> str:
@@ -61,7 +63,10 @@ def get_head_sha(repo_root: Path) -> str:
     try:
         proc = subprocess.run(
             ["git", "rev-parse", "--short", "HEAD"],
-            cwd=str(repo_root), capture_output=True, text=True, timeout=5,
+            cwd=str(repo_root),
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         return proc.stdout.strip() or "unknown"
     except Exception:
@@ -164,7 +169,9 @@ def rebuild_jsonl(events_dir: Path | None = None, output_path: Path | None = Non
 
 
 def _map_legacy_kind_to_event_type(kind: str) -> str:
-    return {"seal_merge": "seal_merge", "docs_publish_merge": "docs_publish_merge", "ops": "ops"}.get(kind, "legacy_migrated")
+    return {"seal_merge": "seal_merge", "docs_publish_merge": "docs_publish_merge", "ops": "ops"}.get(
+        kind, "legacy_migrated"
+    )
 
 
 def migrate_legacy_events(
@@ -210,12 +217,17 @@ def ingest_e2e_run(path: Path, sha: str | None = None) -> list[dict[str, Any]]:
     data = json.loads(path.read_text(encoding="utf-8"))
     run_sha = sha or data.get("git_sha", "unknown")
     status = data.get("status", "unknown")
-    return [make_event(
-        event_type="evidence_imported", repo="SSID", sha=run_sha, origin="imported",
-        severity="info" if status == "PASS" else "error",
-        summary=f"E2E run {data.get('run_id', '?')}: {status}",
-        payload={"run_id": data.get("run_id"), "status": status, "source_file": path.name},
-    )]
+    return [
+        make_event(
+            event_type="evidence_imported",
+            repo="SSID",
+            sha=run_sha,
+            origin="imported",
+            severity="info" if status == "PASS" else "error",
+            summary=f"E2E run {data.get('run_id', '?')}: {status}",
+            payload={"run_id": data.get("run_id"), "status": status, "source_file": path.name},
+        )
+    ]
 
 
 def ingest_run_log(path: Path, sha: str | None = None) -> list[dict[str, Any]]:
@@ -224,19 +236,28 @@ def ingest_run_log(path: Path, sha: str | None = None) -> list[dict[str, Any]]:
         if not line.strip():
             continue
         entry = json.loads(line)
-        events.append(make_event(
-            event_type="evidence_imported", repo="SSID",
-            sha=sha or entry.get("sha", "unknown"), origin="imported",
-            severity="info", summary=f"Run log: {entry.get('event', 'unknown')}",
-            payload=entry,
-        ))
+        events.append(
+            make_event(
+                event_type="evidence_imported",
+                repo="SSID",
+                sha=sha or entry.get("sha", "unknown"),
+                origin="imported",
+                severity="info",
+                summary=f"Run log: {entry.get('event', 'unknown')}",
+                payload=entry,
+            )
+        )
     return events
 
 
 def _cli_append(args: argparse.Namespace) -> int:
     event = make_event(
-        event_type=args.event_type, repo=args.repo, sha=args.sha,
-        origin=args.origin, severity=args.severity, summary=args.summary,
+        event_type=args.event_type,
+        repo=args.repo,
+        sha=args.sha,
+        origin=args.origin,
+        severity=args.severity,
+        summary=args.summary,
         payload=json.loads(args.payload) if args.payload else {},
     )
     try:
@@ -328,7 +349,12 @@ def main() -> int:
     ip.add_argument("--sha", default=None, help="Override SHA for all events")
 
     args = parser.parse_args()
-    cmd_map = {"append": _cli_append, "rebuild": _cli_rebuild, "migrate-legacy": _cli_migrate_legacy, "ingest": _cli_ingest}
+    cmd_map = {
+        "append": _cli_append,
+        "rebuild": _cli_rebuild,
+        "migrate-legacy": _cli_migrate_legacy,
+        "ingest": _cli_ingest,
+    }
     handler = cmd_map.get(args.command)
     if handler:
         return handler(args)

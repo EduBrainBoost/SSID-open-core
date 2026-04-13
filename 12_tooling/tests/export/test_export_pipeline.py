@@ -14,12 +14,8 @@ Test coverage:
 Each test verifies boundary safety and deterministic export behavior.
 """
 
-import json
-import hashlib
 import sys
-import tempfile
 from pathlib import Path
-from typing import Any
 
 # Add scripts directory to path
 SCRIPTS_DIR = Path(__file__).resolve().parents[3] / "12_tooling" / "scripts"
@@ -28,16 +24,18 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 try:
     from build_public_export import (
         compute_manifest_hash,
-        validate_no_private_refs,
-        validate_no_local_paths,
-        validate_no_secrets,
-        validate_no_mainnet_false_claims,
+    )
+    from validate_public_boundary import (
+        validate_no_local_paths as boundary_validate_no_local_paths,
+    )
+    from validate_public_boundary import (
+        validate_no_mainnet_false_claims as boundary_validate_mainnet,
     )
     from validate_public_boundary import (
         validate_no_private_repo_refs,
-        validate_no_local_paths as boundary_validate_no_local_paths,
+    )
+    from validate_public_boundary import (
         validate_no_secrets as boundary_validate_no_secrets,
-        validate_no_mainnet_false_claims as boundary_validate_mainnet,
     )
 except ImportError as e:
     print(f"ERROR: Could not import export modules: {e}")
@@ -54,14 +52,14 @@ class TestManifestConsistency:
             "exported_roots": [
                 {"root": "03_core", "status": "exported"},
                 {"root": "16_codex", "status": "exported"},
-            ]
+            ],
         }
         manifest2 = {
             "schema_version": "2.0.0",
             "exported_roots": [
                 {"root": "03_core", "status": "exported"},
                 {"root": "16_codex", "status": "exported"},
-            ]
+            ],
         }
         hash1 = compute_manifest_hash(manifest1)
         hash2 = compute_manifest_hash(manifest2)
@@ -95,9 +93,10 @@ class TestPrivateRepoReferences:
     def test_validate_pattern_matching(self):
         """Validate that pattern matching logic works correctly."""
         import re
+
         patterns = [
-            r'(?i)ssid(?!-open-core)(?!-docs)',
-            r'(?i)local\.ssid',
+            r"(?i)ssid(?!-open-core)(?!-docs)",
+            r"(?i)local\.ssid",
         ]
 
         # Should match
@@ -112,21 +111,24 @@ class TestPrivateRepoReferences:
     def test_private_pattern_in_python_file(self):
         """Pattern matching recognizes private repo references."""
         import re
-        pattern = r'(?i)ssid(?!-open-core)(?!-docs)'
+
+        pattern = r"(?i)ssid(?!-open-core)(?!-docs)"
         content = "import from SSID-private.modules"
         assert re.search(pattern, content), "Should match SSID-private in content"
 
     def test_local_ssid_pattern(self):
         """Pattern matching recognizes local.ssid."""
         import re
-        pattern = r'(?i)local\.ssid'
+
+        pattern = r"(?i)local\.ssid"
         content = "source: local.ssid\npath: /local.ssid/config"
         assert re.search(pattern, content), "Should match local.ssid in content"
 
     def test_ssid_open_core_allowed(self):
         """SSID-open-core must not trigger private repo pattern."""
         import re
-        pattern = r'(?i)ssid(?!-open-core)(?!-docs)'
+
+        pattern = r"(?i)ssid(?!-open-core)(?!-docs)"
         content = "# Reference to SSID-open-core repository"
         assert not re.search(pattern, content), "SSID-open-core should be allowed"
 
@@ -137,11 +139,12 @@ class TestAbsoluteLocalPaths:
     def test_windows_path_pattern_matching(self):
         """Detect C:\\Users paths on Windows."""
         import re
+
         patterns = [
-            r'C:\\Users',
-            r'C:/Users',
-            r'/home/.*SSID',
-            r'/mnt/.*SSID',
+            r"C:\\Users",
+            r"C:/Users",
+            r"/home/.*SSID",
+            r"/mnt/.*SSID",
         ]
         content = 'path: "C:\\Users\\user\\docs"'
         assert re.search(patterns[0], content), "Should detect Windows path"
@@ -149,25 +152,28 @@ class TestAbsoluteLocalPaths:
     def test_unix_home_path_pattern(self):
         """Detect /home/* paths."""
         import re
-        pattern = r'/home/.*SSID'
+
+        pattern = r"/home/.*SSID"
         content = "cd /home/user/SSID/project"
         assert re.search(pattern, content), "Should detect Unix home path"
 
     def test_mnt_path_pattern(self):
         """Detect /mnt/* paths."""
         import re
-        pattern = r'/mnt/.*SSID'
+
+        pattern = r"/mnt/.*SSID"
         content = "mount_path=/mnt/data/SSID"
         assert re.search(pattern, content), "Should detect /mnt path"
 
     def test_relative_paths_allowed(self):
         """Relative paths should not match absolute path patterns."""
         import re
+
         patterns = [
-            r'C:\\Users',
-            r'C:/Users',
-            r'/home/.*SSID',
-            r'/mnt/.*SSID',
+            r"C:\\Users",
+            r"C:/Users",
+            r"/home/.*SSID",
+            r"/mnt/.*SSID",
         ]
         content = "./docs/setup.md"
         assert not any(re.search(p, content) for p in patterns), "Relative paths should be allowed"
@@ -179,30 +185,34 @@ class TestSecretDetection:
     def test_secret_pattern_aws_keys(self):
         """Detect AWS key patterns."""
         import re
-        pattern = r'AKIA[0-9A-Z]{16}'
+
+        pattern = r"AKIA[0-9A-Z]{16}"
         content = "aws_key = 'AKIAIOSFODNN7EXAMPLE'"
         assert re.search(pattern, content), "Should detect AWS key"
 
     def test_secret_pattern_github_tokens(self):
         """Detect GitHub Personal Access Token patterns."""
         import re
-        pattern = r'ghp_[A-Za-z0-9]{36}'
+
+        pattern = r"ghp_[A-Za-z0-9]{36}"
         content = "token = 'ghp_AbCdEfGhIjKlMnOpQrStUvWxYz1234567890'"
         assert re.search(pattern, content), "Should detect GitHub PAT"
 
     def test_secret_pattern_openai_keys(self):
         """Detect OpenAI API key patterns."""
         import re
-        pattern = r'sk-[A-Za-z0-9]{20,}'  # Relaxed to allow variable length
+
+        pattern = r"sk-[A-Za-z0-9]{20,}"  # Relaxed to allow variable length
         content = "api_key = 'sk-AbCdEfGhIjKlMnOpQrStUvWxYz12345678'"
         assert re.search(pattern, content), "Should detect OpenAI key"
 
     def test_secret_pattern_private_keys(self):
         """Detect private key patterns."""
         import re
+
         patterns = [
-            r'BEGIN (RSA|OPENSSH|EC) PRIVATE KEY',
-            r'-----BEGIN PRIVATE KEY-----',
+            r"BEGIN (RSA|OPENSSH|EC) PRIVATE KEY",
+            r"-----BEGIN PRIVATE KEY-----",
         ]
         content = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC..."
         assert any(re.search(p, content) for p in patterns), "Should detect private key"
@@ -210,18 +220,19 @@ class TestSecretDetection:
     def test_blocked_file_extensions(self):
         """Validate blocked file extension patterns."""
         import re
+
         blocked_patterns = [
-            r'\.env$',
-            r'\.key$',
-            r'\.pem$',
-            r'\.p12$',
-            r'\.pfx$',
+            r"\.env$",
+            r"\.key$",
+            r"\.pem$",
+            r"\.p12$",
+            r"\.pfx$",
         ]
         blocked_files = [".env", "id_rsa.key", "cert.pem", "cert.p12", "cert.pfx"]
         for filename in blocked_files:
-            assert any(
-                re.search(pattern, filename) for pattern in blocked_patterns
-            ), f"Should detect blocked extension for {filename}"
+            assert any(re.search(pattern, filename) for pattern in blocked_patterns), (
+                f"Should detect blocked extension for {filename}"
+            )
 
 
 class TestMainnetClaimsValidation:
@@ -230,7 +241,7 @@ class TestMainnetClaimsValidation:
     def test_mainnet_claim_detection_logic(self):
         """Validate mainnet claim detection logic."""
         # Test context detection
-        keywords = ['testnet', 'readiness', 'planned', 'future', 'will', 'https://', 'http://']
+        keywords = ["testnet", "readiness", "planned", "future", "will", "https://", "http://"]
 
         # Bare mainnet claim - no context
         content1 = "This runs on mainnet"
@@ -249,7 +260,7 @@ class TestMainnetClaimsValidation:
 
     def test_production_claim_detection(self):
         """Validate production claim detection."""
-        keywords = ['testnet', 'readiness', 'planned', 'future', 'will', 'https://', 'http://']
+        keywords = ["testnet", "readiness", "planned", "future", "will", "https://", "http://"]
 
         # Bare production claim
         content = "This system is used in production"
@@ -258,7 +269,7 @@ class TestMainnetClaimsValidation:
 
     def test_url_reference_provides_context(self):
         """URLs provide sufficient context for mainnet claims."""
-        keywords = ['testnet', 'readiness', 'planned', 'future', 'will', 'https://', 'http://']
+        keywords = ["testnet", "readiness", "planned", "future", "will", "https://", "http://"]
 
         content = "See https://example.com/mainnet for deployment instructions"
         has_context = any(keyword in content.lower() for keyword in keywords)
@@ -311,6 +322,7 @@ class TestBoundaryValidatorIntegration:
 
     def test_pattern_exclusion_logic(self):
         """Verify pattern exclusion matching logic."""
+
         def is_pattern_definition_file(file_path: str) -> bool:
             """Simplified version of actual function."""
             definition_files = [
@@ -327,12 +339,6 @@ class TestBoundaryValidatorIntegration:
 
     def test_boundary_validator_components(self):
         """Boundary validator contains required validation functions."""
-        required_functions = [
-            "validate_no_private_repo_refs",
-            "validate_no_local_paths",
-            "validate_no_secrets",
-            "validate_no_mainnet_false_claims",
-        ]
         # These are imported at module level - their presence confirms availability
         assert callable(validate_no_private_repo_refs)
         assert callable(boundary_validate_no_local_paths)
@@ -399,4 +405,5 @@ class TestIntegrationScenarios:
 
 if __name__ == "__main__":
     import pytest
+
     pytest.main([__file__, "-v"])

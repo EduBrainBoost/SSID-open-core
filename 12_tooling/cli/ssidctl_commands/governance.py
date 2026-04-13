@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ssidctl governance -- Show governance status and open approvals."""
+
 from __future__ import annotations
 
 import argparse

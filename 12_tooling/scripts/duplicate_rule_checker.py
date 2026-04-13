@@ -18,9 +18,8 @@ import ast
 import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 REGO_DIRS = [
@@ -36,7 +35,7 @@ CONTRACT_DIRS = [
 ]
 
 
-def find_files(directories: List[Path], extension: str) -> List[Path]:
+def find_files(directories: list[Path], extension: str) -> list[Path]:
     """Recursively find files with a given extension in the listed directories."""
     results = []
     for base_dir in directories:
@@ -49,7 +48,7 @@ def find_files(directories: List[Path], extension: str) -> List[Path]:
     return sorted(results)
 
 
-def scan_rego_duplicates() -> Dict[str, List[Tuple[str, int]]]:
+def scan_rego_duplicates() -> dict[str, list[tuple[str, int]]]:
     """
     Scan .rego files for duplicate rule names.
     A Rego rule is defined as: <name>[<args>] { or <name> = <value> {
@@ -64,7 +63,7 @@ def scan_rego_duplicates() -> Dict[str, List[Tuple[str, int]]]:
         re.MULTILINE,
     )
 
-    rule_locations: Dict[str, List[Tuple[str, int]]] = {}
+    rule_locations: dict[str, list[tuple[str, int]]] = {}
     rego_files = find_files(REGO_DIRS, ".rego")
 
     for fpath in rego_files:
@@ -76,8 +75,7 @@ def scan_rego_duplicates() -> Dict[str, List[Tuple[str, int]]]:
             m = rule_pattern.match(line)
             if m:
                 rule_name = m.group(1)
-                if rule_name in ("package", "import", "default", "not", "some",
-                                 "every", "if", "else", "with"):
+                if rule_name in ("package", "import", "default", "not", "some", "every", "if", "else", "with"):
                     continue
                 key = rule_name
                 if key not in rule_locations:
@@ -87,12 +85,12 @@ def scan_rego_duplicates() -> Dict[str, List[Tuple[str, int]]]:
     return {k: v for k, v in rule_locations.items() if len(v) > 1}
 
 
-def scan_validator_duplicates() -> Dict[str, List[Tuple[str, int]]]:
+def scan_validator_duplicates() -> dict[str, list[tuple[str, int]]]:
     """
     Scan .py validator files for duplicate function names using AST parsing.
     Reports functions defined with the same name across different validator files.
     """
-    func_locations: Dict[str, List[Tuple[str, int]]] = {}
+    func_locations: dict[str, list[tuple[str, int]]] = {}
     py_files = find_files(VALIDATOR_DIRS, ".py")
 
     for fpath in py_files:
@@ -109,14 +107,12 @@ def scan_validator_duplicates() -> Dict[str, List[Tuple[str, int]]]:
                     continue
                 if fname not in func_locations:
                     func_locations[fname] = []
-                func_locations[fname].append(
-                    (str(fpath.relative_to(REPO_ROOT)), node.lineno)
-                )
+                func_locations[fname].append((str(fpath.relative_to(REPO_ROOT)), node.lineno))
 
     return {k: v for k, v in func_locations.items() if len(v) > 1}
 
 
-def scan_contract_duplicates() -> Dict[str, List[Tuple[str, int]]]:
+def scan_contract_duplicates() -> dict[str, list[tuple[str, int]]]:
     """
     Scan .yaml contract files for duplicate rule_id values.
     Looks for 'rule_id' keys in YAML structures and flags collisions.
@@ -126,7 +122,7 @@ def scan_contract_duplicates() -> Dict[str, List[Tuple[str, int]]]:
     except ImportError:
         return _scan_contract_duplicates_regex()
 
-    rule_id_locations: Dict[str, List[Tuple[str, int]]] = {}
+    rule_id_locations: dict[str, list[tuple[str, int]]] = {}
     yaml_files = find_files(CONTRACT_DIRS, ".yaml")
 
     for fpath in yaml_files:
@@ -141,7 +137,7 @@ def scan_contract_duplicates() -> Dict[str, List[Tuple[str, int]]]:
     return {k: v for k, v in rule_id_locations.items() if len(v) > 1}
 
 
-def _extract_rule_ids(obj, filepath: str, acc: Dict[str, List[Tuple[str, int]]]):
+def _extract_rule_ids(obj, filepath: str, acc: dict[str, list[tuple[str, int]]]):
     """Recursively extract rule_id values from parsed YAML."""
     if isinstance(obj, dict):
         if "rule_id" in obj:
@@ -156,10 +152,10 @@ def _extract_rule_ids(obj, filepath: str, acc: Dict[str, List[Tuple[str, int]]])
             _extract_rule_ids(item, filepath, acc)
 
 
-def _scan_contract_duplicates_regex() -> Dict[str, List[Tuple[str, int]]]:
+def _scan_contract_duplicates_regex() -> dict[str, list[tuple[str, int]]]:
     """Fallback regex-based rule_id scanner when PyYAML is not available."""
     pattern = re.compile(r"rule_id\s*:\s*[\"']?([A-Za-z0-9_.-]+)[\"']?")
-    rule_id_locations: Dict[str, List[Tuple[str, int]]] = {}
+    rule_id_locations: dict[str, list[tuple[str, int]]] = {}
     yaml_files = find_files(CONTRACT_DIRS, ".yaml")
 
     for fpath in yaml_files:
@@ -178,11 +174,11 @@ def _scan_contract_duplicates_regex() -> Dict[str, List[Tuple[str, int]]]:
     return {k: v for k, v in rule_id_locations.items() if len(v) > 1}
 
 
-def print_section(title: str, duplicates: Dict[str, List[Tuple[str, int]]]) -> bool:
+def print_section(title: str, duplicates: dict[str, list[tuple[str, int]]]) -> bool:
     """Print a section of duplicate findings. Returns True if duplicates exist."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  {title}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     if not duplicates:
         print("  CLEAN - No duplicates found.")
@@ -200,7 +196,7 @@ def print_section(title: str, duplicates: Dict[str, List[Tuple[str, int]]]) -> b
 
 def main() -> int:
     print("SSID Duplicate Rule Checker")
-    print(f"Run: {datetime.now(timezone.utc).isoformat()}")
+    print(f"Run: {datetime.now(UTC).isoformat()}")
     print(f"Repo: {REPO_ROOT}")
 
     has_dupes = False
@@ -217,7 +213,7 @@ def main() -> int:
     if print_section("Contract Rule IDs (.yaml)", contract_dupes):
         has_dupes = True
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     if has_dupes:
         print("  RESULT: DUPLICATES FOUND - review required")
         return 1

@@ -16,9 +16,8 @@ Version: 1.0.0
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -27,7 +26,7 @@ def load_manifest() -> dict:
     """Load current public export manifest."""
     manifest_path = REPO_ROOT / "16_codex" / "public_export_manifest.json"
     try:
-        with open(manifest_path, "r", encoding="utf-8") as f:
+        with open(manifest_path, encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
         print(f"ERROR: Could not load manifest: {e}")
@@ -43,7 +42,7 @@ def load_latest_evidence() -> dict:
     try:
         files = sorted(evidence_dir.glob("export-*.json"))
         if files:
-            with open(files[-1], "r", encoding="utf-8") as f:
+            with open(files[-1], encoding="utf-8") as f:
                 return json.load(f)
     except Exception:
         pass
@@ -53,7 +52,7 @@ def load_latest_evidence() -> dict:
 
 def generate_report() -> dict:
     """Generate comprehensive export status report."""
-    now_utc = datetime.now(timezone.utc).isoformat() + "Z"
+    now_utc = datetime.now(UTC).isoformat() + "Z"
     manifest = load_manifest()
     evidence = load_latest_evidence()
 
@@ -111,21 +110,12 @@ def generate_report() -> dict:
         report["boundary_validation"]["private_references"] = (
             f"{len(validation.get('private_references', []))} violations"
         )
-        report["boundary_validation"]["absolute_paths"] = (
-            f"{len(validation.get('local_paths', []))} violations"
-        )
-        report["boundary_validation"]["secrets"] = (
-            f"{len(validation.get('secrets', []))} violations"
-        )
-        report["boundary_validation"]["mainnet_claims"] = (
-            f"{len(validation.get('mainnet_claims', []))} violations"
-        )
+        report["boundary_validation"]["absolute_paths"] = f"{len(validation.get('local_paths', []))} violations"
+        report["boundary_validation"]["secrets"] = f"{len(validation.get('secrets', []))} violations"
+        report["boundary_validation"]["mainnet_claims"] = f"{len(validation.get('mainnet_claims', []))} violations"
 
         # Overall status based on critical violations
-        total_violations = (
-            len(validation.get("private_references", []))
-            + len(validation.get("secrets", []))
-        )
+        total_violations = len(validation.get("private_references", [])) + len(validation.get("secrets", []))
         if total_violations == 0:
             report["boundary_validation"]["overall_status"] = "PASS"
         else:
@@ -146,19 +136,13 @@ def generate_report() -> dict:
         report["final_status"] = "READY_FOR_EXPORT"
     elif report["boundary_validation"]["overall_status"] == "FAIL":
         report["final_status"] = "BOUNDARY_VIOLATIONS"
-        report["recommendations"].append(
-            "Fix boundary violations before proceeding with export"
-        )
+        report["recommendations"].append("Fix boundary violations before proceeding with export")
     elif report["test_results"]["status"] == "FAIL":
         report["final_status"] = "TEST_FAILURES"
-        report["recommendations"].append(
-            "Review test failures and ensure all validation passes"
-        )
+        report["recommendations"].append("Review test failures and ensure all validation passes")
     else:
         report["final_status"] = "UNKNOWN"
-        report["recommendations"].append(
-            "Review logs for more detailed status information"
-        )
+        report["recommendations"].append("Review logs for more detailed status information")
 
     return report
 
@@ -197,15 +181,11 @@ def print_report(report: dict) -> None:
     # Boundary Validation
     print("BOUNDARY VALIDATION")
     print("-" * 70)
-    print(
-        f"  Private Refs:   {report['boundary_validation']['private_references']}"
-    )
+    print(f"  Private Refs:   {report['boundary_validation']['private_references']}")
     print(f"  Absolute Paths: {report['boundary_validation']['absolute_paths']}")
     print(f"  Secrets:        {report['boundary_validation']['secrets']}")
     print(f"  Mainnet Claims: {report['boundary_validation']['mainnet_claims']}")
-    print(
-        f"  Status:         {report['boundary_validation']['overall_status']}"
-    )
+    print(f"  Status:         {report['boundary_validation']['overall_status']}")
     print()
 
     # Test Results

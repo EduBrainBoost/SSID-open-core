@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 PHASE 5–6 FINAL EXECUTOR
 Validation, test execution, final merge readiness under Path A.
@@ -7,20 +6,21 @@ Validation, test execution, final merge readiness under Path A.
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-sys.stdout.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(encoding="utf-8")
 
 REPO_ROOT = Path.cwd()
 SSID_REPO = Path("C:\\Users\\bibel\\Documents\\Github\\SSID")
 DELIVERABLES = REPO_ROOT / "02_audit_logging/reports/master_audit_swarm"
 WORKLOG_PATH = DELIVERABLES / "09_evidence/WORKLOG.jsonl"
 
+
 def log_work(phase, task, files_read, files_written, result, notes=""):
     """Append to WORKLOG."""
     entry = {
-        "ts_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "ts_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "phase": phase,
         "task": task,
         "files_read": files_read,
@@ -30,6 +30,7 @@ def log_work(phase, task, files_read, files_written, result, notes=""):
     }
     with open(WORKLOG_PATH, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry) + "\n")
+
 
 def phase5_execution_validation():
     """PHASE 5: Validate execution, run tests, check gates."""
@@ -51,13 +52,14 @@ def phase5_execution_validation():
 
     return True
 
+
 def phase6_final_synthesis():
     """PHASE 6: Final synthesis, merge readiness."""
     print("\n[PHASE 6] FINAL SYNTHESIS / MERGE READINESS")
 
     # Generate final reports
     merge_readiness = {
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "overall_status": "CONDITIONAL_PASS → READY_FOR_MERGE",
         "audit_complete": True,
         "path_decision": "A (Domain-module structure canonical)",
@@ -78,7 +80,7 @@ def phase6_final_synthesis():
         json.dump(merge_readiness, f, indent=2)
 
     final_report = f"""# FINAL_PASS_FAIL REPORT (Updated)
-Timestamp: {datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')}
+Timestamp: {datetime.now(UTC).isoformat().replace("+00:00", "Z")}
 
 ## Overall Status: PASS
 
@@ -169,18 +171,19 @@ All audit findings, decisions, and deliverables are stable and documented.
 
     return True
 
+
 def main():
-    print("="*70)
+    print("=" * 70)
     print("PHASE 5–6 FINAL EXECUTOR")
-    print("="*70)
+    print("=" * 70)
 
     phase5_ok = phase5_execution_validation()
     phase6_ok = phase6_final_synthesis()
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("FINAL RUN STATUS")
-    print("="*70)
-    print(f"Timestamp: {datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')}")
+    print("=" * 70)
+    print(f"Timestamp: {datetime.now(UTC).isoformat().replace('+00:00', 'Z')}")
     print("")
     print("PHASE 0 (Scope Lock):         [PASS]")
     print("PHASE 1 (Claim-vs-Reality):   [PASS] (6 verified, 0 missing SoT)")
@@ -199,9 +202,10 @@ def main():
     print("MERGE STATUS: APPROVED ✓")
     print("")
     print("Deliverables: 02_audit_logging/reports/master_audit_swarm/")
-    print("="*70)
+    print("=" * 70)
 
     return phase5_ok and phase6_ok
+
 
 if __name__ == "__main__":
     success = main()

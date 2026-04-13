@@ -108,9 +108,7 @@ def run_guard(repo_root: Path | None = None) -> dict:
     # --- Check 1: Exactly 24 canonical roots ---
     ignored_dirs = ALLOWED_ROOT_DIRS | {"__pycache__", ".pytest_cache", "node_modules"}
     existing_dirs = sorted(
-        d.name
-        for d in repo_root.iterdir()
-        if d.is_dir() and d.name not in ignored_dirs and not d.name.startswith(".")
+        d.name for d in repo_root.iterdir() if d.is_dir() and d.name not in ignored_dirs and not d.name.startswith(".")
     )
     canonical_set = set(CANONICAL_ROOTS)
     existing_set = set(existing_dirs)
@@ -160,11 +158,13 @@ def run_guard(repo_root: Path | None = None) -> dict:
         if yaml_hash in lock_content:
             findings.append({"check": "registry_lock_hash", "severity": "PASS", "details": "hash match"})
         else:
-            findings.append({
-                "check": "registry_lock_hash",
-                "severity": "FAIL",
-                "details": f"yaml_hash={yaml_hash[:16]}... not found in lock",
-            })
+            findings.append(
+                {
+                    "check": "registry_lock_hash",
+                    "severity": "FAIL",
+                    "details": f"yaml_hash={yaml_hash[:16]}... not found in lock",
+                }
+            )
             overall_pass = False
     elif not registry_yaml.exists():
         findings.append({"check": "registry_lock_hash", "severity": "WARN", "details": "registry.yaml missing"})
@@ -178,7 +178,9 @@ def run_guard(repo_root: Path | None = None) -> dict:
         if len(content) > 2:  # more than just "{}" or "[]"
             findings.append({"check": "hash_chain_nonempty", "severity": "PASS", "details": f"{len(content)} bytes"})
         else:
-            findings.append({"check": "hash_chain_nonempty", "severity": "FAIL", "details": "hash_chain.json is empty or trivial"})
+            findings.append(
+                {"check": "hash_chain_nonempty", "severity": "FAIL", "details": "hash_chain.json is empty or trivial"}
+            )
             overall_pass = False
     else:
         findings.append({"check": "hash_chain_nonempty", "severity": "WARN", "details": "hash_chain.json not found"})

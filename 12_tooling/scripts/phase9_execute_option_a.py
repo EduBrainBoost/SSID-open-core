@@ -37,7 +37,6 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import List, Tuple, Optional
 
 
 class PhaseLogger:
@@ -63,17 +62,12 @@ class ProcessRunner:
     """Execute shell commands with error handling."""
 
     @staticmethod
-    def run(cmd: List[str], cwd: Optional[Path] = None, check: bool = True,
-            capture_output: bool = True) -> Tuple[int, str, str]:
+    def run(
+        cmd: list[str], cwd: Path | None = None, check: bool = True, capture_output: bool = True
+    ) -> tuple[int, str, str]:
         """Run command, return (returncode, stdout, stderr)."""
         try:
-            result = subprocess.run(
-                cmd,
-                cwd=cwd,
-                capture_output=capture_output,
-                text=True,
-                check=False
-            )
+            result = subprocess.run(cmd, cwd=cwd, capture_output=capture_output, text=True, check=False)
             return result.returncode, result.stdout, result.stderr
         except Exception as e:
             if check:
@@ -108,8 +102,7 @@ class Phase1CloneRepository:
             # Clone repository
             clone_url = f"https://github.com/{self.target_repo}.git"
             returncode, stdout, stderr = ProcessRunner.run(
-                ["git", "clone", clone_url, str(self.staging_dir)],
-                check=False
+                ["git", "clone", clone_url, str(self.staging_dir)], check=False
             )
 
             if returncode != 0:
@@ -151,7 +144,7 @@ class Phase2ExportRoots:
                 returncode, stdout, stderr = ProcessRunner.run(
                     ["python3", str(export_script), "--target", str(self.target_path)],
                     cwd=self.source_repo,
-                    check=False
+                    check=False,
                 )
 
                 if returncode != 0:
@@ -229,7 +222,7 @@ class Phase3VerifyContent:
             "credentials": [],
             "invalid_claims": [],
             "quickstart_errors": [],
-            "manifest_errors": []
+            "manifest_errors": [],
         }
 
     def execute(self) -> bool:
@@ -260,7 +253,7 @@ class Phase3VerifyContent:
                     self.violations["credentials"].append(str(fpath.relative_to(self.target_path)))
 
                 # Check for actual secret keys with assignment
-                if re.search(r'sk_live_[a-zA-Z0-9]{30,}', content):
+                if re.search(r"sk_live_[a-zA-Z0-9]{30,}", content):
                     self.violations["credentials"].append(str(fpath.relative_to(self.target_path)))
 
             except Exception:
@@ -282,35 +275,49 @@ class Phase3VerifyContent:
 
         # Only check Python files for hardcoded paths (skip comments/strings)
         # Skip files that are allowed to have these patterns
-        if fpath.suffix == ".py" and not any(skip in str(fpath) for skip in ["test_", "_test.py", "examples", "fixtures", "mock"]):
+        if fpath.suffix == ".py" and not any(
+            skip in str(fpath) for skip in ["test_", "_test.py", "examples", "fixtures", "mock"]
+        ):
             # Check for hardcoded local paths in code assignments
             if re.search(r'[\'"]?[Cc]:\\Users\\bibel[^\\]*[\'"]?.*=|os\.path|Path\([\'"][Cc]:\\Users', content):
                 self.violations["local_paths"].append(str(rel_path))
 
         # Check for AWS credentials (strict: must look like actual keys, not patterns)
-        if re.search(r'AKIA[0-9A-Z]{16}', content) and not any(skip in str(fpath) for skip in ["test_", "fixtures", "examples", "mock"]):
+        if re.search(r"AKIA[0-9A-Z]{16}", content) and not any(
+            skip in str(fpath) for skip in ["test_", "fixtures", "examples", "mock"]
+        ):
             self.violations["credentials"].append(str(rel_path))
 
         # Check for SK tokens (strict: must look like real tokens)
-        if re.search(r'sk-[a-zA-Z0-9]{32,}', content) and not any(skip in str(fpath) for skip in ["test_", "fixtures", "examples"]):
+        if re.search(r"sk-[a-zA-Z0-9]{32,}", content) and not any(
+            skip in str(fpath) for skip in ["test_", "fixtures", "examples"]
+        ):
             self.violations["credentials"].append(str(rel_path))
 
         # Check for unbacked mainnet claims (only in production code, not tests/docs)
         if fpath.suffix == ".py" and not any(skip in str(fpath) for skip in ["test_", "spec_", "example", "mock"]):
-            if re.search(r'\bdeployed.*mainnet\b|\blive.*mainnet\b', content, re.IGNORECASE):
-                if not re.search(r'(planned|candidate|proposed|future|not yet|will be|TODO)', content, re.IGNORECASE):
+            if re.search(r"\bdeployed.*mainnet\b|\blive.*mainnet\b", content, re.IGNORECASE):
+                if not re.search(r"(planned|candidate|proposed|future|not yet|will be|TODO)", content, re.IGNORECASE):
                     self.violations["invalid_claims"].append(str(rel_path))
 
     def _report_violations(self):
         """Report violations by category."""
         if self.violations["local_paths"]:
-            self.log.warning(f"Local paths ({len(self.violations['local_paths'])}): {self.violations['local_paths'][:3]}")
+            self.log.warning(
+                f"Local paths ({len(self.violations['local_paths'])}): {self.violations['local_paths'][:3]}"
+            )
         if self.violations["credentials"]:
-            self.log.warning(f"Credentials ({len(self.violations['credentials'])}): {self.violations['credentials'][:3]}")
+            self.log.warning(
+                f"Credentials ({len(self.violations['credentials'])}): {self.violations['credentials'][:3]}"
+            )
         if self.violations["invalid_claims"]:
-            self.log.warning(f"Invalid claims ({len(self.violations['invalid_claims'])}): {self.violations['invalid_claims'][:3]}")
+            self.log.warning(
+                f"Invalid claims ({len(self.violations['invalid_claims'])}): {self.violations['invalid_claims'][:3]}"
+            )
         if self.violations["quickstart_errors"]:
-            self.log.warning(f"Quickstart errors ({len(self.violations['quickstart_errors'])}): {self.violations['quickstart_errors'][:3]}")
+            self.log.warning(
+                f"Quickstart errors ({len(self.violations['quickstart_errors'])}): {self.violations['quickstart_errors'][:3]}"
+            )
 
 
 class Phase4DeterministicSync:
@@ -332,10 +339,16 @@ class Phase4DeterministicSync:
             return True
 
         # Get list of tracked files (non-.git)
-        source_files = {str(f.relative_to(self.source_path)) for f in self.source_path.rglob("*")
-                       if f.is_file() and ".git" not in f.parts}
-        target_files = {str(f.relative_to(self.target_path)) for f in self.target_path.rglob("*")
-                       if f.is_file() and ".git" not in f.parts}
+        source_files = {
+            str(f.relative_to(self.source_path))
+            for f in self.source_path.rglob("*")
+            if f.is_file() and ".git" not in f.parts
+        }
+        target_files = {
+            str(f.relative_to(self.target_path))
+            for f in self.target_path.rglob("*")
+            if f.is_file() and ".git" not in f.parts
+        }
 
         # Add/update files
         for fpath in source_files:
@@ -354,7 +367,9 @@ class Phase4DeterministicSync:
                     dst_file.unlink()
                     self.sync_stats["deleted"] += 1
 
-        self.log.success(f"Sync complete: +{self.sync_stats['added']} ~{self.sync_stats['updated']} -{self.sync_stats['deleted']}")
+        self.log.success(
+            f"Sync complete: +{self.sync_stats['added']} ~{self.sync_stats['updated']} -{self.sync_stats['deleted']}"
+        )
         return True
 
 
@@ -450,7 +465,7 @@ SSID-open-core is licensed under the [Apache License 2.0](LICENSE).
 ## Status
 
 **Release:** v1.0.0
-**Export Date:** {datetime.now().strftime('%Y-%m-%d')}
+**Export Date:** {datetime.now().strftime("%Y-%m-%d")}
 **Verification:** PASS
 **Ready for:** Production use
 
@@ -462,7 +477,7 @@ SSID-open-core is licensed under the [Apache License 2.0](LICENSE).
 
 ---
 
-**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC
+**Last Updated:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} UTC
 """
 
         (self.target_path / "README.md").write_text(readme, encoding="utf-8")
@@ -665,11 +680,7 @@ class Phase6GitOperations:
             return True
 
         # Stage all changes
-        returncode, _, stderr = ProcessRunner.run(
-            ["git", "add", "."],
-            cwd=self.target_path,
-            check=False
-        )
+        returncode, _, stderr = ProcessRunner.run(["git", "add", "."], cwd=self.target_path, check=False)
         if returncode != 0:
             self.log.error(f"git add failed: {stderr}")
             return False
@@ -697,9 +708,7 @@ Export date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC
 """
 
         returncode, stdout, stderr = ProcessRunner.run(
-            ["git", "commit", "-m", commit_msg],
-            cwd=self.target_path,
-            check=False
+            ["git", "commit", "-m", commit_msg], cwd=self.target_path, check=False
         )
 
         if returncode != 0:
@@ -707,11 +716,7 @@ Export date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC
             return False
 
         # Extract commit SHA
-        returncode, stdout, _ = ProcessRunner.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=self.target_path,
-            check=False
-        )
+        returncode, stdout, _ = ProcessRunner.run(["git", "rev-parse", "HEAD"], cwd=self.target_path, check=False)
         if returncode == 0:
             self.commit_sha = stdout.strip()
             self.log.success(f"Created commit {self.commit_sha[:8]}")
@@ -720,15 +725,13 @@ Export date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC
         returncode, _, _ = ProcessRunner.run(
             ["git", "tag", "-a", self.version, "-m", f"SSID-open-core {self.version} - Initial public release"],
             cwd=self.target_path,
-            check=False
+            check=False,
         )
 
         if returncode != 0:
             # Tag might exist, try to get its SHA
             returncode, stdout, _ = ProcessRunner.run(
-                ["git", "rev-list", "-n", "1", self.version],
-                cwd=self.target_path,
-                check=False
+                ["git", "rev-list", "-n", "1", self.version], cwd=self.target_path, check=False
             )
             if returncode == 0:
                 self.tag_sha = stdout.strip()
@@ -738,9 +741,7 @@ Export date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC
                 return False
         else:
             returncode, stdout, _ = ProcessRunner.run(
-                ["git", "rev-list", "-n", "1", self.version],
-                cwd=self.target_path,
-                check=False
+                ["git", "rev-list", "-n", "1", self.version], cwd=self.target_path, check=False
             )
             if returncode == 0:
                 self.tag_sha = stdout.strip()
@@ -769,9 +770,7 @@ class Phase7PushToOrigin:
 
         # Push main branch
         returncode, stdout, stderr = ProcessRunner.run(
-            ["git", "push", "-u", "origin", self.branch],
-            cwd=self.target_path,
-            check=False
+            ["git", "push", "-u", "origin", self.branch], cwd=self.target_path, check=False
         )
 
         if returncode != 0:
@@ -782,17 +781,13 @@ class Phase7PushToOrigin:
 
         # Push tag (get tag name from git describe)
         returncode, tag, _ = ProcessRunner.run(
-            ["git", "describe", "--tags", "--abbrev=0"],
-            cwd=self.target_path,
-            check=False
+            ["git", "describe", "--tags", "--abbrev=0"], cwd=self.target_path, check=False
         )
 
         if returncode == 0:
             tag = tag.strip()
             returncode, stdout, stderr = ProcessRunner.run(
-                ["git", "push", "origin", tag],
-                cwd=self.target_path,
-                check=False
+                ["git", "push", "origin", tag], cwd=self.target_path, check=False
             )
 
             if returncode != 0:
@@ -884,15 +879,25 @@ None
 
 ---
 
-**Release Date:** {datetime.now().strftime('%Y-%m-%d')}
+**Release Date:** {datetime.now().strftime("%Y-%m-%d")}
 **Verification:** All gates passed
 **Ready for:** Production use
 """
 
         returncode, stdout, stderr = ProcessRunner.run(
-            ["gh", "release", "create", self.version, "--title", f"SSID-open-core {self.version}",
-             "--body", release_body, "--repo", self.target_repo],
-            check=False
+            [
+                "gh",
+                "release",
+                "create",
+                self.version,
+                "--title",
+                f"SSID-open-core {self.version}",
+                "--body",
+                release_body,
+                "--repo",
+                self.target_repo,
+            ],
+            check=False,
         )
 
         if returncode != 0:
@@ -919,7 +924,7 @@ class Orchestrator:
             "target_repo": target_repo,
             "staging_dir": str(staging_dir),
             "dry_run": dry_run,
-            "phases": {}
+            "phases": {},
         }
 
     def execute(self) -> int:
@@ -953,7 +958,9 @@ class Orchestrator:
             self.evidence["phases"]["phase4"] = {"status": "SKIPPED", "reason": "Direct export to target"}
 
             # Phase 5: Documentation
-            phase5 = Phase5GenerateDocumentation(phase1.target_path, org=self.target_repo.split("/")[0], dry_run=self.dry_run)
+            phase5 = Phase5GenerateDocumentation(
+                phase1.target_path, org=self.target_repo.split("/")[0], dry_run=self.dry_run
+            )
             if not phase5.execute():
                 return self._external_hard_block("Phase 5 failed: Could not generate documentation")
             self.evidence["phases"]["phase5"] = {"status": "PASS"}
@@ -980,6 +987,7 @@ class Orchestrator:
 
         except Exception as e:
             import traceback
+
             error_msg = f"Unexpected error: {str(e)}\n{traceback.format_exc()}"
             return self._external_hard_block(error_msg)
 
@@ -1013,7 +1021,9 @@ class Orchestrator:
 
     def _save_evidence(self):
         """Save evidence artifact."""
-        evidence_file = Path.cwd() / ".ssid-system" / "evidence" / f"phase9_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        evidence_file = (
+            Path.cwd() / ".ssid-system" / "evidence" / f"phase9_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        )
         evidence_file.parent.mkdir(parents=True, exist_ok=True)
         evidence_file.write_text(json.dumps(self.evidence, indent=2), encoding="utf-8")
 
@@ -1036,7 +1046,7 @@ Examples:
     --target-repo EduBrainBoost/SSID-open-core \\
     --staging-dir /tmp/ssid-phase9-staging \\
     --dry-run
-        """
+        """,
     )
 
     parser.add_argument("--source-repo", required=True, help="Path to SSID source repository")
@@ -1054,10 +1064,7 @@ Examples:
     staging_dir = Path(args.staging_dir)
 
     orchestrator = Orchestrator(
-        source_repo=source_repo,
-        target_repo=args.target_repo,
-        staging_dir=staging_dir,
-        dry_run=args.dry_run
+        source_repo=source_repo, target_repo=args.target_repo, staging_dir=staging_dir, dry_run=args.dry_run
     )
 
     return orchestrator.execute()

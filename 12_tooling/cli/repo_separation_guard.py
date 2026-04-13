@@ -5,12 +5,10 @@ import argparse
 import fnmatch
 import os
 import subprocess
-import sys
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence, Tuple
 
 import yaml
-
 
 FORBIDDEN_GLOBS: Sequence[str] = (
     ".env",
@@ -50,7 +48,7 @@ ADR_TRIGGER_PREFIXES: Sequence[str] = (
 )
 
 
-def _run_git(root: Path, args: List[str]) -> subprocess.CompletedProcess[str]:
+def _run_git(root: Path, args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["git", *args],
         cwd=str(root),
@@ -66,7 +64,7 @@ def _is_git_worktree(root: Path) -> bool:
     return proc.returncode == 0 and (proc.stdout or "").strip().lower() == "true"
 
 
-def _tracked_files(root: Path) -> List[str]:
+def _tracked_files(root: Path) -> list[str]:
     proc = _run_git(root, ["ls-files"])
     if proc.returncode != 0:
         return []
@@ -114,8 +112,8 @@ def _iter_forbidden_glob_matches(root: Path, paths: Iterable[str]) -> Iterable[s
                     yield rel
 
 
-def _validate_plan_specs(root: Path) -> List[str]:
-    problems: List[str] = []
+def _validate_plan_specs(root: Path) -> list[str]:
+    problems: list[str] = []
     schema_path = root / PLAN_SCHEMA
     plans_dir = root / PLANS_DIR
 
@@ -128,9 +126,11 @@ def _validate_plan_specs(root: Path) -> List[str]:
     required = set(schema.get("required", []))
 
     plan_files = sorted(
-        [p for p in plans_dir.glob("*.yaml")
-         if p.name != Path(PLAN_SCHEMA).name
-         and not p.name.startswith("PLANSPEC_")],
+        [
+            p
+            for p in plans_dir.glob("*.yaml")
+            if p.name != Path(PLAN_SCHEMA).name and not p.name.startswith("PLANSPEC_")
+        ],
         key=lambda p: p.name,
     )
     if not plan_files:
@@ -158,14 +158,14 @@ def _validate_plan_specs(root: Path) -> List[str]:
     return problems
 
 
-def _changed_files_for_adr(root: Path) -> Tuple[Optional[List[str]], Optional[str]]:
+def _changed_files_for_adr(root: Path) -> tuple[list[str] | None, str | None]:
     if not _is_git_worktree(root):
         patch_files = _changed_files_from_patch(root)
         if patch_files is not None:
             return patch_files, None
         return None, "ADR diff unavailable (no git worktree and no patch.diff)"
 
-    ranges: List[str] = []
+    ranges: list[str] = []
     base_ref = os.environ.get("GITHUB_BASE_REF", "").strip()
     if base_ref:
         ranges.append(f"origin/{base_ref}...HEAD")
@@ -194,21 +194,21 @@ def _changed_files_for_adr(root: Path) -> Tuple[Optional[List[str]], Optional[st
     return None, last_error or "unable to determine changed files for ADR check"
 
 
-def _changed_files_from_patch(root: Path) -> Optional[List[str]]:
-    candidates: List[Path] = []
+def _changed_files_from_patch(root: Path) -> list[str] | None:
+    candidates: list[Path] = []
     direct = root / "patch.diff"
     if direct.exists():
         candidates.append(direct)
-    candidates.extend(sorted(root.glob("02_audit_logging/agent_runs/*/patch.diff"), key=lambda p: p.stat().st_mtime, reverse=True))
+    candidates.extend(
+        sorted(root.glob("02_audit_logging/agent_runs/*/patch.diff"), key=lambda p: p.stat().st_mtime, reverse=True)
+    )
     if not candidates:
         return None
 
     patch = candidates[0]
-    changed: List[str] = []
+    changed: list[str] = []
     for line in patch.read_text(encoding="utf-8", errors="replace").splitlines():
-        if line.startswith("+++ b/"):
-            rel = line[6:].strip()
-        elif line.startswith("--- a/"):
+        if line.startswith("+++ b/") or line.startswith("--- a/"):
             rel = line[6:].strip()
         else:
             continue
@@ -217,16 +217,16 @@ def _changed_files_from_patch(root: Path) -> Optional[List[str]]:
     return changed
 
 
-def _adr_required(changed_files: List[str]) -> bool:
+def _adr_required(changed_files: list[str]) -> bool:
     return any(any(p.startswith(prefix) for prefix in ADR_TRIGGER_PREFIXES) for p in changed_files)
 
 
-def _adr_present_in_change(changed_files: List[str]) -> bool:
+def _adr_present_in_change(changed_files: list[str]) -> bool:
     return any(p.startswith("16_codex/decisions/ADR_") and p.endswith(".md") for p in changed_files)
 
 
-def _audit_path_violations(paths: Iterable[str]) -> List[str]:
-    violations: List[str] = []
+def _audit_path_violations(paths: Iterable[str]) -> list[str]:
+    violations: list[str] = []
     for rel in paths:
         norm = rel.replace("\\", "/")
         if _has_forbidden_path(norm):
@@ -248,7 +248,7 @@ def main() -> int:
 
     root = Path(args.repo_root).resolve()
     try:
-        failures: List[str] = []
+        failures: list[str] = []
 
         if _is_git_worktree(root):
             scan_paths = _tracked_files(root)

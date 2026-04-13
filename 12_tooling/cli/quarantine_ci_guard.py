@@ -10,6 +10,7 @@ Scans git diff for quarantine-related changes and verifies:
 PASS: no violations
 FAIL: non-canonical write or non-security reason code detected
 """
+
 from __future__ import annotations
 
 import argparse
@@ -57,10 +58,7 @@ def get_changed_files(base: str = "HEAD~1") -> list[str]:
 
 def is_canonical_quarantine_path(path: str) -> bool:
     """Check if a path is within canonical quarantine paths."""
-    for canonical in CANONICAL_QUARANTINE_PATHS:
-        if path.startswith(canonical) or path == canonical.rstrip("/"):
-            return True
-    return False
+    return any(path.startswith(canonical) or path == canonical.rstrip("/") for canonical in CANONICAL_QUARANTINE_PATHS)
 
 
 def check_quarantine_writes(changed_files: list[str]) -> list[str]:
@@ -74,9 +72,7 @@ def check_quarantine_writes(changed_files: list[str]) -> list[str]:
 
 def check_reason_codes() -> list[str]:
     """Verify quarantine chain contains only allowed reason codes."""
-    chain_path = (
-        REPO_ROOT / "02_audit_logging" / "quarantine" / "hash_ledger" / "quarantine_chain.json"
-    )
+    chain_path = REPO_ROOT / "02_audit_logging" / "quarantine" / "hash_ledger" / "quarantine_chain.json"
     violations = []
 
     if not chain_path.exists():
@@ -94,24 +90,20 @@ def check_reason_codes() -> list[str]:
     for entry in data.get("entries", []):
         reason = entry.get("reason_code", "")
         if reason not in ALLOWED_REASON_CODES:
-            violations.append(
-                f"INVALID_REASON_CODE: '{reason}' at chain_index={entry.get('chain_index')}"
-            )
+            violations.append(f"INVALID_REASON_CODE: '{reason}' at chain_index={entry.get('chain_index')}")
 
     return violations
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Quarantine CI Guard (canonical paths + security-only reason codes)"
-    )
+    parser = argparse.ArgumentParser(description="Quarantine CI Guard (canonical paths + security-only reason codes)")
     parser.add_argument(
-        "--base", type=str, default="HEAD~1",
+        "--base",
+        type=str,
+        default="HEAD~1",
         help="Git diff base (default: HEAD~1)",
     )
-    parser.add_argument(
-        "--report", type=str, help="Write JSON report to path"
-    )
+    parser.add_argument("--report", type=str, help="Write JSON report to path")
     args = parser.parse_args()
 
     print("INFO: [GUARD] Running Quarantine CI Guard...")

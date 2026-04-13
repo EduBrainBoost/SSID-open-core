@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 MASTER EXECUTOR — PHASE 0–6 FULL ORCHESTRATION
 Real audit, 10-agent orchestration, safe repairs, merge readiness
@@ -10,10 +9,10 @@ import hashlib
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-sys.stdout.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(encoding="utf-8")
 
 REPO_ROOT = Path.cwd()
 SSID_REPO = Path("C:\\Users\\bibel\\Documents\\Github\\SSID")
@@ -23,10 +22,11 @@ DELIVERABLES = REPO_ROOT / "02_audit_logging/reports/master_audit_swarm"
 WORKLOG_PATH = DELIVERABLES / "09_evidence/WORKLOG.jsonl"
 WORKLOG_PATH.parent.mkdir(parents=True, exist_ok=True)
 
+
 def log_work(phase, task, files_read, files_written, result, notes=""):
     """Append work to WORKLOG."""
     entry = {
-        "ts_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "ts_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "phase": phase,
         "task": task,
         "files_read": files_read,
@@ -37,6 +37,7 @@ def log_work(phase, task, files_read, files_written, result, notes=""):
     with open(WORKLOG_PATH, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry) + "\n")
 
+
 def sha256_file(filepath):
     """Calculate SHA256 of file."""
     sha256_hash = hashlib.sha256()
@@ -45,8 +46,9 @@ def sha256_file(filepath):
             for chunk in iter(lambda: f.read(4096), b""):
                 sha256_hash.update(chunk)
         return sha256_hash.hexdigest()
-    except:
+    except OSError:
         return "ERROR"
+
 
 def phase0_scope_lock():
     """PHASE 0: Scope lock, inventory, ROOT-24 verification."""
@@ -55,7 +57,7 @@ def phase0_scope_lock():
 
     # Scope lock
     scope_lock = {
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "worktree": str(REPO_ROOT),
         "branch": "swarm/2026-04-01-prompt2-master",
         "commit": "ce551741",
@@ -75,7 +77,7 @@ def phase0_scope_lock():
     # Inventur (nutze Phase 0 Outputs, falls vorhanden)
     inv_file = REPO_ROOT / ".ssid-phase0-outputs/INVENTORY_FILESYSTEM.json"
     if inv_file.exists():
-        with open(inv_file, "r", encoding="utf-8") as f:
+        with open(inv_file, encoding="utf-8") as f:
             inventory = json.load(f)
         print(f"  [OK] Inventory loaded: {inventory['total_files']} files, {inventory['total_dirs']} dirs")
     else:
@@ -91,6 +93,7 @@ def phase0_scope_lock():
 
     return inventory, roots_valid
 
+
 def scan_ssid_repo():
     """Scan SSID repo directly."""
     files = []
@@ -101,19 +104,22 @@ def scan_ssid_repo():
             dirs.append(str(Path(root) / d))
         for f in filenames:
             fpath = Path(root) / f
-            files.append({
-                "path": str(fpath.relative_to(SSID_REPO)),
-                "size": fpath.stat().st_size,
-                "sha256": sha256_file(fpath),
-            })
+            files.append(
+                {
+                    "path": str(fpath.relative_to(SSID_REPO)),
+                    "size": fpath.stat().st_size,
+                    "sha256": sha256_file(fpath),
+                }
+            )
 
     return {
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "repo_root": str(SSID_REPO),
         "total_files": len(files),
         "total_dirs": len(dirs),
         "files": files,
     }
+
 
 def phase1_claim_vs_reality(roots):
     """PHASE 1: Extract SoT claims, match vs reality."""
@@ -135,22 +141,26 @@ def phase1_claim_vs_reality(roots):
     for claim_path, claim_type in sot_files.items():
         full_path = SSID_REPO / claim_path
         if full_path.exists():
-            claims.append({
-                "claim": claim_path,
-                "type": claim_type,
-                "status": "EXISTS",
-                "size": full_path.stat().st_size,
-                "sha256": sha256_file(full_path),
-            })
+            claims.append(
+                {
+                    "claim": claim_path,
+                    "type": claim_type,
+                    "status": "EXISTS",
+                    "size": full_path.stat().st_size,
+                    "sha256": sha256_file(full_path),
+                }
+            )
             verified += 1
         else:
-            claims.append({
-                "claim": claim_path,
-                "type": claim_type,
-                "status": "MISSING",
-                "size": None,
-                "sha256": None,
-            })
+            claims.append(
+                {
+                    "claim": claim_path,
+                    "type": claim_type,
+                    "status": "MISSING",
+                    "size": None,
+                    "sha256": None,
+                }
+            )
             missing += 1
 
     print(f"  [OK] Claims: {verified} verified, {missing} missing")
@@ -161,6 +171,7 @@ def phase1_claim_vs_reality(roots):
     log_work("PHASE1", "claim_audit", [], [], "PASS", f"{verified} verified, {missing} missing")
 
     return verified, missing
+
 
 def phase2_gap_engine():
     """PHASE 2: Identify gaps, classify by safety."""
@@ -191,13 +202,17 @@ def phase2_gap_engine():
         for mod in modules:
             mod_path = root_dir / mod if root_dir.exists() else None
             if not mod_path or not mod_path.exists():
-                gaps["apply_required"].append({
-                    "gap": f"{root_name}/{mod}",
-                    "type": "MISSING_MODULE",
-                    "severity": "HIGH",
-                })
+                gaps["apply_required"].append(
+                    {
+                        "gap": f"{root_name}/{mod}",
+                        "type": "MISSING_MODULE",
+                        "severity": "HIGH",
+                    }
+                )
 
-    print(f"  [OK] Gaps identified: {len(gaps['auto_repair_safe'])} auto-safe, {len(gaps['apply_required'])} apply-required")
+    print(
+        f"  [OK] Gaps identified: {len(gaps['auto_repair_safe'])} auto-safe, {len(gaps['apply_required'])} apply-required"
+    )
 
     with open(DELIVERABLES / "03_gap_engine/GAP_MATRIX.json", "w", encoding="utf-8") as f:
         json.dump(gaps, f, indent=2)
@@ -206,12 +221,13 @@ def phase2_gap_engine():
 
     return gaps
 
+
 def phase3_test_first():
     """PHASE 3: Test-first design for gaps."""
     print("\n[PHASE 3] TEST-FIRST DESIGN")
 
     test_plan = {
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "total_gaps": 0,
         "test_coverage_gaps": [],
         "contract_conformance_gaps": [],
@@ -231,6 +247,7 @@ def phase3_test_first():
     log_work("PHASE3", "test_first", [], [], "PASS", f"{len(test_dirs)} test dirs")
 
     return test_plan
+
 
 def phase4_agent_orchestration():
     """PHASE 4: 10-Agent orchestration (deterministic simulation)."""
@@ -327,6 +344,7 @@ def phase4_agent_orchestration():
 
     return agents
 
+
 def phase5_execution():
     """PHASE 5: Execute safe auto-repairs (none identified yet, all APPLY-required)."""
     print("\n[PHASE 5] EXECUTION (Safe Auto-Repairs)")
@@ -335,7 +353,7 @@ def phase5_execution():
     print("  [OK] No safe auto-repairs; all gaps flagged as APPLY-required")
 
     changeset = {
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "auto_repairs_applied": 0,
         "files_written": [],
         "sha256_manifest": [],
@@ -348,13 +366,14 @@ def phase5_execution():
 
     return changeset
 
+
 def phase6_final_synthesis():
     """PHASE 6: Final synthesis, merge readiness, PASS/FAIL."""
     print("\n[PHASE 6] FINAL SYNTHESIS / MERGE READINESS")
 
     # Consolidate all findings
     merge_readiness = {
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "scope_lock_valid": True,
         "audit_complete": True,
         "claim_vs_reality_complete": True,
@@ -382,7 +401,7 @@ def phase6_final_synthesis():
         json.dump(merge_readiness, f, indent=2)
 
     final_pass_fail = f"""# FINAL_PASS_FAIL REPORT
-Timestamp: {datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")}
+Timestamp: {datetime.now(UTC).isoformat().replace("+00:00", "Z")}
 
 ## Status: CONDITIONAL PASS
 
@@ -435,11 +454,12 @@ Then: Final merge
 
     return merge_readiness
 
+
 def main():
     """Execute all phases sequentially."""
-    print("="*70)
+    print("=" * 70)
     print("MASTER EXECUTOR — PHASE 0–6")
-    print("="*70)
+    print("=" * 70)
 
     # Phase 0
     inv, roots_ok = phase0_scope_lock()
@@ -454,21 +474,21 @@ def main():
     gaps = phase2_gap_engine()
 
     # Phase 3
-    test_plan = phase3_test_first()
+    phase3_test_first()
 
     # Phase 4
-    agents = phase4_agent_orchestration()
+    phase4_agent_orchestration()
 
     # Phase 5
-    changeset = phase5_execution()
+    phase5_execution()
 
     # Phase 6
     merge = phase6_final_synthesis()
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("RUN STATUS")
-    print("="*70)
-    print(f"Timestamp: {datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')}")
+    print("=" * 70)
+    print(f"Timestamp: {datetime.now(UTC).isoformat().replace('+00:00', 'Z')}")
     print(f"Scope: {REPO_ROOT}")
     print(f"Deliverables: {DELIVERABLES}")
     print("")
@@ -483,13 +503,14 @@ def main():
     print("FINAL: CONDITIONAL_PASS (blockers documented)")
     print("")
     print("Blockers:")
-    for b in merge['blockers']:
+    for b in merge["blockers"]:
         print(f"  - {b}")
     print("")
     print("Merge Readiness: ALLOWED after blocker resolution")
-    print("="*70)
+    print("=" * 70)
 
     return True
+
 
 if __name__ == "__main__":
     success = main()

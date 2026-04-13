@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """ssidctl incident -- Incident management CLI."""
+
 from __future__ import annotations
 
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -15,12 +16,15 @@ def build_parser(subparsers: argparse._SubParsersAction | None = None) -> argpar
         parser = subparsers.add_parser("incident", help="Incident management CLI")
     else:
         parser = argparse.ArgumentParser(prog="ssidctl incident", description=__doc__)
-    parser.add_argument("action", nargs="?", default="list",
-                        choices=["list", "count", "summary"],
-                        help="Action to perform (default: list)")
+    parser.add_argument(
+        "action",
+        nargs="?",
+        default="list",
+        choices=["list", "count", "summary"],
+        help="Action to perform (default: list)",
+    )
     parser.add_argument("--root", type=str, default=".", help="Repository root path")
-    parser.add_argument("--severity", choices=["low", "medium", "high", "critical"],
-                        help="Filter by severity")
+    parser.add_argument("--severity", choices=["low", "medium", "high", "critical"], help="Filter by severity")
     parser.add_argument("--json", dest="json_output", action="store_true", help="Output in JSON format")
     parser.set_defaults(func=run)
     return parser
@@ -32,10 +36,12 @@ def _scan_incident_artifacts(repo_root: Path) -> list[dict[str, str]]:
     for pattern in ("**/incident*", "**/incidents/**"):
         for p in sorted(repo_root.glob(pattern)):
             if ".git" not in p.parts and p.is_file():
-                incidents.append({
-                    "path": str(p.relative_to(repo_root)),
-                    "status": "open",
-                })
+                incidents.append(
+                    {
+                        "path": str(p.relative_to(repo_root)),
+                        "status": "open",
+                    }
+                )
     return incidents
 
 
@@ -43,7 +49,7 @@ def run(args: argparse.Namespace) -> int:
     """Execute incident command."""
     repo_root = Path(args.root).resolve()
     incidents = _scan_incident_artifacts(repo_root)
-    timestamp = datetime.now(timezone.utc).isoformat()
+    timestamp = datetime.now(UTC).isoformat()
 
     result: dict[str, object] = {
         "command": "incident",

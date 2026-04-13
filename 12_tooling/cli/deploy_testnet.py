@@ -18,6 +18,7 @@ Exit codes:
   0  — Deployment succeeded
   1  — Deployment failed (missing ENV, RPC error, tx revert, etc.)
 """
+
 from __future__ import annotations
 
 import json
@@ -25,7 +26,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 try:
     from web3 import Web3
@@ -42,9 +43,7 @@ __all__ = ["deploy", "load_contract_artifacts", "redact_address"]
 _REPO_ROOT: Path = Path(__file__).resolve().parents[2]
 
 CONTRACTS_DIR: Path = _REPO_ROOT / "24_meta_orchestration" / "contracts"
-AUDIT_DIR: Path = (
-    _REPO_ROOT / "02_audit_logging" / "agent_runs" / "PH3_DEPLOY_SCRIPT_001"
-)
+AUDIT_DIR: Path = _REPO_ROOT / "02_audit_logging" / "agent_runs" / "PH3_DEPLOY_SCRIPT_001"
 ABI_PATH: Path = CONTRACTS_DIR / "proof_registry_abi.json"
 BYTECODE_PATH: Path = CONTRACTS_DIR / "proof_registry_bytecode.json"
 
@@ -76,15 +75,15 @@ def redact_address(addr: str) -> str:
     return f"{addr[:6]}...{addr[-4:]}"
 
 
-def _read_env() -> Tuple[str, int, str]:
+def _read_env() -> tuple[str, int, str]:
     """Read required environment variables. Exits with code 1 on missing values.
 
     Returns:
         Tuple of (rpc_url, chain_id, private_key). private_key is never logged.
     """
-    rpc_url: Optional[str] = os.environ.get("RPC_URL")
-    chain_id_str: Optional[str] = os.environ.get("CHAIN_ID")
-    private_key: Optional[str] = os.environ.get("PRIVATE_KEY")
+    rpc_url: str | None = os.environ.get("RPC_URL")
+    chain_id_str: str | None = os.environ.get("CHAIN_ID")
+    private_key: str | None = os.environ.get("PRIVATE_KEY")
 
     missing = []
     if not rpc_url:
@@ -107,7 +106,7 @@ def _read_env() -> Tuple[str, int, str]:
     return rpc_url, chain_id, private_key  # type: ignore[return-value]
 
 
-def load_contract_artifacts() -> Tuple[list, str]:
+def load_contract_artifacts() -> tuple[list, str]:
     """Load ABI and bytecode from the canonical contracts directory.
 
     Returns:
@@ -122,19 +121,16 @@ def load_contract_artifacts() -> Tuple[list, str]:
     if not BYTECODE_PATH.exists():
         raise FileNotFoundError(f"Bytecode file not found: {BYTECODE_PATH}")
 
-    with open(ABI_PATH, "r", encoding="utf-8") as f:
+    with open(ABI_PATH, encoding="utf-8") as f:
         abi: list = json.load(f)
 
-    with open(BYTECODE_PATH, "r", encoding="utf-8") as f:
-        bytecode_data: Dict[str, Any] = json.load(f)
+    with open(BYTECODE_PATH, encoding="utf-8") as f:
+        bytecode_data: dict[str, Any] = json.load(f)
 
     # Support both 'object' (solc output) and 'bytecode' key names
     bytecode_hex: str = bytecode_data.get("bytecode") or bytecode_data.get("object", "")
     if not bytecode_hex:
-        raise ValueError(
-            f"No bytecode found in {BYTECODE_PATH}: "
-            "expected key 'bytecode' or 'object'"
-        )
+        raise ValueError(f"No bytecode found in {BYTECODE_PATH}: expected key 'bytecode' or 'object'")
     return abi, bytecode_hex
 
 
@@ -147,7 +143,7 @@ def deploy(
     rpc_url: str,
     chain_id: int,
     private_key: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Deploy the ProofRegistry contract and return redacted deployment metadata.
 
     Args:
@@ -170,9 +166,7 @@ def deploy(
     w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={"timeout": RPC_TIMEOUT}))
 
     if not w3.is_connected():
-        raise RuntimeError(
-            "Cannot connect to RPC endpoint. Check RPC_URL and network connectivity."
-        )
+        raise RuntimeError("Cannot connect to RPC endpoint. Check RPC_URL and network connectivity.")
 
     account = w3.eth.account.from_key(private_key)
     deployer_address: str = account.address
@@ -190,7 +184,7 @@ def deploy(
     contract = w3.eth.contract(abi=abi, bytecode=bytecode_hex)
     nonce: int = w3.eth.get_transaction_count(deployer_address)
 
-    tx: Dict[str, Any] = contract.constructor().build_transaction(
+    tx: dict[str, Any] = contract.constructor().build_transaction(
         {
             "chainId": chain_id,
             "from": deployer_address,
@@ -201,10 +195,7 @@ def deploy(
     )
 
     signed_tx = w3.eth.account.sign_transaction(tx, private_key=private_key)
-    raw_tx = (
-        getattr(signed_tx, "raw_transaction", None)
-        or getattr(signed_tx, "rawTransaction", None)
-    )
+    raw_tx = getattr(signed_tx, "raw_transaction", None) or getattr(signed_tx, "rawTransaction", None)
     if raw_tx is None:
         raise RuntimeError("SignedTransaction has no raw tx attribute")
 
@@ -227,7 +218,7 @@ def deploy(
     }
 
 
-def _write_deployment_json(data: Dict[str, Any]) -> Path:
+def _write_deployment_json(data: dict[str, Any]) -> Path:
     """Write deployment.json to the audit logging directory.
 
     The output file contains NO secrets: deployer is redacted, no private key,

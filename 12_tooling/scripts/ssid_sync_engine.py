@@ -9,17 +9,15 @@ Windows-compatible, deterministic file synchronization with:
 - Cross-platform path handling
 """
 
-import os
+import hashlib
 import shutil
 from pathlib import Path
-from typing import Dict, List, Tuple, Set
-import hashlib
 
 
 class SyncEngine:
     """Deterministic bidirectional sync engine."""
 
-    def __init__(self, source: Path, target: Path, preserve_patterns: List[str] = None):
+    def __init__(self, source: Path, target: Path, preserve_patterns: list[str] = None):
         """
         Initialize sync engine.
 
@@ -32,23 +30,14 @@ class SyncEngine:
         self.target = Path(target)
         self.preserve_patterns = preserve_patterns or [".git"]
 
-        self.stats = {
-            "added": 0,
-            "updated": 0,
-            "deleted": 0,
-            "skipped": 0,
-            "errors": 0
-        }
+        self.stats = {"added": 0, "updated": 0, "deleted": 0, "skipped": 0, "errors": 0}
 
         self.errors = []
 
     def should_preserve(self, path: Path) -> bool:
         """Check if path matches preserve patterns."""
         path_parts = path.parts
-        for pattern in self.preserve_patterns:
-            if pattern in path_parts:
-                return True
-        return False
+        return any(pattern in path_parts for pattern in self.preserve_patterns)
 
     def get_file_hash(self, fpath: Path) -> str:
         """Get SHA256 hash of file."""
@@ -58,10 +47,10 @@ class SyncEngine:
                 for chunk in iter(lambda: f.read(4096), b""):
                     sha256.update(chunk)
             return sha256.hexdigest()
-        except Exception as e:
+        except Exception:
             return ""
 
-    def get_source_files(self) -> Dict[str, Path]:
+    def get_source_files(self) -> dict[str, Path]:
         """Get all trackable files in source."""
         files = {}
         if not self.source.exists():
@@ -74,7 +63,7 @@ class SyncEngine:
 
         return files
 
-    def get_target_files(self) -> Dict[str, Path]:
+    def get_target_files(self) -> dict[str, Path]:
         """Get all trackable files in target."""
         files = {}
         if not self.target.exists():
@@ -87,7 +76,7 @@ class SyncEngine:
 
         return files
 
-    def sync(self, dry_run: bool = False) -> Tuple[bool, Dict]:
+    def sync(self, dry_run: bool = False) -> tuple[bool, dict]:
         """
         Synchronize source to target.
 
@@ -170,12 +159,11 @@ class VerificationScanner:
             "credentials": [],
             "invalid_claims": [],
             "quickstart_errors": [],
-            "manifest_errors": []
+            "manifest_errors": [],
         }
 
-    def scan(self) -> Dict[str, List[str]]:
+    def scan(self) -> dict[str, list[str]]:
         """Scan target directory for violations."""
-        import re
 
         files_to_scan = []
         for ext in self.SCAN_EXTENSIONS:
@@ -200,21 +188,21 @@ class VerificationScanner:
         rel_path = fpath.relative_to(self.target)
 
         # Hardcoded local paths
-        if re.search(r'[Cc]:\\Users\\bibel|/c/Users/bibel', content):
+        if re.search(r"[Cc]:\\Users\\bibel|/c/Users/bibel", content):
             self.violations["local_paths"].append(str(rel_path))
 
         # AWS credentials
-        if re.search(r'AKIA[0-9A-Z]{16}', content):
+        if re.search(r"AKIA[0-9A-Z]{16}", content):
             self.violations["credentials"].append(str(rel_path))
 
         # SK tokens
-        if re.search(r'sk-[a-zA-Z0-9]{20,}', content):
+        if re.search(r"sk-[a-zA-Z0-9]{20,}", content):
             self.violations["credentials"].append(str(rel_path))
 
         # Unbacked mainnet claims
         if fpath.suffix == ".py":
-            if re.search(r'mainnet|production.*deployed|live.*blockchain', content, re.IGNORECASE):
-                if not re.search(r'(planned|candidate|proposed|future|not.*yet)', content, re.IGNORECASE):
+            if re.search(r"mainnet|production.*deployed|live.*blockchain", content, re.IGNORECASE):
+                if not re.search(r"(planned|candidate|proposed|future|not.*yet)", content, re.IGNORECASE):
                     self.violations["invalid_claims"].append(str(rel_path))
 
         # Invalid quickstart references

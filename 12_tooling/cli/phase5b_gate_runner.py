@@ -15,7 +15,6 @@ Gates:
 
 from __future__ import annotations
 
-import hashlib
 import json
 import subprocess
 import sys
@@ -48,32 +47,38 @@ def run_gate(gate_num: int, name: str, cmd: list[str]) -> bool:
             print(f"  STDOUT: {result.stdout[:200]}")
         if not passed and result.stderr:
             print(f"  STDERR: {result.stderr[:200]}")
-        GATE_RESULTS.append({
-            "gate": gate_num,
-            "name": name,
-            "passed": passed,
-            "time": elapsed,
-        })
+        GATE_RESULTS.append(
+            {
+                "gate": gate_num,
+                "name": name,
+                "passed": passed,
+                "time": elapsed,
+            }
+        )
         return passed
     except subprocess.TimeoutExpired:
         elapsed = time.time() - start
         print(f"  [FAIL]  {elapsed:.2f}s (timeout)")
-        GATE_RESULTS.append({
-            "gate": gate_num,
-            "name": name,
-            "passed": False,
-            "time": elapsed,
-        })
+        GATE_RESULTS.append(
+            {
+                "gate": gate_num,
+                "name": name,
+                "passed": False,
+                "time": elapsed,
+            }
+        )
         return False
     except Exception as e:
         elapsed = time.time() - start
         print(f"  [FAIL]  {elapsed:.2f}s (error: {e})")
-        GATE_RESULTS.append({
-            "gate": gate_num,
-            "name": name,
-            "passed": False,
-            "time": elapsed,
-        })
+        GATE_RESULTS.append(
+            {
+                "gate": gate_num,
+                "name": name,
+                "passed": False,
+                "time": elapsed,
+            }
+        )
         return False
 
 
@@ -81,7 +86,9 @@ def gate1_syntax_check() -> bool:
     """Gate 1: Python/YAML syntax validation."""
     # Quick Python syntax check on tracked files
     cmd = [
-        "python3", "-m", "py_compile",
+        "python3",
+        "-m",
+        "py_compile",
         "12_tooling/cli/run_all_gates.py",
         "12_tooling/scripts/structure_guard.py",
     ]
@@ -99,19 +106,23 @@ def gate2_type_check() -> bool:
     )
     if check.returncode != 0:
         print("\nGATE 2: type_check")
-        print(f"  [SKIP]  mypy not installed")
-        GATE_RESULTS.append({
-            "gate": 2,
-            "name": "type_check",
-            "passed": True,
-            "time": 0.0,
-            "skipped": True,
-        })
+        print("  [SKIP]  mypy not installed")
+        GATE_RESULTS.append(
+            {
+                "gate": 2,
+                "name": "type_check",
+                "passed": True,
+                "time": 0.0,
+                "skipped": True,
+            }
+        )
         return True
 
     # Type check key modules
     cmd = [
-        "python3", "-m", "mypy",
+        "python3",
+        "-m",
+        "mypy",
         "12_tooling/cli/repo_separation_guard.py",
     ]
     return run_gate(2, "type_check", cmd)
@@ -123,14 +134,16 @@ def gate3_compilation() -> bool:
     hardhat_config = PROJECT_ROOT / "20_foundation" / "hardhat.config.ts"
     if not hardhat_config.exists():
         print("\nGATE 3: compilation")
-        print(f"  [SKIP]  hardhat.config not found")
-        GATE_RESULTS.append({
-            "gate": 3,
-            "name": "compilation",
-            "passed": True,
-            "time": 0.0,
-            "skipped": True,
-        })
+        print("  [SKIP]  hardhat.config not found")
+        GATE_RESULTS.append(
+            {
+                "gate": 3,
+                "name": "compilation",
+                "passed": True,
+                "time": 0.0,
+                "skipped": True,
+            }
+        )
         return True
     cmd = ["npx", "hardhat", "compile"]
     return run_gate(3, "compilation", cmd)
@@ -146,14 +159,16 @@ def gate4_test_suite() -> bool:
 
     if not test_paths:
         print("\nGATE 4: test_suite")
-        print(f"  [SKIP]  no test directories found")
-        GATE_RESULTS.append({
-            "gate": 4,
-            "name": "test_suite",
-            "passed": True,
-            "time": 0.0,
-            "skipped": True,
-        })
+        print("  [SKIP]  no test directories found")
+        GATE_RESULTS.append(
+            {
+                "gate": 4,
+                "name": "test_suite",
+                "passed": True,
+                "time": 0.0,
+                "skipped": True,
+            }
+        )
         return True
 
     print("\nGATE 4: test_suite")
@@ -173,12 +188,14 @@ def gate4_test_suite() -> bool:
         # Only fail if pytest itself fails catastrophically
         if "No module named 'pytest'" in result.stderr or "pytest: command not found" in result.stderr:
             print(f"  [FAIL]  {elapsed:.2f}s (pytest not available)")
-            GATE_RESULTS.append({
-                "gate": 4,
-                "name": "test_suite",
-                "passed": False,
-                "time": elapsed,
-            })
+            GATE_RESULTS.append(
+                {
+                    "gate": 4,
+                    "name": "test_suite",
+                    "passed": False,
+                    "time": elapsed,
+                }
+            )
             return False
         # Count actual test results
         passed = passed_count = result.stdout.count(" passed")
@@ -186,35 +203,41 @@ def gate4_test_suite() -> bool:
         if "error" in result.stdout.lower() and passed_count == 0:
             # All tests have collection errors - SKIP this gate
             print(f"  [SKIP]  {elapsed:.2f}s (test discovery errors)")
-            GATE_RESULTS.append({
-                "gate": 4,
-                "name": "test_suite",
-                "passed": True,
-                "time": elapsed,
-                "skipped": True,
-            })
+            GATE_RESULTS.append(
+                {
+                    "gate": 4,
+                    "name": "test_suite",
+                    "passed": True,
+                    "time": elapsed,
+                    "skipped": True,
+                }
+            )
             return True
         else:
             # Some tests ran or there are no critical errors
             passed = result.returncode == 0
             status = "[PASS]" if passed else "[FAIL]"
             print(f"  {status}  {elapsed:.2f}s")
-            GATE_RESULTS.append({
-                "gate": 4,
-                "name": "test_suite",
-                "passed": passed,
-                "time": elapsed,
-            })
+            GATE_RESULTS.append(
+                {
+                    "gate": 4,
+                    "name": "test_suite",
+                    "passed": passed,
+                    "time": elapsed,
+                }
+            )
             return passed
     except subprocess.TimeoutExpired:
         elapsed = time.time() - start
         print(f"  [FAIL]  {elapsed:.2f}s (timeout)")
-        GATE_RESULTS.append({
-            "gate": 4,
-            "name": "test_suite",
-            "passed": False,
-            "time": elapsed,
-        })
+        GATE_RESULTS.append(
+            {
+                "gate": 4,
+                "name": "test_suite",
+                "passed": False,
+                "time": elapsed,
+            }
+        )
         return False
 
 
@@ -229,14 +252,16 @@ def gate5_coverage() -> bool:
     )
     if check.returncode != 0:
         print("\nGATE 5: coverage")
-        print(f"  [SKIP]  pytest-cov not installed")
-        GATE_RESULTS.append({
-            "gate": 5,
-            "name": "coverage",
-            "passed": True,
-            "time": 0.0,
-            "skipped": True,
-        })
+        print("  [SKIP]  pytest-cov not installed")
+        GATE_RESULTS.append(
+            {
+                "gate": 5,
+                "name": "coverage",
+                "passed": True,
+                "time": 0.0,
+                "skipped": True,
+            }
+        )
         return True
 
     # Find test directories
@@ -247,20 +272,28 @@ def gate5_coverage() -> bool:
 
     if not test_paths:
         print("\nGATE 5: coverage")
-        print(f"  [SKIP]  no test directories found")
-        GATE_RESULTS.append({
-            "gate": 5,
-            "name": "coverage",
-            "passed": True,
-            "time": 0.0,
-            "skipped": True,
-        })
+        print("  [SKIP]  no test directories found")
+        GATE_RESULTS.append(
+            {
+                "gate": 5,
+                "name": "coverage",
+                "passed": True,
+                "time": 0.0,
+                "skipped": True,
+            }
+        )
         return True
 
-    cmd = ["python3", "-m", "pytest"] + test_paths + [
-        "--cov=03_core", "--cov=11_test_simulation",
-        "--cov-report=term", "--cov-fail-under=50",
-    ]
+    cmd = (
+        ["python3", "-m", "pytest"]
+        + test_paths
+        + [
+            "--cov=03_core",
+            "--cov=11_test_simulation",
+            "--cov-report=term",
+            "--cov-fail-under=50",
+        ]
+    )
     return run_gate(5, "coverage", cmd)
 
 
@@ -275,19 +308,23 @@ def gate6_lint() -> bool:
     )
     if check.returncode != 0:
         print("\nGATE 6: lint_check")
-        print(f"  [SKIP]  flake8 not installed")
-        GATE_RESULTS.append({
-            "gate": 6,
-            "name": "lint_check",
-            "passed": True,
-            "time": 0.0,
-            "skipped": True,
-        })
+        print("  [SKIP]  flake8 not installed")
+        GATE_RESULTS.append(
+            {
+                "gate": 6,
+                "name": "lint_check",
+                "passed": True,
+                "time": 0.0,
+                "skipped": True,
+            }
+        )
         return True
 
     # Run flake8 on key modules
     cmd = [
-        "python3", "-m", "flake8",
+        "python3",
+        "-m",
+        "flake8",
         "12_tooling/cli/",
         "--max-line-length=120",
         "--extend-ignore=E203,W503",
@@ -315,22 +352,26 @@ def gate8_evidence() -> bool:
 
     if not sot_registry.exists():
         print(f"  [FAIL]  {time.time() - start:.2f}s (sot_registry missing)")
-        GATE_RESULTS.append({
-            "gate": 8,
-            "name": "evidence_chain",
-            "passed": False,
-            "time": time.time() - start,
-        })
+        GATE_RESULTS.append(
+            {
+                "gate": 8,
+                "name": "evidence_chain",
+                "passed": False,
+                "time": time.time() - start,
+            }
+        )
         return False
 
     if not shards_registry.exists():
         print(f"  [FAIL]  {time.time() - start:.2f}s (shards_registry missing)")
-        GATE_RESULTS.append({
-            "gate": 8,
-            "name": "evidence_chain",
-            "passed": False,
-            "time": time.time() - start,
-        })
+        GATE_RESULTS.append(
+            {
+                "gate": 8,
+                "name": "evidence_chain",
+                "passed": False,
+                "time": time.time() - start,
+            }
+        )
         return False
 
     # Verify registries are valid JSON
@@ -339,22 +380,26 @@ def gate8_evidence() -> bool:
         json.loads(shards_registry.read_text())
         elapsed = time.time() - start
         print(f"  [PASS]  {elapsed:.2f}s")
-        GATE_RESULTS.append({
-            "gate": 8,
-            "name": "evidence_chain",
-            "passed": True,
-            "time": elapsed,
-        })
+        GATE_RESULTS.append(
+            {
+                "gate": 8,
+                "name": "evidence_chain",
+                "passed": True,
+                "time": elapsed,
+            }
+        )
         return True
     except json.JSONDecodeError as e:
         elapsed = time.time() - start
         print(f"  [FAIL]  {elapsed:.2f}s (invalid JSON: {e})")
-        GATE_RESULTS.append({
-            "gate": 8,
-            "name": "evidence_chain",
-            "passed": False,
-            "time": elapsed,
-        })
+        GATE_RESULTS.append(
+            {
+                "gate": 8,
+                "name": "evidence_chain",
+                "passed": False,
+                "time": elapsed,
+            }
+        )
         return False
 
 

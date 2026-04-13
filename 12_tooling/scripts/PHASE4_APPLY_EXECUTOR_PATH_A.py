@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 PHASE 4 — APPLY EXECUTOR (Path A)
 Execute non-core safe repairs under Path A rules (domain-module structure canonical).
@@ -7,20 +6,21 @@ Execute non-core safe repairs under Path A rules (domain-module structure canoni
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-sys.stdout.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(encoding="utf-8")
 
 REPO_ROOT = Path.cwd()
 SSID_REPO = Path("C:\\Users\\bibel\\Documents\\Github\\SSID")
 DELIVERABLES = REPO_ROOT / "02_audit_logging/reports/master_audit_swarm"
 WORKLOG_PATH = DELIVERABLES / "09_evidence/WORKLOG.jsonl"
 
+
 def log_work(phase, task, files_read, files_written, result, notes=""):
     """Append to WORKLOG."""
     entry = {
-        "ts_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "ts_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "phase": phase,
         "task": task,
         "files_read": files_read,
@@ -30,6 +30,7 @@ def log_work(phase, task, files_read, files_written, result, notes=""):
     }
     with open(WORKLOG_PATH, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry) + "\n")
+
 
 def phase4_gap_closure():
     """Close identified gaps under Path A rules."""
@@ -44,21 +45,6 @@ def phase4_gap_closure():
     mapping_file = SSID_REPO / "24_meta_orchestration/registry/domain_shard_mapping.yaml"
     if not mapping_file.exists():
         # Create mapping registry (Path A — logical only, no filesystem change)
-        mapping_content = """# Domain-to-Shard Mapping Registry (Path A — Logical Only)
-# Generated: 2026-04-01
-# This is NOT a filesystem refactor. It's a governance/logical mapping.
-
-mappings:
-  ai_layer: [agents, bridges, compliance_query_processor]
-  core: [validators, smart_contracts, dispatcher, fee_distribution]
-  governance: [policies, rules, reward_logic]
-  identity: [scoring, trust_metrics, reward_handler]
-  compliance: [policies, mappings, jurisdictions]
-  data_layer: [schemas, encryption, contracts]
-  meta_orch: [dispatcher, registry, agents, triggers]
-
-notes: "Path A decision: domain-module structure is canonical. Logical shards for governance only."
-"""
         files_written.append(str(mapping_file))
         gaps_closed += 1
         print("    [OK] Domain-shard mapping registered (logical, no FS refactor)")
@@ -199,6 +185,7 @@ Core logic APPLY-required items are explicit, documented, and non-emergency.
 
     return gaps_closed, files_written
 
+
 def phase4_validation():
     """Validate Phase 4 outputs."""
     print("\n[PHASE 4] VALIDATION")
@@ -217,18 +204,19 @@ def phase4_validation():
 
     return roots_ok
 
+
 def main():
-    print("="*70)
+    print("=" * 70)
     print("PHASE 4 APPLY EXECUTOR — PATH A")
-    print("="*70)
+    print("=" * 70)
 
     gaps_closed, files_written = phase4_gap_closure()
     validation_ok = phase4_validation()
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("PHASE 4 SUMMARY")
-    print("="*70)
-    print(f"Timestamp: {datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')}")
+    print("=" * 70)
+    print(f"Timestamp: {datetime.now(UTC).isoformat().replace('+00:00', 'Z')}")
     print("Decision: Path A operative")
     print(f"Gaps Closed: {gaps_closed}/4")
     print(f"Files Written: {len(files_written)}")
@@ -236,9 +224,10 @@ def main():
     print(f"Status: {'PASS' if validation_ok and gaps_closed == 4 else 'FAIL'}")
     print("")
     print("Next Phase: Phase 5 (Execution validation) → Phase 6 (Final merge readiness)")
-    print("="*70)
+    print("=" * 70)
 
     return validation_ok and gaps_closed == 4
+
 
 if __name__ == "__main__":
     success = main()

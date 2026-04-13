@@ -69,14 +69,17 @@ def cmd_attest() -> int:
 
 def cmd_autopilot(task_id: str, max_iter: int = 5, run_id: str = "") -> int:
     """Run bounded autopilot loop for a specific task."""
-    print(f"EMS Bridge: Starting autopilot run...")
+    print("EMS Bridge: Starting autopilot run...")
     print(f"  Task ID:    {task_id}")
     print(f"  Max iter:   {max_iter}")
 
     args = [
-        "autopilot", "run",
-        "--task-id", task_id,
-        "--max-iter", str(max_iter),
+        "autopilot",
+        "run",
+        "--task-id",
+        task_id,
+        "--max-iter",
+        str(max_iter),
     ]
     if run_id:
         args.extend(["--run-id", run_id])
@@ -94,7 +97,7 @@ def cmd_autopilot(task_id: str, max_iter: int = 5, run_id: str = "") -> int:
     if run_id:
         state_run = STATE_DIR / "runs" / run_id
         evidence_run = EVIDENCE_DIR / "runs" / run_id
-        print(f"\nEvidence paths:")
+        print("\nEvidence paths:")
         print(f"  State:    {state_run}")
         print(f"  Evidence: {evidence_run}")
 

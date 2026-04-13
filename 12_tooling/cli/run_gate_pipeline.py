@@ -19,6 +19,7 @@ Exit codes:
 - 2 DENY
 - 3 ERROR
 """
+
 from __future__ import annotations
 
 import argparse
@@ -31,10 +32,11 @@ import sys
 import tempfile
 import urllib.error
 import urllib.request
+from collections.abc import Iterator
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 from uuid import uuid4
 
 EXIT_PASS = 0
@@ -81,7 +83,7 @@ def _load_module(module_name: str, filename: str) -> Any:
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _git(repo_root: Path, *args: str) -> str:
@@ -101,11 +103,7 @@ def _git(repo_root: Path, *args: str) -> str:
 
 
 def _detect_commit_sha(repo_root: Path) -> str:
-    return (
-        os.environ.get("GATE_COMMIT_SHA")
-        or os.environ.get("GITHUB_SHA")
-        or _git(repo_root, "rev-parse", "HEAD")
-    )
+    return os.environ.get("GATE_COMMIT_SHA") or os.environ.get("GITHUB_SHA") or _git(repo_root, "rev-parse", "HEAD")
 
 
 def _detect_pr_number() -> int | None:
@@ -315,40 +313,20 @@ def _summarize(stage_ledgers: list[dict[str, Any]], aggregated_findings: list[di
 
 def _aggregate_artifacts(stage_ledgers: list[dict[str, Any]]) -> list[str]:
     return sorted(
-        {
-            artifact
-            for ledger in stage_ledgers
-            for artifact in _ensure_list(ledger.get("artifacts"))
-            if artifact
-        }
+        {artifact for ledger in stage_ledgers for artifact in _ensure_list(ledger.get("artifacts")) if artifact}
     )
 
 
 def _aggregate_refs(stage_ledgers: list[dict[str, Any]]) -> dict[str, list[str]]:
     return {
         "registry_refs": sorted(
-            {
-                ref
-                for ledger in stage_ledgers
-                for ref in _ensure_list(ledger.get("registry_refs"))
-                if ref
-            }
+            {ref for ledger in stage_ledgers for ref in _ensure_list(ledger.get("registry_refs")) if ref}
         ),
         "evidence_refs": sorted(
-            {
-                ref
-                for ledger in stage_ledgers
-                for ref in _ensure_list(ledger.get("evidence_refs"))
-                if ref
-            }
+            {ref for ledger in stage_ledgers for ref in _ensure_list(ledger.get("evidence_refs")) if ref}
         ),
         "source_of_truth_refs": sorted(
-            {
-                ref
-                for ledger in stage_ledgers
-                for ref in _ensure_list(ledger.get("source_of_truth_refs"))
-                if ref
-            }
+            {ref for ledger in stage_ledgers for ref in _ensure_list(ledger.get("source_of_truth_refs")) if ref}
         ),
         "sub_run_ids": [ledger["run_id"] for ledger in stage_ledgers],
     }
@@ -496,7 +474,9 @@ def _ingest_ems(base_url: str, pipeline_ledger: dict[str, Any], sub_runs: list[d
 
 
 @contextmanager
-def _pipeline_env(correlation_id: str, pipeline_run_id: str, commit_sha: str, pr_number: int | None, trigger: str) -> Iterator[None]:
+def _pipeline_env(
+    correlation_id: str, pipeline_run_id: str, commit_sha: str, pr_number: int | None, trigger: str
+) -> Iterator[None]:
     previous = {key: os.environ.get(key) for key in _CHILD_ENV_KEYS}
     os.environ["GATE_CORRELATION_ID"] = correlation_id
     os.environ["GATE_PARENT_RUN_ID"] = pipeline_run_id
@@ -517,7 +497,7 @@ def _pipeline_env(correlation_id: str, pipeline_run_id: str, commit_sha: str, pr
 
 
 def _stage_run_id(stage_name: str) -> str:
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     return f"{stage_name}_{stamp}_{uuid4().hex[:8]}"
 
 
@@ -528,7 +508,7 @@ def run_gate_pipeline(
     strict: bool = False,
 ) -> dict[str, Any]:
     timestamp_utc = _utc_now()
-    pipeline_run_id = f"gate_pipeline_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}_{uuid4().hex[:8]}"
+    pipeline_run_id = f"gate_pipeline_{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}_{uuid4().hex[:8]}"
     correlation_id = pipeline_run_id
     commit_sha = _detect_commit_sha(canonical_root)
     pr_number = _detect_pr_number()
@@ -543,9 +523,7 @@ def run_gate_pipeline(
             stage_run_id = _stage_run_id(stage_name)
             try:
                 module = _load_module(attr_name, filename)
-                if stage_name == "canonicalization":
-                    stage_result = getattr(module, attr_name)(canonical_root, resolved_output, strict=strict)
-                elif stage_name == "registry_enforcement":
+                if stage_name == "canonicalization" or stage_name == "registry_enforcement":
                     stage_result = getattr(module, attr_name)(canonical_root, resolved_output, strict=strict)
                 elif stage_name == "promotion_gate":
                     if derivative_root is None:
@@ -556,7 +534,9 @@ def run_gate_pipeline(
                             "findings": [],
                         }
                     else:
-                        stage_result = getattr(module, attr_name)(canonical_root, derivative_root, resolved_output, strict=strict)
+                        stage_result = getattr(module, attr_name)(
+                            canonical_root, derivative_root, resolved_output, strict=strict
+                        )
                 else:
                     with tempfile.NamedTemporaryFile(
                         mode="w",

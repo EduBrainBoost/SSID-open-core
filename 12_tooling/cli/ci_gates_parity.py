@@ -3,6 +3,7 @@
 SSID CI Gates Parity Checker v4.1
 Ensures local gates match CI gates exactly
 """
+
 from __future__ import annotations
 
 import argparse
@@ -11,7 +12,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 
 class CIGatesParityChecker:
@@ -23,18 +24,12 @@ class CIGatesParityChecker:
         self.local_gates_script = repo_root / "12_tooling" / "cli" / "run_all_gates.py"
         self.dispatcher = repo_root / "12_tooling" / "cli" / "ssid_dispatcher.py"
 
-    def _run_command(self, cmd: List[str], cwd: Path = None) -> Tuple[int, str, str]:
+    def _run_command(self, cmd: list[str], cwd: Path = None) -> tuple[int, str, str]:
         """Run command and return exit code, stdout, stderr"""
-        proc = subprocess.run(
-            cmd,
-            cwd=cwd or self.repo_root,
-            capture_output=True,
-            text=True,
-            encoding="utf-8"
-        )
+        proc = subprocess.run(cmd, cwd=cwd or self.repo_root, capture_output=True, text=True, encoding="utf-8")
         return proc.returncode, proc.stdout, proc.stderr
 
-    def _parse_ci_gates(self) -> List[Dict[str, Any]]:
+    def _parse_ci_gates(self) -> list[dict[str, Any]]:
         """Parse CI gates configuration from GitHub Actions workflow"""
         if not self.ci_config.exists():
             return []
@@ -72,53 +67,61 @@ class CIGatesParityChecker:
 
         return gates
 
-    def _get_local_gates(self) -> List[Dict[str, Any]]:
+    def _get_local_gates(self) -> list[dict[str, Any]]:
         """Get local gates configuration"""
         gates = []
 
         # Policy gate
         policy_cmd = [sys.executable, str(self.local_gates_script), "--policy-only"]
-        gates.append({
-            "name": "policy",
-            "type": "policy_gate",
-            "command": " ".join(policy_cmd),
-            "script": str(self.local_gates_script),
-            "args": ["--policy-only"]
-        })
+        gates.append(
+            {
+                "name": "policy",
+                "type": "policy_gate",
+                "command": " ".join(policy_cmd),
+                "script": str(self.local_gates_script),
+                "args": ["--policy-only"],
+            }
+        )
 
         # SoT gate
         sot_cmd = [sys.executable, str(self.local_gates_script)]
-        gates.append({
-            "name": "sot",
-            "type": "sot_gate",
-            "command": " ".join(sot_cmd),
-            "script": str(self.local_gates_script),
-            "args": []
-        })
+        gates.append(
+            {
+                "name": "sot",
+                "type": "sot_gate",
+                "command": " ".join(sot_cmd),
+                "script": str(self.local_gates_script),
+                "args": [],
+            }
+        )
 
         # QA Master Suite
         qa_cmd = [sys.executable, "02_audit_logging/archives/qa_master_suite/qa_master_suite.py", "--mode", "minimal"]
-        gates.append({
-            "name": "qa",
-            "type": "qa_master_suite",
-            "command": " ".join(qa_cmd),
-            "script": "02_audit_logging/archives/qa_master_suite/qa_master_suite.py",
-            "args": ["--mode", "minimal"]
-        })
+        gates.append(
+            {
+                "name": "qa",
+                "type": "qa_master_suite",
+                "command": " ".join(qa_cmd),
+                "script": "02_audit_logging/archives/qa_master_suite/qa_master_suite.py",
+                "args": ["--mode", "minimal"],
+            }
+        )
 
         # Dispatcher gates
         dispatcher_cmd = [sys.executable, str(self.dispatcher), "gates"]
-        gates.append({
-            "name": "dispatcher",
-            "type": "dispatcher_gates",
-            "command": " ".join(dispatcher_cmd),
-            "script": str(self.dispatcher),
-            "args": ["gates"]
-        })
+        gates.append(
+            {
+                "name": "dispatcher",
+                "type": "dispatcher_gates",
+                "command": " ".join(dispatcher_cmd),
+                "script": str(self.dispatcher),
+                "args": ["gates"],
+            }
+        )
 
         return gates
 
-    def _compare_gate_commands(self, ci_gate: Dict[str, Any], local_gate: Dict[str, Any]) -> List[str]:
+    def _compare_gate_commands(self, ci_gate: dict[str, Any], local_gate: dict[str, Any]) -> list[str]:
         """Compare CI and local gate commands"""
         differences = []
 
@@ -135,7 +138,9 @@ class CIGatesParityChecker:
 
         return differences
 
-    def _run_gate_comparison(self, gate_name: str, ci_gate: Dict[str, Any], local_gate: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_gate_comparison(
+        self, gate_name: str, ci_gate: dict[str, Any], local_gate: dict[str, Any]
+    ) -> dict[str, Any]:
         """Run both CI and local gates and compare results"""
         result = {
             "gate_name": gate_name,
@@ -147,7 +152,7 @@ class CIGatesParityChecker:
             "local_stderr": "",
             "exit_codes_match": False,
             "outputs_match": False,
-            "differences": []
+            "differences": [],
         }
 
         # Run CI gate command
@@ -158,13 +163,17 @@ class CIGatesParityChecker:
         # Run local gate command
         if local_gate.get("command"):
             local_cmd_parts = local_gate["command"].split()
-            result["local_exit_code"], result["local_stdout"], result["local_stderr"] = self._run_command(local_cmd_parts)
+            result["local_exit_code"], result["local_stdout"], result["local_stderr"] = self._run_command(
+                local_cmd_parts
+            )
 
         # Compare results
         if result["ci_exit_code"] is not None and result["local_exit_code"] is not None:
             result["exit_codes_match"] = result["ci_exit_code"] == result["local_exit_code"]
             if not result["exit_codes_match"]:
-                result["differences"].append(f"Exit code mismatch: CI={result['ci_exit_code']}, Local={result['local_exit_code']}")
+                result["differences"].append(
+                    f"Exit code mismatch: CI={result['ci_exit_code']}, Local={result['local_exit_code']}"
+                )
 
         # Compare outputs (normalize whitespace)
         ci_stdout_norm = " ".join(result["ci_stdout"].split()) if result["ci_stdout"] else ""
@@ -175,19 +184,22 @@ class CIGatesParityChecker:
 
         return result
 
-    def check_parity(self, run_comparison: bool = False) -> Dict[str, Any]:
+    def check_parity(self, run_comparison: bool = False) -> dict[str, Any]:
         """Check parity between CI and local gates"""
         ci_gates = self._parse_ci_gates()
         local_gates = self._get_local_gates()
 
         parity_report = {
-            "check_timestamp": datetime.datetime.now(datetime.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+            "check_timestamp": datetime.datetime.now(datetime.UTC)
+            .replace(microsecond=0)
+            .isoformat()
+            .replace("+00:00", "Z"),
             "ci_gates_count": len(ci_gates),
             "local_gates_count": len(local_gates),
             "gates_match": len(ci_gates) == len(local_gates),
             "gate_results": {},
             "overall_parity": True,
-            "recommendations": []
+            "recommendations": [],
         }
 
         # Map gates by name for comparison
@@ -206,7 +218,7 @@ class CIGatesParityChecker:
                 "ci_exists": ci_gate is not None,
                 "local_exists": local_gate is not None,
                 "command_differences": [],
-                "comparison_result": None
+                "comparison_result": None,
             }
 
             if ci_gate and local_gate:
@@ -239,7 +251,7 @@ class CIGatesParityChecker:
 
         return parity_report
 
-    def fix_parity(self) -> List[str]:
+    def fix_parity(self) -> list[str]:
         """Attempt to fix parity issues automatically"""
         fixes_applied = []
 
@@ -253,12 +265,11 @@ class CIGatesParityChecker:
 
         return fixes_applied
 
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="SSID CI Gates Parity Checker v4.1")
-    parser.add_argument("--run-comparison", action="store_true",
-                       help="Run actual gate commands to compare results")
-    parser.add_argument("--fix", action="store_true",
-                       help="Attempt to fix parity issues automatically")
+    parser.add_argument("--run-comparison", action="store_true", help="Run actual gate commands to compare results")
+    parser.add_argument("--fix", action="store_true", help="Attempt to fix parity issues automatically")
     parser.add_argument("--repo-root", help="Repository root (default: auto-detect)")
     parser.add_argument("--output-json", help="Output parity report to JSON file")
 
@@ -290,7 +301,9 @@ def main() -> int:
 
             if result.get("comparison_result") and not result["comparison_result"]["exit_codes_match"]:
                 print(f"\\n{gate_name.upper()} Gate:")
-                print(f"  - Exit code mismatch: CI={result['comparison_result']['ci_exit_code']}, Local={result['comparison_result']['local_exit_code']}")
+                print(
+                    f"  - Exit code mismatch: CI={result['comparison_result']['ci_exit_code']}, Local={result['comparison_result']['local_exit_code']}"
+                )
 
         print("\\n=== RECOMMENDATIONS ===")
         for rec in parity_report["recommendations"]:
@@ -316,6 +329,7 @@ def main() -> int:
             print("  No automatic fixes available")
 
     return 0 if parity_report["overall_parity"] else 1
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

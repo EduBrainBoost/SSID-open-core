@@ -14,7 +14,6 @@ Usage:
 """
 
 import argparse
-import json
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -23,12 +22,7 @@ from pathlib import Path
 def run_command(cmd, check=True, capture_output=True):
     """Execute shell command and return result."""
     print(f"  > {' '.join(cmd)}")
-    result = subprocess.run(
-        cmd,
-        check=check,
-        capture_output=capture_output,
-        text=True
-    )
+    result = subprocess.run(cmd, check=check, capture_output=capture_output, text=True)
     return result
 
 
@@ -37,17 +31,13 @@ def export_files(source_repo, target_dir):
     print("\n[1/5] Exporting files...")
     source_repo = Path(source_repo)
 
-    cmd = [
-        "python3",
-        str(source_repo / "12_tooling/scripts/export_open_core.py"),
-        "--target", str(target_dir)
-    ]
+    cmd = ["python3", str(source_repo / "12_tooling/scripts/export_open_core.py"), "--target", str(target_dir)]
 
     result = run_command(cmd)
     print(result.stdout)
 
     if result.returncode != 0:
-        print(f"ERROR: Export failed")
+        print("ERROR: Export failed")
         print(result.stderr)
         return False
 
@@ -73,14 +63,14 @@ def verify_export(target_dir):
             if "Users" in content and "bibel" in content:
                 violations += 1
                 print(f"  WARNING: Hardcoded path in {py_file.relative_to(target_dir)}")
-        except:
+        except OSError:
             pass
 
     if violations > 0:
         print(f"  ERROR: Found {violations} hardcoded path violations")
         return False
 
-    print(f"  Verification: PASS")
+    print("  Verification: PASS")
     return True
 
 
@@ -148,14 +138,14 @@ See [LICENSE](LICENSE) for details.
 ## Status
 
 **Release:** v1.0.0
-**Export Date:** {datetime.now().strftime('%Y-%m-%d')}
+**Export Date:** {datetime.now().strftime("%Y-%m-%d")}
 **Files:** 247
 **Verification:** PASS
 **Ready for:** Production use
 """
 
     (target_dir / "README.md").write_text(readme)
-    print(f"  Generated: README.md")
+    print("  Generated: README.md")
 
     # CONTRIBUTING
     contributing = """# Contributing to SSID-open-core
@@ -214,7 +204,7 @@ Be respectful, inclusive, and constructive in all interactions.
 """
 
     (target_dir / "CONTRIBUTING.md").write_text(contributing)
-    print(f"  Generated: CONTRIBUTING.md")
+    print("  Generated: CONTRIBUTING.md")
 
     # LICENSE (Apache 2.0)
     apache_license = """Apache License
@@ -248,7 +238,7 @@ For complete license text, visit: https://www.apache.org/licenses/LICENSE-2.0.tx
 """
 
     (target_dir / "LICENSE").write_text(apache_license)
-    print(f"  Generated: LICENSE (Apache 2.0)")
+    print("  Generated: LICENSE (Apache 2.0)")
 
     return True
 
@@ -288,10 +278,7 @@ Phases completed:
   Phase 8: Final verification"""
 
     if not dry_run:
-        result = run_command(
-            ["git", "-C", str(target_dir), "commit", "-m", commit_message],
-            check=False
-        )
+        result = run_command(["git", "-C", str(target_dir), "commit", "-m", commit_message], check=False)
         if result.returncode != 0:
             print("  ERROR: Failed to create commit")
             return False
@@ -302,9 +289,17 @@ Phases completed:
     # Create version tag
     if not dry_run:
         result = run_command(
-            ["git", "-C", str(target_dir), "tag", "-a", "v1.0.0",
-             "-m", "SSID-open-core v1.0.0 - Initial public release"],
-            check=False
+            [
+                "git",
+                "-C",
+                str(target_dir),
+                "tag",
+                "-a",
+                "v1.0.0",
+                "-m",
+                "SSID-open-core v1.0.0 - Initial public release",
+            ],
+            check=False,
         )
         if result.returncode != 0:
             print("  WARNING: Failed to create tag (may already exist)")
@@ -313,7 +308,7 @@ Phases completed:
         print("  [DRY-RUN] Would create version tag v1.0.0")
 
     # Show push command
-    print(f"\n  To push to GitHub:")
+    print("\n  To push to GitHub:")
     print(f"    git -C {target_dir} push -u origin main")
     print(f"    git -C {target_dir} push origin v1.0.0")
 
@@ -321,9 +316,7 @@ Phases completed:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Export and publish SSID-open-core to public repository"
-    )
+    parser = argparse.ArgumentParser(description="Export and publish SSID-open-core to public repository")
     parser.add_argument("--source", required=True, help="Source SSID repository path")
     parser.add_argument("--target", required=True, help="Target export directory")
     parser.add_argument("--license", default="apache2", help="License type")

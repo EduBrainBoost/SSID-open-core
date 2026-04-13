@@ -8,6 +8,7 @@ Usage:
     shard_conformance_gate.py --root 03_core --all-shards
     shard_conformance_gate.py --root 03_core --all-shards --report report.json
 """
+
 from __future__ import annotations
 
 import argparse
@@ -101,7 +102,7 @@ def _check_schema_valid(schema_paths):
 
 def _check_pii_denial(schemas, schema_paths):
     viols = []
-    for schema, sp in zip(schemas, schema_paths):
+    for schema, sp in zip(schemas, schema_paths, strict=False):
         pv, uv = [], []
         _walk_pii(schema, "", pv)
         _walk_url(schema, "", uv)
@@ -200,6 +201,7 @@ def _check_shard(root_name, sd):
 def _load_canonical_consumption_policy():
     """Dynamically load CanonicalConsumptionPolicy from 03_core/validators/runtime/."""
     import importlib.util
+
     module_path = PROJECT_ROOT / "03_core" / "validators" / "runtime" / "canonical_runtime_consumption.py"
     if not module_path.exists():
         return None
@@ -214,6 +216,7 @@ def _load_canonical_consumption_policy():
 def _load_bypass_detector():
     """Dynamically load RuntimeBypassDetector from 03_core/validators/runtime/."""
     import importlib.util
+
     module_path = PROJECT_ROOT / "03_core" / "validators" / "runtime" / "runtime_bypass_detector.py"
     if not module_path.exists():
         return None
@@ -268,28 +271,38 @@ def _check_canonical_runtime_consumption(root_name, shard_dirs):
             for bf in bypass_findings:
                 print(f"  FAIL: {root_name}/shards/{shard_name} -- BYPASS:{bf.pattern_type}: {bf.detail}")
 
-        details.append({
-            "shard": shard_name,
-            "status": "fail" if (result.status == "fail" or bypass_findings) else "pass",
-            "consumption_findings": [f.to_dict() for f in result.findings],
-            "bypass_findings": [bf.to_dict() for bf in bypass_findings],
-        })
+        details.append(
+            {
+                "shard": shard_name,
+                "status": "fail" if (result.status == "fail" or bypass_findings) else "pass",
+                "consumption_findings": [f.to_dict() for f in result.findings],
+                "bypass_findings": [bf.to_dict() for bf in bypass_findings],
+            }
+        )
 
     return passed, failed, total_findings, details
 
 
 def main():
-    ap = argparse.ArgumentParser(prog="shard_conformance_gate.py",
-        description="Gate: validate contracts, schemas, PII denial, and conformance fixtures.")
+    ap = argparse.ArgumentParser(
+        prog="shard_conformance_gate.py",
+        description="Gate: validate contracts, schemas, PII denial, and conformance fixtures.",
+    )
     ap.add_argument("--root", required=True, help="Root dirname (e.g. 03_core)")
     sg = ap.add_mutually_exclusive_group(required=True)
     sg.add_argument("--shard", type=str, help="Single shard name")
     sg.add_argument("--all-shards", action="store_true", help="Check all shards with contracts/")
     ap.add_argument("--report", type=str, help="Write JSON report to path")
-    ap.add_argument("--verify-canonical-runtime-consumption", action="store_true",
-                    help="Verify canonical runtime consumption patterns (WAVE_06)")
-    ap.add_argument("--fail-on-drift", action="store_true",
-                    help="Fail on registry drift (implies --verify-canonical-runtime-consumption)")
+    ap.add_argument(
+        "--verify-canonical-runtime-consumption",
+        action="store_true",
+        help="Verify canonical runtime consumption patterns (WAVE_06)",
+    )
+    ap.add_argument(
+        "--fail-on-drift",
+        action="store_true",
+        help="Fail on registry drift (implies --verify-canonical-runtime-consumption)",
+    )
     args = ap.parse_args()
     if args.fail_on_drift:
         args.verify_canonical_runtime_consumption = True
@@ -323,7 +336,8 @@ def main():
     if args.verify_canonical_runtime_consumption:
         print("\n--- Canonical Runtime Consumption (WAVE_06) ---")
         c_passed, c_failed, c_findings, c_details = _check_canonical_runtime_consumption(
-            args.root, shard_dirs,
+            args.root,
+            shard_dirs,
         )
         consumption_report = {
             "passed": c_passed,
@@ -343,8 +357,13 @@ def main():
             print("INFO: No shards with runtime/index.yaml found for consumption checks")
 
     overall = "PASS" if worst == 0 else ("ERROR" if worst == 2 else "FAIL")
-    report = {"gate": "shard_conformance_gate", "root": args.root,
-              "overall_verdict": overall, "shard_count": len(results), "results": results}
+    report = {
+        "gate": "shard_conformance_gate",
+        "root": args.root,
+        "overall_verdict": overall,
+        "shard_count": len(results),
+        "results": results,
+    }
     if consumption_report:
         report["canonical_runtime_consumption"] = consumption_report
     if args.report:

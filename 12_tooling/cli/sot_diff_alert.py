@@ -70,15 +70,9 @@ def generate_diff_alert(write_output=False):
     diff_alert = {
         "schema_version": "1.0.0",
         "status": status,
-        "changes": sorted(
-            changes, key=lambda x: (x.get("name", ""), x.get("path", ""))
-        ),
-        "missing": sorted(
-            missing, key=lambda x: (x.get("name", ""), x.get("path", ""))
-        ),
-        "mismatched_hashes": sorted(
-            mismatched_hashes, key=lambda x: (x.get("name", ""), x.get("path", ""))
-        ),
+        "changes": sorted(changes, key=lambda x: (x.get("name", ""), x.get("path", ""))),
+        "missing": sorted(missing, key=lambda x: (x.get("name", ""), x.get("path", ""))),
+        "mismatched_hashes": sorted(mismatched_hashes, key=lambda x: (x.get("name", ""), x.get("path", ""))),
     }
 
     if not write_output:

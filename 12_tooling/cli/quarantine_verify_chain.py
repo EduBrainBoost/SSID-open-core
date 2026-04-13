@@ -6,6 +6,7 @@ Recomputes chain hashes and verifies no entries were modified or removed.
 PASS: chain is valid (or genesis/empty)
 FAIL: chain integrity violation detected
 """
+
 from __future__ import annotations
 
 import argparse
@@ -14,9 +15,7 @@ import json
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-HASH_LEDGER = (
-    REPO_ROOT / "02_audit_logging" / "quarantine" / "hash_ledger" / "quarantine_chain.json"
-)
+HASH_LEDGER = REPO_ROOT / "02_audit_logging" / "quarantine" / "hash_ledger" / "quarantine_chain.json"
 
 
 def verify_chain(ledger_path: Path) -> tuple[bool, list[str]]:
@@ -48,10 +47,7 @@ def verify_chain(ledger_path: Path) -> tuple[bool, list[str]]:
     for i, entry in enumerate(entries):
         expected_index = i
         if entry.get("chain_index") != expected_index:
-            findings.append(
-                f"FAIL: Entry {i} has chain_index={entry.get('chain_index')}, "
-                f"expected {expected_index}"
-            )
+            findings.append(f"FAIL: Entry {i} has chain_index={entry.get('chain_index')}, expected {expected_index}")
             continue
 
         prev_hash = entries[i - 1]["chain_hash"] if i > 0 else "GENESIS"
@@ -68,9 +64,7 @@ def verify_chain(ledger_path: Path) -> tuple[bool, list[str]]:
     # Check entry count consistency
     declared = data.get("entry_count", -1)
     if declared != len(entries):
-        findings.append(
-            f"FAIL: Declared entry_count={declared} but found {len(entries)} entries"
-        )
+        findings.append(f"FAIL: Declared entry_count={declared} but found {len(entries)} entries")
 
     fail_count = sum(1 for f in findings if f.startswith("FAIL"))
     if fail_count > 0:
@@ -81,18 +75,14 @@ def verify_chain(ledger_path: Path) -> tuple[bool, list[str]]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Quarantine Chain Verifier (append-only integrity check)"
-    )
+    parser = argparse.ArgumentParser(description="Quarantine Chain Verifier (append-only integrity check)")
     parser.add_argument(
         "--ledger",
         type=str,
         default=str(HASH_LEDGER),
         help="Path to quarantine_chain.json",
     )
-    parser.add_argument(
-        "--report", type=str, help="Write JSON report to path"
-    )
+    parser.add_argument("--report", type=str, help="Write JSON report to path")
     args = parser.parse_args()
 
     ledger_path = Path(args.ledger)

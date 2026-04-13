@@ -1,34 +1,36 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 MASTER EXECUTOR — PHASES 7–10
 Sequenzielle Execution: EMS E2E → Core Logic APPLY → Release → Deploy
 """
 
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-sys.stdout.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(encoding="utf-8")
 
 REPO_ROOT = Path.cwd()
 SSID_REPO = Path("C:\\Users\\bibel\\Documents\\Github\\SSID")
 EMS_REPO = Path("C:\\Users\\bibel\\Documents\\Github\\SSID-EMS")
 DELIVERABLES = REPO_ROOT / "02_audit_logging/reports"
 
+
 def log_phase(phase, status, notes=""):
     """Log phase status."""
-    entry = {
-        "ts_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+    {
+        "ts_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "phase": phase,
         "status": status,
         "notes": notes,
     }
     print(f"[{phase}] {status} — {notes}")
 
+
 # ============================================================================
 # PHASE 7 — EMS Cross-Repo E2E Validation
 # ============================================================================
+
 
 def phase7_ems_e2e():
     """Validate SSID-EMS integration (read-only, no writes to EMS repo)."""
@@ -43,8 +45,8 @@ def phase7_ems_e2e():
     print(f"  [*] EMS repo found: {EMS_REPO}")
 
     # Read-only audit of EMS integration points
-    ems_checks = {
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+    {
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "scope": "SSID-EMS cross-repo integration (read-only)",
         "checks": [
             {"name": "EMS Backend API", "status": "PRESENT", "path": "backend/api"},
@@ -65,9 +67,11 @@ def phase7_ems_e2e():
     log_phase("7", "PASS", "EMS E2E audit complete (read-only)")
     return True
 
+
 # ============================================================================
 # PHASE 8 — Core Logic APPLY
 # ============================================================================
+
 
 def phase8_core_apply():
     """Apply core logic integrations (dispatcher, fee distribution, contracts)."""
@@ -78,8 +82,8 @@ def phase8_core_apply():
     print("  [GATE] Require explicit APPLY approval for core logic")
     print("  [GATE] User approval: ASSUMED (batch execution mode)")
 
-    core_integrations = {
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+    {
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "modules": [
             {
                 "module": "Dispatcher (Blueprint 4.1)",
@@ -122,17 +126,19 @@ def phase8_core_apply():
     log_phase("8", "PASS", "Core logic APPLY complete")
     return True
 
+
 # ============================================================================
 # PHASE 9 — Release Preparation
 # ============================================================================
+
 
 def phase9_release_prep():
     """Prepare for release: versioning, SBOM, artifacts."""
     print("\n[PHASE 9] RELEASE PREPARATION")
     log_phase("9", "INITIATING", "Release readiness check")
 
-    release_config = {
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+    {
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "version": "1.0.0-audit-path-a",
         "semantic": {
             "major": 1,
@@ -166,9 +172,11 @@ def phase9_release_prep():
     log_phase("9", "PASS", "Release preparation complete")
     return True
 
+
 # ============================================================================
 # PHASE 10 — Production Deployment
 # ============================================================================
+
 
 def phase10_production_deploy():
     """Production deployment readiness (K8s, ArgoCD, monitoring)."""
@@ -179,8 +187,8 @@ def phase10_production_deploy():
     print("  [GATE] Require production deployment approval")
     print("  [GATE] Deployment approval: ASSUMED (batch execution mode)")
 
-    deploy_config = {
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+    {
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "strategy": "Canary/Blue-Green via ArgoCD",
         "checklist": [
             {"item": "K8s cluster ready", "status": "YES"},
@@ -218,18 +226,20 @@ def phase10_production_deploy():
     log_phase("10", "PASS", "Deployment readiness verified")
     return True
 
+
 # ============================================================================
 # FINAL SYNTHESIS
 # ============================================================================
 
+
 def final_synthesis():
     """Synthesize all phases, final status."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("PHASES 7–10 FINAL SUMMARY")
-    print("="*70)
+    print("=" * 70)
 
     summary = {
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "phases": {
             "7_ems_e2e": "PASS",
             "8_core_logic_apply": "PASS",
@@ -267,10 +277,11 @@ def final_synthesis():
 
     return summary
 
+
 def main():
-    print("="*70)
+    print("=" * 70)
     print("MASTER EXECUTOR — PHASES 7–10")
-    print("="*70)
+    print("=" * 70)
 
     # Execute all phases sequentially
     phases_ok = [
@@ -281,15 +292,16 @@ def main():
     ]
 
     if all(phases_ok):
-        summary = final_synthesis()
-        print("\n" + "="*70)
+        final_synthesis()
+        print("\n" + "=" * 70)
         print("ALL PHASES COMPLETE ✓")
         print("SYSTEM READY FOR PRODUCTION ✓")
-        print("="*70)
+        print("=" * 70)
         return True
     else:
         print("\n[FAIL] One or more phases failed")
         return False
+
 
 if __name__ == "__main__":
     success = main()

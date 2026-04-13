@@ -5,11 +5,12 @@ live filesystem discovery across the canonical SSID source zones.
 Deterministic: hash-only (SHA256), sorted output, metadata-preserving updates.
 Default: READ-ONLY (print only). Use --write to persist.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,7 @@ REGISTRY_REL = "24_meta_orchestration/registry/sot_registry.json"
 
 def _is_registry_self_artifact(rel_path: str) -> bool:
     return rel_path == REGISTRY_REL
+
 
 PROHIBITED_PLACEHOLDER_PATH = "<prohibited-artifact>"
 PROHIBITED_FINDING_CLASS = "prohibited_artifact_reintroduction"
@@ -62,7 +64,6 @@ def _scan_prohibited_disk_artifacts(repo_root: Path) -> list[str]:
         if _is_prohibited_artifact_path(rel_path):
             matches.append(rel_path)
     return matches
-
 
 
 SEED_ARTIFACTS: list[dict[str, str]] = [
@@ -192,7 +193,7 @@ def build_registry() -> dict[str, Any]:
 
     return {
         "schema_version": "1.1.0",
-        "generated_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "summary": {
             "artifact_count": len(artifacts),
             "missing_on_disk": missing_on_disk,

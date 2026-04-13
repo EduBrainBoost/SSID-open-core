@@ -6,6 +6,7 @@ Generates hash-only proof of SSID state for interfederation verification.
 Output: JSON with commit SHA + allowlisted file hashes.
 Evidence written to SSID_EVIDENCE/interfed/ (external, not in repo).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -13,7 +14,7 @@ import hashlib
 import json
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -69,7 +70,7 @@ def generate_proof(repo_root: Path) -> dict:
 
     return {
         "ssid_commit": _git_head_sha(repo_root),
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "file_hashes": dict(sorted(file_hashes.items())),
         "hash_algorithm": "sha256",
         "status": "SINGLE_SYSTEM_ONLY",
@@ -83,9 +84,7 @@ def main() -> None:
         action="store_true",
         help="Generate but don't write to evidence",
     )
-    parser.add_argument(
-        "--json", action="store_true", help="Output JSON to stdout"
-    )
+    parser.add_argument("--json", action="store_true", help="Output JSON to stdout")
     parser.add_argument(
         "--evidence-root",
         type=Path,
@@ -102,7 +101,7 @@ def main() -> None:
     if not args.dry_run and args.evidence_root:
         out_dir = args.evidence_root / "interfed"
         out_dir.mkdir(parents=True, exist_ok=True)
-        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        ts = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         out_file = out_dir / f"proof_{ts}.json"
         out_file.write_text(
             json.dumps(proof, indent=2, ensure_ascii=False) + "\n",

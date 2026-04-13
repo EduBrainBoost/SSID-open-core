@@ -10,6 +10,7 @@ Uses Decimal for precision. No PII stored.
 
 SoT v4.1.0 | ROOT-24-LOCK | Module: 12_tooling
 """
+
 from __future__ import annotations
 
 import argparse
@@ -20,9 +21,9 @@ from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 # ---------------------------------------------------------------------------
 # Fee constants (immutable)
 # ---------------------------------------------------------------------------
-TOTAL_FEE_RATE = Decimal("0.03")        # 3%
-DEVELOPER_RATE = Decimal("0.01")        # 1%
-SYSTEM_POOL_RATE = Decimal("0.02")      # 2%
+TOTAL_FEE_RATE = Decimal("0.03")  # 3%
+DEVELOPER_RATE = Decimal("0.01")  # 1%
+SYSTEM_POOL_RATE = Decimal("0.02")  # 2%
 
 SEVEN_PILLARS = [
     "infrastructure",

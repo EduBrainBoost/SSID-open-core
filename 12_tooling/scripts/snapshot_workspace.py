@@ -12,7 +12,7 @@ import json
 import os
 import pathlib
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 CLI_DIR = pathlib.Path(__file__).resolve().parents[1] / "cli"
 if str(CLI_DIR) not in sys.path:
@@ -42,22 +42,25 @@ def collect_file_manifest(workspace: pathlib.Path, exclude_dirs: set) -> list:
             try:
                 sha256 = compute_sha256(fpath)
                 size = fpath.stat().st_size
-                manifest.append({
-                    "path": str(rel_path),
-                    "sha256": sha256,
-                    "size": size,
-                })
+                manifest.append(
+                    {
+                        "path": str(rel_path),
+                        "sha256": sha256,
+                        "size": size,
+                    }
+                )
             except (OSError, PermissionError):
-                manifest.append({
-                    "path": str(rel_path),
-                    "sha256": "ERROR_READING_FILE",
-                    "size": -1,
-                })
+                manifest.append(
+                    {
+                        "path": str(rel_path),
+                        "sha256": "ERROR_READING_FILE",
+                        "size": -1,
+                    }
+                )
     return manifest
 
 
-def create_snapshot(workspace_path: str, output_dir: str = None,
-                    dry_run: bool = False) -> dict:
+def create_snapshot(workspace_path: str, output_dir: str = None, dry_run: bool = False) -> dict:
     """Create a timestamped snapshot of workspace state.
 
     Args:
@@ -73,12 +76,16 @@ def create_snapshot(workspace_path: str, output_dir: str = None,
     if not workspace.is_dir():
         raise FileNotFoundError(f"Workspace not found: {workspace}")
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     snapshot_id = f"SNAPSHOT_{timestamp}"
 
     exclude_dirs = {
-        ".git", ".venv", "__pycache__", "node_modules",
-        ".pytest_cache", ".ssid-system",
+        ".git",
+        ".venv",
+        "__pycache__",
+        "node_modules",
+        ".pytest_cache",
+        ".ssid-system",
     }
 
     manifest = collect_file_manifest(workspace, exclude_dirs)
@@ -95,10 +102,7 @@ def create_snapshot(workspace_path: str, output_dir: str = None,
         snapshot_meta["dry_run"] = True
         return snapshot_meta
 
-    if output_dir is None:
-        output_base = workspace / ".ssid-system" / "snapshots"
-    else:
-        output_base = pathlib.Path(output_dir)
+    output_base = workspace / ".ssid-system" / "snapshots" if output_dir is None else pathlib.Path(output_dir)
 
     output_base = ensure_canonical_write_path(output_base, repo_root=workspace)
 
@@ -113,9 +117,7 @@ def create_snapshot(workspace_path: str, output_dir: str = None,
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Create timestamped snapshot of SSID workspace state"
-    )
+    parser = argparse.ArgumentParser(description="Create timestamped snapshot of SSID workspace state")
     parser.add_argument(
         "workspace",
         help="Path to workspace root",
@@ -137,12 +139,17 @@ def main():
             output_dir=args.output_dir,
             dry_run=args.dry_run,
         )
-        print(json.dumps({
-            "snapshot_id": result["snapshot_id"],
-            "total_files": result["total_files"],
-            "snapshot_file": result.get("snapshot_file", "DRY_RUN"),
-            "dry_run": result.get("dry_run", False),
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "snapshot_id": result["snapshot_id"],
+                    "total_files": result["total_files"],
+                    "snapshot_file": result.get("snapshot_file", "DRY_RUN"),
+                    "dry_run": result.get("dry_run", False),
+                },
+                indent=2,
+            )
+        )
     except Exception as e:
         print(f"ERROR: {e}", file=sys.stderr)
         sys.exit(1)

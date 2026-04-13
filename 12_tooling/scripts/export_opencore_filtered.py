@@ -22,12 +22,7 @@ DEFAULT_ALLOWLIST = "23_compliance/policies/open_core_export_allowlist.yaml"
 
 
 def utc_now() -> str:
-    return (
-        dt.datetime.now(dt.timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -45,12 +40,7 @@ def sha256_file(path: Path) -> str:
 
 
 def ts_slug(ts: str) -> str:
-    return (
-        ts.replace("-", "")
-        .replace(":", "")
-        .replace("T", "T")
-        .replace("Z", "Z")
-    )
+    return ts.replace("-", "").replace(":", "").replace("T", "T").replace("Z", "Z")
 
 
 def write_worm_export_evidence(
@@ -64,14 +54,7 @@ def write_worm_export_evidence(
     file_count: int,
     status: str,
 ) -> Path:
-    worm_dir = (
-        repo_root
-        / "02_audit_logging"
-        / "storage"
-        / "worm"
-        / "OPENCORERELEASE"
-        / ts_slug(timestamp_utc)
-    )
+    worm_dir = repo_root / "02_audit_logging" / "storage" / "worm" / "OPENCORERELEASE" / ts_slug(timestamp_utc)
     worm_dir.mkdir(parents=True, exist_ok=True)
     out = worm_dir / "export_evidence.json"
     payload = {
@@ -111,9 +94,7 @@ def load_policy(policy_path: Path) -> dict[str, Any]:
     secret_scan_regex = data.get("secret_scan_regex", []) or []
     if not isinstance(deny_globs, list) or not all(isinstance(v, str) for v in deny_globs):
         raise ValueError("policy deny_globs must be a list[str]")
-    if not isinstance(secret_scan_regex, list) or not all(
-        isinstance(v, str) for v in secret_scan_regex
-    ):
+    if not isinstance(secret_scan_regex, list) or not all(isinstance(v, str) for v in secret_scan_regex):
         raise ValueError("policy secret_scan_regex must be a list[str]")
     return data
 
@@ -122,7 +103,7 @@ def load_allowlist(allowlist_path: Path) -> dict[str, Any]:
     data = yaml.safe_load(allowlist_path.read_text(encoding="utf-8")) or {}
     root_files = data.get("root_files", []) or []
     allowed_paths = data.get("allowed_paths", []) or []
-    denied_patterns = data.get("denied_patterns", []) or []
+    data.get("denied_patterns", []) or []
     if not isinstance(root_files, list):
         raise ValueError("allowlist root_files must be a list")
     if not isinstance(allowed_paths, list):
@@ -163,9 +144,7 @@ def compile_secret_patterns(raw_patterns: list[str]) -> list[re.Pattern[str]]:
     return [re.compile(pattern) for pattern in raw_patterns]
 
 
-def secret_hits_for_content(
-    path_posix: str, content: bytes, patterns: list[re.Pattern[str]]
-) -> list[dict[str, str]]:
+def secret_hits_for_content(path_posix: str, content: bytes, patterns: list[re.Pattern[str]]) -> list[dict[str, str]]:
     text = content.decode("utf-8", errors="replace")
     hits: list[dict[str, str]] = []
     for pattern in patterns:

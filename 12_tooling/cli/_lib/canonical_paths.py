@@ -3,7 +3,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-
 _PATH_SERIALIZED_EXPORT_PATTERN = re.compile(
     r"^[A-Za-z]--Users-.*SSID-Workspace-SSID-Arbeitsbereich-Github-(SSID|SSID-EMS)(-.+)?$",
     re.IGNORECASE,
@@ -76,9 +75,7 @@ def ensure_canonical_repo_root(
             f"({classify_path(resolved, repo_root=repo_root)})"
         )
     if expected_repo_name and resolved.name.lower() != expected_repo_name.lower():
-        raise ValueError(
-            f"Repo path {resolved} does not match expected repo name {expected_repo_name}"
-        )
+        raise ValueError(f"Repo path {resolved} does not match expected repo name {expected_repo_name}")
     return resolved
 
 
