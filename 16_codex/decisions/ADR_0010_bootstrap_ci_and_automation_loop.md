@@ -31,7 +31,7 @@ scoped, auditable agent work via the automation loop.
 - No new root-level directories (ROOT-24-LOCK preserved).
 - CI does NOT run `--finalize`; finalization is local-only.
 - All evidence is hash-only; no agent stdout/stderr persisted.
-- TaskSpecs enforce `forbidden_paths` including `./`, `/mnt/data`, `**/.git/**`, `**/secrets/**`.
+- TaskSpecs enforce `forbidden_paths` including `./`, `${SSID_LEGACY_SANDBOX}`, `**/.git/**`, `**/secrets/**`.
 - Stop-on-first-failure semantics throughout the gate chain.
 
 ## Evidence

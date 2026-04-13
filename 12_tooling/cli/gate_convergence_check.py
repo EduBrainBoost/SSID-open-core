@@ -1,4 +1,3 @@
-# DEPRECATED: REDUNDANT — Canonical tool is 12_tooling/cli/convergence_checker.py
 #!/usr/bin/env python3
 """Gate Convergence Check -- CI/CD gate wrapper around SoT Convergence Scanner.
 
@@ -26,9 +25,9 @@ import argparse
 import hashlib
 import json
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 # ---------------------------------------------------------------------------
 # Resolve sibling imports (scanner + manifest gen live in ../validation/)
@@ -44,7 +43,8 @@ try:
     from sot_convergence_scanner import scan as scanner_scan  # type: ignore[import]
 except ImportError:
     sys.exit(
-        f"ERROR: Cannot import sot_convergence_scanner. Expected at: {_VALIDATION_DIR / 'sot_convergence_scanner.py'}"
+        "ERROR: Cannot import sot_convergence_scanner. "
+        f"Expected at: {_VALIDATION_DIR / 'sot_convergence_scanner.py'}"
     )
 
 try:
@@ -55,7 +55,8 @@ try:
     )
 except ImportError:
     sys.exit(
-        f"ERROR: Cannot import convergence_manifest_gen. Expected at: {_VALIDATION_DIR / 'convergence_manifest_gen.py'}"
+        "ERROR: Cannot import convergence_manifest_gen. "
+        f"Expected at: {_VALIDATION_DIR / 'convergence_manifest_gen.py'}"
     )
 
 # ---------------------------------------------------------------------------
@@ -73,21 +74,19 @@ DEFAULT_REPO_ROLE = "canonical"
 _FAIL_SEVERITIES = frozenset({"critical", "high"})
 
 # Drift classes that always trigger FAIL regardless of severity
-_FAIL_CLASSES = frozenset(
-    {
-        "missing_required_artifact",
-        "registry_missing",
-        "protected_scope_attempt",
-        "export_violation",
-    }
-)
+_FAIL_CLASSES = frozenset({
+    "missing_required_artifact",
+    "registry_missing",
+    "protected_scope_attempt",
+    "export_violation",
+})
 
 # ---------------------------------------------------------------------------
 # Policy evaluation
 # ---------------------------------------------------------------------------
 
 
-def _evaluate_policy(scan_result: dict[str, Any]) -> tuple[int, str]:
+def _evaluate_policy(scan_result: Dict[str, Any]) -> tuple[int, str]:
     """Evaluate scan result against gate policy.
 
     Returns (exit_code, reason_summary).
@@ -100,20 +99,29 @@ def _evaluate_policy(scan_result: dict[str, Any]) -> tuple[int, str]:
     # Hard FAIL conditions
     if status == "FAIL":
         # Check if it's truly critical or just warn-level
-        has_critical = any(f.get("severity") in _FAIL_SEVERITIES or f.get("class") in _FAIL_CLASSES for f in findings)
+        has_critical = any(
+            f.get("severity") in _FAIL_SEVERITIES
+            or f.get("class") in _FAIL_CLASSES
+            for f in findings
+        )
         if has_critical:
             reasons = []
             if missing:
                 reasons.append(f"{len(missing)} missing critical artifact(s)")
             critical_findings = [
-                f for f in findings if f.get("severity") in _FAIL_SEVERITIES or f.get("class") in _FAIL_CLASSES
+                f for f in findings
+                if f.get("severity") in _FAIL_SEVERITIES
+                or f.get("class") in _FAIL_CLASSES
             ]
             if critical_findings:
                 reasons.append(f"{len(critical_findings)} critical/high finding(s)")
             if blocked:
                 reasons.append(f"{len(blocked)} blocked operation(s)")
             # Check for protected scope attempts specifically
-            protected = [f for f in findings if f.get("class") == "protected_scope_attempt"]
+            protected = [
+                f for f in findings
+                if f.get("class") == "protected_scope_attempt"
+            ]
             if protected:
                 reasons.append(f"{len(protected)} protected scope attempt(s)")
             return EXIT_FAIL, "; ".join(reasons) if reasons else "FAIL status from scanner"
@@ -144,19 +152,21 @@ def _sha256_string(data: str) -> str:
 
 
 def _build_gate_report(
-    scan_result: dict[str, Any],
+    scan_result: Dict[str, Any],
     manifest_json: str,
     report_md: str,
     exit_code: int,
     reason: str,
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """Build the gate-level report wrapping scan + manifest + policy."""
-    exit_label = {EXIT_PASS: "PASS", EXIT_FAIL: "FAIL", EXIT_WARN: "WARN"}.get(exit_code, "UNKNOWN")
+    exit_label = {EXIT_PASS: "PASS", EXIT_FAIL: "FAIL", EXIT_WARN: "WARN"}.get(
+        exit_code, "UNKNOWN"
+    )
 
     return {
         "gate_name": "gate_convergence_check",
         "gate_version": "1.0.0",
-        "run_time_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_time_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "exit_code": exit_code,
         "exit_label": exit_label,
         "reason": reason,
@@ -186,9 +196,9 @@ def _build_gate_report(
 
 def run_gate(
     repo_root: str,
-    contract_path: str | None = None,
+    contract_path: Optional[str] = None,
     repo_role: str = DEFAULT_REPO_ROLE,
-    output_dir: str | None = None,
+    output_dir: Optional[str] = None,
 ) -> int:
     """Execute the full gate convergence check pipeline.
 
@@ -242,24 +252,34 @@ def run_gate(
         exit_code=exit_code,
         reason=reason,
     )
-    gate_report_json = json.dumps(gate_report, indent=2, sort_keys=True, ensure_ascii=False)
+    gate_report_json = json.dumps(
+        gate_report, indent=2, sort_keys=True, ensure_ascii=False
+    )
 
     # --- Step 6: Output ---
     if output_dir:
         out = Path(output_dir)
         out.mkdir(parents=True, exist_ok=True)
 
-        (out / "convergence_manifest.json").write_text(manifest_json + "\n", encoding="utf-8")
-        (out / "convergence_report.md").write_text(report_md, encoding="utf-8")
-        (out / "gate_report.json").write_text(gate_report_json + "\n", encoding="utf-8")
+        (out / "convergence_manifest.json").write_text(
+            manifest_json + "\n", encoding="utf-8"
+        )
+        (out / "convergence_report.md").write_text(
+            report_md, encoding="utf-8"
+        )
+        (out / "gate_report.json").write_text(
+            gate_report_json + "\n", encoding="utf-8"
+        )
 
         print(f"Gate artifacts written to: {out}", file=sys.stderr)
         print(
-            f"  convergence_manifest.json  SHA-256: {gate_report['evidence_artifacts']['manifest_sha256'][:16]}...",
+            f"  convergence_manifest.json  SHA-256: "
+            f"{gate_report['evidence_artifacts']['manifest_sha256'][:16]}...",
             file=sys.stderr,
         )
         print(
-            f"  convergence_report.md      SHA-256: {gate_report['evidence_artifacts']['report_sha256'][:16]}...",
+            f"  convergence_report.md      SHA-256: "
+            f"{gate_report['evidence_artifacts']['report_sha256'][:16]}...",
             file=sys.stderr,
         )
     else:
@@ -278,7 +298,7 @@ def run_gate(
 # ---------------------------------------------------------------------------
 
 
-def main(argv: list[str] | None = None) -> None:
+def main(argv: Optional[List[str]] = None) -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Gate Convergence Check -- CI/CD gate for SoT convergence. "
@@ -293,7 +313,10 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--contract",
         default=None,
-        help=(f"Path to sot_contract.yaml (default: <repo-root>/{DEFAULT_CONTRACT_REL})"),
+        help=(
+            "Path to sot_contract.yaml "
+            f"(default: <repo-root>/{DEFAULT_CONTRACT_REL})"
+        ),
     )
     parser.add_argument(
         "--repo-role",

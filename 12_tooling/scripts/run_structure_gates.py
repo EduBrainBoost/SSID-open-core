@@ -8,7 +8,6 @@ Gates:
 
 Exit 0 only if all three PASS.
 """
-
 import pathlib
 import subprocess
 import sys
@@ -16,30 +15,13 @@ import sys
 REPO = pathlib.Path(__file__).resolve().parents[2]
 
 CANONICAL_ROOTS = [
-    "01_ai_layer",
-    "02_audit_logging",
-    "03_core",
-    "04_deployment",
-    "05_documentation",
-    "06_data_pipeline",
-    "07_governance_legal",
-    "08_identity_score",
-    "09_meta_identity",
-    "10_interoperability",
-    "11_test_simulation",
-    "12_tooling",
-    "13_ui_layer",
-    "14_zero_time_auth",
-    "15_infra",
-    "16_codex",
-    "17_observability",
-    "18_data_layer",
-    "19_adapters",
-    "20_foundation",
-    "21_post_quantum_crypto",
-    "22_datasets",
-    "23_compliance",
-    "24_meta_orchestration",
+    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
+    "05_documentation", "06_data_pipeline", "07_governance_legal",
+    "08_identity_score", "09_meta_identity", "10_interoperability",
+    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
+    "15_infra", "16_codex", "17_observability", "18_data_layer",
+    "19_adapters", "20_foundation", "21_post_quantum_crypto", "22_datasets",
+    "23_compliance", "24_meta_orchestration",
 ]
 
 
@@ -61,7 +43,9 @@ def gate_shard16() -> bool:
             print(f"FAIL shard16: {root}/shards/ missing")
             ok = False
             continue
-        shard_dirs = sorted(d for d in shards_dir.iterdir() if d.is_dir() and d.name[:2].isdigit())
+        shard_dirs = sorted(
+            d for d in shards_dir.iterdir() if d.is_dir() and d.name[:2].isdigit()
+        )
         if len(shard_dirs) != 16:
             print(f"FAIL shard16: {root} has {len(shard_dirs)} shards, expected 16")
             ok = False

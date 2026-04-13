@@ -19,7 +19,7 @@ import json
 import os
 import pathlib
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 _REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 _spec = _ilu.spec_from_file_location("core_constants", _REPO_ROOT / "03_core" / "constants.py")
@@ -28,19 +28,12 @@ _spec.loader.exec_module(_mod)
 CANONICAL_ROOTS = _mod.CANONICAL_ROOTS  # frozenset — set-compatible
 
 EXCLUDED_DIRS = {
-    ".git",
-    ".venv",
-    "__pycache__",
-    "node_modules",
-    ".pytest_cache",
-    ".ssid-system",
+    ".git", ".venv", "__pycache__", "node_modules",
+    ".pytest_cache", ".ssid-system",
 }
 
 EXCLUDED_FILES = {
-    ".env",
-    "credentials.json",
-    ".env.local",
-    "secrets.yaml",
+    ".env", "credentials.json", ".env.local", "secrets.yaml",
 }
 
 
@@ -66,7 +59,9 @@ def is_excluded_file(filepath: pathlib.Path) -> bool:
     return filepath.name in EXCLUDED_FILES
 
 
-def diff_workspace_against_canonical(workspace_path: str, canonical_path: str) -> dict:
+def diff_workspace_against_canonical(
+    workspace_path: str, canonical_path: str
+) -> dict:
     """Compute diff between workspace and canonical repo.
 
     Returns dict with:
@@ -79,7 +74,7 @@ def diff_workspace_against_canonical(workspace_path: str, canonical_path: str) -
     canonical = pathlib.Path(canonical_path).resolve()
 
     result = {
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "workspace": str(workspace),
         "canonical": str(canonical),
         "new_files": [],
@@ -101,12 +96,10 @@ def diff_workspace_against_canonical(workspace_path: str, canonical_path: str) -
 
             # Check excluded files
             if is_excluded_file(fpath):
-                result["promotion_blocked"].append(
-                    {
-                        "path": rel_path,
-                        "reason": "excluded_file",
-                    }
-                )
+                result["promotion_blocked"].append({
+                    "path": rel_path,
+                    "reason": "excluded_file",
+                })
                 continue
 
             canonical_file = canonical / rel_path
@@ -145,7 +138,9 @@ def diff_workspace_against_canonical(workspace_path: str, canonical_path: str) -
     return result
 
 
-def generate_promotion_plan(workspace_path: str, canonical_path: str, output_path: str = None) -> dict:
+def generate_promotion_plan(
+    workspace_path: str, canonical_path: str, output_path: str = None
+) -> dict:
     """Generate a dry-run promotion plan.
 
     This does NOT execute any changes. It produces a plan document
@@ -154,7 +149,7 @@ def generate_promotion_plan(workspace_path: str, canonical_path: str, output_pat
     diff = diff_workspace_against_canonical(workspace_path, canonical_path)
 
     plan = {
-        "plan_id": f"PROMOTE_{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}",
+        "plan_id": f"PROMOTE_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}",
         "mode": "DRY_RUN_ONLY",
         "warning": "This plan does NOT execute changes. Manual review required.",
         "diff_summary": diff["summary"],
@@ -175,7 +170,9 @@ def generate_promotion_plan(workspace_path: str, canonical_path: str, output_pat
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate dry-run promotion plan for SSID workspace changes")
+    parser = argparse.ArgumentParser(
+        description="Generate dry-run promotion plan for SSID workspace changes"
+    )
     parser.add_argument(
         "workspace",
         help="Path to workspace (source of changes)",
@@ -191,19 +188,16 @@ def main():
     args = parser.parse_args()
 
     try:
-        plan = generate_promotion_plan(args.workspace, args.canonical, args.output)
-        print(
-            json.dumps(
-                {
-                    "plan_id": plan["plan_id"],
-                    "mode": plan["mode"],
-                    "eligible": plan["diff_summary"]["promotion_eligible"],
-                    "blocked": plan["diff_summary"]["promotion_blocked"],
-                    "output_file": plan.get("output_file", "STDOUT"),
-                },
-                indent=2,
-            )
+        plan = generate_promotion_plan(
+            args.workspace, args.canonical, args.output
         )
+        print(json.dumps({
+            "plan_id": plan["plan_id"],
+            "mode": plan["mode"],
+            "eligible": plan["diff_summary"]["promotion_eligible"],
+            "blocked": plan["diff_summary"]["promotion_blocked"],
+            "output_file": plan.get("output_file", "STDOUT"),
+        }, indent=2))
     except Exception as e:
         print(f"ERROR: {e}", file=sys.stderr)
         sys.exit(1)

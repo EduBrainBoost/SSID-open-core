@@ -1,14 +1,14 @@
 .claude/
-.codex/
 .venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+/nul
+/pytest
 02_audit_logging/tmp/
 .ssid_sandbox/
 .env
 .env.*
-!.env.example
 *.pem
 *.key
 *.p12
@@ -32,45 +32,56 @@ __pycache__/
 12_tooling/cli/scorecard.json
 12_tooling/cli/scorecard.md
 
+# Ephemeral E2E run outputs (evidence, do not track)
+02_audit_logging/reports/E2E_RUN_*.json
+02_audit_logging/reports/E2E_ARTIFACT_HASHES_*.json
+02_audit_logging/reports/RUN_LOG_*.jsonl
+
 # Auto-Claude
 .auto-claude/
 .auto-claude-security.json
 .claude_settings.json
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
 
-# OS
-.DS_Store
-Thumbs.db
-Desktop.ini
+# ssidctl local config (contains local paths, not secrets)
+12_tooling/ops/ssidctl/config/ems.yaml
 
-# Python
-.mypy_cache/
-.ruff_cache/
-.tox/
-.coverage
-coverage/
-htmlcov/
+# Global agent_runs (ephemeral runtime data)
+agent_runs/
 
-# Build
-dist/
-build/
-site/
-node_modules/
-*.egg-info/
+# System directories (local tool configs and runtime state)
+.codex/
+.planning/
 .ssid-system/
 
-# Package / local config
-.npmrc
-.pypirc
-.netrc
+# Runtime artifacts (never commit)
+**/task_run_cleanup/
+**/health_check_cleanup/
+**/TASK_QUEUE.status.jsonl
 
-# Databases
-*.sqlite
-*.sqlite3
-*.db
+# Node.js and NPM artifacts (never commit)
+node_modules/
+**/node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
 
+# Coverage output (local runs, never commit)
+htmlcov/
+.coverage
+coverage.xml
+
+# IDE artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Runtime state files (ephemeral, never commit)
+02_audit_logging/autonomy/
+24_meta_orchestration/control_loop/state.json
+24_meta_orchestration/state/current_state.json
+24_meta_orchestration/state/state_history.jsonl
+24_meta_orchestration/state/__pycache__/
+24_meta_orchestration/control_loop/__pycache__/

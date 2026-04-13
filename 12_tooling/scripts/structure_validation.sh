@@ -1,4 +1,3 @@
-# DEPRECATED: REDUNDANT — Canonical tool is 03_core/validators/base_guard.py
 #!/usr/bin/env bash
 # SSID Structure Validation — wrapper for structure_guard + policy checks
 set -euo pipefail

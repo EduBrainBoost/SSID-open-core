@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """Consume promotion records into an active baseline registry state."""
-
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -35,7 +34,7 @@ PROMOTION_REQUIRED_FIELDS = (
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _json_sha256(payload: Any) -> str:
@@ -91,56 +90,21 @@ def resolve_active_promotion(records: list[dict]) -> tuple[dict | None, list[dic
     valid_records: list[dict] = []
     for index, record in enumerate(records, start=1):
         if not isinstance(record, dict) or "_invalid_jsonl_line" in record:
-            findings.append(
-                _finding(
-                    "promotion_record_invalid",
-                    "deny",
-                    f"promotions[{index}]",
-                    "promotion record is not valid JSON object",
-                )
-            )
+            findings.append(_finding("promotion_record_invalid", "deny", f"promotions[{index}]", "promotion record is not valid JSON object"))
             continue
         missing = [field for field in PROMOTION_REQUIRED_FIELDS if field not in record]
         if missing:
-            findings.append(
-                _finding(
-                    "promotion_record_invalid",
-                    "deny",
-                    f"promotions[{index}]",
-                    f"promotion record missing required fields: {missing}",
-                )
-            )
+            findings.append(_finding("promotion_record_invalid", "deny", f"promotions[{index}]", f"promotion record missing required fields: {missing}"))
             continue
         if record.get("decision") != "approve":
-            findings.append(
-                _finding(
-                    "promotion_record_invalid",
-                    "deny",
-                    f"promotions[{index}].decision",
-                    f"promotion record decision must be approve, got '{record.get('decision')}'",
-                )
-            )
+            findings.append(_finding("promotion_record_invalid", "deny", f"promotions[{index}].decision", f"promotion record decision must be approve, got '{record.get('decision')}'"))
             continue
         if _parse_version(record.get("promoted_baseline_version")) is None:
-            findings.append(
-                _finding(
-                    "promotion_record_invalid",
-                    "deny",
-                    f"promotions[{index}].promoted_baseline_version",
-                    "promoted_baseline_version is not strict semver",
-                )
-            )
+            findings.append(_finding("promotion_record_invalid", "deny", f"promotions[{index}].promoted_baseline_version", "promoted_baseline_version is not strict semver"))
             continue
         valid_records.append(record)
     if not valid_records:
-        findings.append(
-            _finding(
-                "active_promotion_unresolved",
-                "deny",
-                "promotions",
-                "no valid promotion record could be resolved as active",
-            )
-        )
+        findings.append(_finding("active_promotion_unresolved", "deny", "promotions", "no valid promotion record could be resolved as active"))
         return None, findings
     valid_records.sort(key=lambda item: item["approved_at_utc"])
     return valid_records[-1], findings
@@ -167,78 +131,27 @@ def build_active_baseline_state(snapshot: dict, promotion_record: dict, snapshot
     return state
 
 
-def validate_registry_consistency(
-    snapshot: dict | None, promotion_record: dict | None, active_state: dict | None
-) -> list[dict[str, str]]:
+def validate_registry_consistency(snapshot: dict | None, promotion_record: dict | None, active_state: dict | None) -> list[dict[str, str]]:
     findings: list[dict[str, str]] = []
     if snapshot is None:
-        return [
-            _finding(
-                "baseline_snapshot_missing", "deny", DEFAULT_BASELINE_REL, "baseline snapshot missing or unreadable"
-            )
-        ]
+        return [_finding("baseline_snapshot_missing", "deny", DEFAULT_BASELINE_REL, "baseline snapshot missing or unreadable")]
     if promotion_record is None:
-        return [
-            _finding(
-                "active_promotion_unresolved",
-                "deny",
-                DEFAULT_PROMOTIONS_REL,
-                "no active promotion record available for consistency validation",
-            )
-        ]
+        return [_finding("active_promotion_unresolved", "deny", DEFAULT_PROMOTIONS_REL, "no active promotion record available for consistency validation")]
     if active_state is None:
-        return [
-            _finding(
-                "registry_consistency_failed", "deny", DEFAULT_ACTIVE_STATE_REL, "active baseline state was not built"
-            )
-        ]
+        return [_finding("registry_consistency_failed", "deny", DEFAULT_ACTIVE_STATE_REL, "active baseline state was not built")]
     snapshot_sha = _snapshot_sha(snapshot)
     if promotion_record.get("baseline_sha256") != snapshot_sha:
-        findings.append(
-            _finding(
-                "baseline_snapshot_hash_mismatch",
-                "deny",
-                DEFAULT_BASELINE_REL,
-                "promotion record baseline_sha256 does not match current baseline snapshot",
-            )
-        )
+        findings.append(_finding("baseline_snapshot_hash_mismatch", "deny", DEFAULT_BASELINE_REL, "promotion record baseline_sha256 does not match current baseline snapshot"))
     if active_state.get("baseline_snapshot_sha256") != snapshot_sha:
-        findings.append(
-            _finding(
-                "registry_consistency_failed",
-                "deny",
-                DEFAULT_ACTIVE_STATE_REL,
-                "active baseline state snapshot hash does not match current baseline snapshot",
-            )
-        )
+        findings.append(_finding("registry_consistency_failed", "deny", DEFAULT_ACTIVE_STATE_REL, "active baseline state snapshot hash does not match current baseline snapshot"))
     if active_state.get("active_baseline_version") != snapshot.get("baseline_version"):
-        findings.append(
-            _finding(
-                "registry_consistency_failed",
-                "deny",
-                DEFAULT_ACTIVE_STATE_REL,
-                "active baseline version does not match baseline snapshot version",
-            )
-        )
+        findings.append(_finding("registry_consistency_failed", "deny", DEFAULT_ACTIVE_STATE_REL, "active baseline version does not match baseline snapshot version"))
     if active_state.get("active_baseline_version") != promotion_record.get("promoted_baseline_version"):
-        findings.append(
-            _finding(
-                "registry_consistency_failed",
-                "deny",
-                DEFAULT_ACTIVE_STATE_REL,
-                "active baseline version does not match promotion record version",
-            )
-        )
+        findings.append(_finding("registry_consistency_failed", "deny", DEFAULT_ACTIVE_STATE_REL, "active baseline version does not match promotion record version"))
     if active_state.get("decision") != "approve":
-        findings.append(
-            _finding(
-                "registry_consistency_failed", "deny", DEFAULT_ACTIVE_STATE_REL, "active state decision is not approve"
-            )
-        )
+        findings.append(_finding("registry_consistency_failed", "deny", DEFAULT_ACTIVE_STATE_REL, "active state decision is not approve"))
     if active_state.get("scope") not in {"canonical_sot", "full_canonical_sot"}:
-        findings.append(
-            _finding("registry_consistency_failed", "deny", DEFAULT_ACTIVE_STATE_REL, "active state scope is invalid")
-        )
+        findings.append(_finding("registry_consistency_failed", "deny", DEFAULT_ACTIVE_STATE_REL, "active state scope is invalid"))
     return findings
 
 
@@ -267,9 +180,7 @@ def emit_registry_consumption_report(report: dict[str, Any], output_dir: Path) -
     ]
     if report["findings"]:
         for index, finding in enumerate(report["findings"], start=1):
-            lines.append(
-                f"| {index} | `{finding['finding_code']}` | {finding['severity']} | `{finding['path']}` | {finding['detail']} |"
-            )
+            lines.append(f"| {index} | `{finding['finding_code']}` | {finding['severity']} | `{finding['path']}` | {finding['detail']} |")
     else:
         lines.append("| 1 | `none` | info | `-` | No findings |")
     lines.extend(
@@ -310,29 +221,16 @@ def run(args: argparse.Namespace) -> int:
     findings: list[dict[str, str]] = []
     snapshot = load_baseline_snapshot(baseline_path)
     if snapshot is None:
-        findings.append(
-            _finding(
-                "baseline_snapshot_missing", "deny", str(baseline_path), "baseline snapshot is missing or unreadable"
-            )
-        )
+        findings.append(_finding("baseline_snapshot_missing", "deny", str(baseline_path), "baseline snapshot is missing or unreadable"))
     records = load_promotion_records(promotions_path)
     if not promotions_path.exists() or not records:
-        findings.append(
-            _finding(
-                "promotion_records_missing",
-                "deny",
-                str(promotions_path),
-                "promotion records registry is missing or empty",
-            )
-        )
+        findings.append(_finding("promotion_records_missing", "deny", str(promotions_path), "promotion records registry is missing or empty"))
         active_record = None
     else:
         active_record, record_findings = resolve_active_promotion(records)
         findings.extend(record_findings)
 
-    active_state = (
-        build_active_baseline_state(snapshot, active_record, baseline_path) if snapshot and active_record else None
-    )
+    active_state = build_active_baseline_state(snapshot, active_record, baseline_path) if snapshot and active_record else None
     findings.extend(validate_registry_consistency(snapshot, active_record, active_state))
 
     decision = "FAIL" if any(item["severity"] == "deny" for item in findings) else "PASS"
@@ -341,36 +239,13 @@ def run(args: argparse.Namespace) -> int:
 
     if args.refresh_active_state and decision == "PASS":
         try:
-            active_state_path.write_text(
-                json.dumps(active_state, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-            )
+            active_state_path.write_text(json.dumps(active_state, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         except Exception as exc:
-            findings.append(
-                _finding(
-                    "active_state_write_failed",
-                    "deny",
-                    str(active_state_path),
-                    f"failed to write active baseline state: {exc}",
-                )
-            )
-            findings.append(
-                _finding(
-                    "registry_consumption_fail_closed",
-                    "deny",
-                    str(repo_root),
-                    "registry consumer failed closed after active state write failure",
-                )
-            )
+            findings.append(_finding("active_state_write_failed", "deny", str(active_state_path), f"failed to write active baseline state: {exc}"))
+            findings.append(_finding("registry_consumption_fail_closed", "deny", str(repo_root), "registry consumer failed closed after active state write failure"))
             decision = "FAIL"
     elif decision == "FAIL":
-        findings.append(
-            _finding(
-                "registry_consumption_fail_closed",
-                "deny",
-                str(repo_root),
-                "registry consumer failed closed due to blocking inconsistencies",
-            )
-        )
+        findings.append(_finding("registry_consumption_fail_closed", "deny", str(repo_root), "registry consumer failed closed due to blocking inconsistencies"))
 
     report = {
         "audit_type": "sot_promotion_registry_consumer",

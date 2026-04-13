@@ -12,7 +12,7 @@ import argparse
 import json
 import subprocess
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 
 def _run(args: argparse.Namespace) -> int:
@@ -22,7 +22,7 @@ def _run(args: argparse.Namespace) -> int:
 
     output = {
         "command": "test.run",
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "suite": suite,
         "dry_run": dry_run,
         "test_status": "skipped" if dry_run else "triggered",
@@ -56,7 +56,7 @@ def _status(args: argparse.Namespace) -> int:
     """Report test runner status."""
     output = {
         "command": "test.status",
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "runner": "pytest",
         "active_runs": 0,
         "last_run": None,
@@ -71,7 +71,7 @@ def _report(args: argparse.Namespace) -> int:
     fmt = args.format
     output = {
         "command": "test.report",
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "format": fmt,
         "suites": [],
         "total_passed": 0,
@@ -112,7 +112,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         error = {
             "command": f"test.{args.action}",
-            "timestamp": datetime.now(UTC).isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "error": str(exc),
             "status": "failed",
         }

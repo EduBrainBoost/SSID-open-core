@@ -21,14 +21,14 @@ Exit codes:
   1 = WARN   — advisory warnings only
   2 = FAIL   — hard consistency violations
 """
-
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
 import re
-from datetime import UTC, datetime
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -189,7 +189,7 @@ def extract_validator_rules(path: Path) -> tuple[set[str], list[str], str | None
 
     # Extract PRIORITY list items
     priority_items: list[str] = []
-    priority_match = re.search(r"PRIORITY\s*=\s*\[([^\]]*)\]", text, re.DOTALL)
+    priority_match = re.search(r'PRIORITY\s*=\s*\[([^\]]*)\]', text, re.DOTALL)
     if priority_match:
         priority_block = priority_match.group(1)
         for m in re.finditer(r'"(SOT_AGENT_\d{3})"', priority_block):
@@ -201,7 +201,7 @@ def extract_validator_rules(path: Path) -> tuple[set[str], list[str], str | None
     if ver_match:
         version = ver_match.group(1)
     else:
-        ver_match = re.search(r"#.*\bv(\d+\.\d+(?:\.\d+)?)\b", text)
+        ver_match = re.search(r'#.*\bv(\d+\.\d+(?:\.\d+)?)\b', text)
         if ver_match:
             version = ver_match.group(1)
 
@@ -220,7 +220,7 @@ def extract_rego_rule_ids(path: Path) -> tuple[set[str], str | None]:
 
     # Extract version from comment
     version = None
-    ver_match = re.search(r"#.*\bv(\d+\.\d+(?:\.\d+)?)\b", text)
+    ver_match = re.search(r'#.*\bv(\d+\.\d+(?:\.\d+)?)\b', text)
     if ver_match:
         version = ver_match.group(1)
 
@@ -239,14 +239,12 @@ def check_artifact_existence(
     for key, rel_path in SOT_ARTIFACTS.items():
         full_path = repo / rel_path
         if not full_path.exists():
-            result.add(
-                Finding(
-                    "reference_missing",
-                    "deny",
-                    rel_path,
-                    f"SoT artifact '{key}' does not exist on disk",
-                )
-            )
+            result.add(Finding(
+                "reference_missing",
+                "deny",
+                rel_path,
+                f"SoT artifact '{key}' does not exist on disk",
+            ))
             missing.add(key)
     return missing
 
@@ -265,45 +263,37 @@ def check_contract_to_validator(
 
     for rule_id in contract_rules:
         if rule_id not in validator_rules:
-            result.add(
-                Finding(
-                    "rule_unmapped",
-                    "deny",
-                    validator_path,
-                    f"rule '{rule_id}' in contract but missing from validator RULES dict",
-                )
-            )
+            result.add(Finding(
+                "rule_unmapped",
+                "deny",
+                validator_path,
+                f"rule '{rule_id}' in contract but missing from validator RULES dict",
+            ))
         if rule_id not in validator_priority:
-            result.add(
-                Finding(
-                    "rule_unmapped",
-                    "deny",
-                    validator_path,
-                    f"rule '{rule_id}' in contract but missing from validator PRIORITY list",
-                )
-            )
+            result.add(Finding(
+                "rule_unmapped",
+                "deny",
+                validator_path,
+                f"rule '{rule_id}' in contract but missing from validator PRIORITY list",
+            ))
 
     # Reverse: validator rules not in contract
     contract_set = set(contract_rules)
     for rule_id in sorted(validator_rules - contract_set):
-        result.add(
-            Finding(
+        result.add(Finding(
+            "rule_unmapped",
+            "deny",
+            contract_path,
+            f"rule '{rule_id}' in validator RULES but missing from contract",
+        ))
+    for rule_id in validator_priority:
+        if rule_id not in contract_set:
+            result.add(Finding(
                 "rule_unmapped",
                 "deny",
                 contract_path,
-                f"rule '{rule_id}' in validator RULES but missing from contract",
-            )
-        )
-    for rule_id in validator_priority:
-        if rule_id not in contract_set:
-            result.add(
-                Finding(
-                    "rule_unmapped",
-                    "deny",
-                    contract_path,
-                    f"rule '{rule_id}' in validator PRIORITY but missing from contract",
-                )
-            )
+                f"rule '{rule_id}' in validator PRIORITY but missing from contract",
+            ))
 
 
 # -----------------------------------------------------------------------
@@ -319,26 +309,22 @@ def check_contract_to_rego(
 
     for rule_id in contract_rules:
         if rule_id not in rego_rules:
-            result.add(
-                Finding(
-                    "rule_unmapped",
-                    "deny",
-                    rego_path,
-                    f"rule '{rule_id}' in contract but no deny clause in rego policy",
-                )
-            )
+            result.add(Finding(
+                "rule_unmapped",
+                "deny",
+                rego_path,
+                f"rule '{rule_id}' in contract but no deny clause in rego policy",
+            ))
 
     # Reverse: rego rules not in contract
     contract_set = set(contract_rules)
     for rule_id in sorted(rego_rules - contract_set):
-        result.add(
-            Finding(
-                "rule_unmapped",
-                "deny",
-                contract_path,
-                f"rule '{rule_id}' in rego policy but missing from contract",
-            )
-        )
+        result.add(Finding(
+            "rule_unmapped",
+            "deny",
+            contract_path,
+            f"rule '{rule_id}' in rego policy but missing from contract",
+        ))
 
 
 # -----------------------------------------------------------------------
@@ -351,14 +337,12 @@ def check_contract_to_tests(
 ) -> None:
     for rule_id in contract_rules:
         if rule_id not in test_rule_ids:
-            result.add(
-                Finding(
-                    "test_coverage_gap",
-                    "warn",
-                    SOT_ARTIFACTS["tests"],
-                    f"rule '{rule_id}' in contract but not referenced in test file",
-                )
-            )
+            result.add(Finding(
+                "test_coverage_gap",
+                "warn",
+                SOT_ARTIFACTS["tests"],
+                f"rule '{rule_id}' in contract but not referenced in test file",
+            ))
 
 
 # -----------------------------------------------------------------------
@@ -381,41 +365,35 @@ def check_rule_count_consistency(
     unique_counts = set(counts.values())
     if len(unique_counts) > 1:
         detail_parts = [f"{k}={v}" for k, v in counts.items()]
-        result.add(
-            Finding(
-                "rule_count_drift",
-                "deny",
-                "cross-artifact",
-                f"rule count mismatch across artifacts: {', '.join(detail_parts)}",
-            )
-        )
+        result.add(Finding(
+            "rule_count_drift",
+            "deny",
+            "cross-artifact",
+            f"rule count mismatch across artifacts: {', '.join(detail_parts)}",
+        ))
 
     # Check for duplicates within contract
     seen: set[str] = set()
     for rule_id in contract_rules:
         if rule_id in seen:
-            result.add(
-                Finding(
-                    "rule_duplicate",
-                    "deny",
-                    SOT_ARTIFACTS["contract"],
-                    f"duplicate rule_id '{rule_id}' in contract",
-                )
-            )
+            result.add(Finding(
+                "rule_duplicate",
+                "deny",
+                SOT_ARTIFACTS["contract"],
+                f"duplicate rule_id '{rule_id}' in contract",
+            ))
         seen.add(rule_id)
 
     # Check for duplicates within priority list
     seen_priority: set[str] = set()
     for rule_id in validator_priority:
         if rule_id in seen_priority:
-            result.add(
-                Finding(
-                    "rule_duplicate",
-                    "deny",
-                    SOT_ARTIFACTS["validator_core"],
-                    f"duplicate rule_id '{rule_id}' in validator PRIORITY list",
-                )
-            )
+            result.add(Finding(
+                "rule_duplicate",
+                "deny",
+                SOT_ARTIFACTS["validator_core"],
+                f"duplicate rule_id '{rule_id}' in validator PRIORITY list",
+            ))
         seen_priority.add(rule_id)
 
 
@@ -442,14 +420,12 @@ def check_version_consistency(
     unique_versions = set(versions.values())
     if len(unique_versions) > 1:
         detail_parts = [f"{k}={v}" for k, v in versions.items()]
-        result.add(
-            Finding(
-                "version_drift",
-                "warn",
-                "cross-artifact",
-                f"version mismatch across artifacts: {', '.join(detail_parts)}",
-            )
-        )
+        result.add(Finding(
+            "version_drift",
+            "warn",
+            "cross-artifact",
+            f"version mismatch across artifacts: {', '.join(detail_parts)}",
+        ))
 
 
 # -----------------------------------------------------------------------
@@ -467,22 +443,20 @@ def check_workflow_targets(
 
     # Extract python and pytest command targets
     script_refs: list[str] = []
-    for m in re.finditer(r"\bpython\s+([\w/.\_-]+\.py)", text):
+    for m in re.finditer(r'\bpython\s+([\w/.\_-]+\.py)', text):
         script_refs.append(m.group(1))
-    for m in re.finditer(r"\bpytest\s+([\w/.\_-]+(?:\.py)?)", text):
+    for m in re.finditer(r'\bpytest\s+([\w/.\_-]+(?:\.py)?)', text):
         script_refs.append(m.group(1))
 
     for ref in script_refs:
         full_path = repo / ref
         if not full_path.exists():
-            result.add(
-                Finding(
-                    "workflow_target_missing",
-                    "deny",
-                    SOT_ARTIFACTS["workflow"],
-                    f"workflow references script '{ref}' which does not exist",
-                )
-            )
+            result.add(Finding(
+                "workflow_target_missing",
+                "deny",
+                SOT_ARTIFACTS["workflow"],
+                f"workflow references script '{ref}' which does not exist",
+            ))
 
 
 # -----------------------------------------------------------------------
@@ -500,14 +474,12 @@ def check_registry_integrity(
     try:
         data = load_json(registry_path)
     except Exception:
-        result.add(
-            Finding(
-                "reference_broken",
-                "deny",
-                SOT_ARTIFACTS["sot_registry"],
-                "sot_registry.json is not valid JSON",
-            )
-        )
+        result.add(Finding(
+            "reference_broken",
+            "deny",
+            SOT_ARTIFACTS["sot_registry"],
+            "sot_registry.json is not valid JSON",
+        ))
         return {}
 
     artifacts = data.get("roots", {}).get("sot_artifacts", [])
@@ -522,28 +494,24 @@ def check_registry_integrity(
         full_path = repo / path
 
         if not full_path.exists():
-            result.add(
-                Finding(
-                    "reference_broken",
-                    "deny",
-                    path,
-                    f"sot_registry artifact '{name}' points to non-existent file",
-                )
-            )
+            result.add(Finding(
+                "reference_broken",
+                "deny",
+                path,
+                f"sot_registry artifact '{name}' points to non-existent file",
+            ))
             continue
 
         if expected_hash:
             actual_hash = sha256_file(full_path)
             if actual_hash != expected_hash:
-                result.add(
-                    Finding(
-                        "registry_reference_stale",
-                        "warn",
-                        path,
-                        f"sot_registry artifact '{name}' hash mismatch: "
-                        f"expected={expected_hash[:16]}..., actual={actual_hash[:16]}...",
-                    )
-                )
+                result.add(Finding(
+                    "registry_reference_stale",
+                    "warn",
+                    path,
+                    f"sot_registry artifact '{name}' hash mismatch: "
+                    f"expected={expected_hash[:16]}..., actual={actual_hash[:16]}...",
+                ))
 
     return registry_artifacts
 
@@ -564,24 +532,20 @@ def check_moscow_report(
     report_rule_ids = extract_unique_rule_ids_from_text(text)
 
     for rule_id in sorted(report_rule_ids - contract_rules_set):
-        result.add(
-            Finding(
-                "rule_unmapped",
-                "warn",
-                SOT_ARTIFACTS["moscow_report"],
-                f"rule '{rule_id}' in MoSCoW report but missing from contract",
-            )
-        )
+        result.add(Finding(
+            "rule_unmapped",
+            "warn",
+            SOT_ARTIFACTS["moscow_report"],
+            f"rule '{rule_id}' in MoSCoW report but missing from contract",
+        ))
 
     for rule_id in sorted(contract_rules_set - report_rule_ids):
-        result.add(
-            Finding(
-                "rule_unmapped",
-                "warn",
-                SOT_ARTIFACTS["moscow_report"],
-                f"rule '{rule_id}' in contract but not listed in MoSCoW report",
-            )
-        )
+        result.add(Finding(
+            "rule_unmapped",
+            "warn",
+            SOT_ARTIFACTS["moscow_report"],
+            f"rule '{rule_id}' in contract but not listed in MoSCoW report",
+        ))
 
 
 # -----------------------------------------------------------------------
@@ -599,14 +563,12 @@ def check_diff_alert(
     try:
         data = load_json(diff_alert_path)
     except Exception:
-        result.add(
-            Finding(
-                "reference_broken",
-                "deny",
-                SOT_ARTIFACTS["diff_alert"],
-                "SOT_DIFF_ALERT.json is not valid JSON",
-            )
-        )
+        result.add(Finding(
+            "reference_broken",
+            "deny",
+            SOT_ARTIFACTS["diff_alert"],
+            "SOT_DIFF_ALERT.json is not valid JSON",
+        ))
         return
 
     # Extract artifact names/paths from diff_alert and cross-check with registry
@@ -627,14 +589,13 @@ def check_diff_alert(
             continue
 
         if path and registry_paths and path not in registry_paths:
-            result.add(
-                Finding(
-                    "reference_broken",
-                    "deny",
-                    SOT_ARTIFACTS["diff_alert"],
-                    f"diff_alert artifact '{name}' (path='{path}') not found in sot_registry.json",
-                )
-            )
+            result.add(Finding(
+                "reference_broken",
+                "deny",
+                SOT_ARTIFACTS["diff_alert"],
+                f"diff_alert artifact '{name}' (path='{path}') "
+                f"not found in sot_registry.json",
+            ))
 
 
 # -----------------------------------------------------------------------
@@ -658,65 +619,63 @@ def run_audit(repo: Path) -> AuditResult:
 
     if "contract" not in missing:
         try:
-            contract_rules, contract_version = extract_contract_rules(repo / SOT_ARTIFACTS["contract"])
-        except Exception as exc:
-            result.add(
-                Finding(
-                    "reference_broken",
-                    "deny",
-                    SOT_ARTIFACTS["contract"],
-                    f"cannot parse contract YAML: {exc}",
-                )
+            contract_rules, contract_version = extract_contract_rules(
+                repo / SOT_ARTIFACTS["contract"]
             )
+        except Exception as exc:
+            result.add(Finding(
+                "reference_broken",
+                "deny",
+                SOT_ARTIFACTS["contract"],
+                f"cannot parse contract YAML: {exc}",
+            ))
 
     if "validator_core" not in missing:
         try:
-            validator_rules, validator_priority, validator_version = extract_validator_rules(
-                repo / SOT_ARTIFACTS["validator_core"]
+            validator_rules, validator_priority, validator_version = (
+                extract_validator_rules(repo / SOT_ARTIFACTS["validator_core"])
             )
         except Exception as exc:
-            result.add(
-                Finding(
-                    "reference_broken",
-                    "deny",
-                    SOT_ARTIFACTS["validator_core"],
-                    f"cannot parse validator_core.py: {exc}",
-                )
-            )
+            result.add(Finding(
+                "reference_broken",
+                "deny",
+                SOT_ARTIFACTS["validator_core"],
+                f"cannot parse validator_core.py: {exc}",
+            ))
 
     if "rego" not in missing:
         try:
-            rego_rules, rego_version = extract_rego_rule_ids(repo / SOT_ARTIFACTS["rego"])
-        except Exception as exc:
-            result.add(
-                Finding(
-                    "reference_broken",
-                    "deny",
-                    SOT_ARTIFACTS["rego"],
-                    f"cannot parse rego policy: {exc}",
-                )
+            rego_rules, rego_version = extract_rego_rule_ids(
+                repo / SOT_ARTIFACTS["rego"]
             )
+        except Exception as exc:
+            result.add(Finding(
+                "reference_broken",
+                "deny",
+                SOT_ARTIFACTS["rego"],
+                f"cannot parse rego policy: {exc}",
+            ))
 
     if "tests" not in missing:
         try:
             test_text = read_text(repo / SOT_ARTIFACTS["tests"])
             test_rule_ids = extract_unique_rule_ids_from_text(test_text)
         except Exception as exc:
-            result.add(
-                Finding(
-                    "reference_broken",
-                    "deny",
-                    SOT_ARTIFACTS["tests"],
-                    f"cannot read test file: {exc}",
-                )
-            )
+            result.add(Finding(
+                "reference_broken",
+                "deny",
+                SOT_ARTIFACTS["tests"],
+                f"cannot read test file: {exc}",
+            ))
 
     # Checks 2-6 require contract rules
     contract_rules_set = set(contract_rules)
 
     if contract_rules and validator_rules:
         # Check 2: Contract -> Validator
-        check_contract_to_validator(contract_rules, validator_rules, validator_priority, result)
+        check_contract_to_validator(
+            contract_rules, validator_rules, validator_priority, result
+        )
 
     if contract_rules and rego_rules:
         # Check 3: Contract -> Rego
@@ -728,10 +687,14 @@ def run_audit(repo: Path) -> AuditResult:
 
     if contract_rules or validator_rules or rego_rules:
         # Check 5: Rule count consistency
-        check_rule_count_consistency(contract_rules, validator_rules, validator_priority, rego_rules, result)
+        check_rule_count_consistency(
+            contract_rules, validator_rules, validator_priority, rego_rules, result
+        )
 
     # Check 6: Version consistency
-    check_version_consistency(contract_version, validator_version, rego_version, result)
+    check_version_consistency(
+        contract_version, validator_version, rego_version, result
+    )
 
     # Check 7: Workflow targets
     if "workflow" not in missing:
@@ -754,7 +717,12 @@ def run_audit(repo: Path) -> AuditResult:
 
 
 def generate_report(result: AuditResult, repo: Path) -> dict[str, Any]:
-    ts = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    ts = (
+        datetime.now(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
     return {
         "audit_type": "cross_artifact_reference",
         "timestamp_utc": ts,
@@ -802,7 +770,8 @@ def main() -> int:
         print(json.dumps(report, indent=2, ensure_ascii=False))
     else:
         print(f"Cross-Artifact Reference Audit: {result.overall}")
-        print(f"  Findings: {len(result.findings)} (deny={report['deny_count']}, warn={report['warn_count']})")
+        print(f"  Findings: {len(result.findings)} "
+              f"(deny={report['deny_count']}, warn={report['warn_count']})")
         print(f"  Evidence Hash: {report['evidence_hash'][:16]}...")
         if result.findings:
             print()

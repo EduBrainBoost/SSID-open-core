@@ -16,7 +16,6 @@ Safety constraints:
 
 SoT v4.1.0 | ROOT-24-LOCK | Classification: Tooling
 """
-
 from __future__ import annotations
 
 import argparse

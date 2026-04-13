@@ -24,7 +24,6 @@ Exit codes:
   0  — Verification PASS
   1  — Verification FAIL or error
 """
-
 from __future__ import annotations
 
 import hashlib
@@ -33,7 +32,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from web3 import Web3
@@ -50,7 +49,9 @@ __all__ = ["verify", "TEST_HASH"]
 _REPO_ROOT: Path = Path(__file__).resolve().parents[2]
 
 CONTRACTS_DIR: Path = _REPO_ROOT / "24_meta_orchestration" / "contracts"
-AUDIT_DIR: Path = _REPO_ROOT / "02_audit_logging" / "agent_runs" / "PH3_VERIFY_SCRIPT_001"
+AUDIT_DIR: Path = (
+    _REPO_ROOT / "02_audit_logging" / "agent_runs" / "PH3_VERIFY_SCRIPT_001"
+)
 ABI_PATH: Path = CONTRACTS_DIR / "proof_registry_abi.json"
 
 # Deterministic timeout for all RPC calls (seconds). No infinite waits.
@@ -69,19 +70,19 @@ TEST_HASH: bytes = hashlib.sha256(b"ssid-testnet-verify").digest()
 # ---------------------------------------------------------------------------
 
 
-def _read_env() -> tuple[str, str, int, str]:
+def _read_env() -> Tuple[str, str, int, str]:
     """Read required environment variables. Exits with code 1 on missing values.
 
     Returns:
         Tuple of (contract_address, rpc_url, chain_id, private_key).
         private_key is never logged or persisted.
     """
-    contract_address: str | None = os.environ.get("CONTRACT_ADDRESS")
-    rpc_url: str | None = os.environ.get("RPC_URL")
-    chain_id_str: str | None = os.environ.get("CHAIN_ID")
-    private_key: str | None = os.environ.get("PRIVATE_KEY")
+    contract_address: Optional[str] = os.environ.get("CONTRACT_ADDRESS")
+    rpc_url: Optional[str] = os.environ.get("RPC_URL")
+    chain_id_str: Optional[str] = os.environ.get("CHAIN_ID")
+    private_key: Optional[str] = os.environ.get("PRIVATE_KEY")
 
-    missing: list[str] = []
+    missing: List[str] = []
     if not contract_address:
         missing.append("CONTRACT_ADDRESS")
     if not rpc_url:
@@ -102,10 +103,10 @@ def _read_env() -> tuple[str, str, int, str]:
         sys.exit(1)
 
     return (
-        contract_address,  # type: ignore[return-value]
-        rpc_url,  # type: ignore[return-value]
+        contract_address,   # type: ignore[return-value]
+        rpc_url,            # type: ignore[return-value]
         chain_id,
-        private_key,  # type: ignore[return-value]
+        private_key,        # type: ignore[return-value]
     )
 
 
@@ -120,7 +121,7 @@ def _load_abi() -> list:
     """
     if not ABI_PATH.exists():
         raise FileNotFoundError(f"ABI file not found: {ABI_PATH}")
-    with open(ABI_PATH, encoding="utf-8") as f:
+    with open(ABI_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -134,7 +135,7 @@ def verify(
     rpc_url: str,
     chain_id: int,
     private_key: str,
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """Run the canonical round-trip verification against a deployed ProofRegistry.
 
     Steps:
@@ -178,7 +179,7 @@ def verify(
         abi=abi,
     )
 
-    tx_hashes: list[str] = []
+    tx_hashes: List[str] = []
 
     # Step 1: hasProof must be false (fresh state).
     print("Step 1: hasProof(TEST_HASH) — expecting false ...")
@@ -208,7 +209,7 @@ def verify(
     print("Step 2: addProof(TEST_HASH) — sending transaction ...")
     try:
         nonce: int = w3.eth.get_transaction_count(caller_address)
-        tx: dict[str, Any] = contract.functions.addProof(TEST_HASH).build_transaction(
+        tx: Dict[str, Any] = contract.functions.addProof(TEST_HASH).build_transaction(
             {
                 "chainId": chain_id,
                 "from": caller_address,
@@ -218,7 +219,10 @@ def verify(
             }
         )
         signed_tx = w3.eth.account.sign_transaction(tx, private_key=private_key)
-        raw_tx = getattr(signed_tx, "raw_transaction", None) or getattr(signed_tx, "rawTransaction", None)
+        raw_tx = (
+            getattr(signed_tx, "raw_transaction", None)
+            or getattr(signed_tx, "rawTransaction", None)
+        )
         if raw_tx is None:
             raise RuntimeError("SignedTransaction has no raw tx attribute")
 
@@ -279,7 +283,7 @@ def verify(
     }
 
 
-def _write_verify_report(data: dict[str, Any]) -> Path:
+def _write_verify_report(data: Dict[str, Any]) -> Path:
     """Write verify_report.json to the audit logging directory.
 
     The output file contains NO secrets: no private keys, no RPC URLs.

@@ -11,7 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 REPAIRABLE_ISSUES = [
@@ -35,28 +35,24 @@ def _check(args: argparse.Namespace) -> int:
         scope_dir = workspace / scope
         # Check for missing __init__.py
         if not (scope_dir / "__init__.py").exists():
-            found_issues.append(
-                {
-                    "issue_id": "missing_init_py",
-                    "path": str(scope_dir / "__init__.py"),
-                    "severity": "warning",
-                    "auto_fixable": True,
-                }
-            )
+            found_issues.append({
+                "issue_id": "missing_init_py",
+                "path": str(scope_dir / "__init__.py"),
+                "severity": "warning",
+                "auto_fixable": True,
+            })
         # Check for missing module.yaml
         if not (scope_dir / "module.yaml").exists():
-            found_issues.append(
-                {
-                    "issue_id": "missing_module_yaml",
-                    "path": str(scope_dir / "module.yaml"),
-                    "severity": "info",
-                    "auto_fixable": True,
-                }
-            )
+            found_issues.append({
+                "issue_id": "missing_module_yaml",
+                "path": str(scope_dir / "module.yaml"),
+                "severity": "info",
+                "auto_fixable": True,
+            })
 
     output = {
         "command": "repair.check",
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "scope": scope,
         "issues_found": len(found_issues),
         "issues": found_issues,
@@ -75,7 +71,7 @@ def _fix(args: argparse.Namespace) -> int:
     if issue_id not in REPAIRABLE_ISSUES:
         error = {
             "command": "repair.fix",
-            "timestamp": datetime.now(UTC).isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "issue": issue_id,
             "error": f"Unknown issue type. Known: {REPAIRABLE_ISSUES}",
             "status": "failed",
@@ -85,7 +81,7 @@ def _fix(args: argparse.Namespace) -> int:
 
     output = {
         "command": "repair.fix",
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "issue": issue_id,
         "dry_run": dry_run,
         "action_taken": "none (dry-run)" if dry_run else "applied",
@@ -102,7 +98,7 @@ def _status(args: argparse.Namespace) -> int:
     """Report repair worker status."""
     output = {
         "command": "repair.status",
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "repairable_issues": REPAIRABLE_ISSUES,
         "issue_type_count": len(REPAIRABLE_ISSUES),
         "safe_fix_enforced": True,
@@ -142,7 +138,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         error = {
             "command": f"repair.{args.action}",
-            "timestamp": datetime.now(UTC).isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "error": str(exc),
             "status": "failed",
         }

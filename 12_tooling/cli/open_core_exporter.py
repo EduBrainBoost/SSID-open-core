@@ -8,7 +8,6 @@ and exports public-safe artefacts with SHA256 hashed manifest.
 Exit codes follow verification_exit_codes from policy:
   0 = PASS, 1 = WARN, 2 = FAIL, 3 = CORRUPT
 """
-
 from __future__ import annotations
 
 import argparse
@@ -18,7 +17,7 @@ import json
 import re
 import shutil
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -33,12 +32,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_POLICY_PATH = "16_codex/opencore_export_policy.yaml"
 
 # Classifications considered "public" — full artifact export
-PUBLIC_CLASSIFICATIONS = frozenset(
-    {
-        "Public Specification",
-        "Public Reference",
-    }
-)
+PUBLIC_CLASSIFICATIONS = frozenset({
+    "Public Specification",
+    "Public Reference",
+})
 
 # For non-public modules, only these sub-paths are exportable
 RESTRICTED_EXPORT_PATHS = (
@@ -49,19 +46,21 @@ RESTRICTED_EXPORT_PATHS = (
     "interfaces/",
 )
 
-# Import canonical roots from 03_core/constants.py (Single Source of Truth)
-import importlib.util as _ilu
-
-_spec = _ilu.spec_from_file_location("core_constants", REPO_ROOT / "03_core" / "constants.py")
-_mod = _ilu.module_from_spec(_spec)
-_spec.loader.exec_module(_mod)
-CANONICAL_ROOTS = _mod.CANONICAL_ROOTS_LIST  # list form for compatibility
+# Canonical 24 roots
+CANONICAL_ROOTS = [
+    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
+    "05_documentation", "06_data_pipeline", "07_governance_legal",
+    "08_identity_score", "09_meta_identity", "10_interoperability",
+    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
+    "15_infra", "16_codex", "17_observability", "18_data_layer",
+    "19_adapters", "20_foundation", "21_post_quantum_crypto", "22_datasets",
+    "23_compliance", "24_meta_orchestration",
+]
 
 
 # ---------------------------------------------------------------------------
 # YAML helpers
 # ---------------------------------------------------------------------------
-
 
 def _load_yaml(path: Path) -> dict[str, Any]:
     """Load a YAML file, using PyYAML if available, else minimal parser."""
@@ -110,7 +109,6 @@ def _minimal_yaml_load(text: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Policy loading
 # ---------------------------------------------------------------------------
-
 
 class ExportPolicy:
     """Encapsulates the opencore_export_policy.yaml rules."""
@@ -164,7 +162,6 @@ class ExportPolicy:
 # Module classification
 # ---------------------------------------------------------------------------
 
-
 def load_module_classification(root_dir: Path) -> str:
     """Read classification from module.yaml. Returns 'Unknown' on failure."""
     mod_yaml = root_dir / "module.yaml"
@@ -186,7 +183,6 @@ def is_public_module(classification: str) -> bool:
 # SHA256 utilities
 # ---------------------------------------------------------------------------
 
-
 def sha256_file(path: Path) -> str:
     """Compute SHA256 hex digest of a file."""
     h = hashlib.sha256()
@@ -204,7 +200,6 @@ def sha256_bytes(data: bytes) -> str:
 # ---------------------------------------------------------------------------
 # File collection
 # ---------------------------------------------------------------------------
-
 
 def collect_source_files(source_root: Path) -> list[Path]:
     """Collect all files under source_root (excluding .git)."""
@@ -235,7 +230,6 @@ def is_restricted_exportable(rel_path: str) -> bool:
 # ---------------------------------------------------------------------------
 # Export engine
 # ---------------------------------------------------------------------------
-
 
 class ExportResult:
     """Holds the result of an export run."""
@@ -319,14 +313,13 @@ def run_export(
         root_name = rel.split("/")[0]
         if root_name in result.module_classifications:
             classification = result.module_classifications[root_name]
-            if not is_public_module(classification) and not is_restricted_exportable(rel):
-                result.excluded.append(
-                    {
+            if not is_public_module(classification):
+                if not is_restricted_exportable(rel):
+                    result.excluded.append({
                         "path": rel,
                         "reason": f"internal_module:{classification}",
-                    }
-                )
-                continue
+                    })
+                    continue
 
         # 2f. Secret scan
         try:
@@ -338,7 +331,9 @@ def run_export(
         secret_hits = policy.scan_secrets(content)
         if secret_hits:
             result.excluded.append({"path": rel, "reason": "secret_detected"})
-            result.warnings.append(f"SECRET_DETECTED in {rel} — matched {len(secret_hits)} pattern(s)")
+            result.warnings.append(
+                f"SECRET_DETECTED in {rel} — matched {len(secret_hits)} pattern(s)"
+            )
             continue
 
         # 2g. File passes all gates -> export
@@ -363,7 +358,6 @@ def run_export(
 # Manifest generation
 # ---------------------------------------------------------------------------
 
-
 def generate_manifest(
     result: ExportResult,
     policy: ExportPolicy,
@@ -372,10 +366,12 @@ def generate_manifest(
     target_ref: str = "HEAD",
 ) -> dict[str, Any]:
     """Generate the export manifest conforming to export_manifest_schema."""
-    now_utc = datetime.now(UTC).isoformat()
+    now_utc = datetime.now(timezone.utc).isoformat()
 
     # Compute bundle hash over all exported file hashes (deterministic)
-    bundle_data = "".join(e["sha256"] for e in sorted(result.exported, key=lambda x: x["path"]))
+    bundle_data = "".join(
+        e["sha256"] for e in sorted(result.exported, key=lambda x: x["path"])
+    )
     bundle_sha256 = sha256_bytes(bundle_data.encode("utf-8"))
 
     manifest: dict[str, Any] = {
@@ -401,7 +397,6 @@ def generate_manifest(
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
-
 
 def _resolve_source_ref(repo: Path) -> str:
     """Try to get current git SHA; fall back to 'unknown'."""
@@ -524,7 +519,8 @@ def main(argv: list[str] | None = None) -> int:
     n_excluded = len(result.excluded)
     mode = "DRY-RUN" if args.dry_run else "EXPORT"
     print(
-        f"\n[{mode}] {result.status} — {n_exported} files exported, {n_excluded} excluded",
+        f"\n[{mode}] {result.status} — "
+        f"{n_exported} files exported, {n_excluded} excluded",
         file=sys.stderr,
     )
 

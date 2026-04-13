@@ -16,14 +16,13 @@ Usage:
   python 12_tooling/cli/ssid_cli.py evidence [--verify] [--dir DIR]
   python 12_tooling/cli/ssid_cli.py report [--output FILE]
 """
-
 from __future__ import annotations
 
 import argparse
 import json
 import subprocess
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -38,30 +37,13 @@ REPO_ROOT = SCRIPT_DIR.parent.parent
 
 # Canonical root folders (ROOT-24-LOCK)
 CANONICAL_ROOTS = [
-    "01_ai_layer",
-    "02_audit_logging",
-    "03_core",
-    "04_deployment",
-    "05_documentation",
-    "06_data_pipeline",
-    "07_governance_legal",
-    "08_identity_score",
-    "09_meta_identity",
-    "10_interoperability",
-    "11_test_simulation",
-    "12_tooling",
-    "13_ui_layer",
-    "14_zero_time_auth",
-    "15_infra",
-    "16_codex",
-    "17_observability",
-    "18_data_layer",
-    "19_adapters",
-    "20_foundation",
-    "21_post_quantum_crypto",
-    "22_datasets",
-    "23_compliance",
-    "24_meta_orchestration",
+    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
+    "05_documentation", "06_data_pipeline", "07_governance_legal",
+    "08_identity_score", "09_meta_identity", "10_interoperability",
+    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
+    "15_infra", "16_codex", "17_observability", "18_data_layer",
+    "19_adapters", "20_foundation", "21_post_quantum_crypto", "22_datasets",
+    "23_compliance", "24_meta_orchestration",
 ]
 
 EVIDENCE_DIR = REPO_ROOT / ".ssid-system" / "evidence"
@@ -71,7 +53,6 @@ AGENT_RUNS_DIR = REPO_ROOT / "02_audit_logging" / "agent_runs"
 # ---------------------------------------------------------------------------
 # health command
 # ---------------------------------------------------------------------------
-
 
 def _check_root_structure() -> dict[str, bool]:
     """Check that all 24 canonical roots exist."""
@@ -86,17 +67,11 @@ def _check_git_status() -> dict[str, Any]:
     try:
         branch = subprocess.run(
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            cwd=str(REPO_ROOT),
-            capture_output=True,
-            text=True,
-            timeout=10,
+            cwd=str(REPO_ROOT), capture_output=True, text=True, timeout=10,
         )
         status = subprocess.run(
             ["git", "status", "--porcelain"],
-            cwd=str(REPO_ROOT),
-            capture_output=True,
-            text=True,
-            timeout=10,
+            cwd=str(REPO_ROOT), capture_output=True, text=True, timeout=10,
         )
         return {
             "branch": branch.stdout.strip(),
@@ -118,7 +93,7 @@ def _check_evidence_dir() -> dict[str, Any]:
 def cmd_health(args: argparse.Namespace) -> int:
     """Run health checks on all services."""
     report: dict[str, Any] = {
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "root_structure": _check_root_structure(),
         "git": _check_git_status(),
         "evidence": _check_evidence_dir(),
@@ -140,9 +115,8 @@ def cmd_health(args: argparse.Namespace) -> int:
     else:
         print("=== SSID Health Check ===")
         missing = [k for k, v in report["root_structure"].items() if not v]
-        print(
-            f"Root folders: {24 - len(missing)}/24 present" + (f" (missing: {', '.join(missing)})" if missing else "")
-        )
+        print(f"Root folders: {24 - len(missing)}/24 present"
+              + (f" (missing: {', '.join(missing)})" if missing else ""))
         git = report["git"]
         if "error" in git:
             print(f"Git: ERROR — {git['error']}")
@@ -158,7 +132,6 @@ def cmd_health(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 # gates command
 # ---------------------------------------------------------------------------
-
 
 def cmd_gates(args: argparse.Namespace) -> int:
     """Run the gate chain pipeline."""
@@ -180,7 +153,6 @@ def cmd_gates(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 # validate command
 # ---------------------------------------------------------------------------
-
 
 def cmd_validate(args: argparse.Namespace) -> int:
     """Run the SoT validator."""
@@ -206,7 +178,6 @@ def cmd_validate(args: argparse.Namespace) -> int:
 # evidence command
 # ---------------------------------------------------------------------------
 
-
 def cmd_evidence(args: argparse.Namespace) -> int:
     """List or verify evidence files."""
     evidence_dir = Path(args.dir) if args.dir else EVIDENCE_DIR
@@ -224,7 +195,6 @@ def cmd_evidence(args: argparse.Namespace) -> int:
         # Use the evidence_verifier module
         try:
             from evidence_verifier import verify_chain
-
             results = verify_chain(str(evidence_dir))
             passed = sum(1 for r in results if r["status"] == "PASS")
             failed = len(results) - passed
@@ -249,11 +219,10 @@ def cmd_evidence(args: argparse.Namespace) -> int:
 # report command
 # ---------------------------------------------------------------------------
 
-
 def cmd_report(args: argparse.Namespace) -> int:
     """Generate a status report."""
     report_lines: list[str] = []
-    ts = datetime.now(UTC).isoformat()
+    ts = datetime.now(timezone.utc).isoformat()
 
     report_lines.append("# SSID Status Report")
     report_lines.append(f"Generated: {ts}")
@@ -303,7 +272,6 @@ def cmd_report(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
-
 
 def main() -> int:
     parser = argparse.ArgumentParser(

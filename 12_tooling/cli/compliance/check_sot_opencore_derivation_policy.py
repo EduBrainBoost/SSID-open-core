@@ -2,11 +2,10 @@
 Checks compliance for: sot_opencore_derivation_policy
 Phase 3 stub — A02_A03_COMPLETION
 """
-
 import argparse
 import json
-import os
 import sys
+import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../23_compliance/validators"))
 from validate_sot_opencore_derivation_policy import validate_sot_opencore_derivation_policy

@@ -3,7 +3,6 @@
 
 Usage: python 12_tooling/cli/fee_simulate.py --gross 100.00 --split 70:20:10
 """
-
 import argparse
 import json
 import sys

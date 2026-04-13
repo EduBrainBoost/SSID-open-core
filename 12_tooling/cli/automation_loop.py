@@ -17,11 +17,9 @@ Exit codes:
 
 PR-only, no secrets, no scores. PASS/FAIL + findings only.
 """
-
 from __future__ import annotations
 
 import argparse
-import contextlib
 import hashlib
 import json
 import os
@@ -30,7 +28,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
@@ -79,7 +77,7 @@ REQUIRED_SPEC_KEYS = [
 
 VALID_TASK_TYPES = ["bootstrap", "tooling", "tests", "docs"]
 
-ALWAYS_FORBIDDEN = ["./", "/mnt/data", "**/.git/**", "**/secrets/**"]
+ALWAYS_FORBIDDEN = ["./", "${SSID_LEGACY_SANDBOX}", "**/.git/**", "**/secrets/**"]
 
 # ---------------------------------------------------------------------------
 # Utility helpers
@@ -88,7 +86,7 @@ ALWAYS_FORBIDDEN = ["./", "/mnt/data", "**/.git/**", "**/secrets/**"]
 
 def _utc_now() -> str:
     """Return the current UTC timestamp in compact ISO-8601 format."""
-    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
 def _sha256_file(path: Path) -> str:
@@ -149,7 +147,10 @@ def _validate_task_type(spec: dict) -> str | None:
     Returns an error message on failure, or ``None`` on success.
     """
     if spec.get("task_type") not in VALID_TASK_TYPES:
-        return f"Invalid task_type '{spec.get('task_type')}'. Must be one of {VALID_TASK_TYPES}"
+        return (
+            f"Invalid task_type '{spec.get('task_type')}'. "
+            f"Must be one of {VALID_TASK_TYPES}"
+        )
     return None
 
 
@@ -209,7 +210,7 @@ def verify_spec(spec_path: str) -> int:
         return EXIT_GATE_FAILURE
 
     try:
-        with open(path, encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8") as f:
             spec = yaml.safe_load(f)
     except yaml.YAMLError as exc:
         print(f"FAIL: Invalid YAML: {exc}")
@@ -247,9 +248,7 @@ def init_dirs() -> int:
     """
     AGENT_RUNS_DIR.mkdir(parents=True, exist_ok=True)
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    print(
-        f"PASS: Audit directories ensured: {AGENT_RUNS_DIR.relative_to(PROJECT_ROOT)}, {REPORTS_DIR.relative_to(PROJECT_ROOT)}"
-    )
+    print(f"PASS: Audit directories ensured: {AGENT_RUNS_DIR.relative_to(PROJECT_ROOT)}, {REPORTS_DIR.relative_to(PROJECT_ROOT)}")
     return EXIT_SUCCESS
 
 
@@ -286,10 +285,7 @@ def _check_not_on_main() -> tuple[str | None, str]:
 
 
 def _create_run_manifest(
-    run_dir: Path,
-    task_id: str,
-    branch: str,
-    spec_path: Path,
+    run_dir: Path, task_id: str, branch: str, spec_path: Path,
 ) -> None:
     """Create the initial run manifest and copy the spec into the run dir.
 
@@ -510,7 +506,7 @@ def _build_and_write_evidence(
         "checks": checks_results,
         "changed_files": sorted(changed_files),
         "worm_zip": {
-            "path": str(zip_path.relative_to(PROJECT_ROOT)) if zip_path.is_relative_to(PROJECT_ROOT) else str(zip_path),
+            "path": str(zip_path.relative_to(PROJECT_ROOT)),
             "sha256": zip_sha256,
             "size_bytes": zip_size,
         },
@@ -535,7 +531,10 @@ def _update_run_manifest(
     Sets ``finalized_utc``, ``status``, and ``evidence_sha256``.
     """
     manifest_path = run_dir / "run_manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {"task_id": task_id}
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    else:
+        manifest = {"task_id": task_id}
     manifest["finalized_utc"] = utc_stamp
     manifest["status"] = "completed" if overall_pass else "failed"
     manifest["evidence_sha256"] = _sha256_file(evidence_path)
@@ -583,15 +582,9 @@ def finalize_task(task_id: str) -> int:
 
     # Step 4: Build evidence
     evidence_path = _build_and_write_evidence(
-        run_dir,
-        task_id,
-        utc_stamp,
-        overall_pass,
-        checks_results,
-        changed_files,
-        zip_path,
-        zip_sha256,
-        zip_size,
+        run_dir, task_id, utc_stamp, overall_pass,
+        checks_results, changed_files,
+        zip_path, zip_sha256, zip_size,
     )
 
     # Step 5: Update manifest
@@ -618,7 +611,7 @@ _SMOKE_SPEC = {
     "title": "Smoke E2E lifecycle test",
     "task_type": "tooling",
     "scope_allowlist": ["12_tooling/cli/"],
-    "forbidden_paths": ["./", "/mnt/data", "**/.git/**", "**/secrets/**"],
+    "forbidden_paths": ["./", "${SSID_LEGACY_SANDBOX}", "**/.git/**", "**/secrets/**"],
     "required_checks": ["python -m pytest -q"],
     "acceptance_criteria": ["Smoke test passes"],
     "evidence_outputs": [
@@ -722,8 +715,7 @@ def smoke_e2e() -> int:
     tmp_dir = Path(tempfile.mkdtemp(prefix="smoke_e2e_"))
     spec_path = tmp_dir / "smoke_spec.yaml"
     spec_path.write_text(
-        yaml.dump(_SMOKE_SPEC, sort_keys=True),
-        encoding="utf-8",
+        yaml.dump(_SMOKE_SPEC, sort_keys=True), encoding="utf-8",
     )
 
     # Validate the synthetic spec itself
@@ -792,15 +784,9 @@ def smoke_e2e() -> int:
 
     # Build evidence.json
     evidence_path = _build_and_write_evidence(
-        run_dir,
-        task_id,
-        utc_stamp,
-        overall_pass,
-        checks_results,
-        changed_files,
-        zip_path,
-        zip_sha256,
-        zip_size,
+        run_dir, task_id, utc_stamp, overall_pass,
+        checks_results, changed_files,
+        zip_path, zip_sha256, zip_size,
     )
 
     # Update manifest
@@ -830,9 +816,14 @@ def smoke_e2e() -> int:
     if err is not None:
         errors.append(f"[finalize] {err}")
     else:
-        manifest_data = json.loads((run_dir / "run_manifest.json").read_text(encoding="utf-8"))
+        manifest_data = json.loads(
+            (run_dir / "run_manifest.json").read_text(encoding="utf-8")
+        )
         if manifest_data.get("status") != "completed":
-            errors.append(f"[finalize] run_manifest status={manifest_data.get('status')!r}, expected 'completed'")
+            errors.append(
+                f"[finalize] run_manifest status={manifest_data.get('status')!r}, "
+                f"expected 'completed'"
+            )
 
     # file_hashes.json (may contain empty dict if no tracked files changed)
     fh_path = run_dir / "file_hashes.json"
@@ -861,8 +852,10 @@ def smoke_e2e() -> int:
     shutil.rmtree(str(worm_dir), ignore_errors=True)
     # Clean up empty parent dirs if possible
     for d in (WORM_BASE / "SMOKE_E2E",):
-        with contextlib.suppress(OSError):
+        try:
             d.rmdir()
+        except OSError:
+            pass
 
     if errors:
         print("\nSMOKE-E2E: FAIL")

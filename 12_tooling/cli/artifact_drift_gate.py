@@ -1,4 +1,3 @@
-# DEPRECATED: REDUNDANT — Canonical tool is 12_tooling/cli/sot_diff_alert.py
 #!/usr/bin/env python3
 """Artifact Drift Gate — detect divergence between SoT and deploy-path artifacts.
 
@@ -9,7 +8,6 @@ Compares SHA256 hashes of contract artifacts in:
 Exit 0 = no drift (PASS).
 Exit 1 = drift detected (FAIL).
 """
-
 from __future__ import annotations
 
 import hashlib
@@ -17,7 +15,13 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SOT_DIR = PROJECT_ROOT / "24_meta_orchestration" / "contracts"
-DEPLOY_DIR = PROJECT_ROOT / "12_tooling" / "testnet_mvp" / "01_hash_only_proof_registry" / "contracts"
+DEPLOY_DIR = (
+    PROJECT_ROOT
+    / "12_tooling"
+    / "testnet_mvp"
+    / "01_hash_only_proof_registry"
+    / "contracts"
+)
 
 ARTIFACT_FILES = [
     "proof_registry_abi.json",
@@ -48,7 +52,9 @@ def check_drift() -> list[str]:
         deploy_hash = _sha256(deploy_path)
 
         if sot_hash != deploy_hash:
-            findings.append(f"Drift in {fname}: SoT={sot_hash[:16]}... deploy={deploy_hash[:16]}...")
+            findings.append(
+                f"Drift in {fname}: SoT={sot_hash[:16]}... deploy={deploy_hash[:16]}..."
+            )
 
     return findings
 

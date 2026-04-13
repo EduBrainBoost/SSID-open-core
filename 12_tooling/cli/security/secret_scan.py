@@ -4,7 +4,6 @@
 Detects potentially leaked credentials, API keys, passwords, tokens, etc.
 Uses pattern matching and entropy analysis.
 """
-
 import json
 import re
 import sys
@@ -57,7 +56,10 @@ EXCLUDE_PATTERNS = [
 
 def should_exclude(filepath: str) -> bool:
     """Check if file should be excluded from scanning."""
-    return any(re.search(pattern, filepath) for pattern in EXCLUDE_PATTERNS)
+    for pattern in EXCLUDE_PATTERNS:
+        if re.search(pattern, filepath):
+            return True
+    return False
 
 
 def scan_file(filepath: Path) -> list[dict[str, Any]]:
@@ -79,15 +81,13 @@ def scan_file(filepath: Path) -> list[dict[str, Any]]:
     for line_num, line in enumerate(lines, 1):
         for secret_type, pattern in SECRET_PATTERNS.items():
             if re.search(pattern, line, re.IGNORECASE):
-                findings.append(
-                    {
-                        "file": str(filepath.relative_to(Path.cwd())),
-                        "line": line_num,
-                        "secret_type": secret_type,
-                        "pattern": pattern,
-                        "severity": "HIGH",
-                    }
-                )
+                findings.append({
+                    "file": str(filepath.relative_to(Path.cwd())),
+                    "line": line_num,
+                    "secret_type": secret_type,
+                    "pattern": pattern,
+                    "severity": "HIGH",
+                })
 
     return findings
 
@@ -126,13 +126,13 @@ def main():
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output_file.write_text(json.dumps(results, indent=2))
 
-    print("Secret scan complete:")
+    print(f"Secret scan complete:")
     print(f"  Files scanned: {results['files_scanned']}")
     print(f"  Secrets found: {results['secrets_found']}")
 
-    if results["secrets_found"] > 0:
+    if results['secrets_found'] > 0:
         print("\nFindings:")
-        for finding in results["findings"]:
+        for finding in results['findings']:
             print(f"  {finding['file']}:{finding['line']} - {finding['secret_type']}")
         return 1
 

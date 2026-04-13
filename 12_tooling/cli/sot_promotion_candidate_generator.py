@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """Generate promotion candidates from a PASS convergence state."""
-
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -21,7 +20,7 @@ REPORT_MD = "sot_promotion_candidate_report.md"
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _json_sha256(payload: Any) -> str:
@@ -89,9 +88,7 @@ def build_promotion_candidate(
         "reason": reason,
         "candidate_evidence_hash": "",
     }
-    candidate["candidate_evidence_hash"] = _json_sha256(
-        {k: v for k, v in candidate.items() if k != "candidate_evidence_hash"}
-    )
+    candidate["candidate_evidence_hash"] = _json_sha256({k: v for k, v in candidate.items() if k != "candidate_evidence_hash"})
     return candidate
 
 
@@ -125,9 +122,7 @@ def emit_candidate_report(report: dict[str, Any], output_dir: Path) -> tuple[Pat
     ]
     if report["findings"]:
         for index, finding in enumerate(report["findings"], start=1):
-            lines.append(
-                f"| {index} | `{finding['finding_code']}` | {finding['severity']} | `{finding['path']}` | {finding['detail']} |"
-            )
+            lines.append(f"| {index} | `{finding['finding_code']}` | {finding['severity']} | `{finding['path']}` | {finding['detail']} |")
     else:
         lines.append("| 1 | `none` | info | `-` | No findings |")
     md_path.write_text("\n".join(lines), encoding="utf-8")
@@ -181,66 +176,24 @@ def run(args: argparse.Namespace) -> int:
     findings: list[dict[str, str]] = []
     report = load_convergence_report(convergence_path)
     if report is None:
-        findings.append(
-            _finding(
-                "convergence_report_missing", "deny", str(convergence_path), "convergence report missing or unreadable"
-            )
-        )
+        findings.append(_finding("convergence_report_missing", "deny", str(convergence_path), "convergence report missing or unreadable"))
     elif report.get("final_decision") != "PASS":
-        findings.append(
-            _finding(
-                "convergence_not_pass",
-                "deny",
-                str(convergence_path),
-                f"convergence final_decision is '{report.get('final_decision')}', expected PASS",
-            )
-        )
+        findings.append(_finding("convergence_not_pass", "deny", str(convergence_path), f"convergence final_decision is '{report.get('final_decision')}', expected PASS"))
 
     active_state = load_active_baseline_state(active_state_path)
     if active_state is None:
-        findings.append(
-            _finding(
-                "active_baseline_state_missing",
-                "deny",
-                str(active_state_path),
-                "active baseline state missing or unreadable",
-            )
-        )
+        findings.append(_finding("active_baseline_state_missing", "deny", str(active_state_path), "active baseline state missing or unreadable"))
     else:
-        required = {
-            "active_baseline_version",
-            "decision",
-            "consistency_status",
-            "source_convergence_report",
-            "source_convergence_evidence_hash",
-        }
+        required = {"active_baseline_version", "decision", "consistency_status", "source_convergence_report", "source_convergence_evidence_hash"}
         missing = sorted(required - set(active_state.keys()))
-        if (
-            missing
-            or active_state.get("decision") != "approve"
-            or active_state.get("consistency_status") != "CONSISTENT"
-        ):
-            findings.append(
-                _finding(
-                    "active_baseline_state_invalid",
-                    "deny",
-                    str(active_state_path),
-                    f"active state invalid for candidate generation; missing={missing} decision={active_state.get('decision')} consistency={active_state.get('consistency_status')}",
-                )
-            )
+        if missing or active_state.get("decision") != "approve" or active_state.get("consistency_status") != "CONSISTENT":
+            findings.append(_finding("active_baseline_state_invalid", "deny", str(active_state_path), f"active state invalid for candidate generation; missing={missing} decision={active_state.get('decision')} consistency={active_state.get('consistency_status')}"))
 
     candidate = None
     if not findings:
         target_version = derive_candidate_version(active_state["active_baseline_version"])
         if target_version is None:
-            findings.append(
-                _finding(
-                    "candidate_version_invalid",
-                    "deny",
-                    "active_baseline_version",
-                    "could not derive a strictly forward target version",
-                )
-            )
+            findings.append(_finding("candidate_version_invalid", "deny", "active_baseline_version", "could not derive a strictly forward target version"))
         else:
             candidate = build_promotion_candidate(
                 convergence_report=report,
@@ -258,14 +211,7 @@ def run(args: argparse.Namespace) -> int:
                     and record.get("target_baseline_version") == candidate["target_baseline_version"]
                     and record.get("approval_scope") == candidate["approval_scope"]
                 ):
-                    findings.append(
-                        _finding(
-                            "candidate_already_exists",
-                            "deny",
-                            str(registry_path),
-                            "a pending candidate for the same bound state already exists",
-                        )
-                    )
+                    findings.append(_finding("candidate_already_exists", "deny", str(registry_path), "a pending candidate for the same bound state already exists"))
                     break
 
     decision = "FAIL" if any(item["severity"] == "deny" for item in findings) else "PASS"
@@ -273,34 +219,13 @@ def run(args: argparse.Namespace) -> int:
         try:
             write_candidate_record(registry_path, candidate)
         except Exception as exc:
-            findings.append(
-                _finding(
-                    "candidate_registry_write_failed",
-                    "deny",
-                    str(registry_path),
-                    f"failed to append candidate record: {exc}",
-                )
-            )
-            findings.append(
-                _finding(
-                    "candidate_generation_fail_closed",
-                    "deny",
-                    str(repo_root),
-                    "candidate generation failed closed after registry write failure",
-                )
-            )
+            findings.append(_finding("candidate_registry_write_failed", "deny", str(registry_path), f"failed to append candidate record: {exc}"))
+            findings.append(_finding("candidate_generation_fail_closed", "deny", str(repo_root), "candidate generation failed closed after registry write failure"))
             decision = "FAIL"
     elif decision == "PASS" and args.verify_only:
         decision = "WARN"
     elif decision == "FAIL":
-        findings.append(
-            _finding(
-                "candidate_generation_fail_closed",
-                "deny",
-                str(repo_root),
-                "candidate generation failed closed due to blocking inconsistencies",
-            )
-        )
+        findings.append(_finding("candidate_generation_fail_closed", "deny", str(repo_root), "candidate generation failed closed due to blocking inconsistencies"))
 
     report_payload = {
         "audit_type": "sot_promotion_candidate_generator",

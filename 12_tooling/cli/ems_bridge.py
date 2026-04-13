@@ -10,9 +10,9 @@ Usage:
     python ems_bridge.py autopilot <task-id> # Bounded autopilot run
     python ems_bridge.py status <run-id>     # Check run status
 
-All paths are derived from the canonical layout (overridable via ENV):
-    SSID:       $SSID_PATH or auto-detected from repo structure
-    SSID-EMS:   $EMS_REPO_PATH or sibling SSID-EMS directory
+All paths are derived from the canonical layout (via ENV or default):
+    SSID:       $SSID_PATH (required, or set WORKSPACE_ROOT)
+    SSID-EMS:   $EMS_REPO_PATH (required, or set WORKSPACE_ROOT)
 """
 
 from __future__ import annotations
@@ -23,9 +23,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-# ── Canonical paths (overridable via ENV) ──────────────────────────────────
-SSID_REPO = Path(os.environ.get("SSID_PATH", str(Path(__file__).resolve().parents[2])))
-EMS_REPO = Path(os.environ.get("EMS_REPO_PATH", str(Path(__file__).resolve().parents[2].parent / "SSID-EMS")))
+# ── Canonical paths (required via ENV) ──────────────────────────────────
+# Set SSID_PATH and EMS_REPO_PATH environment variables, or WORKSPACE_ROOT
+_workspace = os.environ.get("WORKSPACE_ROOT", "")
+SSID_REPO = Path(os.environ.get("SSID_PATH") or f"{_workspace}/SSID" if _workspace else ".")
+EMS_REPO = Path(os.environ.get("EMS_REPO_PATH") or f"{_workspace}/SSID-EMS" if _workspace else ".")
 
 # Derived from ems.yaml config
 STATE_DIR = EMS_REPO / "state"
@@ -67,17 +69,14 @@ def cmd_attest() -> int:
 
 def cmd_autopilot(task_id: str, max_iter: int = 5, run_id: str = "") -> int:
     """Run bounded autopilot loop for a specific task."""
-    print("EMS Bridge: Starting autopilot run...")
+    print(f"EMS Bridge: Starting autopilot run...")
     print(f"  Task ID:    {task_id}")
     print(f"  Max iter:   {max_iter}")
 
     args = [
-        "autopilot",
-        "run",
-        "--task-id",
-        task_id,
-        "--max-iter",
-        str(max_iter),
+        "autopilot", "run",
+        "--task-id", task_id,
+        "--max-iter", str(max_iter),
     ]
     if run_id:
         args.extend(["--run-id", run_id])
@@ -95,7 +94,7 @@ def cmd_autopilot(task_id: str, max_iter: int = 5, run_id: str = "") -> int:
     if run_id:
         state_run = STATE_DIR / "runs" / run_id
         evidence_run = EVIDENCE_DIR / "runs" / run_id
-        print("\nEvidence paths:")
+        print(f"\nEvidence paths:")
         print(f"  State:    {state_run}")
         print(f"  Evidence: {evidence_run}")
 

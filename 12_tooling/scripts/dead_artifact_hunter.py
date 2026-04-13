@@ -19,41 +19,23 @@ import ast
 import os
 import re
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Dict, List, Optional, Set
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 # Directories to skip entirely
 SKIP_DIRS = {
-    "__pycache__",
-    ".git",
-    "node_modules",
-    ".venv",
-    "venv",
-    ".tox",
-    ".mypy_cache",
-    ".pytest_cache",
-    ".ruff_cache",
-    "dist",
-    "build",
-    "egg-info",
+    "__pycache__", ".git", "node_modules", ".venv", "venv",
+    ".tox", ".mypy_cache", ".pytest_cache", ".ruff_cache",
+    "dist", "build", "egg-info",
 }
 
 # Extensions to scan
 SCANNABLE_EXTENSIONS = {
-    ".py",
-    ".yaml",
-    ".yml",
-    ".json",
-    ".rego",
-    ".md",
-    ".ts",
-    ".tsx",
-    ".js",
-    ".jsx",
-    ".sh",
-    ".toml",
+    ".py", ".yaml", ".yml", ".json", ".rego", ".md",
+    ".ts", ".tsx", ".js", ".jsx", ".sh", ".toml",
 }
 
 
@@ -76,7 +58,7 @@ def should_skip(dirpath: str) -> bool:
     return any(p in SKIP_DIRS for p in parts)
 
 
-def collect_all_files() -> list[Path]:
+def collect_all_files() -> List[Path]:
     """Collect all scannable files in the repository."""
     files = []
     for root, dirs, filenames in os.walk(REPO_ROOT):
@@ -89,7 +71,7 @@ def collect_all_files() -> list[Path]:
     return files
 
 
-def find_empty_files(all_files: list[Path]) -> list[Finding]:
+def find_empty_files(all_files: List[Path]) -> List[Finding]:
     """Find files that are exactly 0 bytes."""
     findings = []
     for fpath in all_files:
@@ -101,29 +83,27 @@ def find_empty_files(all_files: list[Path]) -> list[Finding]:
                 # .gitkeep files are intentionally empty
                 if fpath.name == ".gitkeep":
                     continue
-                findings.append(
-                    Finding(
-                        category="EMPTY_FILE",
-                        path=str(fpath.relative_to(REPO_ROOT)),
-                        detail="File is 0 bytes. Consider removing or adding content.",
-                        severity="warning",
-                    )
-                )
+                findings.append(Finding(
+                    category="EMPTY_FILE",
+                    path=str(fpath.relative_to(REPO_ROOT)),
+                    detail="File is 0 bytes. Consider removing or adding content.",
+                    severity="warning",
+                ))
         except OSError:
             continue
     return findings
 
 
-def find_placeholder_files(all_files: list[Path]) -> list[Finding]:
+def find_placeholder_files(all_files: List[Path]) -> List[Finding]:
     """Find files under 50 bytes that contain only comments or whitespace."""
     findings = []
     comment_patterns = [
-        re.compile(r"^\s*#"),  # Python/Shell/Rego comments
-        re.compile(r"^\s*//"),  # JS/TS comments
-        re.compile(r"^\s*\*"),  # Block comment continuation
-        re.compile(r"^\s*/\*"),  # Block comment start
-        re.compile(r"^\s*<!--"),  # HTML/Markdown comments
-        re.compile(r"^\s*$"),  # Empty lines
+        re.compile(r"^\s*#"),       # Python/Shell/Rego comments
+        re.compile(r"^\s*//"),      # JS/TS comments
+        re.compile(r"^\s*\*"),      # Block comment continuation
+        re.compile(r"^\s*/\*"),     # Block comment start
+        re.compile(r"^\s*<!--"),    # HTML/Markdown comments
+        re.compile(r"^\s*$"),       # Empty lines
     ]
 
     for fpath in all_files:
@@ -140,23 +120,25 @@ def find_placeholder_files(all_files: list[Path]) -> list[Finding]:
             if not lines:
                 continue  # Already caught by empty file check
 
-            all_comments = all(any(pat.match(line) for pat in comment_patterns) for line in lines)
+            all_comments = all(
+                any(pat.match(line) for pat in comment_patterns)
+                for line in lines
+            )
 
             if all_comments:
-                findings.append(
-                    Finding(
-                        category="PLACEHOLDER_FILE",
-                        path=str(fpath.relative_to(REPO_ROOT)),
-                        detail=f"File is {size} bytes and contains only comments/whitespace. Likely a placeholder.",
-                        severity="info",
-                    )
-                )
+                findings.append(Finding(
+                    category="PLACEHOLDER_FILE",
+                    path=str(fpath.relative_to(REPO_ROOT)),
+                    detail=f"File is {size} bytes and contains only comments/whitespace. "
+                           f"Likely a placeholder.",
+                    severity="info",
+                ))
         except OSError:
             continue
     return findings
 
 
-def find_orphaned_test_files() -> list[Finding]:
+def find_orphaned_test_files() -> List[Finding]:
     """Find test files that import modules which do not exist in the repo."""
     findings = []
     test_dirs = []
@@ -172,7 +154,7 @@ def find_orphaned_test_files() -> list[Finding]:
                     test_dirs.append(Path(sub_root) / f)
 
     # Build a set of known Python module paths
-    known_modules: set[str] = set()
+    known_modules: Set[str] = set()
     for root, dirs, files in os.walk(REPO_ROOT):
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
         for f in files:
@@ -188,7 +170,10 @@ def find_orphaned_test_files() -> list[Finding]:
                     known_modules.add(".".join(parts[:i]))
 
     # Check each test file for imports of repo-internal modules that don't exist
-    ssid_prefixes = tuple(f"{d.name}." for d in REPO_ROOT.iterdir() if d.is_dir() and re.match(r"\d{2}_", d.name))
+    ssid_prefixes = tuple(
+        f"{d.name}." for d in REPO_ROOT.iterdir()
+        if d.is_dir() and re.match(r"\d{2}_", d.name)
+    )
 
     for test_file in test_dirs:
         try:
@@ -198,28 +183,27 @@ def find_orphaned_test_files() -> list[Finding]:
             continue
 
         for node in ast.walk(tree):
-            module_name: str | None = None
+            module_name: Optional[str] = None
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     if alias.name.startswith(ssid_prefixes):
                         module_name = alias.name
-            elif isinstance(node, ast.ImportFrom) and node.module and node.module.startswith(ssid_prefixes):
-                module_name = node.module
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                if node.module.startswith(ssid_prefixes):
+                    module_name = node.module
 
             if module_name and module_name not in known_modules:
-                findings.append(
-                    Finding(
-                        category="ORPHANED_TEST",
-                        path=str(test_file.relative_to(REPO_ROOT)),
-                        detail=f"Imports '{module_name}' which does not exist in the repository.",
-                        severity="warning",
-                    )
-                )
+                findings.append(Finding(
+                    category="ORPHANED_TEST",
+                    path=str(test_file.relative_to(REPO_ROOT)),
+                    detail=f"Imports '{module_name}' which does not exist in the repository.",
+                    severity="warning",
+                ))
 
     return findings
 
 
-def find_unreferenced_registry_entries() -> list[Finding]:
+def find_unreferenced_registry_entries() -> List[Finding]:
     """Find registry entries that point to non-existent file paths."""
     findings = []
     registry_dirs = [
@@ -251,28 +235,26 @@ def find_unreferenced_registry_entries() -> list[Finding]:
                         ref_path = m.group(1).rstrip("\"'")
                         full_path = REPO_ROOT / ref_path
                         if not full_path.exists():
-                            findings.append(
-                                Finding(
-                                    category="UNREFERENCED_REGISTRY",
-                                    path=str(fpath.relative_to(REPO_ROOT)),
-                                    detail=f"Line {i}: references '{ref_path}' which does not exist.",
-                                    severity="warning",
-                                )
-                            )
+                            findings.append(Finding(
+                                category="UNREFERENCED_REGISTRY",
+                                path=str(fpath.relative_to(REPO_ROOT)),
+                                detail=f"Line {i}: references '{ref_path}' which does not exist.",
+                                severity="warning",
+                            ))
 
     return findings
 
 
 def main() -> int:
     print("SSID Dead Artifact Hunter")
-    print(f"Run: {datetime.now(UTC).isoformat()}")
+    print(f"Run: {datetime.now(timezone.utc).isoformat()}")
     print(f"Repo: {REPO_ROOT}")
-    print(f"{'=' * 60}")
+    print(f"{'='*60}")
 
     all_files = collect_all_files()
     print(f"Scanned files: {len(all_files)}")
 
-    all_findings: list[Finding] = []
+    all_findings: List[Finding] = []
 
     # Run all checks
     print("\n[1/4] Scanning for empty files...")
@@ -296,15 +278,15 @@ def main() -> int:
     print(f"       Found: {len(unreferenced)}")
 
     # Report
-    print(f"\n{'=' * 60}")
+    print(f"\n{'='*60}")
     print("  FINDINGS REPORT")
-    print(f"{'=' * 60}")
+    print(f"{'='*60}")
 
     if not all_findings:
         print("\n  CLEAN - No dead artifacts detected.")
         return 0
 
-    by_category: dict[str, list[Finding]] = {}
+    by_category: Dict[str, List[Finding]] = {}
     for f in all_findings:
         by_category.setdefault(f.category, []).append(f)
 
@@ -317,7 +299,7 @@ def main() -> int:
     warnings = sum(1 for f in all_findings if f.severity == "warning")
     infos = sum(1 for f in all_findings if f.severity == "info")
 
-    print(f"\n{'=' * 60}")
+    print(f"\n{'='*60}")
     print(f"  TOTAL: {total} findings ({warnings} warnings, {infos} info)")
     print("  RESULT: DEAD ARTIFACTS FOUND - cleanup recommended")
     return 1

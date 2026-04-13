@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 from __future__ import annotations
 
@@ -19,16 +20,10 @@ if sys.stderr.encoding != "utf-8":
 
 
 def parse_guard_mode() -> str:
-    """Read SSID_GUARD_MODE from env. Returns 'off', 'soft', or 'hard'. Default: 'soft'.
-
-    Accepts canonical values (off/soft/hard) and v2 aliases (disabled/advisory/strict).
-    """
+    """Read SSID_GUARD_MODE from env. Returns 'off', 'soft', or 'hard'. Default: 'soft'."""
     raw = _os.environ.get("SSID_GUARD_MODE", "soft").strip().lower()
-    # v2 alias mapping: strict->hard, advisory->soft, disabled->off
-    alias_map = {"strict": "hard", "advisory": "soft", "disabled": "off"}
-    normalized = alias_map.get(raw, raw)
-    if normalized in ("off", "soft", "hard"):
-        return normalized
+    if raw in ("off", "soft", "hard"):
+        return raw
     print(f"WARN: SSID_GUARD_MODE={raw!r} invalid, falling back to 'soft'", file=sys.stderr)
     return "soft"
 
@@ -85,9 +80,7 @@ def _tracked_files_in_dirs(prefixes: list[str]) -> list[str]:
     proc = subprocess.run(
         ["git", "ls-files", "-z", "--"] + prefixes,
         cwd=str(PROJECT_ROOT),
-        capture_output=True,
-        text=True,
-        timeout=30,
+        capture_output=True, text=True, timeout=30,
     )
     if proc.returncode != 0:
         return []
@@ -198,17 +191,7 @@ def _run_policy_with_opa() -> bool:
         return False
 
     eval_proc = _run(
-        [
-            "opa",
-            "eval",
-            "--format",
-            "json",
-            "-d",
-            str(POLICY_PATH),
-            "-i",
-            str(POLICY_INPUT_PATH),
-            "data.sot_policy.deny",
-        ],
+        ["opa", "eval", "--format", "json", "-d", str(POLICY_PATH), "-i", str(POLICY_INPUT_PATH), "data.sot_policy.deny"],
         "Policy (OPA eval)",
     )
     if eval_proc.returncode != 0:
@@ -267,6 +250,7 @@ def run_shard_gate() -> bool:
     return True
 
 
+
 def run_shard_conformance_gate() -> bool:
     """Gate: conformance validation for pilot shards."""
     print("INFO: [GATE] Running Shard Conformance Gate...")
@@ -282,7 +266,6 @@ def run_shard_conformance_gate() -> bool:
             return False
     print("INFO: [GATE] Shard Conformance Gate PASSED.")
     return True
-
 
 def run_evidence_completeness() -> bool:
     """Gate: verify Phase-2 required artifacts exist. FAIL if any missing."""
@@ -307,7 +290,6 @@ def run_evidence_completeness() -> bool:
     print("INFO: [GATE] Evidence Completeness Check PASSED.")
     return True
 
-
 def run_e2e_pipeline_smoke(source: str) -> bool:
     """Gate: build registry + run dispatcher on pilot task."""
     print("INFO: [GATE] Running E2E Pipeline Smoke...")
@@ -324,16 +306,8 @@ def run_e2e_pipeline_smoke(source: str) -> bool:
         print(f"ERROR: Pilot task missing: {PILOT_TASK}")
         return False
     proc = _run(
-        [
-            sys.executable,
-            str(E2E_DISPATCHER),
-            "run-task",
-            "--task",
-            str(PILOT_TASK),
-            "--source",
-            source,
-            "--deterministic",
-        ],
+        [sys.executable, str(E2E_DISPATCHER), "run-task",
+         "--task", str(PILOT_TASK), "--source", source, "--deterministic"],
         "E2E Dispatcher run-task",
     )
     if proc.returncode != 0:
@@ -362,18 +336,7 @@ def run_e2e_report_schema_check() -> bool:
     except (json.JSONDecodeError, OSError) as exc:
         print(f"ERROR: Cannot parse {latest.name}: {exc}")
         return False
-    required = [
-        "schema_version",
-        "run_id",
-        "source",
-        "git_sha",
-        "task",
-        "resolved",
-        "hashes",
-        "timing",
-        "status",
-        "violations",
-    ]
+    required = ["schema_version", "run_id", "source", "git_sha", "task", "resolved", "hashes", "timing", "status", "violations"]
     missing = [k for k in required if k not in data]
     if missing:
         print(f"FAIL: E2E_RUN missing keys: {missing}")
@@ -609,7 +572,6 @@ def run_interfederation_spec_only() -> bool:
     """Gate: verify no tracked interfederation paths outside allowlist."""
     print("INFO: [GATE] Running Interfederation SPEC-ONLY Path Check...")
     import importlib.util
-
     spec = importlib.util.spec_from_file_location("sot_validator_cli", str(SOT_VALIDATOR))
     if spec is None or spec.loader is None:
         print(f"ERROR: Cannot load {SOT_VALIDATOR}")
@@ -717,9 +679,7 @@ def _execute_gate_chain(args: argparse.Namespace, guard_mode: str) -> tuple[int,
             print(f"\nERROR: Gate chain failed at {name}.")
             return (guard_exit_code(guard_mode), name, gates_run)
 
-    print(
-        "--- Running Full Gate Chain: InterfedGuard -> SpecOnly -> Readiness -> Policy -> Convergence -> SoT -> Shard -> Conformance -> Evidence -> L3 Scaffold -> Quarantine -> E2E -> QA ---"
-    )
+    print("--- Running Full Gate Chain: InterfedGuard -> SpecOnly -> Readiness -> Policy -> Convergence -> SoT -> Shard -> Conformance -> Evidence -> L3 Scaffold -> Quarantine -> E2E -> QA ---")
     main_gates = [
         ("policy", run_policy_check),
         ("gate_convergence", run_gate_convergence_check),
@@ -772,7 +732,6 @@ def main() -> int:
     # Append exactly 1 bus event (PASS or FAIL) if --report-bus
     if args.report_bus:
         from report_bus import append_event, get_head_sha, make_event
-
         sha = get_head_sha(PROJECT_ROOT)
         severity = "info" if exit_code == 0 else "error"
         summary = f"Gate chain {'PASS' if exit_code == 0 else 'FAIL'}"
@@ -780,12 +739,8 @@ def main() -> int:
             summary += f" at {failed_gate}"
         summary += f" ({gates_run} gates)"
         event = make_event(
-            repo="SSID",
-            sha=sha,
-            source="verify_gate",
-            kind="ops",
-            severity=severity,
-            summary=summary,
+            repo="SSID", sha=sha, source="verify_gate", kind="ops",
+            severity=severity, summary=summary,
             payload={"exit_code": exit_code, "gates_run": gates_run, "failed_gate": failed_gate},
         )
         path = append_event(event)

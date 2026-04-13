@@ -3,7 +3,6 @@
 SSID Consolidated Dispatcher v4.1
 NON-INTERACTIVE, SAFE-FIX, ROOT-24-LOCK, SHA256-geloggt
 """
-
 from __future__ import annotations
 
 import argparse
@@ -17,10 +16,9 @@ import shutil
 import subprocess
 import sys
 import uuid
-from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import yaml
 
@@ -37,7 +35,7 @@ from _lib.run_id import compute_file_sha256, compute_run_id, get_git_sha
 from _lib.shards import parse_yaml as _parse_yaml_file
 
 # Sandbox outside repo to prevent self-inflation
-_STATE_DIR = Path(os.environ.get("SSID_EMS_STATE_DIR", str(Path.home() / "Documents" / "SSID_EMS_STATE")))
+_STATE_DIR = Path(os.environ.get("SSID_EMS_STATE_DIR", str(Path.home() / "SSID-Workspace" / "SSID-Arbeitsbereich" / "SSID_EMS_STATE")))
 SANDBOX_ROOT = _STATE_DIR / "sandboxes"
 RUN_LEDGER_ROOT = REPO_ROOT / "02_audit_logging" / "agent_runs"
 QUEUE_STATUS_FILE = REPO_ROOT / "24_meta_orchestration" / "queue" / "TASK_QUEUE.status.jsonl"
@@ -50,46 +48,39 @@ DUPLICATE_GUARD = REPO_ROOT / "12_tooling" / "cli" / "duplicate_guard.py"
 GITIGNORE = REPO_ROOT / ".gitignore"
 
 EXCLUDED_COPY_TOP = {
-    ".git",
-    ".ssid_sandbox",
-    ".claude",
-    ".pytest_cache",
-    "__pycache__",
+    ".git", ".ssid_sandbox", ".claude", ".pytest_cache", "__pycache__",
 }
 # Directories excluded recursively during copytree
 EXCLUDED_COPY_RECURSIVE = {
-    "node_modules",
-    "dist",
-    ".next",
-    "build",
-    "coverage",
-    "tmp",
-    ".pytest_cache",
-    "__pycache__",
-    ".git",
-    ".ssid_sandbox",
+    "node_modules", "dist", ".next", "build", "coverage", "tmp",
+    ".pytest_cache", "__pycache__", ".git", ".ssid_sandbox",
+    # WORM storage + sandbox artifacts contain deeply nested paths that exceed
+    # Windows MAX_PATH (260 chars) and are not needed in sandbox copies.
+    "worm", "sandboxes", "task_run_cleanup",
+    # Legacy archives also exceed MAX_PATH on Windows
+    "archives",
 }
 EXCLUDED_SNAPSHOT_PARTS = EXCLUDED_COPY_TOP | EXCLUDED_COPY_RECURSIVE
 
 # Infrastructure paths always allowed in write gate (not subject to allowlist)
-WRITE_GATE_BYPASS_PREFIXES = {".claude/", ".github/"}
+WRITE_GATE_BYPASS_PREFIXES = {".claude/", ".github/", ".githooks/", ".gitignore", ".gitattributes"}
 
 
 @dataclass(frozen=True)
 class TaskSpec:
     task_id: str
-    scope: dict[str, Any]
-    allowed_paths: list[str]
-    expected_artifacts: list[str]
-    acceptance_checks: list[str]
+    scope: Dict[str, Any]
+    allowed_paths: List[str]
+    expected_artifacts: List[str]
+    acceptance_checks: List[str]
     agent_role: str
-    agent_roles: list[str]
+    agent_roles: List[str]
     patch_strategy: str
     log_mode: str
     prompt: str
     tool_name: str
     health_check: bool = False
-    resolved_worker: dict | None = None
+    resolved_worker: Optional[dict] = None
 
 
 @dataclass(frozen=True)
@@ -98,25 +89,25 @@ class QueueDefaults:
     max_changed_files: int
     max_changed_lines: int
     stop_on_fail_count: int
-    acceptance_checks: list[str]
+    acceptance_checks: List[str]
 
 
 @dataclass(frozen=True)
 class QueueTask:
     task_id: str
     scope: str
-    allowed_paths: list[str]
-    expected_artifacts: list[str]
-    acceptance_checks: list[str]
+    allowed_paths: List[str]
+    expected_artifacts: List[str]
+    acceptance_checks: List[str]
     no_new_files: bool
     max_changed_files: int
     max_changed_lines: int
     stop_failures: int
     stop_on_missing_files: bool
     notes: str
-    allow_new_files_list: list[str]
-    worker_command: list[str] | None
-    worker_type: str | None = None
+    allow_new_files_list: List[str]
+    worker_command: Optional[List[str]]
+    worker_type: Optional[str] = None
     health_check: bool = False
 
 
@@ -127,7 +118,7 @@ def _is_health_check_prompt(prompt: str) -> bool:
 
 
 def _utc_now() -> str:
-    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _duration_seconds(start: str, end: str) -> float:
@@ -145,7 +136,7 @@ def _allowed(rel: str, allowed_paths: Sequence[str]) -> bool:
     for raw in allowed_paths:
         base = _norm_rel(raw)
         if not base:
-            continue
+            return True  # empty prefix = allow all (sandbox is isolated)
         if rel_norm == base or rel_norm.startswith(base + "/"):
             return True
     return False
@@ -155,15 +146,15 @@ def _sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-_TASK_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,128}$")
-_SUBTASK_SEPARATOR = "--"
+_TASK_ID_RE = re.compile(r'^[A-Za-z0-9._-]{1,128}$')
+_SUBTASK_SEPARATOR = '--'
 
 
 def _validate_task_id(task_id: str) -> str:
     """Validate task_id (including subtask IDs with -- separator)."""
     if not _TASK_ID_RE.match(task_id):
         raise SystemExit(f"FAIL: invalid task_id: {task_id!r}")
-    if ".." in task_id or "/" in task_id or "\\" in task_id:
+    if '..' in task_id or '/' in task_id or '\\' in task_id:
         raise SystemExit(f"FAIL: path traversal in task_id: {task_id!r}")
     return task_id
 
@@ -177,7 +168,7 @@ def _parse_subtask_id(task_id: str) -> tuple:
     return task_id, None
 
 
-def _read_text_or_none(path: Path) -> str | None:
+def _read_text_or_none(path: Path) -> Optional[str]:
     try:
         return path.read_text(encoding="utf-8")
     except UnicodeDecodeError:
@@ -204,8 +195,8 @@ def _iter_files(root: Path) -> Iterable[Path]:
         yield p
 
 
-def _snapshot(root: Path) -> dict[str, str]:
-    snap: dict[str, str] = {}
+def _snapshot(root: Path) -> Dict[str, str]:
+    snap: Dict[str, str] = {}
     for p in _iter_files(root):
         rel = _norm_rel(p.relative_to(root).as_posix())
         digest = hashlib.sha256(p.read_bytes()).hexdigest()
@@ -213,14 +204,14 @@ def _snapshot(root: Path) -> dict[str, str]:
     return snap
 
 
-def _collect_changes(repo_root: Path, sandbox: Path) -> tuple[list[str], list[str], list[str]]:
+def _collect_changes(repo_root: Path, sandbox: Path) -> Tuple[List[str], List[str], List[str]]:
     base = _snapshot(repo_root)
     sbx = _snapshot(sandbox)
     all_paths = sorted(set(base.keys()) | set(sbx.keys()))
 
-    changed: list[str] = []
-    created: list[str] = []
-    deleted: list[str] = []
+    changed: List[str] = []
+    created: List[str] = []
+    deleted: List[str] = []
     for rel in all_paths:
         b = base.get(rel)
         s = sbx.get(rel)
@@ -234,8 +225,8 @@ def _collect_changes(repo_root: Path, sandbox: Path) -> tuple[list[str], list[st
     return changed, created, deleted
 
 
-def _build_patch(repo_root: Path, sandbox: Path, changed_paths: Sequence[str]) -> tuple[str, int]:
-    chunks: list[str] = []
+def _build_patch(repo_root: Path, sandbox: Path, changed_paths: Sequence[str]) -> Tuple[str, int]:
+    chunks: List[str] = []
     changed_lines = 0
 
     for rel in sorted(set(changed_paths)):
@@ -274,7 +265,7 @@ def _build_patch(repo_root: Path, sandbox: Path, changed_paths: Sequence[str]) -
     return patch, changed_lines
 
 
-def _run_cmd(cmd: list[str], cwd: Path, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+def _run_cmd(cmd: List[str], cwd: Path, env: Optional[Dict[str, str]] = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         cmd,
         cwd=str(cwd),
@@ -323,10 +314,10 @@ def _write_manifest(
     task: QueueTask,
     started: str,
     ended: str,
-    changed_files: list[str],
+    changed_files: List[str],
     patch_text: str,
-    gates: dict[str, str],
-    exit_codes: dict[str, int],
+    gates: Dict[str, str],
+    exit_codes: Dict[str, int],
     tool_name: str,
     save_patch: bool,
 ) -> None:
@@ -371,7 +362,7 @@ def _write_manifest(
             shutil.move(str(p), str(retained_dir / p.name))
 
 
-def _append_queue_status(run_id: str, task: QueueTask, status: str, gates: dict[str, str], message: str) -> None:
+def _append_queue_status(run_id: str, task: QueueTask, status: str, gates: Dict[str, str], message: str) -> None:
     QUEUE_STATUS_FILE.parent.mkdir(parents=True, exist_ok=True)
     record = {
         "timestamp": _utc_now(),
@@ -386,11 +377,7 @@ def _append_queue_status(run_id: str, task: QueueTask, status: str, gates: dict[
 
 
 def _load_task_spec(task_path: Path) -> TaskSpec:
-    data = (
-        yaml.safe_load(task_path.read_text(encoding="utf-8"))
-        if task_path.suffix.lower() in {".yml", ".yaml"}
-        else json.loads(task_path.read_text(encoding="utf-8"))
-    )
+    data = yaml.safe_load(task_path.read_text(encoding="utf-8")) if task_path.suffix.lower() in {".yml", ".yaml"} else json.loads(task_path.read_text(encoding="utf-8"))
     return TaskSpec(
         task_id=str(data["task_id"]),
         scope=data.get("scope", {}) or {},
@@ -423,7 +410,8 @@ def _copy_repo_to_sandbox(sandbox_root: Path) -> None:
             continue
         dest = sandbox_root / item.name
         if item.is_dir():
-            shutil.copytree(item, dest, dirs_exist_ok=True, ignore=shutil.ignore_patterns(*EXCLUDED_COPY_RECURSIVE))
+            shutil.copytree(item, dest, dirs_exist_ok=True,
+                            ignore=shutil.ignore_patterns(*EXCLUDED_COPY_RECURSIVE))
         elif item.is_file():
             shutil.copy2(item, dest)
         copied += 1
@@ -438,11 +426,14 @@ def _enforce_write_gate(
     changed_files_count: int,
     changed_lines_count: int,
 ) -> None:
-    outside = [
-        p
-        for p in changed
-        if not _allowed(p, task.allowed_paths) and not any(p.startswith(bp) for bp in WRITE_GATE_BYPASS_PREFIXES)
-    ]
+    def _is_infra_path(p: str) -> bool:
+        """Dot-files and infrastructure paths are always allowed."""
+        basename = p.rsplit("/", 1)[-1] if "/" in p else p
+        return (any(p.startswith(bp) for bp in WRITE_GATE_BYPASS_PREFIXES)
+                or basename.startswith("."))
+    outside = [p for p in changed
+               if not _allowed(p, task.allowed_paths)
+               and not _is_infra_path(p)]
     if outside:
         raise SystemExit(f"WRITE_GATE_FAIL: path outside allowlist: {outside[0]}")
 
@@ -456,16 +447,12 @@ def _enforce_write_gate(
             raise SystemExit(f"WRITE_GATE_FAIL: new files not allowed: {illegal_new[0]}")
 
     if changed_files_count > task.max_changed_files:
-        raise SystemExit(
-            f"WRITE_GATE_FAIL: max_changed_files exceeded ({changed_files_count}>{task.max_changed_files})"
-        )
+        raise SystemExit(f"WRITE_GATE_FAIL: max_changed_files exceeded ({changed_files_count}>{task.max_changed_files})")
     if changed_lines_count > task.max_changed_lines:
-        raise SystemExit(
-            f"WRITE_GATE_FAIL: max_changed_lines exceeded ({changed_lines_count}>{task.max_changed_lines})"
-        )
+        raise SystemExit(f"WRITE_GATE_FAIL: max_changed_lines exceeded ({changed_lines_count}>{task.max_changed_lines})")
 
 
-def _parse_queue(path: Path) -> tuple[QueueDefaults, list[QueueTask]]:
+def _parse_queue(path: Path) -> Tuple[QueueDefaults, List[QueueTask]]:
     raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     if str(raw.get("version")) != "1.0":
         raise SystemExit("FAIL: queue version must be '1.0'")
@@ -479,7 +466,7 @@ def _parse_queue(path: Path) -> tuple[QueueDefaults, list[QueueTask]]:
     )
 
     seen: set[str] = set()
-    tasks: list[QueueTask] = []
+    tasks: List[QueueTask] = []
     for t in raw.get("tasks", []) or []:
         task_id = str(t["task_id"])
         _validate_task_id(task_id)
@@ -493,9 +480,7 @@ def _parse_queue(path: Path) -> tuple[QueueDefaults, list[QueueTask]]:
             worker_command = worker_command.split()
         # Resolve worker_type from resolved_worker or direct field
         resolved_worker = t.get("resolved_worker") or {}
-        worker_type = (
-            str(resolved_worker.get("worker_type")) if resolved_worker.get("worker_type") else t.get("worker_type")
-        )
+        worker_type = str(resolved_worker.get("worker_type")) if resolved_worker.get("worker_type") else t.get("worker_type")
         tasks.append(
             QueueTask(
                 task_id=task_id,
@@ -517,10 +502,10 @@ def _parse_queue(path: Path) -> tuple[QueueDefaults, list[QueueTask]]:
     return defaults, tasks
 
 
-def _run_queue_task(task: QueueTask, keep_sandbox_on_fail: bool, save_patch: bool) -> tuple[str, bool]:
+def _run_queue_task(task: QueueTask, keep_sandbox_on_fail: bool, save_patch: bool) -> Tuple[str, bool]:
     _validate_task_id(task.task_id)
     started = _utc_now()
-    run_id = f"{dt.datetime.now(dt.UTC).strftime('%Y%m%dT%H%M%SZ')}_{task.task_id}_{uuid.uuid4().hex[:8]}"
+    run_id = f"{dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')}_{task.task_id}_{uuid.uuid4().hex[:8]}"
     sandbox = SANDBOX_ROOT / run_id / task.task_id
 
     _copy_repo_to_sandbox(sandbox)
@@ -590,8 +575,8 @@ def _run_queue_task(task: QueueTask, keep_sandbox_on_fail: bool, save_patch: boo
         _append_queue_status(run_id, task, "FAIL", gates, "duplicate guard failed")
         return run_id, False
 
-    gate_results: dict[str, str] = {"policy": "PASS", "sot": "PASS", "qa": "PASS"}
-    exit_codes: dict[str, int] = {"duplicate_guard": 0, "policy": 0, "sot": 0, "qa": 0}
+    gate_results: Dict[str, str] = {"policy": "PASS", "sot": "PASS", "qa": "PASS"}
+    exit_codes: Dict[str, int] = {"duplicate_guard": 0, "policy": 0, "sot": 0, "qa": 0}
     for gate in task.acceptance_checks:
         if gate not in {"policy", "sot", "qa"}:
             continue
@@ -640,9 +625,7 @@ def handle_run_queue(args: argparse.Namespace) -> int:
 
     for task in tasks:
         try:
-            _run_id, ok = _run_queue_task(
-                task, keep_sandbox_on_fail=args.keep_sandbox_on_fail, save_patch=args.save_patch
-            )
+            _run_id, ok = _run_queue_task(task, keep_sandbox_on_fail=args.keep_sandbox_on_fail, save_patch=args.save_patch)
         except SystemExit as exc:
             print(str(exc))
             ok = False
@@ -667,7 +650,7 @@ def handle_run(args: argparse.Namespace) -> int:
 
 def handle_package(args: argparse.Namespace) -> int:
     spec = _load_task_spec(Path(args.task))
-    health_check = getattr(spec, "health_check", False) or _is_health_check_prompt(spec.prompt)
+    health_check = getattr(spec, 'health_check', False) or _is_health_check_prompt(spec.prompt)
 
     # Resolve worker command and type from task spec
     worker_command = None
@@ -717,7 +700,7 @@ def _e2e_log_event(log_lines: list, run_id: str, event: str, detail: str = "") -
 
 def handle_run_task(args: argparse.Namespace) -> int:
     """E2E Pipeline: load task -> resolve shard -> validate contracts -> emit reports."""
-    import jsonschema  # local import to keep module-level deps light
+    import jsonschema  # noqa: local import to keep module-level deps light
 
     task_path = Path(args.task).resolve()
     if not task_path.exists():
@@ -774,9 +757,8 @@ def handle_run_task(args: argparse.Namespace) -> int:
         _e2e_log_event(log_lines, run_id, "ERROR", f"shard {root_id}/{shard_id} not in registry")
         return 2
 
-    _e2e_log_event(
-        log_lines, run_id, "ROUTE_RESOLVED", f"shard={root_id}/{shard_id} tier={shard_entry.get('promotion_tier')}"
-    )
+    _e2e_log_event(log_lines, run_id, "ROUTE_RESOLVED",
+                   f"shard={root_id}/{shard_id} tier={shard_entry.get('promotion_tier')}")
 
     # Validate entrypoint matches action
     entrypoints = shard_entry.get("entrypoints", [])
@@ -824,10 +806,7 @@ def handle_run_task(args: argparse.Namespace) -> int:
         proc = subprocess.run(
             [sys.executable, str(CONFORMANCE_GATE), "--root", root_id, "--shard", shard_id],
             cwd=str(REPO_ROOT),
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
         if proc.returncode != 0:
             violations.append(f"Conformance gate FAIL (exit={proc.returncode}): {proc.stdout.strip()}")
@@ -852,16 +831,14 @@ def handle_run_task(args: argparse.Namespace) -> int:
             if sp.exists():
                 hash_targets.append(("contract_spec", str(sp.relative_to(REPO_ROOT)), "contract"))
 
-    for _name, rel_path, kind in hash_targets:
+    for name, rel_path, kind in hash_targets:
         abs_path = REPO_ROOT / rel_path
         if abs_path.exists():
-            artifact_hashes.append(
-                {
-                    "path": rel_path.replace("\\", "/"),
-                    "sha256": compute_file_sha256(abs_path),
-                    "kind": kind,
-                }
-            )
+            artifact_hashes.append({
+                "path": rel_path.replace("\\", "/"),
+                "sha256": compute_file_sha256(abs_path),
+                "kind": kind,
+            })
 
     # Build reports
     e2e_run_report = {
@@ -944,7 +921,6 @@ def handle_run_profile(args: argparse.Namespace) -> int:
     if str(meta_orch) not in sys.path:
         sys.path.insert(0, str(meta_orch))
     from runtime.runner import SSIDCTLRunner
-
     runner = SSIDCTLRunner(repo_root=REPO_ROOT, dry_run=args.dry_run)
     return runner.run(args.profile)
 

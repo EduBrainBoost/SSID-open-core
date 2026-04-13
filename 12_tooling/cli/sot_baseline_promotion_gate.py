@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Baseline Promotion Approval Gate — CC-SSID-GATE-02."""
-
 from __future__ import annotations
 
 import argparse
@@ -8,7 +7,7 @@ import hashlib
 import json
 import sys
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -47,7 +46,7 @@ APPROVAL_REQUIRED_FIELDS = (
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _json_sha256(obj: Any) -> str:
@@ -109,9 +108,7 @@ def load_promotion_approval(path: Path) -> dict | None:
 def validate_approval_schema(approval: dict | None) -> list[dict[str, str]]:
     findings: list[dict[str, str]] = []
     if not isinstance(approval, dict):
-        return [
-            _finding("promotion_approval_schema_invalid", "deny", "approval", "approval payload is not a JSON object")
-        ]
+        return [_finding("promotion_approval_schema_invalid", "deny", "approval", "approval payload is not a JSON object")]
 
     missing = [field for field in APPROVAL_REQUIRED_FIELDS if field not in approval]
     if missing:
@@ -224,24 +221,14 @@ def evaluate_promotion_gate(
 
     if convergence_report is None:
         findings.append(
-            _finding(
-                "convergence_report_missing",
-                "deny",
-                str(convergence_report_path),
-                "convergence report is missing or unreadable",
-            )
+            _finding("convergence_report_missing", "deny", str(convergence_report_path), "convergence report is missing or unreadable")
         )
     else:
         required = {"report_type", "final_decision", "evidence_hash", "timestamp_utc"}
         missing = sorted(required - set(convergence_report.keys()))
         if missing:
             findings.append(
-                _finding(
-                    "convergence_report_invalid",
-                    "deny",
-                    str(convergence_report_path),
-                    f"convergence report missing required fields: {missing}",
-                )
+                _finding("convergence_report_invalid", "deny", str(convergence_report_path), f"convergence report missing required fields: {missing}")
             )
         elif convergence_report.get("final_decision") != "PASS":
             findings.append(
@@ -254,9 +241,7 @@ def evaluate_promotion_gate(
             )
 
     if approval is None:
-        findings.append(
-            _finding("promotion_approval_missing", "deny", "approval", "promotion approval is missing or unreadable")
-        )
+        findings.append(_finding("promotion_approval_missing", "deny", "approval", "promotion approval is missing or unreadable"))
     else:
         findings.extend(validate_approval_schema(approval))
         if approval.get("decision") == "reject":
@@ -474,9 +459,7 @@ def _build_report(
         "promotion_record_path": str(promotion_record_path) if promotion_record_path else None,
         "evidence_hash": "",
         "resulting_baseline": {
-            "baseline_version": promoted_snapshot.get("baseline_version")
-            if promoted_snapshot
-            else evaluation["previous_baseline_version"],
+            "baseline_version": promoted_snapshot.get("baseline_version") if promoted_snapshot else evaluation["previous_baseline_version"],
             "baseline_sha256": promoted_snapshot.get("baseline_sha256") if promoted_snapshot else None,
         },
     }
@@ -583,9 +566,7 @@ def run(args: argparse.Namespace) -> int:
             _add_finding(result, fail_closed)
         else:
             try:
-                baseline_path.write_text(
-                    json.dumps(promoted_snapshot, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-                )
+                baseline_path.write_text(json.dumps(promoted_snapshot, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
             except Exception as exc:
                 finding = _finding(
                     "baseline_snapshot_update_failed",

@@ -3,7 +3,6 @@
 
 Usage: python 12_tooling/cli/pqc_probe.py [--algorithm dilithium3]
 """
-
 import argparse
 import json
 import sys

@@ -2,14 +2,12 @@
 """
 AR-08: Filter files by deny_globs from opencore_export_policy.yaml
 """
-
 import argparse
 import fnmatch
 import json
 from pathlib import Path
 
 SKIP_DIRS = {".git", "node_modules", ".venv", "__pycache__"}
-
 
 def matches_any_glob(path_str: str, globs: list) -> bool:
     for g in globs:
@@ -32,7 +30,6 @@ def matches_any_glob(path_str: str, globs: list) -> bool:
                 if path_str.replace("\\", "/").startswith(prefix + "/"):
                     return True
     return False
-
 
 def apply_deny_globs(repo_root: Path, deny_globs: list) -> dict:
     all_files = []
@@ -58,14 +55,13 @@ def apply_deny_globs(repo_root: Path, deny_globs: list) -> dict:
         "deny_globs_applied": deny_globs,
     }
 
-
 if __name__ == "__main__":
     import yaml
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", required=True)
     parser.add_argument("--policy", default="16_codex/opencore_export_policy.yaml")
-    parser.add_argument("--deny-globs", default="", help="Space-separated list (overrides policy)")
+    parser.add_argument("--deny-globs", default="",
+                        help="Space-separated list (overrides policy)")
     args = parser.parse_args()
 
     root = Path(args.repo_root).resolve()

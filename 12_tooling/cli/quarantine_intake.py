@@ -8,19 +8,24 @@ Evidence hashes:           23_compliance/evidence/malware_quarantine_hashes/
 
 Allowed reason codes: MALWARE, COMPROMISED_BINARY, ACTIVE_EXPLOIT_RISK, DMCA
 """
-
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-QUARANTINE_STORE = REPO_ROOT / "02_audit_logging" / "quarantine" / "singleton" / "quarantine_store"
-HASH_LEDGER = REPO_ROOT / "02_audit_logging" / "quarantine" / "hash_ledger" / "quarantine_chain.json"
-EVIDENCE_HASHES = REPO_ROOT / "23_compliance" / "evidence" / "malware_quarantine_hashes"
+QUARANTINE_STORE = (
+    REPO_ROOT / "02_audit_logging" / "quarantine" / "singleton" / "quarantine_store"
+)
+HASH_LEDGER = (
+    REPO_ROOT / "02_audit_logging" / "quarantine" / "hash_ledger" / "quarantine_chain.json"
+)
+EVIDENCE_HASHES = (
+    REPO_ROOT / "23_compliance" / "evidence" / "malware_quarantine_hashes"
+)
 
 ALLOWED_REASON_CODES: set[str] = {
     "MALWARE",
@@ -49,7 +54,7 @@ def create_intake_entry(
     """Create a quarantine intake record (hash-only, no payload)."""
     return {
         "schema_version": "1.0.0",
-        "intake_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "intake_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "file_sha256": file_hash,
         "reason_code": reason_code.upper(),
         "source_path_hash": hashlib.sha256(source_path.encode()).hexdigest(),
@@ -116,8 +121,12 @@ def write_evidence_hash(entry: dict) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Quarantine Intake (security-incident only, hash-only pointers)")
-    parser.add_argument("--file", type=str, required=True, help="Path to file to quarantine")
+    parser = argparse.ArgumentParser(
+        description="Quarantine Intake (security-incident only, hash-only pointers)"
+    )
+    parser.add_argument(
+        "--file", type=str, required=True, help="Path to file to quarantine"
+    )
     parser.add_argument(
         "--reason",
         type=str,
@@ -125,13 +134,17 @@ def main() -> int:
         choices=sorted(ALLOWED_REASON_CODES),
         help="Reason code (security-incident only)",
     )
-    parser.add_argument("--analyst", type=str, default="system", help="Analyst ID")
+    parser.add_argument(
+        "--analyst", type=str, default="system", help="Analyst ID"
+    )
     parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Validate only, do not write to chain or evidence",
     )
-    parser.add_argument("--report", type=str, help="Write JSON report to path")
+    parser.add_argument(
+        "--report", type=str, help="Write JSON report to path"
+    )
     args = parser.parse_args()
 
     file_path = Path(args.file)
@@ -140,7 +153,10 @@ def main() -> int:
         return 2
 
     if not validate_reason_code(args.reason):
-        print(f"ERROR: Invalid reason code '{args.reason}'. Allowed: {', '.join(sorted(ALLOWED_REASON_CODES))}")
+        print(
+            f"ERROR: Invalid reason code '{args.reason}'. "
+            f"Allowed: {', '.join(sorted(ALLOWED_REASON_CODES))}"
+        )
         return 2
 
     file_hash = sha256_file(file_path)

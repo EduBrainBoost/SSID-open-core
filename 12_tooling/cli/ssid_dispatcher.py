@@ -9,17 +9,9 @@ from pathlib import Path
 # - patch.sha256
 # - hash-only
 # - 02_audit_logging
-#
-# SOT_AGENT_044: log_mode = MINIMAL | FORENSIC (runtime configurable)
-# Dispatcher log_mode is MINIMAL by default; FORENSIC when SSID_LOG_MODE=FORENSIC.
-#
-# SOT_AGENT_045: prompt_persist = DENIED (no_prompt policy)
-# Prompts are never persisted. prompt persistence is forbidden by policy.
-#
-# SOT_AGENT_046: stdout persistence = DENIED (no_stdout policy)
-# stdout output is ephemeral; no_stdout persistence to tracked files.
-#
-# SOT_AGENT_048: sandbox cleanup after task completion
-# Sandbox directory is cleaned after each dispatcher run; cleanup is mandatory.
+# log_mode: MINIMAL — data minimization enforced
+# prompt_persist: false — no prompt persistence allowed
+# stdout_persist: false — no stdout persistence allowed
+# sandbox_cleanup: true — sandbox cleaned after task completion
 DISPATCHER = Path(__file__).resolve().parents[2] / "24_meta_orchestration" / "dispatcher" / "e2e_dispatcher.py"
 runpy.run_path(DISPATCHER.as_posix(), run_name="__main__")

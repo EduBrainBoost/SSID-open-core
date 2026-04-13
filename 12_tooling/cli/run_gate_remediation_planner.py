@@ -14,17 +14,17 @@ Remediation classes:
 Produces: remediation_plan.json, remediation_report.md
 Exit codes: 0=all auto-fixable, 1=some manual review, 2=hard blocks present, 3=error
 """
-
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 # ---------------------------------------------------------------------------
 # Exit codes
@@ -37,13 +37,14 @@ EXIT_ERROR = 3
 # ---------------------------------------------------------------------------
 # Finding class -> Remediation class mapping
 # ---------------------------------------------------------------------------
-FINDING_TO_REMEDIATION: dict[str, str] = {
+FINDING_TO_REMEDIATION: Dict[str, str] = {
     # auto_fix_safe — low risk, reversible, no approval needed
     "format_inconsistency": "auto_fix_safe",
     "sha256_prefix_normalization": "auto_fix_safe",
     "evidence_ref_string_to_object": "auto_fix_safe",
     "missing_evidence_ref": "auto_fix_safe",  # only when file exists + hash derivable
     "sort_format_inconsistency": "auto_fix_safe",
+
     # manual_review_required — needs human approval
     "hash_mismatch": "manual_review_required",
     "duplicate_artifact_id": "manual_review_required",
@@ -55,6 +56,7 @@ FINDING_TO_REMEDIATION: dict[str, str] = {
     "orphan_registry_entry": "manual_review_required",
     "unregistered_artifact": "manual_review_required",
     "invalid_evidence_ref": "manual_review_required",
+
     # hard_block_no_fix — no automated fix, critical risk
     "forbidden_public_artifact": "hard_block_no_fix",
     "fail_open_guard": "hard_block_no_fix",
@@ -65,7 +67,7 @@ FINDING_TO_REMEDIATION: dict[str, str] = {
 # ---------------------------------------------------------------------------
 # Remediation class -> default patch proposal attributes
 # ---------------------------------------------------------------------------
-_REMEDIATION_DEFAULTS: dict[str, dict[str, Any]] = {
+_REMEDIATION_DEFAULTS: Dict[str, Dict[str, Any]] = {
     "auto_fix_safe": {
         "risk_level": "low",
         "requires_approval": False,
@@ -86,7 +88,7 @@ _REMEDIATION_DEFAULTS: dict[str, dict[str, Any]] = {
 # ---------------------------------------------------------------------------
 # Operation templates per finding class
 # ---------------------------------------------------------------------------
-_OPERATION_TEMPLATES: dict[str, dict[str, str]] = {
+_OPERATION_TEMPLATES: Dict[str, Dict[str, str]] = {
     "format_inconsistency": {
         "operation": "normalize",
         "precondition": "registry entry exists",
@@ -189,15 +191,12 @@ _OPERATION_TEMPLATES: dict[str, dict[str, str]] = {
 # Helpers
 # ---------------------------------------------------------------------------
 
-
 def _detect_repo_root() -> Path:
     """Auto-detect repo root via git or fallback to file-relative."""
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--show-toplevel"],
-            capture_output=True,
-            text=True,
-            timeout=5,
+            capture_output=True, text=True, timeout=5,
         )
         if result.returncode == 0:
             return Path(result.stdout.strip()).resolve()
@@ -206,7 +205,7 @@ def _detect_repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
-def _sha256_file(filepath: Path) -> str | None:
+def _sha256_file(filepath: Path) -> Optional[str]:
     """SHA256 hex digest of file. Returns None if missing."""
     try:
         return hashlib.sha256(filepath.read_bytes()).hexdigest()
@@ -230,7 +229,7 @@ def _classify_finding(finding_class: str) -> str:
 
 
 def _can_auto_fix_missing_evidence(
-    finding: dict[str, Any],
+    finding: Dict[str, Any],
     repo_root: Path,
 ) -> bool:
     """Check if a missing_evidence_ref finding qualifies for auto-fix.
@@ -248,12 +247,11 @@ def _can_auto_fix_missing_evidence(
 # Core remediation planner
 # ---------------------------------------------------------------------------
 
-
 def run_remediation_planner(
     findings_path: str,
-    repo_root: str | None = None,
-    output_dir: str | None = None,
-) -> dict[str, Any]:
+    repo_root: Optional[str] = None,
+    output_dir: Optional[str] = None,
+) -> Dict[str, Any]:
     """Run remediation planner on gate findings.
 
     Args:
@@ -264,9 +262,9 @@ def run_remediation_planner(
     Returns:
         Structured result dict with gate, status, plan, and summary.
     """
-    ts = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     resolved_repo = Path(repo_root).resolve() if repo_root else _detect_repo_root()
-    Path(output_dir) if output_dir else resolved_repo / "02_audit_logging" / "reports"
+    resolved_output = Path(output_dir) if output_dir else resolved_repo / "02_audit_logging" / "reports"
 
     # --- Load findings ---
     findings_file = Path(findings_path)
@@ -290,8 +288,8 @@ def run_remediation_planner(
         return _build_error_result(ts, resolved_repo, "Findings field is not a list")
 
     # --- Classify and build actions ---
-    actions: list[dict[str, Any]] = []
-    class_counts: dict[str, int] = {
+    actions: List[Dict[str, Any]] = []
+    class_counts: Dict[str, int] = {
         "auto_fix_safe": 0,
         "manual_review_required": 0,
         "hard_block_no_fix": 0,
@@ -315,21 +313,18 @@ def run_remediation_planner(
 
         # Build patch proposal
         defaults = _REMEDIATION_DEFAULTS.get(rem_class, _REMEDIATION_DEFAULTS["manual_review_required"])
-        template = _OPERATION_TEMPLATES.get(
-            finding_class,
-            {
-                "operation": "update",
-                "precondition": "unknown — manual investigation required",
-                "proposed_change": "No automated fix available — unknown finding class",
-            },
-        )
+        template = _OPERATION_TEMPLATES.get(finding_class, {
+            "operation": "update",
+            "precondition": "unknown — manual investigation required",
+            "proposed_change": "No automated fix available — unknown finding class",
+        })
 
         # Risk escalation for hash_mismatch
         risk = defaults["risk_level"]
         if finding_class == "hash_mismatch":
             risk = "high"
 
-        action: dict[str, Any] = {
+        action: Dict[str, Any] = {
             "action_id": _action_id(finding_id),
             "finding_id": finding_id,
             "finding_class": finding_class,
@@ -387,7 +382,7 @@ def _build_error_result(
     ts: str,
     repo_root: Path,
     error_msg: str,
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """Build error result when planner cannot run."""
     return {
         "gate": "remediation_planner",
@@ -406,9 +401,9 @@ def _build_error_result(
     }
 
 
-def _count_by_class(findings: list[dict[str, Any]]) -> dict[str, int]:
+def _count_by_class(findings: List[Dict[str, Any]]) -> Dict[str, int]:
     """Count findings by class."""
-    by_class: dict[str, int] = {}
+    by_class: Dict[str, int] = {}
     for f in findings:
         cls = f.get("class", "unknown")
         by_class[cls] = by_class.get(cls, 0) + 1
@@ -419,11 +414,10 @@ def _count_by_class(findings: list[dict[str, Any]]) -> dict[str, int]:
 # Auto-apply (only auto_fix_safe actions)
 # ---------------------------------------------------------------------------
 
-
 def _auto_apply(
-    result: dict[str, Any],
+    result: Dict[str, Any],
     repo_root: Path,
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """Apply auto_fix_safe actions. Returns updated result with apply status.
 
     SECURITY BOUNDARIES:
@@ -434,17 +428,19 @@ def _auto_apply(
     - NEVER manipulates evidence
     """
     actions = result.get("plan", {}).get("actions", [])
-    applied: list[str] = []
-    skipped: list[str] = []
-    failed: list[dict[str, str]] = []
+    applied: List[str] = []
+    skipped: List[str] = []
+    failed: List[Dict[str, str]] = []
 
     registry_path = repo_root / "24_meta_orchestration" / "registry" / "sot_registry.json"
     registry_modified = False
-    registry: dict[str, Any] | None = None
+    registry: Optional[Dict[str, Any]] = None
 
     # Load registry once if needed
     needs_registry = any(
-        a["remediation_class"] == "auto_fix_safe" and a["operation"] in ("normalize", "register") for a in actions
+        a["remediation_class"] == "auto_fix_safe"
+        and a["operation"] in ("normalize", "register")
+        for a in actions
     )
     if needs_registry and registry_path.is_file():
         try:
@@ -514,7 +510,7 @@ def _auto_apply(
     return result
 
 
-def _apply_sha256_normalize(registry: dict[str, Any], art_path: str) -> None:
+def _apply_sha256_normalize(registry: Dict[str, Any], art_path: str) -> None:
     """Strip sha256: prefix from hash_sha256 in registry entry."""
     artifacts = registry.get("roots", {}).get("sot_artifacts", [])
     for art in artifacts:
@@ -525,7 +521,7 @@ def _apply_sha256_normalize(registry: dict[str, Any], art_path: str) -> None:
             break
 
 
-def _apply_evidence_ref_normalize(registry: dict[str, Any], art_path: str) -> None:
+def _apply_evidence_ref_normalize(registry: Dict[str, Any], art_path: str) -> None:
     """Convert evidence_ref string to canonical object."""
     artifacts = registry.get("roots", {}).get("sot_artifacts", [])
     for art in artifacts:
@@ -541,7 +537,7 @@ def _apply_evidence_ref_normalize(registry: dict[str, Any], art_path: str) -> No
 
 
 def _apply_add_evidence_ref(
-    registry: dict[str, Any],
+    registry: Dict[str, Any],
     art_path: str,
     computed_hash: str,
 ) -> None:
@@ -562,13 +558,12 @@ def _apply_add_evidence_ref(
 # Report generation
 # ---------------------------------------------------------------------------
 
-
-def _plan_to_json(result: dict[str, Any]) -> str:
+def _plan_to_json(result: Dict[str, Any]) -> str:
     """Render remediation plan as JSON string."""
     return json.dumps(result, indent=2, sort_keys=False)
 
 
-def _plan_to_md(result: dict[str, Any]) -> str:
+def _plan_to_md(result: Dict[str, Any]) -> str:
     """Render remediation plan as Markdown report."""
     lines = [
         "# Gate Remediation Plan Report\n",
@@ -609,7 +604,13 @@ def _plan_to_md(result: dict[str, Any]) -> str:
         lines.append("|-----------|------|-----------|------|-----------------|\n")
         for a in class_actions:
             change = a.get("proposed_change", "").replace("|", "\\|")
-            lines.append(f"| `{a['action_id']}` | `{a['file']}` | {a['operation']} | {a['risk_level']} | {change} |\n")
+            lines.append(
+                f"| `{a['action_id']}` "
+                f"| `{a['file']}` "
+                f"| {a['operation']} "
+                f"| {a['risk_level']} "
+                f"| {change} |\n"
+            )
 
     # Apply results if present
     apply_result = result.get("apply_result")
@@ -624,7 +625,8 @@ def _plan_to_md(result: dict[str, Any]) -> str:
                 lines.append(f"- `{f['action_id']}`: {f['error']}\n")
 
     lines.append(
-        f"\n---\n\nGenerated by `run_gate_remediation_planner.py` v{result['version']} at {result['timestamp_utc']}\n"
+        f"\n---\n\nGenerated by `run_gate_remediation_planner.py` "
+        f"v{result['version']} at {result['timestamp_utc']}\n"
     )
 
     return "".join(lines)
@@ -634,43 +636,36 @@ def _plan_to_md(result: dict[str, Any]) -> str:
 # CLI
 # ---------------------------------------------------------------------------
 
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="run_gate_remediation_planner",
-        description=("Gate Remediation Planner — classifies gate findings and generates fix plans"),
+        description=(
+            "Gate Remediation Planner — classifies gate findings "
+            "and generates fix plans"
+        ),
     )
     parser.add_argument(
-        "--findings-path",
-        type=str,
-        required=True,
+        "--findings-path", type=str, required=True,
         help="Path to findings JSON (gate output or run-ledger)",
     )
     parser.add_argument(
-        "--repo-root",
-        type=str,
-        default=None,
+        "--repo-root", type=str, default=None,
         help="Path to SSID repo root (default: auto-detect via git)",
     )
     parser.add_argument(
-        "--output-dir",
-        type=str,
-        default=None,
+        "--output-dir", type=str, default=None,
         help="Report output directory (default: <repo-root>/02_audit_logging/reports)",
     )
     parser.add_argument(
-        "--write-reports",
-        action="store_true",
+        "--write-reports", action="store_true",
         help="Write JSON + MD reports to output directory",
     )
     parser.add_argument(
-        "--verify-only",
-        action="store_true",
+        "--verify-only", action="store_true",
         help="Verify only — print result, no reports written, no auto-apply",
     )
     parser.add_argument(
-        "--auto-apply",
-        action="store_true",
+        "--auto-apply", action="store_true",
         help=(
             "Apply auto_fix_safe actions to registry. "
             "ONLY normalizations and registry updates — "
@@ -680,8 +675,8 @@ def main() -> int:
     args = parser.parse_args()
 
     # Resolve paths
-    repo_root_str: str | None = args.repo_root
-    output_dir_str: str | None = args.output_dir
+    repo_root_str: Optional[str] = args.repo_root
+    output_dir_str: Optional[str] = args.output_dir
 
     # Run planner
     try:
@@ -719,7 +714,9 @@ def main() -> int:
     for action in actions:
         rem_tag = action["remediation_class"].upper()
         print(
-            f"  {rem_tag}: {action['action_id']}: {action['operation']} {action['file']} — {action['proposed_change']}"
+            f"  {rem_tag}: {action['action_id']}: "
+            f"{action['operation']} {action['file']} — "
+            f"{action['proposed_change']}"
         )
 
     # Print apply results if present
@@ -736,11 +733,9 @@ def main() -> int:
     # Write reports (unless --verify-only)
     if args.write_reports and not args.verify_only:
         resolved_output = (
-            Path(output_dir_str)
-            if output_dir_str
+            Path(output_dir_str) if output_dir_str
             else (Path(repo_root_str).resolve() if repo_root_str else _detect_repo_root())
-            / "02_audit_logging"
-            / "reports"
+            / "02_audit_logging" / "reports"
         )
         resolved_output.mkdir(parents=True, exist_ok=True)
 

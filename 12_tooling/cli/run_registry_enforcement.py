@@ -1,4 +1,3 @@
-# DEPRECATED: REDUNDANT — Canonical tool is 12_tooling/cli/sot_enforcement_gate.py
 #!/usr/bin/env python3
 """
 Registry Enforcement Gate — full Disk / Registry / Evidence / SoT-Ref reconciliation.
@@ -14,7 +13,6 @@ Performs cross-validation of:
 Produces: registry_enforcement_findings.json, registry_enforcement_report.md
 Exit codes: 0=PASS, 1=WARN, 2=DENY, 3=ERROR
 """
-
 from __future__ import annotations
 
 import argparse
@@ -24,9 +22,9 @@ import os
 import re
 import subprocess
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional, Set
 from uuid import uuid4
 
 # ---------------------------------------------------------------------------
@@ -74,7 +72,9 @@ EXIT_ERROR = 3
 _FAIL_OPEN_PATTERNS = [
     re.compile(r"""(?:pass|skip|continue|return\s+(?:True|None|0|"pass"|'pass'))"""),
 ]
-_FAIL_OPEN_CONTEXT = re.compile(r"(?:except|else|default|unknown|_|\*)", re.IGNORECASE)
+_FAIL_OPEN_CONTEXT = re.compile(
+    r"(?:except|else|default|unknown|_|\*)", re.IGNORECASE
+)
 
 # ---------------------------------------------------------------------------
 # Normalization (inlined — cross-repo import not possible)
@@ -88,7 +88,7 @@ def _normalize_sha256(value: str) -> str:
     """Normalize SHA256 to raw 64-char hex. Strips 'sha256:' prefix."""
     raw = value.lower().strip()
     if raw.startswith(_SHA256_PREFIX):
-        raw = raw[len(_SHA256_PREFIX) :]
+        raw = raw[len(_SHA256_PREFIX):]
     return raw
 
 
@@ -119,15 +119,12 @@ def _normalize_evidence_ref(value: Any) -> dict[str, str]:
 # Helpers
 # ---------------------------------------------------------------------------
 
-
 def _detect_repo_root() -> Path:
     """Auto-detect repo root via git or fallback to file-relative."""
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--show-toplevel"],
-            capture_output=True,
-            text=True,
-            timeout=5,
+            capture_output=True, text=True, timeout=5,
         )
         if result.returncode == 0:
             return Path(result.stdout.strip()).resolve()
@@ -176,12 +173,18 @@ def _is_in_enforced_scope(path: str) -> bool:
         if path.startswith(scope["prefix"]):
             return True
     # Also check SOT_ALLOWLIST paths explicitly
-    return any(path == entry["path"] for entry in SOT_ALLOWLIST)
+    for entry in SOT_ALLOWLIST:
+        if path == entry["path"]:
+            return True
+    return False
 
 
 def _requires_sot_ref(path: str) -> bool:
     """Check if artifact requires source_of_truth_ref."""
-    return any(path.startswith(prefix) for prefix in SOT_REF_REQUIRED_PREFIXES)
+    for prefix in SOT_REF_REQUIRED_PREFIXES:
+        if path.startswith(prefix):
+            return True
+    return False
 
 
 def _check_fail_open(filepath: Path) -> list[tuple[int, str]]:
@@ -215,56 +218,51 @@ def _check_fail_open(filepath: Path) -> list[tuple[int, str]]:
 # Core enforcement logic
 # ---------------------------------------------------------------------------
 
-
 def run_enforcement(
     repo_root: Path,
     output_dir: Path,
     strict: bool = False,
     verify_only: bool = False,
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """Run full registry enforcement check. Returns structured result."""
-    ts = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     registry_path = repo_root / REGISTRY_REL
-    findings: list[dict[str, Any]] = []
+    findings: List[Dict[str, Any]] = []
 
     # --- Check 0: Registry parseable ---
     if not registry_path.is_file():
-        findings.append(
-            {
-                "id": _finding_id("registry_schema_invalid", REGISTRY_REL),
-                "class": "registry_schema_invalid",
-                "severity": "deny",
-                "source": "registry_enforcement",
-                "path": REGISTRY_REL,
-                "details": "sot_registry.json not found on disk",
-                "timestamp_utc": ts,
-                "repo": str(repo_root),
-            }
-        )
+        findings.append({
+            "id": _finding_id("registry_schema_invalid", REGISTRY_REL),
+            "class": "registry_schema_invalid",
+            "severity": "deny",
+            "source": "registry_enforcement",
+            "path": REGISTRY_REL,
+            "details": "sot_registry.json not found on disk",
+            "timestamp_utc": ts,
+            "repo": str(repo_root),
+        })
         return _build_result(ts, repo_root, findings)
 
     try:
         registry = json.loads(registry_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError) as exc:
-        findings.append(
-            {
-                "id": _finding_id("registry_schema_invalid", REGISTRY_REL),
-                "class": "registry_schema_invalid",
-                "severity": "deny",
-                "source": "registry_enforcement",
-                "path": REGISTRY_REL,
-                "details": f"Failed to parse sot_registry.json: {exc}",
-                "timestamp_utc": ts,
-                "repo": str(repo_root),
-            }
-        )
+        findings.append({
+            "id": _finding_id("registry_schema_invalid", REGISTRY_REL),
+            "class": "registry_schema_invalid",
+            "severity": "deny",
+            "source": "registry_enforcement",
+            "path": REGISTRY_REL,
+            "details": f"Failed to parse sot_registry.json: {exc}",
+            "timestamp_utc": ts,
+            "repo": str(repo_root),
+        })
         return _build_result(ts, repo_root, findings)
 
     artifacts = registry.get("roots", {}).get("sot_artifacts", [])
 
     # --- Check 1: Duplicate detection ---
-    seen_names: dict[str, str] = {}  # name -> first path
-    seen_paths: dict[str, str] = {}  # path -> first name
+    seen_names: Dict[str, str] = {}  # name -> first path
+    seen_paths: Dict[str, str] = {}  # path -> first name
 
     for art in artifacts:
         art_name = art.get("name", "")
@@ -272,40 +270,42 @@ def run_enforcement(
 
         # Duplicate artifact ID/name
         if art_name in seen_names:
-            findings.append(
-                {
-                    "id": _finding_id("duplicate_artifact_id", art_path),
-                    "class": "duplicate_artifact_id",
-                    "severity": "deny",
-                    "source": "registry_enforcement",
-                    "path": art_path,
-                    "details": (f"Duplicate artifact name '{art_name}' — also registered at '{seen_names[art_name]}'"),
-                    "timestamp_utc": ts,
-                    "repo": str(repo_root),
-                }
-            )
+            findings.append({
+                "id": _finding_id("duplicate_artifact_id", art_path),
+                "class": "duplicate_artifact_id",
+                "severity": "deny",
+                "source": "registry_enforcement",
+                "path": art_path,
+                "details": (
+                    f"Duplicate artifact name '{art_name}' — "
+                    f"also registered at '{seen_names[art_name]}'"
+                ),
+                "timestamp_utc": ts,
+                "repo": str(repo_root),
+            })
         else:
             seen_names[art_name] = art_path
 
         # Duplicate path
         if art_path in seen_paths:
-            findings.append(
-                {
-                    "id": _finding_id("duplicate_path", art_path),
-                    "class": "duplicate_path",
-                    "severity": "deny",
-                    "source": "registry_enforcement",
-                    "path": art_path,
-                    "details": (f"Duplicate path '{art_path}' — also registered as '{seen_paths[art_path]}'"),
-                    "timestamp_utc": ts,
-                    "repo": str(repo_root),
-                }
-            )
+            findings.append({
+                "id": _finding_id("duplicate_path", art_path),
+                "class": "duplicate_path",
+                "severity": "deny",
+                "source": "registry_enforcement",
+                "path": art_path,
+                "details": (
+                    f"Duplicate path '{art_path}' — "
+                    f"also registered as '{seen_paths[art_path]}'"
+                ),
+                "timestamp_utc": ts,
+                "repo": str(repo_root),
+            })
         else:
             seen_paths[art_path] = art_name
 
     # --- Check 2: Per-artifact enforcement ---
-    registered_paths: set[str] = set()
+    registered_paths: Set[str] = set()
 
     for art in artifacts:
         art_path = art.get("path", "")
@@ -321,18 +321,19 @@ def run_enforcement(
 
         # 2a. Orphan registry entry (file missing on disk)
         if not full_path.is_file():
-            findings.append(
-                {
-                    "id": _finding_id("orphan_registry_entry", art_path),
-                    "class": "orphan_registry_entry",
-                    "severity": "deny",
-                    "source": "registry_enforcement",
-                    "path": art_path,
-                    "details": (f"Registry entry '{art_name}' has no corresponding file on disk"),
-                    "timestamp_utc": ts,
-                    "repo": str(repo_root),
-                }
-            )
+            findings.append({
+                "id": _finding_id("orphan_registry_entry", art_path),
+                "class": "orphan_registry_entry",
+                "severity": "deny",
+                "source": "registry_enforcement",
+                "path": art_path,
+                "details": (
+                    f"Registry entry '{art_name}' has no corresponding "
+                    f"file on disk"
+                ),
+                "timestamp_utc": ts,
+                "repo": str(repo_root),
+            })
             continue
 
         # 2b. Hash mismatch
@@ -340,85 +341,84 @@ def run_enforcement(
             current_hash = _sha256_file(full_path)
             normalized_registry_hash = _normalize_hash(art_hash)
             if current_hash and current_hash != normalized_registry_hash:
-                findings.append(
-                    {
-                        "id": _finding_id("hash_mismatch", art_path),
-                        "class": "hash_mismatch",
-                        "severity": "deny",
-                        "source": "registry_enforcement",
-                        "path": art_path,
-                        "details": (
-                            f"SHA256 mismatch for '{art_name}': "
-                            f"registry={normalized_registry_hash[:16]}... "
-                            f"disk={current_hash[:16]}..."
-                        ),
-                        "timestamp_utc": ts,
-                        "repo": str(repo_root),
-                    }
-                )
-
-        # 2c. Missing evidence_ref (deny, not warn)
-        if "evidence_ref" not in art:
-            findings.append(
-                {
-                    "id": _finding_id("missing_evidence_ref", art_path),
-                    "class": "missing_evidence_ref",
+                findings.append({
+                    "id": _finding_id("hash_mismatch", art_path),
+                    "class": "hash_mismatch",
                     "severity": "deny",
                     "source": "registry_enforcement",
                     "path": art_path,
-                    "details": (f"Artifact '{art_name}' has no evidence_ref field"),
+                    "details": (
+                        f"SHA256 mismatch for '{art_name}': "
+                        f"registry={normalized_registry_hash[:16]}... "
+                        f"disk={current_hash[:16]}..."
+                    ),
                     "timestamp_utc": ts,
                     "repo": str(repo_root),
-                }
-            )
+                })
+
+        # 2c. Missing evidence_ref (deny, not warn)
+        if "evidence_ref" not in art:
+            findings.append({
+                "id": _finding_id("missing_evidence_ref", art_path),
+                "class": "missing_evidence_ref",
+                "severity": "deny",
+                "source": "registry_enforcement",
+                "path": art_path,
+                "details": (
+                    f"Artifact '{art_name}' has no evidence_ref field"
+                ),
+                "timestamp_utc": ts,
+                "repo": str(repo_root),
+            })
         else:
             # 2d. Invalid evidence_ref
             ref = _normalize_evidence_ref(art.get("evidence_ref"))
             ref_hash = ref.get("hash", "")
             ref_path = ref.get("path", "")
             if not ref_hash and not ref_path:
-                findings.append(
-                    {
-                        "id": _finding_id("invalid_evidence_ref", art_path),
-                        "class": "invalid_evidence_ref",
-                        "severity": "deny",
-                        "source": "registry_enforcement",
-                        "path": art_path,
-                        "details": (f"Artifact '{art_name}' has evidence_ref but it contains neither hash nor path"),
-                        "timestamp_utc": ts,
-                        "repo": str(repo_root),
-                    }
-                )
-            elif ref_hash and not _is_valid_sha256(ref_hash):
-                findings.append(
-                    {
-                        "id": _finding_id("invalid_evidence_ref", art_path),
-                        "class": "invalid_evidence_ref",
-                        "severity": "deny",
-                        "source": "registry_enforcement",
-                        "path": art_path,
-                        "details": (f"Artifact '{art_name}' has evidence_ref with invalid hash format"),
-                        "timestamp_utc": ts,
-                        "repo": str(repo_root),
-                    }
-                )
-
-        # 2e. Missing source_of_truth_ref for SoT/Policy/Validator artifacts
-        if _requires_sot_ref(art_path) and "source_of_truth_ref" not in art:
-            findings.append(
-                {
-                    "id": _finding_id("missing_source_of_truth_ref", art_path),
-                    "class": "missing_source_of_truth_ref",
+                findings.append({
+                    "id": _finding_id("invalid_evidence_ref", art_path),
+                    "class": "invalid_evidence_ref",
                     "severity": "deny",
                     "source": "registry_enforcement",
                     "path": art_path,
                     "details": (
-                        f"Artifact '{art_name}' is a SoT/Policy/Validator artifact but has no source_of_truth_ref"
+                        f"Artifact '{art_name}' has evidence_ref but "
+                        f"it contains neither hash nor path"
                     ),
                     "timestamp_utc": ts,
                     "repo": str(repo_root),
-                }
-            )
+                })
+            elif ref_hash and not _is_valid_sha256(ref_hash):
+                findings.append({
+                    "id": _finding_id("invalid_evidence_ref", art_path),
+                    "class": "invalid_evidence_ref",
+                    "severity": "deny",
+                    "source": "registry_enforcement",
+                    "path": art_path,
+                    "details": (
+                        f"Artifact '{art_name}' has evidence_ref with "
+                        f"invalid hash format"
+                    ),
+                    "timestamp_utc": ts,
+                    "repo": str(repo_root),
+                })
+
+        # 2e. Missing source_of_truth_ref for SoT/Policy/Validator artifacts
+        if _requires_sot_ref(art_path) and "source_of_truth_ref" not in art:
+            findings.append({
+                "id": _finding_id("missing_source_of_truth_ref", art_path),
+                "class": "missing_source_of_truth_ref",
+                "severity": "deny",
+                "source": "registry_enforcement",
+                "path": art_path,
+                "details": (
+                    f"Artifact '{art_name}' is a SoT/Policy/Validator "
+                    f"artifact but has no source_of_truth_ref"
+                ),
+                "timestamp_utc": ts,
+                "repo": str(repo_root),
+            })
 
         # 2f. Fail-open guard detection (validators and CLI gates)
         if art_path.startswith("03_core/validators/") or (
@@ -426,42 +426,41 @@ def run_enforcement(
         ):
             fail_open_hits = _check_fail_open(full_path)
             if fail_open_hits:
-                hit_summary = "; ".join(f"L{ln}: {txt[:60]}" for ln, txt in fail_open_hits[:3])
-                findings.append(
-                    {
-                        "id": _finding_id("fail_open_guard", art_path),
-                        "class": "fail_open_guard",
-                        "severity": "deny",
-                        "source": "registry_enforcement",
-                        "path": art_path,
-                        "details": (
-                            f"Potential fail-open in '{art_name}': {len(fail_open_hits)} hit(s) — {hit_summary}"
-                        ),
-                        "timestamp_utc": ts,
-                        "repo": str(repo_root),
-                    }
+                hit_summary = "; ".join(
+                    f"L{ln}: {txt[:60]}" for ln, txt in fail_open_hits[:3]
                 )
+                findings.append({
+                    "id": _finding_id("fail_open_guard", art_path),
+                    "class": "fail_open_guard",
+                    "severity": "deny",
+                    "source": "registry_enforcement",
+                    "path": art_path,
+                    "details": (
+                        f"Potential fail-open in '{art_name}': "
+                        f"{len(fail_open_hits)} hit(s) — {hit_summary}"
+                    ),
+                    "timestamp_utc": ts,
+                    "repo": str(repo_root),
+                })
 
     # --- Check 3: Unregistered artifacts (on disk but not in registry) ---
     for allowed in SOT_ALLOWLIST:
         if allowed["path"] not in registered_paths:
             disk_path = repo_root / allowed["path"]
             if disk_path.is_file():
-                findings.append(
-                    {
-                        "id": _finding_id("unregistered_artifact", allowed["path"]),
-                        "class": "unregistered_artifact",
-                        "severity": "deny",
-                        "source": "registry_enforcement",
-                        "path": allowed["path"],
-                        "details": (
-                            f"Artifact '{allowed['name']}' exists on disk "
-                            f"in SOT_ALLOWLIST but is not in sot_registry.json"
-                        ),
-                        "timestamp_utc": ts,
-                        "repo": str(repo_root),
-                    }
-                )
+                findings.append({
+                    "id": _finding_id("unregistered_artifact", allowed["path"]),
+                    "class": "unregistered_artifact",
+                    "severity": "deny",
+                    "source": "registry_enforcement",
+                    "path": allowed["path"],
+                    "details": (
+                        f"Artifact '{allowed['name']}' exists on disk "
+                        f"in SOT_ALLOWLIST but is not in sot_registry.json"
+                    ),
+                    "timestamp_utc": ts,
+                    "repo": str(repo_root),
+                })
 
     # --- Check 4 (strict): Scan enforced scope dirs for untracked files ---
     if strict:
@@ -474,18 +473,19 @@ def run_enforcement(
                     continue
                 rel = fpath.relative_to(repo_root).as_posix()
                 if rel not in registered_paths:
-                    findings.append(
-                        {
-                            "id": _finding_id("unregistered_artifact", rel),
-                            "class": "unregistered_artifact",
-                            "severity": "deny",
-                            "source": "registry_enforcement",
-                            "path": rel,
-                            "details": (f"File '{rel}' in enforced scope '{scope['prefix']}' is not in registry"),
-                            "timestamp_utc": ts,
-                            "repo": str(repo_root),
-                        }
-                    )
+                    findings.append({
+                        "id": _finding_id("unregistered_artifact", rel),
+                        "class": "unregistered_artifact",
+                        "severity": "deny",
+                        "source": "registry_enforcement",
+                        "path": rel,
+                        "details": (
+                            f"File '{rel}' in enforced scope "
+                            f"'{scope['prefix']}' is not in registry"
+                        ),
+                        "timestamp_utc": ts,
+                        "repo": str(repo_root),
+                    })
 
     return _build_result(ts, repo_root, findings)
 
@@ -493,8 +493,8 @@ def run_enforcement(
 def _build_result(
     ts: str,
     repo_root: Path,
-    findings: list[dict[str, Any]],
-) -> dict[str, Any]:
+    findings: List[Dict[str, Any]],
+) -> Dict[str, Any]:
     """Build structured result from findings."""
     deny_count = sum(1 for f in findings if f["severity"] == "deny")
     warn_count = sum(1 for f in findings if f["severity"] == "warn")
@@ -508,7 +508,7 @@ def _build_result(
         status = "PASS"
 
     # Group findings by class for summary
-    by_class: dict[str, int] = {}
+    by_class: Dict[str, int] = {}
     for f in findings:
         cls = f["class"]
         by_class[cls] = by_class.get(cls, 0) + 1
@@ -534,13 +534,12 @@ def _build_result(
 # Report generation
 # ---------------------------------------------------------------------------
 
-
-def _findings_to_json(result: dict[str, Any]) -> str:
+def _findings_to_json(result: Dict[str, Any]) -> str:
     """Render findings as JSON string."""
     return json.dumps(result, indent=2, sort_keys=False)
 
 
-def _findings_to_md(result: dict[str, Any]) -> str:
+def _findings_to_md(result: Dict[str, Any]) -> str:
     """Render findings as Markdown report."""
     lines = [
         "# Registry Enforcement Report\n",
@@ -569,12 +568,18 @@ def _findings_to_md(result: dict[str, Any]) -> str:
             severity_tag = f["severity"].upper()
             # Escape pipe chars in details for MD table
             details = f["details"].replace("|", "\\|")
-            lines.append(f"| `{f['id']}` | {severity_tag} | `{f['path']}` | {details} |\n")
+            lines.append(
+                f"| `{f['id']}` | {severity_tag} "
+                f"| `{f['path']}` | {details} |\n"
+            )
     else:
-        lines.append("\nNo findings — all enforced artifacts pass registry enforcement.\n")
+        lines.append(
+            "\nNo findings — all enforced artifacts pass registry enforcement.\n"
+        )
 
     lines.append(
-        f"\n---\n\nGenerated by `run_registry_enforcement.py` v{result['version']} at {result['timestamp_utc']}\n"
+        f"\n---\n\nGenerated by `run_registry_enforcement.py` "
+        f"v{result['version']} at {result['timestamp_utc']}\n"
     )
 
     return "".join(lines)
@@ -584,17 +589,19 @@ def _findings_to_md(result: dict[str, Any]) -> str:
 # Run-ledger builder
 # ---------------------------------------------------------------------------
 
-
 def _build_run_ledger(
-    result: dict[str, Any],
+    result: Dict[str, Any],
     gate_type: str,
     repo_root: Path,
     related_repo: str = "",
     trigger: str = "manual",
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """Build a run-ledger dict from a gate result."""
-    now_utc = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    run_id = f"{gate_type}_{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}_{uuid4().hex[:8]}"
+    now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    run_id = (
+        f"{gate_type}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+        f"_{uuid4().hex[:8]}"
+    )
 
     # Detect CI vs manual
     if any(os.environ.get(v) for v in ("CI", "GITHUB_ACTIONS", "GITLAB_CI")):
@@ -609,29 +616,23 @@ def _build_run_ledger(
     artifacts = sorted({f.get("path", "") for f in result.get("findings", []) if f.get("path")})
 
     # Extract evidence_refs and source_of_truth_refs from findings
-    evidence_refs = sorted(
-        {
-            f["evidence_ref"]
-            for f in result.get("findings", [])
-            if isinstance(f.get("evidence_ref"), str) and f["evidence_ref"]
-        }
-    )
-    source_of_truth_refs = sorted(
-        {
-            f["source_of_truth_ref"]
-            for f in result.get("findings", [])
-            if isinstance(f.get("source_of_truth_ref"), str) and f["source_of_truth_ref"]
-        }
-    )
+    evidence_refs = sorted({
+        f["evidence_ref"]
+        for f in result.get("findings", [])
+        if isinstance(f.get("evidence_ref"), str) and f["evidence_ref"]
+    })
+    source_of_truth_refs = sorted({
+        f["source_of_truth_ref"]
+        for f in result.get("findings", [])
+        if isinstance(f.get("source_of_truth_ref"), str) and f["source_of_truth_ref"]
+    })
 
     # Commit SHA
     commit_sha = ""
     try:
         cp = subprocess.run(
             ["git", "rev-parse", "HEAD"],
-            capture_output=True,
-            text=True,
-            timeout=5,
+            capture_output=True, text=True, timeout=5,
         )
         if cp.returncode == 0:
             commit_sha = cp.stdout.strip()
@@ -670,49 +671,50 @@ def _build_run_ledger(
 # CLI
 # ---------------------------------------------------------------------------
 
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="run_registry_enforcement",
-        description=("Registry Enforcement Gate — full Disk / Registry / Evidence / SoT-Ref reconciliation"),
+        description=(
+            "Registry Enforcement Gate — full Disk / Registry / Evidence / "
+            "SoT-Ref reconciliation"
+        ),
     )
     parser.add_argument(
-        "--repo-root",
-        type=str,
-        default=None,
+        "--repo-root", type=str, default=None,
         help="Path to SSID repo root (default: auto-detect via git)",
     )
     parser.add_argument(
-        "--output-dir",
-        type=str,
-        default=None,
+        "--output-dir", type=str, default=None,
         help=f"Report output directory (default: <repo-root>/{REPORT_REL})",
     )
     parser.add_argument(
-        "--write-reports",
-        action="store_true",
+        "--write-reports", action="store_true",
         help="Write JSON + MD reports to output directory",
     )
     parser.add_argument(
-        "--verify-only",
-        action="store_true",
+        "--verify-only", action="store_true",
         help="Verify only — print result, no reports written",
     )
     parser.add_argument(
-        "--strict",
-        action="store_true",
-        help=("Strict mode: scan enforced scope directories for untracked files not in registry"),
+        "--strict", action="store_true",
+        help=(
+            "Strict mode: scan enforced scope directories for "
+            "untracked files not in registry"
+        ),
     )
     parser.add_argument(
-        "--emit-run-ledger",
-        action="store_true",
+        "--emit-run-ledger", action="store_true",
         help="Write a *_run_ledger.json to output directory",
     )
     args = parser.parse_args()
 
     # Resolve paths
-    repo_root = Path(args.repo_root).resolve() if args.repo_root else _detect_repo_root()
-    output_dir = Path(args.output_dir) if args.output_dir else repo_root / REPORT_REL
+    repo_root = (
+        Path(args.repo_root).resolve() if args.repo_root else _detect_repo_root()
+    )
+    output_dir = (
+        Path(args.output_dir) if args.output_dir else repo_root / REPORT_REL
+    )
 
     if not repo_root.is_dir():
         print(f"ERROR: repo-root not found: {repo_root}", file=sys.stderr)
@@ -721,8 +723,7 @@ def main() -> int:
     # Run enforcement
     try:
         result = run_enforcement(
-            repo_root,
-            output_dir,
+            repo_root, output_dir,
             strict=args.strict,
             verify_only=args.verify_only,
         )

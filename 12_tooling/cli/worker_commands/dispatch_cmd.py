@@ -11,20 +11,11 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 VALID_WORKERS = [
-    "supervisor",
-    "dispatch",
-    "build",
-    "test",
-    "browser",
-    "policy",
-    "audit",
-    "registry",
-    "provider",
-    "release",
-    "repair",
+    "supervisor", "dispatch", "build", "test", "browser",
+    "policy", "audit", "registry", "provider", "release", "repair",
 ]
 
 
@@ -33,7 +24,7 @@ def _send(args: argparse.Namespace) -> int:
     if args.worker not in VALID_WORKERS:
         error = {
             "command": "dispatch.send",
-            "timestamp": datetime.now(UTC).isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "error": f"Unknown worker: {args.worker}. Valid: {VALID_WORKERS}",
             "status": "rejected",
         }
@@ -42,12 +33,12 @@ def _send(args: argparse.Namespace) -> int:
 
     output = {
         "command": "dispatch.send",
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "task_id": args.task,
         "target_worker": args.worker,
         "priority": args.priority,
         "dispatch_status": "sent",
-        "estimated_start": datetime.now(UTC).isoformat(),
+        "estimated_start": datetime.now(timezone.utc).isoformat(),
     }
     print(json.dumps(output, indent=2))
     return 0
@@ -57,7 +48,7 @@ def _queue(args: argparse.Namespace) -> int:
     """List dispatch queue."""
     output = {
         "command": "dispatch.queue",
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "queue_items": [],
         "total_pending": 0,
         "total_in_progress": 0,
@@ -70,7 +61,7 @@ def _status(args: argparse.Namespace) -> int:
     """Check status of a dispatched task."""
     output = {
         "command": "dispatch.status",
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "task_id": args.task,
         "status": "unknown",
         "worker": None,
@@ -111,7 +102,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         error = {
             "command": f"dispatch.{args.action}",
-            "timestamp": datetime.now(UTC).isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "error": str(exc),
             "status": "failed",
         }

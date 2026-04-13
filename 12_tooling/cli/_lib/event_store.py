@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -40,7 +40,7 @@ def emit_event(
     payload: dict[str, Any] | None = None,
 ) -> Path:
     """Write a single event to the event store. Returns path to created file."""
-    ts_utc = datetime.now(UTC).isoformat()
+    ts_utc = datetime.now(timezone.utc).isoformat()
     event: dict[str, Any] = {
         "ts_utc": ts_utc,
         "repo": repo,

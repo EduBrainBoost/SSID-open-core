@@ -20,13 +20,13 @@ Exit codes:
   1 = WARN   — advisory warnings only
   2 = FAIL   — hard consistency violations
 """
-
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-from datetime import UTC, datetime
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -37,52 +37,27 @@ EXIT_WARN = 1
 EXIT_FAIL = 2
 
 ROOTS_24 = [
-    "01_ai_layer",
-    "02_audit_logging",
-    "03_core",
-    "04_deployment",
-    "05_documentation",
-    "06_data_pipeline",
-    "07_governance_legal",
-    "08_identity_score",
-    "09_meta_identity",
-    "10_interoperability",
-    "11_test_simulation",
-    "12_tooling",
-    "13_ui_layer",
-    "14_zero_time_auth",
-    "15_infra",
-    "16_codex",
-    "17_observability",
-    "18_data_layer",
-    "19_adapters",
-    "20_foundation",
-    "21_post_quantum_crypto",
-    "22_datasets",
-    "23_compliance",
-    "24_meta_orchestration",
+    "01_ai_layer", "02_audit_logging", "03_core", "04_deployment",
+    "05_documentation", "06_data_pipeline", "07_governance_legal",
+    "08_identity_score", "09_meta_identity", "10_interoperability",
+    "11_test_simulation", "12_tooling", "13_ui_layer", "14_zero_time_auth",
+    "15_infra", "16_codex", "17_observability", "18_data_layer",
+    "19_adapters", "20_foundation", "21_post_quantum_crypto",
+    "22_datasets", "23_compliance", "24_meta_orchestration",
 ]
 
 REGISTRY_MANIFEST_PATH = "24_meta_orchestration/registry/manifests/registry_manifest.yaml"
 TASKS_DIR = "24_meta_orchestration/registry/tasks"
 
 STANDARD_SHARDS = [
-    "01_identitaet_personen",
-    "02_dokumente_nachweise",
-    "03_zugang_berechtigungen",
-    "04_kommunikation_daten",
-    "05_gesundheit_medizin",
-    "06_bildung_qualifikationen",
-    "07_familie_soziales",
-    "08_mobilitaet_fahrzeuge",
-    "09_arbeit_karriere",
-    "10_finanzen_banking",
-    "11_versicherungen_risiken",
-    "12_immobilien_grundstuecke",
-    "13_unternehmen_gewerbe",
-    "14_vertraege_vereinbarungen",
-    "15_handel_transaktionen",
-    "16_behoerden_verwaltung",
+    "01_identitaet_personen", "02_dokumente_nachweise",
+    "03_zugang_berechtigungen", "04_kommunikation_daten",
+    "05_gesundheit_medizin", "06_bildung_qualifikationen",
+    "07_familie_soziales", "08_mobilitaet_fahrzeuge",
+    "09_arbeit_karriere", "10_finanzen_banking",
+    "11_versicherungen_risiken", "12_immobilien_grundstuecke",
+    "13_unternehmen_gewerbe", "14_vertraege_vereinbarungen",
+    "15_handel_transaktionen", "16_behoerden_verwaltung",
 ]
 
 
@@ -215,28 +190,26 @@ def check_status_version_convergence(
         mod_status = mod_data.get("status", "")
         man_status = man_data.get("status", "")
         if mod_status and man_status and mod_status != man_status:
-            result.add(
-                Finding(
-                    "CVG-001",
-                    "deny",
-                    root,
-                    f"{root}/manifest.yaml",
-                    f"status mismatch: module.yaml='{mod_status}', manifest.yaml='{man_status}'",
-                )
-            )
+            result.add(Finding(
+                "CVG-001",
+                "deny",
+                root,
+                f"{root}/manifest.yaml",
+                f"status mismatch: module.yaml='{mod_status}', "
+                f"manifest.yaml='{man_status}'",
+            ))
 
         mod_ver = str(mod_data.get("version", ""))
         man_ver = str(man_data.get("version", ""))
         if mod_ver and man_ver and mod_ver != man_ver:
-            result.add(
-                Finding(
-                    "CVG-001",
-                    "deny",
-                    root,
-                    f"{root}/manifest.yaml",
-                    f"version mismatch: module.yaml='{mod_ver}', manifest.yaml='{man_ver}'",
-                )
-            )
+            result.add(Finding(
+                "CVG-001",
+                "deny",
+                root,
+                f"{root}/manifest.yaml",
+                f"version mismatch: module.yaml='{mod_ver}', "
+                f"manifest.yaml='{man_ver}'",
+            ))
 
 
 # -----------------------------------------------------------------------
@@ -262,15 +235,14 @@ def check_classification_convergence(
         mod_cls = mod_data.get("classification", "")
         man_cls = man_data.get("classification", "")
         if mod_cls and man_cls and mod_cls != man_cls:
-            result.add(
-                Finding(
-                    "CVG-002",
-                    "warn",
-                    root,
-                    f"{root}/manifest.yaml",
-                    f"classification mismatch: module.yaml='{mod_cls}', manifest.yaml='{man_cls}'",
-                )
-            )
+            result.add(Finding(
+                "CVG-002",
+                "warn",
+                root,
+                f"{root}/manifest.yaml",
+                f"classification mismatch: module.yaml='{mod_cls}', "
+                f"manifest.yaml='{man_cls}'",
+            ))
 
 
 # -----------------------------------------------------------------------
@@ -306,15 +278,13 @@ def check_contract_refs(
 
             full_path = repo / root / ref
             if not full_path.exists():
-                result.add(
-                    Finding(
-                        "CVG-003",
-                        "deny",
-                        root,
-                        f"{root}/{ref}",
-                        f"contract ref '{ref}' in manifest.yaml does not exist on disk",
-                    )
-                )
+                result.add(Finding(
+                    "CVG-003",
+                    "deny",
+                    root,
+                    f"{root}/{ref}",
+                    f"contract ref '{ref}' in manifest.yaml does not exist on disk",
+                ))
 
 
 # -----------------------------------------------------------------------
@@ -343,18 +313,20 @@ def check_shard_declarations(
         shards_dir = repo / root / "shards"
         if not shards_dir.is_dir():
             if declared_count > 0 or declared_list:
-                result.add(
-                    Finding(
-                        "CVG-004",
-                        "warn",
-                        root,
-                        f"{root}/shards/",
-                        f"manifest declares {declared_count} shards but shards/ directory does not exist",
-                    )
-                )
+                result.add(Finding(
+                    "CVG-004",
+                    "warn",
+                    root,
+                    f"{root}/shards/",
+                    f"manifest declares {declared_count} shards but "
+                    f"shards/ directory does not exist",
+                ))
             continue
 
-        actual_shards = sorted([d.name for d in shards_dir.iterdir() if d.is_dir() and not d.name.startswith(".")])
+        actual_shards = sorted([
+            d.name for d in shards_dir.iterdir()
+            if d.is_dir() and not d.name.startswith(".")
+        ])
 
         if isinstance(declared_list, list) and declared_list:
             declared_set = set(declared_list)
@@ -362,38 +334,33 @@ def check_shard_declarations(
 
             missing_on_disk = declared_set - actual_set
             for s in sorted(missing_on_disk):
-                result.add(
-                    Finding(
-                        "CVG-004",
-                        "deny",
-                        root,
-                        f"{root}/shards/{s}",
-                        f"shard '{s}' declared in manifest but missing on disk",
-                    )
-                )
+                result.add(Finding(
+                    "CVG-004",
+                    "deny",
+                    root,
+                    f"{root}/shards/{s}",
+                    f"shard '{s}' declared in manifest but missing on disk",
+                ))
 
             extra_on_disk = actual_set - declared_set
             for s in sorted(extra_on_disk):
-                result.add(
-                    Finding(
-                        "CVG-004",
-                        "warn",
-                        root,
-                        f"{root}/shards/{s}",
-                        f"shard '{s}' exists on disk but not declared in manifest",
-                    )
-                )
-
-        if declared_count and len(actual_shards) != declared_count:
-            result.add(
-                Finding(
+                result.add(Finding(
                     "CVG-004",
                     "warn",
                     root,
-                    f"{root}/shards/",
-                    f"manifest declares count={declared_count} but {len(actual_shards)} shard dirs found on disk",
-                )
-            )
+                    f"{root}/shards/{s}",
+                    f"shard '{s}' exists on disk but not declared in manifest",
+                ))
+
+        if declared_count and len(actual_shards) != declared_count:
+            result.add(Finding(
+                "CVG-004",
+                "warn",
+                root,
+                f"{root}/shards/",
+                f"manifest declares count={declared_count} but "
+                f"{len(actual_shards)} shard dirs found on disk",
+            ))
 
 
 # -----------------------------------------------------------------------
@@ -419,39 +386,33 @@ def check_chart_manifest_alignment(
             manifest_exists = manifest_path.exists()
 
             if not chart_exists and not manifest_exists:
-                result.add(
-                    Finding(
-                        "CVG-005",
-                        "warn",
-                        root,
-                        f"{root}/shards/{shard_dir.name}/",
-                        "shard has neither chart.yaml nor manifest.yaml",
-                    )
-                )
+                result.add(Finding(
+                    "CVG-005",
+                    "warn",
+                    root,
+                    f"{root}/shards/{shard_dir.name}/",
+                    "shard has neither chart.yaml nor manifest.yaml",
+                ))
                 continue
 
             if chart_exists and not manifest_exists:
-                result.add(
-                    Finding(
-                        "CVG-005",
-                        "warn",
-                        root,
-                        f"{root}/shards/{shard_dir.name}/manifest.yaml",
-                        "shard has chart.yaml but no manifest.yaml",
-                    )
-                )
+                result.add(Finding(
+                    "CVG-005",
+                    "warn",
+                    root,
+                    f"{root}/shards/{shard_dir.name}/manifest.yaml",
+                    "shard has chart.yaml but no manifest.yaml",
+                ))
                 continue
 
             if not chart_exists and manifest_exists:
-                result.add(
-                    Finding(
-                        "CVG-005",
-                        "warn",
-                        root,
-                        f"{root}/shards/{shard_dir.name}/chart.yaml",
-                        "shard has manifest.yaml but no chart.yaml",
-                    )
-                )
+                result.add(Finding(
+                    "CVG-005",
+                    "warn",
+                    root,
+                    f"{root}/shards/{shard_dir.name}/chart.yaml",
+                    "shard has manifest.yaml but no chart.yaml",
+                ))
                 continue
 
             # Both exist: check alignment
@@ -468,29 +429,27 @@ def check_chart_manifest_alignment(
             chart_root = chart_data.get("root", "")
             manifest_root = manifest_data.get("root_id", "")
             if chart_root and manifest_root and chart_root != manifest_root:
-                result.add(
-                    Finding(
-                        "CVG-005",
-                        "deny",
-                        root,
-                        f"{root}/shards/{shard_dir.name}/",
-                        f"root mismatch: chart.root='{chart_root}', manifest.root_id='{manifest_root}'",
-                    )
-                )
+                result.add(Finding(
+                    "CVG-005",
+                    "deny",
+                    root,
+                    f"{root}/shards/{shard_dir.name}/",
+                    f"root mismatch: chart.root='{chart_root}', "
+                    f"manifest.root_id='{manifest_root}'",
+                ))
 
             # Check shard_id consistency
             chart_shard = chart_data.get("shard", "")
             manifest_shard = manifest_data.get("shard_id", "")
             if chart_shard and manifest_shard and chart_shard != manifest_shard:
-                result.add(
-                    Finding(
-                        "CVG-005",
-                        "deny",
-                        root,
-                        f"{root}/shards/{shard_dir.name}/",
-                        f"shard id mismatch: chart.shard='{chart_shard}', manifest.shard_id='{manifest_shard}'",
-                    )
-                )
+                result.add(Finding(
+                    "CVG-005",
+                    "deny",
+                    root,
+                    f"{root}/shards/{shard_dir.name}/",
+                    f"shard id mismatch: chart.shard='{chart_shard}', "
+                    f"manifest.shard_id='{manifest_shard}'",
+                ))
 
             # Check status consistency
             chart_status = chart_data.get("status", "")
@@ -503,16 +462,14 @@ def check_chart_manifest_alignment(
                 if isinstance(chart_caps, dict):
                     must_caps = chart_caps.get("must", [])
                     if must_caps and manifest_stack == "generated":
-                        result.add(
-                            Finding(
-                                "CVG-005",
-                                "info",
-                                root,
-                                f"{root}/shards/{shard_dir.name}/",
-                                f"chart defines {len(must_caps)} MUST capabilities "
-                                f"but manifest implementation_stack='generated'",
-                            )
-                        )
+                        result.add(Finding(
+                            "CVG-005",
+                            "info",
+                            root,
+                            f"{root}/shards/{shard_dir.name}/",
+                            f"chart defines {len(must_caps)} MUST capabilities "
+                            f"but manifest implementation_stack='generated'",
+                        ))
 
 
 # -----------------------------------------------------------------------
@@ -533,15 +490,13 @@ def check_registry_convergence(
             continue
 
         if root not in registry_modules:
-            result.add(
-                Finding(
-                    "CVG-006",
-                    "deny",
-                    root,
-                    REGISTRY_MANIFEST_PATH,
-                    f"root '{root}' has module.yaml but no entry in registry_manifest.yaml",
-                )
-            )
+            result.add(Finding(
+                "CVG-006",
+                "deny",
+                root,
+                REGISTRY_MANIFEST_PATH,
+                f"root '{root}' has module.yaml but no entry in registry_manifest.yaml",
+            ))
             continue
 
         reg_entry = registry_modules[root]
@@ -550,43 +505,40 @@ def check_registry_convergence(
         mod_status = mod_data.get("status", "")
         reg_status = reg_entry.get("status", "")
         if mod_status and reg_status and mod_status != reg_status:
-            result.add(
-                Finding(
-                    "CVG-006",
-                    "deny",
-                    root,
-                    f"{root}/module.yaml",
-                    f"status mismatch: module.yaml='{mod_status}', registry='{reg_status}'",
-                )
-            )
+            result.add(Finding(
+                "CVG-006",
+                "deny",
+                root,
+                f"{root}/module.yaml",
+                f"status mismatch: module.yaml='{mod_status}', "
+                f"registry='{reg_status}'",
+            ))
 
         # Version
         mod_ver = str(mod_data.get("version", ""))
         reg_ver = str(reg_entry.get("version", ""))
         if mod_ver and reg_ver and mod_ver != reg_ver:
-            result.add(
-                Finding(
-                    "CVG-006",
-                    "warn",
-                    root,
-                    f"{root}/module.yaml",
-                    f"version mismatch: module.yaml='{mod_ver}', registry='{reg_ver}'",
-                )
-            )
+            result.add(Finding(
+                "CVG-006",
+                "warn",
+                root,
+                f"{root}/module.yaml",
+                f"version mismatch: module.yaml='{mod_ver}', "
+                f"registry='{reg_ver}'",
+            ))
 
         # Name
         mod_name = mod_data.get("name", "")
         reg_name = reg_entry.get("name", "")
         if mod_name and reg_name and mod_name != reg_name:
-            result.add(
-                Finding(
-                    "CVG-006",
-                    "warn",
-                    root,
-                    f"{root}/module.yaml",
-                    f"name mismatch: module.yaml='{mod_name}', registry='{reg_name}'",
-                )
-            )
+            result.add(Finding(
+                "CVG-006",
+                "warn",
+                root,
+                f"{root}/module.yaml",
+                f"name mismatch: module.yaml='{mod_name}', "
+                f"registry='{reg_name}'",
+            ))
 
 
 # -----------------------------------------------------------------------
@@ -598,29 +550,25 @@ def check_task_root_paths(
 ) -> None:
     tasks_dir = repo / TASKS_DIR
     if not tasks_dir.is_dir():
-        result.add(
-            Finding(
-                "CVG-007",
-                "warn",
-                "24_meta_orchestration",
-                TASKS_DIR,
-                "registry tasks directory does not exist",
-            )
-        )
+        result.add(Finding(
+            "CVG-007",
+            "warn",
+            "24_meta_orchestration",
+            TASKS_DIR,
+            "registry tasks directory does not exist",
+        ))
         return
 
     for task_file in sorted(tasks_dir.glob("TASK_CHART_MANIFEST_BACKFILL_*.json")):
         data, err = _load_json_safe(task_file)
         if err or not isinstance(data, dict):
-            result.add(
-                Finding(
-                    "CVG-007",
-                    "warn",
-                    "24_meta_orchestration",
-                    str(task_file.relative_to(repo)),
-                    f"cannot parse task file: {err}",
-                )
-            )
+            result.add(Finding(
+                "CVG-007",
+                "warn",
+                "24_meta_orchestration",
+                str(task_file.relative_to(repo)),
+                f"cannot parse task file: {err}",
+            ))
             continue
 
         scopes = data.get("scope_paths_allow", [])
@@ -632,26 +580,22 @@ def check_task_root_paths(
         root_name = first_scope.split("/")[0] if "/" in first_scope else ""
 
         if root_name and root_name not in ROOTS_24:
-            result.add(
-                Finding(
-                    "CVG-007",
-                    "deny",
-                    "24_meta_orchestration",
-                    str(task_file.relative_to(repo)),
-                    f"task references unknown root '{root_name}'",
-                )
-            )
+            result.add(Finding(
+                "CVG-007",
+                "deny",
+                "24_meta_orchestration",
+                str(task_file.relative_to(repo)),
+                f"task references unknown root '{root_name}'",
+            ))
 
         if root_name and not (repo / root_name).is_dir():
-            result.add(
-                Finding(
-                    "CVG-007",
-                    "deny",
-                    "24_meta_orchestration",
-                    str(task_file.relative_to(repo)),
-                    f"task scope references non-existent directory '{root_name}'",
-                )
-            )
+            result.add(Finding(
+                "CVG-007",
+                "deny",
+                "24_meta_orchestration",
+                str(task_file.relative_to(repo)),
+                f"task scope references non-existent directory '{root_name}'",
+            ))
 
 
 # -----------------------------------------------------------------------
@@ -666,53 +610,45 @@ def check_yaml_wellformedness(
             fpath = repo / root / fname
             if not fpath.exists():
                 if fname == "module.yaml":
-                    result.add(
-                        Finding(
-                            "CVG-008",
-                            "deny",
-                            root,
-                            f"{root}/{fname}",
-                            f"{fname} does not exist",
-                        )
-                    )
+                    result.add(Finding(
+                        "CVG-008",
+                        "deny",
+                        root,
+                        f"{root}/{fname}",
+                        f"{fname} does not exist",
+                    ))
                 elif fname == "manifest.yaml":
-                    result.add(
-                        Finding(
-                            "CVG-008",
-                            "warn",
-                            root,
-                            f"{root}/{fname}",
-                            f"{fname} does not exist",
-                        )
-                    )
+                    result.add(Finding(
+                        "CVG-008",
+                        "warn",
+                        root,
+                        f"{root}/{fname}",
+                        f"{fname} does not exist",
+                    ))
                 continue
 
             raw = fpath.read_bytes()
 
             # BOM check
             if raw.startswith(b"\xef\xbb\xbf"):
-                result.add(
-                    Finding(
-                        "CVG-008",
-                        "warn",
-                        root,
-                        f"{root}/{fname}",
-                        f"{fname} contains UTF-8 BOM (should be plain UTF-8)",
-                    )
-                )
+                result.add(Finding(
+                    "CVG-008",
+                    "warn",
+                    root,
+                    f"{root}/{fname}",
+                    f"{fname} contains UTF-8 BOM (should be plain UTF-8)",
+                ))
 
             # Parse check (using utf-8-sig to handle BOM gracefully)
             _, parse_err = _load_yaml_safe(fpath)
             if parse_err:
-                result.add(
-                    Finding(
-                        "CVG-008",
-                        "deny",
-                        root,
-                        f"{root}/{fname}",
-                        f"{fname} {parse_err}",
-                    )
-                )
+                result.add(Finding(
+                    "CVG-008",
+                    "deny",
+                    root,
+                    f"{root}/{fname}",
+                    f"{fname} {parse_err}",
+                ))
 
 
 # -----------------------------------------------------------------------
@@ -747,25 +683,24 @@ def check_governance_rules_convergence(
         man_set = set(man_rules)
 
         if mod_set and man_set and mod_set != man_set:
-            result.add(
-                Finding(
-                    "CVG-009",
-                    "warn",
-                    root,
-                    f"{root}/",
-                    f"governance_rules mismatch: module.yaml={sorted(mod_set)}, manifest.yaml={sorted(man_set)}",
-                )
-            )
+            result.add(Finding(
+                "CVG-009",
+                "warn",
+                root,
+                f"{root}/",
+                f"governance_rules mismatch: "
+                f"module.yaml={sorted(mod_set)}, "
+                f"manifest.yaml={sorted(man_set)}",
+            ))
         elif mod_set and not man_set:
-            result.add(
-                Finding(
-                    "CVG-009",
-                    "info",
-                    root,
-                    f"{root}/manifest.yaml",
-                    f"module.yaml has governance_rules {sorted(mod_set)} but manifest.yaml has empty governance_rules",
-                )
-            )
+            result.add(Finding(
+                "CVG-009",
+                "info",
+                root,
+                f"{root}/manifest.yaml",
+                f"module.yaml has governance_rules {sorted(mod_set)} "
+                f"but manifest.yaml has empty governance_rules",
+            ))
 
 
 # -----------------------------------------------------------------------
@@ -780,15 +715,13 @@ def run_convergence(repo: Path) -> ConvergenceResult:
     if reg_path.exists():
         reg_data, reg_err = _load_yaml_safe(reg_path)
         if reg_err:
-            result.add(
-                Finding(
-                    "CVG-006",
-                    "deny",
-                    "24_meta_orchestration",
-                    REGISTRY_MANIFEST_PATH,
-                    f"cannot parse registry_manifest.yaml: {reg_err}",
-                )
-            )
+            result.add(Finding(
+                "CVG-006",
+                "deny",
+                "24_meta_orchestration",
+                REGISTRY_MANIFEST_PATH,
+                f"cannot parse registry_manifest.yaml: {reg_err}",
+            ))
         elif isinstance(reg_data, dict):
             modules_list = reg_data.get("modules", [])
             if isinstance(modules_list, list):
@@ -812,7 +745,12 @@ def run_convergence(repo: Path) -> ConvergenceResult:
 
 
 def generate_report(result: ConvergenceResult, repo: Path) -> dict[str, Any]:
-    ts = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    ts = (
+        datetime.now(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
     return {
         "audit_type": "convergence_check",
         "timestamp_utc": ts,
@@ -862,12 +800,10 @@ def main() -> int:
         print(json.dumps(report, indent=2, ensure_ascii=False))
     else:
         print(f"Convergence Check: {result.overall}")
-        print(
-            f"  Findings: {len(result.findings)} "
-            f"(deny={report['deny_count']}, "
-            f"warn={report['warn_count']}, "
-            f"info={report['info_count']})"
-        )
+        print(f"  Findings: {len(result.findings)} "
+              f"(deny={report['deny_count']}, "
+              f"warn={report['warn_count']}, "
+              f"info={report['info_count']})")
         print(f"  Evidence Hash: {report['evidence_hash'][:16]}...")
         print()
         print("Per-root results:")

@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Dependencies: 11_test_simulation/tests_compliance/test_report_bus.py,
-#   12_tooling/cli/evidence_chain.py, 12_tooling/cli/run_all_gates.py,
-#   12_tooling/ops/evidence_chain/evidence_chain_lib.py
 """
 SSID Report Bus v2 — Event-store model with deterministic rebuild.
 
@@ -17,7 +14,6 @@ Commands:
 
 Output contract: PASS/FAIL + findings only. No scores. Deterministic JSON.
 """
-
 from __future__ import annotations
 
 import argparse
@@ -39,21 +35,20 @@ LEGACY_ARCHIVE = PROJECT_ROOT / "02_audit_logging" / "archives" / "report_bus_le
 
 VALID_REPOS = ("SSID", "SSID-EMS", "SSID-docs", "SSID-open-core", "SSID-orchestrator")
 VALID_EVENT_TYPES = (
-    "merge_recorded",
-    "agent_run_backfilled",
-    "evidence_imported",
-    "task_linked",
-    "seal_merge",
-    "docs_publish_merge",
-    "ops",
-    "legacy_migrated",
+    "merge_recorded", "agent_run_backfilled", "evidence_imported",
+    "task_linked", "seal_merge", "docs_publish_merge", "ops", "legacy_migrated",
 )
 VALID_ORIGINS = ("observed", "constructed", "imported")
 VALID_SEVERITIES = ("info", "warn", "error", "critical")
 
 
 def _utc_now() -> str:
-    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return (
+        dt.datetime.now(dt.timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
 
 def compute_event_id(event: dict[str, Any]) -> str:
@@ -66,10 +61,7 @@ def get_head_sha(repo_root: Path) -> str:
     try:
         proc = subprocess.run(
             ["git", "rev-parse", "--short", "HEAD"],
-            cwd=str(repo_root),
-            capture_output=True,
-            text=True,
-            timeout=5,
+            cwd=str(repo_root), capture_output=True, text=True, timeout=5,
         )
         return proc.stdout.strip() or "unknown"
     except Exception:
@@ -172,9 +164,7 @@ def rebuild_jsonl(events_dir: Path | None = None, output_path: Path | None = Non
 
 
 def _map_legacy_kind_to_event_type(kind: str) -> str:
-    return {"seal_merge": "seal_merge", "docs_publish_merge": "docs_publish_merge", "ops": "ops"}.get(
-        kind, "legacy_migrated"
-    )
+    return {"seal_merge": "seal_merge", "docs_publish_merge": "docs_publish_merge", "ops": "ops"}.get(kind, "legacy_migrated")
 
 
 def migrate_legacy_events(
@@ -220,17 +210,12 @@ def ingest_e2e_run(path: Path, sha: str | None = None) -> list[dict[str, Any]]:
     data = json.loads(path.read_text(encoding="utf-8"))
     run_sha = sha or data.get("git_sha", "unknown")
     status = data.get("status", "unknown")
-    return [
-        make_event(
-            event_type="evidence_imported",
-            repo="SSID",
-            sha=run_sha,
-            origin="imported",
-            severity="info" if status == "PASS" else "error",
-            summary=f"E2E run {data.get('run_id', '?')}: {status}",
-            payload={"run_id": data.get("run_id"), "status": status, "source_file": path.name},
-        )
-    ]
+    return [make_event(
+        event_type="evidence_imported", repo="SSID", sha=run_sha, origin="imported",
+        severity="info" if status == "PASS" else "error",
+        summary=f"E2E run {data.get('run_id', '?')}: {status}",
+        payload={"run_id": data.get("run_id"), "status": status, "source_file": path.name},
+    )]
 
 
 def ingest_run_log(path: Path, sha: str | None = None) -> list[dict[str, Any]]:
@@ -239,28 +224,19 @@ def ingest_run_log(path: Path, sha: str | None = None) -> list[dict[str, Any]]:
         if not line.strip():
             continue
         entry = json.loads(line)
-        events.append(
-            make_event(
-                event_type="evidence_imported",
-                repo="SSID",
-                sha=sha or entry.get("sha", "unknown"),
-                origin="imported",
-                severity="info",
-                summary=f"Run log: {entry.get('event', 'unknown')}",
-                payload=entry,
-            )
-        )
+        events.append(make_event(
+            event_type="evidence_imported", repo="SSID",
+            sha=sha or entry.get("sha", "unknown"), origin="imported",
+            severity="info", summary=f"Run log: {entry.get('event', 'unknown')}",
+            payload=entry,
+        ))
     return events
 
 
 def _cli_append(args: argparse.Namespace) -> int:
     event = make_event(
-        event_type=args.event_type,
-        repo=args.repo,
-        sha=args.sha,
-        origin=args.origin,
-        severity=args.severity,
-        summary=args.summary,
+        event_type=args.event_type, repo=args.repo, sha=args.sha,
+        origin=args.origin, severity=args.severity, summary=args.summary,
         payload=json.loads(args.payload) if args.payload else {},
     )
     try:
@@ -324,42 +300,6 @@ def _cli_ingest(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cli_status(args: argparse.Namespace) -> int:
-    """Show current report bus status: event count, JSONL state, latest event."""
-    events = load_all_events()
-    derived_exists = DERIVED_JSONL.is_file()
-    legacy_exists = LEGACY_INBOX.is_file()
-    status = {
-        "events_dir": str(EVENTS_DIR),
-        "events_count": len(events),
-        "derived_jsonl": str(DERIVED_JSONL),
-        "derived_jsonl_exists": derived_exists,
-        "legacy_inbox": str(LEGACY_INBOX),
-        "legacy_inbox_exists": legacy_exists,
-    }
-    if events:
-        latest = events[-1]
-        status["latest_event_id"] = latest.get("event_id", "")[:16]
-        status["latest_observed_utc"] = latest.get("observed_utc", "")
-        status["latest_summary"] = latest.get("summary", "")
-    if derived_exists:
-        lines = DERIVED_JSONL.read_text(encoding="utf-8").strip().splitlines()
-        status["derived_jsonl_lines"] = len(lines)
-    if args.json:
-        print(json.dumps(status, indent=2))
-    else:
-        print(f"Events directory:  {status['events_dir']}")
-        print(f"Event files:       {status['events_count']}")
-        print(f"Derived JSONL:     {'exists' if derived_exists else 'MISSING'}")
-        if derived_exists:
-            print(f"  Lines:           {status.get('derived_jsonl_lines', 0)}")
-        print(f"Legacy inbox:      {'exists' if legacy_exists else 'absent'}")
-        if events:
-            print(f"Latest event:      {status.get('latest_event_id', '')} @ {status.get('latest_observed_utc', '')}")
-            print(f"  Summary:         {status.get('latest_summary', '')}")
-    return 0
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="report_bus",
@@ -367,27 +307,17 @@ def main() -> int:
     )
     sub = parser.add_subparsers(dest="command")
 
-    # emit (v2 alias) and append (legacy) share the same handler
-    def _add_emit_args(p: argparse.ArgumentParser) -> None:
-        p.add_argument("--repo", required=True, choices=VALID_REPOS)
-        p.add_argument("--sha", required=True)
-        p.add_argument("--event-type", required=True, choices=VALID_EVENT_TYPES)
-        p.add_argument("--origin", required=True, choices=VALID_ORIGINS)
-        p.add_argument("--severity", required=True, choices=VALID_SEVERITIES)
-        p.add_argument("--summary", required=True)
-        p.add_argument("--payload", default=None, help="JSON object string")
+    ap = sub.add_parser("append", help="Append a single event.")
+    ap.add_argument("--repo", required=True, choices=VALID_REPOS)
+    ap.add_argument("--sha", required=True)
+    ap.add_argument("--event-type", required=True, choices=VALID_EVENT_TYPES)
+    ap.add_argument("--origin", required=True, choices=VALID_ORIGINS)
+    ap.add_argument("--severity", required=True, choices=VALID_SEVERITIES)
+    ap.add_argument("--summary", required=True)
+    ap.add_argument("--payload", default=None, help="JSON object string")
 
-    ep = sub.add_parser("emit", help="Emit a single event (writes 1 event + rebuilds JSONL).")
-    _add_emit_args(ep)
-
-    ap = sub.add_parser("append", help="Append a single event (legacy alias for emit).")
-    _add_emit_args(ap)
-
-    rp = sub.add_parser("rebuild", help="Rebuild report_bus.jsonl from events/ (idempotent).")
+    rp = sub.add_parser("rebuild", help="Rebuild report_bus.jsonl from events/.")
     rp.add_argument("--verify", action="store_true", help="Verify idempotency")
-
-    sp = sub.add_parser("status", help="Show report bus status: event count, JSONL state, latest event.")
-    sp.add_argument("--json", action="store_true", help="Output as JSON")
 
     mp = sub.add_parser("migrate-legacy", help="Migrate legacy JSONL to event store.")
     mp.add_argument("--write", action="store_true", help="Actually write files")
@@ -398,14 +328,7 @@ def main() -> int:
     ip.add_argument("--sha", default=None, help="Override SHA for all events")
 
     args = parser.parse_args()
-    cmd_map = {
-        "emit": _cli_append,
-        "append": _cli_append,
-        "rebuild": _cli_rebuild,
-        "status": _cli_status,
-        "migrate-legacy": _cli_migrate_legacy,
-        "ingest": _cli_ingest,
-    }
+    cmd_map = {"append": _cli_append, "rebuild": _cli_rebuild, "migrate-legacy": _cli_migrate_legacy, "ingest": _cli_ingest}
     handler = cmd_map.get(args.command)
     if handler:
         return handler(args)

@@ -8,7 +8,6 @@ artifacts from the canonical repo within allowed export scopes.
 Produces: promotion_findings.json, promotion_report.md
 Exit codes: 0=PASS, 1=WARN, 2=DENY, 3=ERROR
 """
-
 from __future__ import annotations
 
 import argparse
@@ -18,10 +17,10 @@ import os
 import re
 import subprocess
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from fnmatch import fnmatch
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional, Set
 from uuid import uuid4
 
 # ---------------------------------------------------------------------------
@@ -66,20 +65,8 @@ _SENSITIVE_PATTERNS: list[re.Pattern[str]] = [
 
 # File extensions to scan for sensitive content
 _SCANNABLE_EXTENSIONS: set[str] = {
-    ".py",
-    ".json",
-    ".yaml",
-    ".yml",
-    ".md",
-    ".txt",
-    ".log",
-    ".cfg",
-    ".ini",
-    ".toml",
-    ".env",
-    ".sh",
-    ".ps1",
-    ".rego",
+    ".py", ".json", ".yaml", ".yml", ".md", ".txt", ".log",
+    ".cfg", ".ini", ".toml", ".env", ".sh", ".ps1", ".rego",
 }
 
 REGISTRY_REL = "24_meta_orchestration/registry/sot_registry.json"
@@ -94,7 +81,6 @@ EXIT_ERROR = 3
 # ---------------------------------------------------------------------------
 # Normalization (inlined — cross-repo import not possible)
 # ---------------------------------------------------------------------------
-
 
 def _normalize_hash(raw: str) -> str:
     """Strip 'sha256:' prefix if present, return lowercase hex."""
@@ -126,7 +112,6 @@ def _finding_id(finding_class: str, path: str) -> str:
 # Helpers
 # ---------------------------------------------------------------------------
 
-
 def _collect_files(root: Path) -> list[str]:
     """Collect all files under root as POSIX-style relative paths.
 
@@ -148,7 +133,10 @@ def _collect_files(root: Path) -> list[str]:
 
 def _is_in_export_scope(path: str) -> bool:
     """Check if path falls within Phase-1 export-allowed scopes."""
-    return any(path.startswith(scope) for scope in EXPORT_ALLOW_SCOPES)
+    for scope in EXPORT_ALLOW_SCOPES:
+        if path.startswith(scope):
+            return True
+    return False
 
 
 def _matches_forbidden_pattern(path: str) -> str | None:
@@ -190,13 +178,12 @@ def _scan_sensitive_content(filepath: Path) -> list[tuple[int, str]]:
 # Core promotion logic
 # ---------------------------------------------------------------------------
 
-
 def run_promotion_gate(
     canonical_root: Path,
     derivative_root: Path,
     output_dir: Path,
     strict: bool = False,
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """Run cross-repo promotion gate. Returns structured result.
 
     Args:
@@ -208,40 +195,36 @@ def run_promotion_gate(
     Returns:
         dict with gate, status, summary, findings.
     """
-    ts = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    findings: list[dict[str, Any]] = []
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    findings: List[Dict[str, Any]] = []
 
     # --- Pre-flight: verify both repos exist ---
     if not canonical_root.is_dir():
-        findings.append(
-            {
-                "id": _finding_id("repo_missing", str(canonical_root)),
-                "class": "repo_missing",
-                "severity": "deny",
-                "source": "promotion_gate",
-                "path": str(canonical_root),
-                "details": f"Canonical repo not found: {canonical_root}",
-                "timestamp_utc": ts,
-                "canonical_repo": str(canonical_root),
-                "derivative_repo": str(derivative_root),
-            }
-        )
+        findings.append({
+            "id": _finding_id("repo_missing", str(canonical_root)),
+            "class": "repo_missing",
+            "severity": "deny",
+            "source": "promotion_gate",
+            "path": str(canonical_root),
+            "details": f"Canonical repo not found: {canonical_root}",
+            "timestamp_utc": ts,
+            "canonical_repo": str(canonical_root),
+            "derivative_repo": str(derivative_root),
+        })
         return _build_result(ts, canonical_root, derivative_root, findings)
 
     if not derivative_root.is_dir():
-        findings.append(
-            {
-                "id": _finding_id("repo_missing", str(derivative_root)),
-                "class": "repo_missing",
-                "severity": "deny",
-                "source": "promotion_gate",
-                "path": str(derivative_root),
-                "details": f"Derivative repo not found: {derivative_root}",
-                "timestamp_utc": ts,
-                "canonical_repo": str(canonical_root),
-                "derivative_repo": str(derivative_root),
-            }
-        )
+        findings.append({
+            "id": _finding_id("repo_missing", str(derivative_root)),
+            "class": "repo_missing",
+            "severity": "deny",
+            "source": "promotion_gate",
+            "path": str(derivative_root),
+            "details": f"Derivative repo not found: {derivative_root}",
+            "timestamp_utc": ts,
+            "canonical_repo": str(canonical_root),
+            "derivative_repo": str(derivative_root),
+        })
         return _build_result(ts, canonical_root, derivative_root, findings)
 
     # Collect file inventories
@@ -249,12 +232,14 @@ def run_promotion_gate(
     derivative_files: set[str] = set(_collect_files(derivative_root))
 
     # Load canonical registry (if available) for registry-link checks
-    canonical_registry: dict[str, Any] | None = None
+    canonical_registry: Dict[str, Any] | None = None
     registry_paths: set[str] = set()
     registry_path = canonical_root / REGISTRY_REL
     if registry_path.is_file():
         try:
-            canonical_registry = json.loads(registry_path.read_text(encoding="utf-8"))
+            canonical_registry = json.loads(
+                registry_path.read_text(encoding="utf-8")
+            )
             for art in canonical_registry.get("roots", {}).get("sot_artifacts", []):
                 registry_paths.add(art.get("path", ""))
         except (json.JSONDecodeError, OSError):
@@ -268,32 +253,27 @@ def run_promotion_gate(
         if not _is_in_export_scope(dpath):
             # Exclude common root-level files that are expected in any repo
             root_level_allow = {
-                "README.md",
-                "LICENSE",
-                "CONTRIBUTING.md",
-                "pytest.ini",
-                "setup.py",
-                "setup.cfg",
-                "pyproject.toml",
-                "requirements.txt",
-                ".gitignore",
-                ".gitattributes",
+                "README.md", "LICENSE", "CONTRIBUTING.md",
+                "pytest.ini", "setup.py", "setup.cfg",
+                "pyproject.toml", "requirements.txt",
+                ".gitignore", ".gitattributes",
             }
             if dpath in root_level_allow:
                 continue
-            findings.append(
-                {
-                    "id": _finding_id("export_scope_violation", dpath),
-                    "class": "export_scope_violation",
-                    "severity": "deny",
-                    "source": "promotion_gate",
-                    "path": dpath,
-                    "details": (f"Derivative file '{dpath}' is outside allowed export scopes: {EXPORT_ALLOW_SCOPES}"),
-                    "timestamp_utc": ts,
-                    "canonical_repo": str(canonical_root),
-                    "derivative_repo": str(derivative_root),
-                }
-            )
+            findings.append({
+                "id": _finding_id("export_scope_violation", dpath),
+                "class": "export_scope_violation",
+                "severity": "deny",
+                "source": "promotion_gate",
+                "path": dpath,
+                "details": (
+                    f"Derivative file '{dpath}' is outside allowed "
+                    f"export scopes: {EXPORT_ALLOW_SCOPES}"
+                ),
+                "timestamp_utc": ts,
+                "canonical_repo": str(canonical_root),
+                "derivative_repo": str(derivative_root),
+            })
 
     # -----------------------------------------------------------------------
     # Rule 3: forbidden_public_artifact
@@ -302,19 +282,20 @@ def run_promotion_gate(
     for dpath in sorted(derivative_files):
         matched_pattern = _matches_forbidden_pattern(dpath)
         if matched_pattern:
-            findings.append(
-                {
-                    "id": _finding_id("forbidden_public_artifact", dpath),
-                    "class": "forbidden_public_artifact",
-                    "severity": "deny",
-                    "source": "promotion_gate",
-                    "path": dpath,
-                    "details": (f"Forbidden artifact in derivative: '{dpath}' matches pattern '{matched_pattern}'"),
-                    "timestamp_utc": ts,
-                    "canonical_repo": str(canonical_root),
-                    "derivative_repo": str(derivative_root),
-                }
-            )
+            findings.append({
+                "id": _finding_id("forbidden_public_artifact", dpath),
+                "class": "forbidden_public_artifact",
+                "severity": "deny",
+                "source": "promotion_gate",
+                "path": dpath,
+                "details": (
+                    f"Forbidden artifact in derivative: '{dpath}' "
+                    f"matches pattern '{matched_pattern}'"
+                ),
+                "timestamp_utc": ts,
+                "canonical_repo": str(canonical_root),
+                "derivative_repo": str(derivative_root),
+            })
 
     # -----------------------------------------------------------------------
     # Rule 2: unexpected_derivative_artifact
@@ -323,32 +304,27 @@ def run_promotion_gate(
     for dpath in sorted(derivative_files):
         if dpath not in canonical_files:
             root_level_allow = {
-                "README.md",
-                "LICENSE",
-                "CONTRIBUTING.md",
-                "pytest.ini",
-                "setup.py",
-                "setup.cfg",
-                "pyproject.toml",
-                "requirements.txt",
-                ".gitignore",
-                ".gitattributes",
+                "README.md", "LICENSE", "CONTRIBUTING.md",
+                "pytest.ini", "setup.py", "setup.cfg",
+                "pyproject.toml", "requirements.txt",
+                ".gitignore", ".gitattributes",
             }
             if dpath in root_level_allow:
                 continue
-            findings.append(
-                {
-                    "id": _finding_id("unexpected_derivative_artifact", dpath),
-                    "class": "unexpected_derivative_artifact",
-                    "severity": "deny",
-                    "source": "promotion_gate",
-                    "path": dpath,
-                    "details": (f"File '{dpath}' exists in derivative but not in canonical repo"),
-                    "timestamp_utc": ts,
-                    "canonical_repo": str(canonical_root),
-                    "derivative_repo": str(derivative_root),
-                }
-            )
+            findings.append({
+                "id": _finding_id("unexpected_derivative_artifact", dpath),
+                "class": "unexpected_derivative_artifact",
+                "severity": "deny",
+                "source": "promotion_gate",
+                "path": dpath,
+                "details": (
+                    f"File '{dpath}' exists in derivative but not "
+                    f"in canonical repo"
+                ),
+                "timestamp_utc": ts,
+                "canonical_repo": str(canonical_root),
+                "derivative_repo": str(derivative_root),
+            })
 
     # -----------------------------------------------------------------------
     # Rule 4: canonical_derivative_hash_drift
@@ -359,23 +335,21 @@ def run_promotion_gate(
         canonical_hash = _sha256_file(canonical_root / cpath)
         derivative_hash = _sha256_file(derivative_root / cpath)
         if canonical_hash and derivative_hash and canonical_hash != derivative_hash:
-            findings.append(
-                {
-                    "id": _finding_id("canonical_derivative_hash_drift", cpath),
-                    "class": "canonical_derivative_hash_drift",
-                    "severity": "deny",
-                    "source": "promotion_gate",
-                    "path": cpath,
-                    "details": (
-                        f"Hash drift for '{cpath}': "
-                        f"canonical={canonical_hash[:16]}... "
-                        f"derivative={derivative_hash[:16]}..."
-                    ),
-                    "timestamp_utc": ts,
-                    "canonical_repo": str(canonical_root),
-                    "derivative_repo": str(derivative_root),
-                }
-            )
+            findings.append({
+                "id": _finding_id("canonical_derivative_hash_drift", cpath),
+                "class": "canonical_derivative_hash_drift",
+                "severity": "deny",
+                "source": "promotion_gate",
+                "path": cpath,
+                "details": (
+                    f"Hash drift for '{cpath}': "
+                    f"canonical={canonical_hash[:16]}... "
+                    f"derivative={derivative_hash[:16]}..."
+                ),
+                "timestamp_utc": ts,
+                "canonical_repo": str(canonical_root),
+                "derivative_repo": str(derivative_root),
+            })
 
     # -----------------------------------------------------------------------
     # Rule 5: missing_registry_link
@@ -389,39 +363,34 @@ def run_promotion_gate(
                 # Only flag files that are in export scope and common
                 # Root-level files are exempt
                 root_level_allow = {
-                    "README.md",
-                    "LICENSE",
-                    "CONTRIBUTING.md",
-                    "pytest.ini",
-                    "setup.py",
-                    "setup.cfg",
-                    "pyproject.toml",
-                    "requirements.txt",
-                    ".gitignore",
-                    ".gitattributes",
+                    "README.md", "LICENSE", "CONTRIBUTING.md",
+                    "pytest.ini", "setup.py", "setup.cfg",
+                    "pyproject.toml", "requirements.txt",
+                    ".gitignore", ".gitattributes",
                 }
                 if dpath in root_level_allow:
                     continue
-                findings.append(
-                    {
-                        "id": _finding_id("missing_registry_link", dpath),
-                        "class": "missing_registry_link",
-                        "severity": "deny",
-                        "source": "promotion_gate",
-                        "path": dpath,
-                        "details": (f"Derivative artifact '{dpath}' has no entry in canonical sot_registry.json"),
-                        "timestamp_utc": ts,
-                        "canonical_repo": str(canonical_root),
-                        "derivative_repo": str(derivative_root),
-                    }
-                )
+                findings.append({
+                    "id": _finding_id("missing_registry_link", dpath),
+                    "class": "missing_registry_link",
+                    "severity": "deny",
+                    "source": "promotion_gate",
+                    "path": dpath,
+                    "details": (
+                        f"Derivative artifact '{dpath}' has no entry "
+                        f"in canonical sot_registry.json"
+                    ),
+                    "timestamp_utc": ts,
+                    "canonical_repo": str(canonical_root),
+                    "derivative_repo": str(derivative_root),
+                })
 
     # -----------------------------------------------------------------------
     # Rule 6: missing_evidence_link
     # Derivative artifact without evidence_ref in canonical registry
     # -----------------------------------------------------------------------
     if canonical_registry is not None:
-        registry_by_path: dict[str, dict[str, Any]] = {}
+        registry_by_path: Dict[str, Dict[str, Any]] = {}
         for art in canonical_registry.get("roots", {}).get("sot_artifacts", []):
             registry_by_path[art.get("path", "")] = art
 
@@ -429,22 +398,20 @@ def run_promotion_gate(
             if dpath in registry_by_path:
                 art = registry_by_path[dpath]
                 if "evidence_ref" not in art:
-                    findings.append(
-                        {
-                            "id": _finding_id("missing_evidence_link", dpath),
-                            "class": "missing_evidence_link",
-                            "severity": "deny",
-                            "source": "promotion_gate",
-                            "path": dpath,
-                            "details": (
-                                f"Artifact '{art.get('name', dpath)}' in derivative "
-                                f"has no evidence_ref in canonical registry"
-                            ),
-                            "timestamp_utc": ts,
-                            "canonical_repo": str(canonical_root),
-                            "derivative_repo": str(derivative_root),
-                        }
-                    )
+                    findings.append({
+                        "id": _finding_id("missing_evidence_link", dpath),
+                        "class": "missing_evidence_link",
+                        "severity": "deny",
+                        "source": "promotion_gate",
+                        "path": dpath,
+                        "details": (
+                            f"Artifact '{art.get('name', dpath)}' in derivative "
+                            f"has no evidence_ref in canonical registry"
+                        ),
+                        "timestamp_utc": ts,
+                        "canonical_repo": str(canonical_root),
+                        "derivative_repo": str(derivative_root),
+                    })
 
                 # ---------------------------------------------------------------
                 # Rule 7: missing_source_of_truth_ref
@@ -455,24 +422,24 @@ def run_promotion_gate(
                     "23_compliance/policies/",
                     "24_meta_orchestration/registry/",
                 ]
-                needs_sot_ref = any(dpath.startswith(p) for p in sot_ref_prefixes)
+                needs_sot_ref = any(
+                    dpath.startswith(p) for p in sot_ref_prefixes
+                )
                 if needs_sot_ref and "source_of_truth_ref" not in art:
-                    findings.append(
-                        {
-                            "id": _finding_id("missing_source_of_truth_ref", dpath),
-                            "class": "missing_source_of_truth_ref",
-                            "severity": "deny",
-                            "source": "promotion_gate",
-                            "path": dpath,
-                            "details": (
-                                f"SoT artifact '{art.get('name', dpath)}' exported "
-                                f"to derivative without source_of_truth_ref"
-                            ),
-                            "timestamp_utc": ts,
-                            "canonical_repo": str(canonical_root),
-                            "derivative_repo": str(derivative_root),
-                        }
-                    )
+                    findings.append({
+                        "id": _finding_id("missing_source_of_truth_ref", dpath),
+                        "class": "missing_source_of_truth_ref",
+                        "severity": "deny",
+                        "source": "promotion_gate",
+                        "path": dpath,
+                        "details": (
+                            f"SoT artifact '{art.get('name', dpath)}' exported "
+                            f"to derivative without source_of_truth_ref"
+                        ),
+                        "timestamp_utc": ts,
+                        "canonical_repo": str(canonical_root),
+                        "derivative_repo": str(derivative_root),
+                    })
 
     # -----------------------------------------------------------------------
     # Rule 9: unsanitized_artifact
@@ -482,22 +449,23 @@ def run_promotion_gate(
         full_path = derivative_root / dpath
         hits = _scan_sensitive_content(full_path)
         if hits:
-            hit_summary = "; ".join(f"L{ln}: {pname}" for ln, pname in hits[:5])
-            findings.append(
-                {
-                    "id": _finding_id("unsanitized_artifact", dpath),
-                    "class": "unsanitized_artifact",
-                    "severity": "deny",
-                    "source": "promotion_gate",
-                    "path": dpath,
-                    "details": (
-                        f"Sensitive content detected in derivative '{dpath}': {len(hits)} hit(s) — {hit_summary}"
-                    ),
-                    "timestamp_utc": ts,
-                    "canonical_repo": str(canonical_root),
-                    "derivative_repo": str(derivative_root),
-                }
+            hit_summary = "; ".join(
+                f"L{ln}: {pname}" for ln, pname in hits[:5]
             )
+            findings.append({
+                "id": _finding_id("unsanitized_artifact", dpath),
+                "class": "unsanitized_artifact",
+                "severity": "deny",
+                "source": "promotion_gate",
+                "path": dpath,
+                "details": (
+                    f"Sensitive content detected in derivative '{dpath}': "
+                    f"{len(hits)} hit(s) — {hit_summary}"
+                ),
+                "timestamp_utc": ts,
+                "canonical_repo": str(canonical_root),
+                "derivative_repo": str(derivative_root),
+            })
 
     # -----------------------------------------------------------------------
     # Rule 10: unapproved_derivative_change (WARN only)
@@ -509,19 +477,20 @@ def run_promotion_gate(
         derivative_hash = _sha256_file(derivative_root / cpath)
         if canonical_hash and derivative_hash and canonical_hash != derivative_hash:
             # Already covered by hash_drift as deny; this adds a warn-level note
-            findings.append(
-                {
-                    "id": _finding_id("unapproved_derivative_change", cpath),
-                    "class": "unapproved_derivative_change",
-                    "severity": "warn",
-                    "source": "promotion_gate",
-                    "path": cpath,
-                    "details": (f"Derivative change in '{cpath}' not reflected in canonical — review required"),
-                    "timestamp_utc": ts,
-                    "canonical_repo": str(canonical_root),
-                    "derivative_repo": str(derivative_root),
-                }
-            )
+            findings.append({
+                "id": _finding_id("unapproved_derivative_change", cpath),
+                "class": "unapproved_derivative_change",
+                "severity": "warn",
+                "source": "promotion_gate",
+                "path": cpath,
+                "details": (
+                    f"Derivative change in '{cpath}' not reflected in "
+                    f"canonical — review required"
+                ),
+                "timestamp_utc": ts,
+                "canonical_repo": str(canonical_root),
+                "derivative_repo": str(derivative_root),
+            })
 
     # -----------------------------------------------------------------------
     # Rule 1: missing_required_export_artifact
@@ -536,21 +505,20 @@ def run_promotion_gate(
             if art_path not in derivative_files:
                 # Only flag if file exists in canonical
                 if (canonical_root / art_path).is_file():
-                    findings.append(
-                        {
-                            "id": _finding_id("missing_required_export_artifact", art_path),
-                            "class": "missing_required_export_artifact",
-                            "severity": "deny",
-                            "source": "promotion_gate",
-                            "path": art_path,
-                            "details": (
-                                f"Required export artifact '{art.get('name', art_path)}' missing from derivative repo"
-                            ),
-                            "timestamp_utc": ts,
-                            "canonical_repo": str(canonical_root),
-                            "derivative_repo": str(derivative_root),
-                        }
-                    )
+                    findings.append({
+                        "id": _finding_id("missing_required_export_artifact", art_path),
+                        "class": "missing_required_export_artifact",
+                        "severity": "deny",
+                        "source": "promotion_gate",
+                        "path": art_path,
+                        "details": (
+                            f"Required export artifact '{art.get('name', art_path)}' "
+                            f"missing from derivative repo"
+                        ),
+                        "timestamp_utc": ts,
+                        "canonical_repo": str(canonical_root),
+                        "derivative_repo": str(derivative_root),
+                    })
 
     # Apply strict mode: upgrade all warn to deny
     if strict:
@@ -565,13 +533,12 @@ def run_promotion_gate(
 # Result builder
 # ---------------------------------------------------------------------------
 
-
 def _build_result(
     ts: str,
     canonical_root: Path,
     derivative_root: Path,
-    findings: list[dict[str, Any]],
-) -> dict[str, Any]:
+    findings: List[Dict[str, Any]],
+) -> Dict[str, Any]:
     """Build structured result from findings."""
     deny_count = sum(1 for f in findings if f["severity"] == "deny")
     warn_count = sum(1 for f in findings if f["severity"] == "warn")
@@ -584,7 +551,7 @@ def _build_result(
         status = "PASS"
 
     # Group findings by class for summary
-    by_class: dict[str, int] = {}
+    by_class: Dict[str, int] = {}
     for f in findings:
         cls = f["class"]
         by_class[cls] = by_class.get(cls, 0) + 1
@@ -610,13 +577,12 @@ def _build_result(
 # Report generation
 # ---------------------------------------------------------------------------
 
-
-def _findings_to_json(result: dict[str, Any]) -> str:
+def _findings_to_json(result: Dict[str, Any]) -> str:
     """Render findings as JSON string."""
     return json.dumps(result, indent=2, sort_keys=False)
 
 
-def _findings_to_md(result: dict[str, Any]) -> str:
+def _findings_to_md(result: Dict[str, Any]) -> str:
     """Render findings as Markdown report."""
     lines = [
         "# Promotion Gate Report\n",
@@ -645,11 +611,19 @@ def _findings_to_md(result: dict[str, Any]) -> str:
         for f in result["findings"]:
             severity_tag = f["severity"].upper()
             details = f["details"].replace("|", "\\|")
-            lines.append(f"| `{f['id']}` | {severity_tag} | `{f['path']}` | {details} |\n")
+            lines.append(
+                f"| `{f['id']}` | {severity_tag} "
+                f"| `{f['path']}` | {details} |\n"
+            )
     else:
-        lines.append("\nNo findings — derivative repo passes all promotion checks.\n")
+        lines.append(
+            "\nNo findings — derivative repo passes all promotion checks.\n"
+        )
 
-    lines.append(f"\n---\n\nGenerated by `run_promotion_gate.py` v{result['version']} at {result['timestamp_utc']}\n")
+    lines.append(
+        f"\n---\n\nGenerated by `run_promotion_gate.py` "
+        f"v{result['version']} at {result['timestamp_utc']}\n"
+    )
 
     return "".join(lines)
 
@@ -658,17 +632,19 @@ def _findings_to_md(result: dict[str, Any]) -> str:
 # Run-ledger builder
 # ---------------------------------------------------------------------------
 
-
 def _build_run_ledger(
-    result: dict[str, Any],
+    result: Dict[str, Any],
     gate_type: str,
     repo_root: Path,
     related_repo: str = "",
     trigger: str = "manual",
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """Build a run-ledger dict from a gate result."""
-    now_utc = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    run_id = f"{gate_type}_{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}_{uuid4().hex[:8]}"
+    now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    run_id = (
+        f"{gate_type}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+        f"_{uuid4().hex[:8]}"
+    )
 
     # Detect CI vs manual
     if any(os.environ.get(v) for v in ("CI", "GITHUB_ACTIONS", "GITLAB_CI")):
@@ -683,29 +659,23 @@ def _build_run_ledger(
     artifacts = sorted({f.get("path", "") for f in result.get("findings", []) if f.get("path")})
 
     # Extract evidence_refs and source_of_truth_refs from findings
-    evidence_refs = sorted(
-        {
-            f["evidence_ref"]
-            for f in result.get("findings", [])
-            if isinstance(f.get("evidence_ref"), str) and f["evidence_ref"]
-        }
-    )
-    source_of_truth_refs = sorted(
-        {
-            f["source_of_truth_ref"]
-            for f in result.get("findings", [])
-            if isinstance(f.get("source_of_truth_ref"), str) and f["source_of_truth_ref"]
-        }
-    )
+    evidence_refs = sorted({
+        f["evidence_ref"]
+        for f in result.get("findings", [])
+        if isinstance(f.get("evidence_ref"), str) and f["evidence_ref"]
+    })
+    source_of_truth_refs = sorted({
+        f["source_of_truth_ref"]
+        for f in result.get("findings", [])
+        if isinstance(f.get("source_of_truth_ref"), str) and f["source_of_truth_ref"]
+    })
 
     # Commit SHA
     commit_sha = ""
     try:
         cp = subprocess.run(
             ["git", "rev-parse", "HEAD"],
-            capture_output=True,
-            text=True,
-            timeout=5,
+            capture_output=True, text=True, timeout=5,
         )
         if cp.returncode == 0:
             commit_sha = cp.stdout.strip()
@@ -744,48 +714,40 @@ def _build_run_ledger(
 # CLI
 # ---------------------------------------------------------------------------
 
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="run_promotion_gate",
-        description=("Promotion Gate — cross-repo validation of SSID (canonical) vs SSID-open-core (derivative)"),
+        description=(
+            "Promotion Gate — cross-repo validation of SSID (canonical) "
+            "vs SSID-open-core (derivative)"
+        ),
     )
     parser.add_argument(
-        "--canonical-repo",
-        type=str,
-        required=True,
+        "--canonical-repo", type=str, required=True,
         help="Path to SSID (canonical/source) repo root",
     )
     parser.add_argument(
-        "--derivative-repo",
-        type=str,
-        required=True,
+        "--derivative-repo", type=str, required=True,
         help="Path to SSID-open-core (derivative) repo root",
     )
     parser.add_argument(
-        "--output-dir",
-        type=str,
-        default=None,
+        "--output-dir", type=str, default=None,
         help="Report output directory (default: <canonical-repo>/02_audit_logging/reports)",
     )
     parser.add_argument(
-        "--write-reports",
-        action="store_true",
+        "--write-reports", action="store_true",
         help="Write JSON + MD reports to output directory",
     )
     parser.add_argument(
-        "--verify-only",
-        action="store_true",
+        "--verify-only", action="store_true",
         help="Verify only — print result, no reports written",
     )
     parser.add_argument(
-        "--strict",
-        action="store_true",
+        "--strict", action="store_true",
         help="Strict mode: treat all warnings as deny",
     )
     parser.add_argument(
-        "--emit-run-ledger",
-        action="store_true",
+        "--emit-run-ledger", action="store_true",
         help="Write a *_run_ledger.json to output directory",
     )
     args = parser.parse_args()
@@ -793,7 +755,11 @@ def main() -> int:
     # Resolve paths
     canonical_root = Path(args.canonical_repo).resolve()
     derivative_root = Path(args.derivative_repo).resolve()
-    output_dir = Path(args.output_dir).resolve() if args.output_dir else canonical_root / "02_audit_logging" / "reports"
+    output_dir = (
+        Path(args.output_dir).resolve()
+        if args.output_dir
+        else canonical_root / "02_audit_logging" / "reports"
+    )
 
     if not canonical_root.is_dir():
         print(
@@ -812,9 +778,7 @@ def main() -> int:
     # Run promotion gate
     try:
         result = run_promotion_gate(
-            canonical_root,
-            derivative_root,
-            output_dir,
+            canonical_root, derivative_root, output_dir,
             strict=args.strict,
         )
     except Exception as exc:
@@ -846,9 +810,7 @@ def main() -> int:
     if args.emit_run_ledger and not args.verify_only:
         output_dir.mkdir(parents=True, exist_ok=True)
         ledger = _build_run_ledger(
-            result,
-            "promotion_gate",
-            canonical_root,
+            result, "promotion_gate", canonical_root,
             related_repo=str(derivative_root),
         )
         ledger_path = output_dir / "promotion_gate_run_ledger.json"

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """ssidctl federation-ops -- Federation operations management."""
-
 from __future__ import annotations
 
 import argparse
 import json
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 
 def build_parser(subparsers: argparse._SubParsersAction | None = None) -> argparse.ArgumentParser:
@@ -15,13 +14,9 @@ def build_parser(subparsers: argparse._SubParsersAction | None = None) -> argpar
         parser = subparsers.add_parser("federation-ops", help="Federation operations management")
     else:
         parser = argparse.ArgumentParser(prog="ssidctl federation-ops", description=__doc__)
-    parser.add_argument(
-        "action",
-        nargs="?",
-        default="status",
-        choices=["status", "list-peers", "health"],
-        help="Operation to perform (default: status)",
-    )
+    parser.add_argument("action", nargs="?", default="status",
+                        choices=["status", "list-peers", "health"],
+                        help="Operation to perform (default: status)")
     parser.add_argument("--root", type=str, default=".", help="Repository root path")
     parser.add_argument("--json", dest="json_output", action="store_true", help="Output in JSON format")
     parser.set_defaults(func=run)
@@ -30,7 +25,7 @@ def build_parser(subparsers: argparse._SubParsersAction | None = None) -> argpar
 
 def run(args: argparse.Namespace) -> int:
     """Execute federation-ops command."""
-    timestamp = datetime.now(UTC).isoformat()
+    timestamp = datetime.now(timezone.utc).isoformat()
 
     result: dict[str, object] = {
         "command": "federation-ops",

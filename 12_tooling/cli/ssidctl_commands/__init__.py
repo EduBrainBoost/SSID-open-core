@@ -5,10 +5,10 @@ This module registers all 11 ssidctl governance subcommands with a shared
 argparse subparser. Each command module exposes a ``build_parser`` function
 that accepts an optional ``subparsers`` action for integration.
 """
-
 from __future__ import annotations
 
 import argparse
+from typing import Callable, Dict
 
 from . import (
     approval,
@@ -25,7 +25,7 @@ from . import (
 )
 
 # Canonical command registry: CLI name -> module
-COMMAND_REGISTRY: dict[str, object] = {
+COMMAND_REGISTRY: Dict[str, object] = {
     "sot-diff": sot_diff,
     "promote": promote,
     "governance": governance,

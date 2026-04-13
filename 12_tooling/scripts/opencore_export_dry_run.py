@@ -12,7 +12,6 @@ Exit codes:
   1 -- dry-run found issues (forbidden files would leak)
   2 -- configuration error
 """
-
 from __future__ import annotations
 
 import argparse
@@ -32,17 +31,9 @@ DEFAULT_POLICY = "16_codex/opencore_export_policy.yaml"
 DEFAULT_ALLOWLIST = "23_compliance/policies/open_core_export_allowlist.yaml"
 
 FORBIDDEN_EXTENSIONS = {
-    ".pem",
-    ".key",
-    ".p12",
-    ".jks",
-    ".pfx",
-    ".env",
-    ".secret",
-    ".secrets",
-    ".token",
-    ".pyc",
-    ".pyo",
+    ".pem", ".key", ".p12", ".jks", ".pfx",
+    ".env", ".secret", ".secrets", ".token",
+    ".pyc", ".pyo",
 }
 
 EXIT_PASS = 0
@@ -54,7 +45,12 @@ EXIT_CONFIG_ERROR = 2
 # Helpers
 # ---------------------------------------------------------------------------
 def utc_now() -> str:
-    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return (
+        dt.datetime.now(dt.timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
 
 def sha256_file(path: Path) -> str:
@@ -81,7 +77,6 @@ def git_ls_tree(repo: Path, ref: str) -> list[str]:
 def load_yaml_safe(path: Path) -> dict[str, Any]:
     try:
         import yaml
-
         return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     except ImportError:
         data: dict[str, Any] = {}
@@ -92,7 +87,9 @@ def load_yaml_safe(path: Path) -> dict[str, Any]:
                 continue
             if stripped.startswith("- "):
                 if current_key:
-                    data.setdefault(current_key, []).append(stripped[2:].strip().strip("\"'"))
+                    data.setdefault(current_key, []).append(
+                        stripped[2:].strip().strip("\"'")
+                    )
             elif ":" in stripped:
                 key = stripped.split(":")[0].strip()
                 val = stripped.split(":", 1)[1].strip()
@@ -127,7 +124,10 @@ def is_in_allow_prefixes(path_posix: str, allow_prefixes: list[str]) -> bool:
 
 def has_forbidden_extension(path_posix: str) -> bool:
     name = path_posix.rsplit("/", 1)[-1] if "/" in path_posix else path_posix
-    return any(name.endswith(ext) or name == ext.lstrip(".") for ext in FORBIDDEN_EXTENSIONS)
+    for ext in FORBIDDEN_EXTENSIONS:
+        if name.endswith(ext) or name == ext.lstrip("."):
+            return True
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -176,7 +176,9 @@ def run_dry_export(
 
         # Check allowlist
         is_allowed = False
-        if "/" not in f and f in root_files or allow_prefixes and is_in_allow_prefixes(f, allow_prefixes):
+        if "/" not in f and f in root_files:
+            is_allowed = True
+        elif allow_prefixes and is_in_allow_prefixes(f, allow_prefixes):
             is_allowed = True
         elif allowed_paths:
             for prefix in allowed_paths:

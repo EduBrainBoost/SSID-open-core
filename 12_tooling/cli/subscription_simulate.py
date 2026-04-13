@@ -3,7 +3,6 @@
 
 Usage: python 12_tooling/cli/subscription_simulate.py --plan basic --period monthly --amount 29.99
 """
-
 import argparse
 import json
 import sys

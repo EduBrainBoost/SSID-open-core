@@ -8,6 +8,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+
 # Prohibited terms per MiCA Article 53 / Annex VI guidance
 _PROHIBITED_PATTERNS: list[tuple[str, str, str]] = [
     (r"\bguaranteed\s+returns?\b", "guaranteed_return", "HIGH"),
@@ -32,20 +33,18 @@ def scan_text(text: str) -> list[dict[str, Any]]:
     text_lower = text.lower()
     for pattern, kind, severity in _PROHIBITED_PATTERNS:
         for match in re.finditer(pattern, text_lower):
-            findings.append(
-                {
-                    "kind": kind,
-                    "term": match.group(),
-                    "severity": severity,
-                    "span": (match.start(), match.end()),
-                }
-            )
+            findings.append({
+                "kind": kind,
+                "term": match.group(),
+                "severity": severity,
+                "span": (match.start(), match.end()),
+            })
     return findings
 
 
 def scan_file(path: str) -> list[dict[str, Any]]:
     """Scan a file for MiCA-non-compliant marketing terms."""
-    with open(path, encoding="utf-8") as f:
+    with open(path, "r", encoding="utf-8") as f:
         return scan_text(f.read())
 
 

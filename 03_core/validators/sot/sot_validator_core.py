@@ -2,10 +2,10 @@
 """
 SoT Validator Core - SOT_AGENT_001..036
 """
-
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Dict, List, Set, Tuple
 
 
 class SoTValidatorCore:
@@ -53,63 +53,28 @@ class SoTValidatorCore:
         "SOT_AGENT_041": "Phase-5 license_fee_splitter module exists in 03_core",
     }
     PRIORITY = [
-        "SOT_AGENT_001",
-        "SOT_AGENT_002",
-        "SOT_AGENT_003",
-        "SOT_AGENT_004",
-        "SOT_AGENT_005",
-        "SOT_AGENT_006",
-        "SOT_AGENT_007",
-        "SOT_AGENT_008",
-        "SOT_AGENT_009",
-        "SOT_AGENT_010",
-        "SOT_AGENT_011",
-        "SOT_AGENT_012",
-        "SOT_AGENT_013",
-        "SOT_AGENT_014",
-        "SOT_AGENT_015",
-        "SOT_AGENT_016",
-        "SOT_AGENT_017",
-        "SOT_AGENT_018",
-        "SOT_AGENT_019",
-        "SOT_AGENT_020",
-        "SOT_AGENT_021",
-        "SOT_AGENT_022",
-        "SOT_AGENT_023",
-        "SOT_AGENT_024",
-        "SOT_AGENT_025",
-        "SOT_AGENT_026",
-        "SOT_AGENT_027",
-        "SOT_AGENT_028",
-        "SOT_AGENT_029",
-        "SOT_AGENT_030",
-        "SOT_AGENT_031",
-        "SOT_AGENT_032",
-        "SOT_AGENT_033",
-        "SOT_AGENT_034",
-        "SOT_AGENT_035",
-        "SOT_AGENT_036",
-        "SOT_AGENT_037",
-        "SOT_AGENT_038",
-        "SOT_AGENT_039",
-        "SOT_AGENT_040",
-        "SOT_AGENT_041",
+        "SOT_AGENT_001", "SOT_AGENT_002", "SOT_AGENT_003", "SOT_AGENT_004",
+        "SOT_AGENT_005", "SOT_AGENT_006", "SOT_AGENT_007", "SOT_AGENT_008",
+        "SOT_AGENT_009", "SOT_AGENT_010", "SOT_AGENT_011",
+        "SOT_AGENT_012", "SOT_AGENT_013", "SOT_AGENT_014",
+        "SOT_AGENT_015", "SOT_AGENT_016", "SOT_AGENT_017",
+        "SOT_AGENT_018", "SOT_AGENT_019", "SOT_AGENT_020",
+        "SOT_AGENT_021", "SOT_AGENT_022", "SOT_AGENT_023",
+        "SOT_AGENT_024", "SOT_AGENT_025", "SOT_AGENT_026",
+        "SOT_AGENT_027", "SOT_AGENT_028",
+        "SOT_AGENT_029", "SOT_AGENT_030", "SOT_AGENT_031",
+        "SOT_AGENT_032", "SOT_AGENT_033", "SOT_AGENT_034",
+        "SOT_AGENT_035", "SOT_AGENT_036",
+        "SOT_AGENT_037", "SOT_AGENT_038", "SOT_AGENT_039",
+        "SOT_AGENT_040", "SOT_AGENT_041",
     ]
 
     ROOT01_MUST_DIRS = [
-        "01_ai_layer/docs",
-        "01_ai_layer/src",
-        "01_ai_layer/tests",
-        "01_ai_layer/agents",
-        "01_ai_layer/prompts",
-        "01_ai_layer/evaluation",
-        "01_ai_layer/safety",
-        "01_ai_layer/runtimes",
-        "01_ai_layer/compliance_query_processor",
-        "01_ai_layer/content_moderation",
-        "01_ai_layer/policies",
-        "01_ai_layer/config",
-        "01_ai_layer/registry",
+        "01_ai_layer/docs", "01_ai_layer/src", "01_ai_layer/tests",
+        "01_ai_layer/agents", "01_ai_layer/prompts", "01_ai_layer/evaluation",
+        "01_ai_layer/safety", "01_ai_layer/runtimes",
+        "01_ai_layer/compliance_query_processor", "01_ai_layer/content_moderation",
+        "01_ai_layer/policies", "01_ai_layer/config", "01_ai_layer/registry",
     ]
     ROOT01_MUST_FILES = [
         "01_ai_layer/module.yaml",
@@ -128,14 +93,10 @@ class SoTValidatorCore:
     ]
 
     ROOT02_MUST_DIRS = [
-        "02_audit_logging/docs",
-        "02_audit_logging/src",
-        "02_audit_logging/tests",
-        "02_audit_logging/config",
-        "02_audit_logging/reports",
-        "02_audit_logging/storage",
-        "02_audit_logging/redaction",
-        "02_audit_logging/evidence",
+        "02_audit_logging/docs", "02_audit_logging/src",
+        "02_audit_logging/tests", "02_audit_logging/config",
+        "02_audit_logging/reports", "02_audit_logging/storage",
+        "02_audit_logging/redaction", "02_audit_logging/evidence",
     ]
     ROOT02_MUST_FILES = [
         "02_audit_logging/module.yaml",
@@ -154,13 +115,8 @@ class SoTValidatorCore:
     ]
 
     ROOT03_MUST_DIRS = [
-        "03_core/docs",
-        "03_core/src",
-        "03_core/tests",
-        "03_core/config",
-        "03_core/interfaces",
-        "03_core/security",
-        "03_core/validators",
+        "03_core/docs", "03_core/src", "03_core/tests", "03_core/config",
+        "03_core/interfaces", "03_core/security", "03_core/validators",
     ]
     ROOT03_MUST_FILES = [
         "03_core/module.yaml",
@@ -178,10 +134,8 @@ class SoTValidatorCore:
     ]
 
     ROOT04_MUST_DIRS = [
-        "04_deployment/docs",
-        "04_deployment/src",
-        "04_deployment/tests",
-        "04_deployment/config",
+        "04_deployment/docs", "04_deployment/src",
+        "04_deployment/tests", "04_deployment/config",
     ]
     ROOT04_MUST_FILES = [
         "04_deployment/module.yaml",
@@ -198,10 +152,8 @@ class SoTValidatorCore:
     ]
 
     ROOT05_MUST_DIRS = [
-        "05_documentation/docs",
-        "05_documentation/src",
-        "05_documentation/tests",
-        "05_documentation/config",
+        "05_documentation/docs", "05_documentation/src",
+        "05_documentation/tests", "05_documentation/config",
     ]
     ROOT05_MUST_FILES = [
         "05_documentation/module.yaml",
@@ -218,10 +170,8 @@ class SoTValidatorCore:
     ]
 
     ROOT06_MUST_DIRS = [
-        "06_data_pipeline/docs",
-        "06_data_pipeline/src",
-        "06_data_pipeline/tests",
-        "06_data_pipeline/config",
+        "06_data_pipeline/docs", "06_data_pipeline/src",
+        "06_data_pipeline/tests", "06_data_pipeline/config",
     ]
     ROOT06_MUST_FILES = [
         "06_data_pipeline/module.yaml",
@@ -246,19 +196,13 @@ class SoTValidatorCore:
     ]
     ROOT07_YAML_REQUIRED_KEYS = {
         "07_governance_legal/stakeholder_protection/investment_disclaimers.yaml": [
-            "version",
-            "token_position",
-            "custody_statement",
-            "prohibited_claims",
+            "version", "token_position", "custody_statement", "prohibited_claims",
         ],
         "07_governance_legal/approvals/approval_workflow.yaml": [
-            "version",
-            "required_approvals",
-            "emergency_process",
+            "version", "required_approvals", "emergency_process",
         ],
         "07_governance_legal/risk_links/regulatory_map_index.yaml": [
-            "version",
-            "mappings",
+            "version", "mappings",
         ],
     }
 
@@ -276,12 +220,7 @@ class SoTValidatorCore:
     ]
     ROOT08_MODULE_REQUIRED_KEYS = ["module_id", "name", "version", "status"]
     ROOT08_README_REQUIRED_SECTIONS = [
-        "Overview",
-        "Structure",
-        "Interfaces",
-        "Policies",
-        "Governance",
-        "Testing",
+        "Overview", "Structure", "Interfaces", "Policies", "Governance", "Testing",
     ]
 
     CANONICAL_SOT_ARTIFACTS = [
@@ -295,7 +234,7 @@ class SoTValidatorCore:
 
     def __init__(self, root_dir: str = "."):
         self.root_dir = Path(root_dir)
-        self.violations: list[tuple[str, str]] = []
+        self.violations: List[Tuple[str, str]] = []
 
     def _exists(self, rel: str) -> bool:
         return (self.root_dir / rel).exists()
@@ -344,7 +283,7 @@ class SoTValidatorCore:
         return True
 
     def check_canonical_artifact_paths(self) -> bool:
-        missing: list[str] = []
+        missing: List[str] = []
         for p in self.CANONICAL_SOT_ARTIFACTS:
             # Sandbox intentionally excludes 02_audit_logging.
             if p.startswith("02_audit_logging/") and not (self.root_dir / "02_audit_logging").exists():
@@ -363,19 +302,21 @@ class SoTValidatorCore:
             self.violations.append(("SOT_AGENT_005", "sot_contract.yaml missing"))
             return False
         # Parse rule IDs from contract YAML (lightweight: no PyYAML dependency)
-        contract_ids: set[str] = set()
+        contract_ids: Set[str] = set()
         for line in contract.read_text(encoding="utf-8", errors="replace").splitlines():
             stripped = line.strip()
             if stripped.startswith("- id:"):
                 rule_id = stripped.split(":", 1)[1].strip()
                 if rule_id in contract_ids:
-                    self.violations.append(("SOT_AGENT_005", f"duplicate rule_id in contract: {rule_id}"))
+                    self.violations.append(
+                        ("SOT_AGENT_005", f"duplicate rule_id in contract: {rule_id}")
+                    )
                     return False
                 contract_ids.add(rule_id)
-        validator_ids: set[str] = set(self.RULES.keys())
+        validator_ids: Set[str] = set(self.RULES.keys())
         only_in_contract = contract_ids - validator_ids
         only_in_validator = validator_ids - contract_ids
-        issues: list[str] = []
+        issues: List[str] = []
         if only_in_contract:
             issues.append(f"in contract but not validator: {sorted(only_in_contract)}")
         if only_in_validator:
@@ -398,7 +339,7 @@ class SoTValidatorCore:
         return True
 
     def check_root01_shadow_files(self) -> bool:
-        found: list[str] = []
+        found: List[str] = []
         for d in self.ROOT01_FORBIDDEN_DIRS:
             if (self.root_dir / d).exists():
                 found.append(d)
@@ -416,9 +357,7 @@ class SoTValidatorCore:
     def check_root01_interface_wiring(self) -> bool:
         missing_targets = [t for t in self.ROOT01_INTERFACE_TARGETS if not self._exists(t)]
         if missing_targets:
-            self.violations.append(
-                ("SOT_AGENT_008", f"missing central interface targets: {', '.join(missing_targets)}")
-            )
+            self.violations.append(("SOT_AGENT_008", f"missing central interface targets: {', '.join(missing_targets)}"))
             return False
         module_yaml = self.root_dir / "01_ai_layer" / "module.yaml"
         if not module_yaml.is_file():
@@ -444,7 +383,7 @@ class SoTValidatorCore:
         return True
 
     def check_root02_shadow_files(self) -> bool:
-        found: list[str] = []
+        found: List[str] = []
         for d in self.ROOT02_FORBIDDEN_DIRS:
             if (self.root_dir / d).exists():
                 found.append(d)
@@ -462,9 +401,7 @@ class SoTValidatorCore:
     def check_root02_interface_wiring(self) -> bool:
         missing_targets = [t for t in self.ROOT02_INTERFACE_TARGETS if not self._exists(t)]
         if missing_targets:
-            self.violations.append(
-                ("SOT_AGENT_011", f"missing central interface targets: {', '.join(missing_targets)}")
-            )
+            self.violations.append(("SOT_AGENT_011", f"missing central interface targets: {', '.join(missing_targets)}"))
             return False
         module_yaml = self.root_dir / "02_audit_logging" / "module.yaml"
         if not module_yaml.is_file():
@@ -490,7 +427,7 @@ class SoTValidatorCore:
         return True
 
     def check_root03_shadow_files(self) -> bool:
-        found: list[str] = []
+        found: List[str] = []
         for d in self.ROOT03_FORBIDDEN_DIRS:
             if (self.root_dir / d).exists():
                 found.append(d)
@@ -508,9 +445,7 @@ class SoTValidatorCore:
     def check_root03_interface_wiring(self) -> bool:
         missing_targets = [t for t in self.ROOT03_INTERFACE_TARGETS if not self._exists(t)]
         if missing_targets:
-            self.violations.append(
-                ("SOT_AGENT_014", f"missing central interface targets: {', '.join(missing_targets)}")
-            )
+            self.violations.append(("SOT_AGENT_014", f"missing central interface targets: {', '.join(missing_targets)}"))
             return False
         module_yaml = self.root_dir / "03_core" / "module.yaml"
         if not module_yaml.is_file():
@@ -536,7 +471,7 @@ class SoTValidatorCore:
         return True
 
     def check_root04_shadow_files(self) -> bool:
-        found: list[str] = []
+        found: List[str] = []
         for d in self.ROOT04_FORBIDDEN_DIRS:
             if (self.root_dir / d).exists():
                 found.append(d)
@@ -554,9 +489,7 @@ class SoTValidatorCore:
     def check_root04_interface_wiring(self) -> bool:
         missing_targets = [t for t in self.ROOT04_INTERFACE_TARGETS if not self._exists(t)]
         if missing_targets:
-            self.violations.append(
-                ("SOT_AGENT_017", f"missing central interface targets: {', '.join(missing_targets)}")
-            )
+            self.violations.append(("SOT_AGENT_017", f"missing central interface targets: {', '.join(missing_targets)}"))
             return False
         module_yaml = self.root_dir / "04_deployment" / "module.yaml"
         if not module_yaml.is_file():
@@ -582,7 +515,7 @@ class SoTValidatorCore:
         return True
 
     def check_root05_shadow_files(self) -> bool:
-        found: list[str] = []
+        found: List[str] = []
         for d in self.ROOT05_FORBIDDEN_DIRS:
             if (self.root_dir / d).exists():
                 found.append(d)
@@ -600,9 +533,7 @@ class SoTValidatorCore:
     def check_root05_interface_wiring(self) -> bool:
         missing_targets = [t for t in self.ROOT05_INTERFACE_TARGETS if not self._exists(t)]
         if missing_targets:
-            self.violations.append(
-                ("SOT_AGENT_020", f"missing central interface targets: {', '.join(missing_targets)}")
-            )
+            self.violations.append(("SOT_AGENT_020", f"missing central interface targets: {', '.join(missing_targets)}"))
             return False
         module_yaml = self.root_dir / "05_documentation" / "module.yaml"
         if not module_yaml.is_file():
@@ -628,7 +559,7 @@ class SoTValidatorCore:
         return True
 
     def check_root06_shadow_files(self) -> bool:
-        found: list[str] = []
+        found: List[str] = []
         for d in self.ROOT06_FORBIDDEN_DIRS:
             if (self.root_dir / d).exists():
                 found.append(d)
@@ -646,9 +577,7 @@ class SoTValidatorCore:
     def check_root06_interface_wiring(self) -> bool:
         missing_targets = [t for t in self.ROOT06_INTERFACE_TARGETS if not self._exists(t)]
         if missing_targets:
-            self.violations.append(
-                ("SOT_AGENT_023", f"missing central interface targets: {', '.join(missing_targets)}")
-            )
+            self.violations.append(("SOT_AGENT_023", f"missing central interface targets: {', '.join(missing_targets)}"))
             return False
         module_yaml = self.root_dir / "06_data_pipeline" / "module.yaml"
         if not module_yaml.is_file():
@@ -669,7 +598,6 @@ class SoTValidatorCore:
         fpath = self.root_dir / rel_path
         try:
             import yaml  # noqa: F811
-
             data = yaml.safe_load(fpath.read_text(encoding="utf-8"))
         except ImportError:
             # PyYAML not available — skip format check, existence already enforced
@@ -690,11 +618,8 @@ class SoTValidatorCore:
             if not isinstance(mappings, list) or len(mappings) == 0:
                 self.violations.append((rule_id, f"{rel_path} mappings must be a non-empty list"))
                 return False
-            bad = [
-                m.get("id", "?")
-                for m in mappings
-                if isinstance(m, dict) and not str(m.get("path", "")).startswith("23_compliance/mappings/")
-            ]
+            bad = [m.get("id", "?") for m in mappings
+                   if isinstance(m, dict) and not str(m.get("path", "")).startswith("23_compliance/mappings/")]
             if bad:
                 self.violations.append((rule_id, f"{rel_path} mappings with invalid path prefix: {', '.join(bad)}"))
                 return False
@@ -743,7 +668,6 @@ class SoTValidatorCore:
             return False
         try:
             import yaml
-
             data = yaml.safe_load(fpath.read_text(encoding="utf-8"))
         except ImportError:
             return True
@@ -845,7 +769,7 @@ class SoTValidatorCore:
     def check_phase5_license_fee_splitter(self) -> bool:
         return self._check_phase5_module("SOT_AGENT_041")
 
-    def validate_all(self) -> dict[str, dict[str, str]]:
+    def validate_all(self) -> Dict[str, Dict[str, str]]:
         self.violations = []
         self.check_dispatcher_entry_point()
         self.check_canonical_doc_paths()
@@ -889,7 +813,7 @@ class SoTValidatorCore:
         self.check_phase5_identity_fee_router()
         self.check_phase5_license_fee_splitter()
 
-        results: dict[str, dict[str, str]] = {}
+        results: Dict[str, Dict[str, str]] = {}
         for rule in self.PRIORITY:
             msgs = [msg for rid, msg in self.violations if rid == rule]
             if msgs:
@@ -898,7 +822,7 @@ class SoTValidatorCore:
                 results[rule] = {"status": "PASS", "message": self.RULES[rule]}
         return results
 
-    def evaluate_priorities(self, results: dict[str, dict[str, str]]) -> tuple[bool, list[str]]:
+    def evaluate_priorities(self, results: Dict[str, Dict[str, str]]) -> Tuple[bool, List[str]]:
         failed = [rid for rid, data in results.items() if data.get("status") != "PASS"]
         return len(failed) == 0, failed
 

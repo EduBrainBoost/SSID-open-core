@@ -15,7 +15,6 @@ import sys
 def verify_config() -> int:
     """Verify dispatcher configuration and ROOT-24-LOCK."""
     from pathlib import Path
-
     root_path = Path(".")
     roots = sorted([d.name for d in root_path.iterdir() if d.is_dir() and d.name[0:2].isdigit()])
 
@@ -32,8 +31,16 @@ def main() -> int:
         prog="dispatcher",
         description="SSID Dispatcher — task orchestration & verification",
     )
-    parser.add_argument("--version", action="version", version="SSID Dispatcher v1.0 (Blueprint 4.1)")
-    parser.add_argument("--verify-config", action="store_true", help="Verify dispatcher configuration and ROOT-24-LOCK")
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="SSID Dispatcher v1.0 (Blueprint 4.1)"
+    )
+    parser.add_argument(
+        "--verify-config",
+        action="store_true",
+        help="Verify dispatcher configuration and ROOT-24-LOCK"
+    )
 
     args = parser.parse_args()
 

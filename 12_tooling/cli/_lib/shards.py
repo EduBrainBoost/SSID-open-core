@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Shared shard scanning, parsing, and validation primitives."""
-
 from __future__ import annotations
 
 import json
@@ -36,25 +35,6 @@ ROOTS_24: list[str] = [
     "24_meta_orchestration",
 ]
 
-SHARDS_16: list[str] = [
-    "01_identitaet_personen",
-    "02_dokumente_nachweise",
-    "03_shard_03",
-    "04_shard_04",
-    "05_shard_05",
-    "06_shard_06",
-    "07_shard_07",
-    "08_shard_08",
-    "09_shard_09",
-    "10_shard_10",
-    "11_shard_11",
-    "12_shard_12",
-    "13_shard_13",
-    "14_shard_14",
-    "15_shard_15",
-    "16_shard_16",
-]
-
 MANIFEST_REQUIRED_FIELDS: list[str] = [
     "shard_id",
     "root_id",
@@ -77,7 +57,11 @@ PII_DENY_KEYS: list[str] = [
 
 def find_roots(repo_root: Path) -> list[Path]:
     """Return all 24 canonical root directories (sorted)."""
-    return sorted(repo_root / name for name in ROOTS_24 if (repo_root / name).is_dir())
+    return sorted(
+        repo_root / name
+        for name in ROOTS_24
+        if (repo_root / name).is_dir()
+    )
 
 
 def find_shards(root_path: Path) -> list[Path]:

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """ssidctl sot-diff -- Show SoT differences between baseline and current state."""
-
 from __future__ import annotations
 
 import argparse

@@ -4,7 +4,6 @@
 Uses solcx (py-solc-x) if available, otherwise basic syntax check.
 Part of GAP-002: Solidity Build/Test Tooling.
 """
-
 from __future__ import annotations
 
 import re
@@ -14,13 +13,10 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SOL_DIRS = [
     "03_core/contracts",
-    "07_governance_legal/contracts",
-    "16_codex/contracts",
     "18_data_layer/contracts",
     "19_adapters/contracts",
-    "20_foundation/hardhat/contracts",
-    "20_foundation/tokenomics/contracts",
     "20_foundation/shards/10_finanzen_banking/implementations/solidity/contracts",
+    "20_foundation/tokenomics/contracts",
     "23_compliance/contracts",
 ]
 

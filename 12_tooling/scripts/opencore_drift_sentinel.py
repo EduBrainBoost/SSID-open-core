@@ -13,7 +13,6 @@ Exit codes:
 
 Outputs a JSON report to stdout (or --output-file).
 """
-
 from __future__ import annotations
 
 import argparse
@@ -41,7 +40,12 @@ EXIT_ERROR = 3
 # Helpers
 # ---------------------------------------------------------------------------
 def utc_now() -> str:
-    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return (
+        dt.datetime.now(dt.timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -80,7 +84,6 @@ def load_yaml_safe(path: Path) -> dict[str, Any]:
     """Load YAML without requiring pyyaml -- falls back to a simple parser."""
     try:
         import yaml  # noqa: F811
-
         return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     except ImportError:
         # Minimal fallback for list-of-strings YAML
@@ -92,7 +95,9 @@ def load_yaml_safe(path: Path) -> dict[str, Any]:
                 continue
             if stripped.startswith("- "):
                 if current_key:
-                    data.setdefault(current_key, []).append(stripped[2:].strip().strip("\"'"))
+                    data.setdefault(current_key, []).append(
+                        stripped[2:].strip().strip("\"'")
+                    )
             elif ":" in stripped:
                 key = stripped.split(":")[0].strip()
                 val = stripped.split(":", 1)[1].strip()
@@ -142,8 +147,9 @@ def detect_drift(
     deny_roots = policy.get("deny_roots", []) or []
     allow_prefixes = policy.get("allow_prefixes", []) or []
 
+    allowlist: dict[str, Any] = {}
     if allowlist_path and allowlist_path.exists():
-        load_yaml_safe(allowlist_path)
+        allowlist = load_yaml_safe(allowlist_path)
 
     ssid_sha = git_head_sha(ssid_repo) if ssid_ref == "HEAD" else ssid_ref
     oc_sha = git_head_sha(opencore_repo) if opencore_ref == "HEAD" else opencore_ref
@@ -157,32 +163,26 @@ def detect_drift(
     # 1. Files in open-core that should not be there (deny policy)
     for f in sorted(oc_files):
         if is_denied_by_glob(f, deny_globs):
-            policy_violations.append(
-                {
-                    "file": f,
-                    "violation": "matches_deny_glob",
-                    "detail": "File matches a deny_globs pattern in export policy",
-                }
-            )
+            policy_violations.append({
+                "file": f,
+                "violation": "matches_deny_glob",
+                "detail": "File matches a deny_globs pattern in export policy",
+            })
         if is_in_deny_roots(f, deny_roots):
-            policy_violations.append(
-                {
-                    "file": f,
-                    "violation": "in_deny_root",
-                    "detail": "File is under a denied root directory",
-                }
-            )
+            policy_violations.append({
+                "file": f,
+                "violation": "in_deny_root",
+                "detail": "File is under a denied root directory",
+            })
 
     # 2. Files in open-core but NOT in SSID source
     orphaned = sorted(oc_files - ssid_files)
     for f in orphaned:
-        drift_items.append(
-            {
-                "file": f,
-                "type": "orphaned_in_opencore",
-                "detail": "Present in open-core but not in SSID source",
-            }
-        )
+        drift_items.append({
+            "file": f,
+            "type": "orphaned_in_opencore",
+            "detail": "Present in open-core but not in SSID source",
+        })
 
     # 3. Content drift -- files in both repos but different content
     common = sorted(oc_files & ssid_files)
@@ -191,34 +191,28 @@ def detect_drift(
             ssid_hash = git_file_hash(ssid_repo, ssid_ref, f)
             oc_hash = git_file_hash(opencore_repo, opencore_ref, f)
             if ssid_hash != oc_hash:
-                drift_items.append(
-                    {
-                        "file": f,
-                        "type": "content_mismatch",
-                        "detail": f"SHA256 differs: ssid={ssid_hash[:12]}... oc={oc_hash[:12]}...",
-                    }
-                )
-        except RuntimeError:
-            drift_items.append(
-                {
+                drift_items.append({
                     "file": f,
-                    "type": "comparison_error",
-                    "detail": "Could not read file from one or both repos",
-                }
-            )
+                    "type": "content_mismatch",
+                    "detail": f"SHA256 differs: ssid={ssid_hash[:12]}... oc={oc_hash[:12]}...",
+                })
+        except RuntimeError:
+            drift_items.append({
+                "file": f,
+                "type": "comparison_error",
+                "detail": "Could not read file from one or both repos",
+            })
 
     # 4. Files that SHOULD be in open-core (per allowlist) but are missing
     missing_from_oc: list[dict[str, str]] = []
     if allow_prefixes:
         for f in sorted(ssid_files - oc_files):
             if is_in_allow_prefixes(f, allow_prefixes) and not is_denied_by_glob(f, deny_globs):
-                missing_from_oc.append(
-                    {
-                        "file": f,
-                        "type": "missing_in_opencore",
-                        "detail": "Allowed by policy but absent from open-core",
-                    }
-                )
+                missing_from_oc.append({
+                    "file": f,
+                    "type": "missing_in_opencore",
+                    "detail": "Allowed by policy but absent from open-core",
+                })
 
     has_drift = bool(drift_items) or bool(policy_violations) or bool(missing_from_oc)
 

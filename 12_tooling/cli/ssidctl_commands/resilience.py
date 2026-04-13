@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """ssidctl resilience -- Resilience status and drill management."""
-
 from __future__ import annotations
 
 import argparse
 import json
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -16,13 +15,9 @@ def build_parser(subparsers: argparse._SubParsersAction | None = None) -> argpar
         parser = subparsers.add_parser("resilience", help="Resilience status and drill management")
     else:
         parser = argparse.ArgumentParser(prog="ssidctl resilience", description=__doc__)
-    parser.add_argument(
-        "action",
-        nargs="?",
-        default="status",
-        choices=["status", "drill-list", "drill-history"],
-        help="Action to perform (default: status)",
-    )
+    parser.add_argument("action", nargs="?", default="status",
+                        choices=["status", "drill-list", "drill-history"],
+                        help="Action to perform (default: status)")
     parser.add_argument("--root", type=str, default=".", help="Repository root path")
     parser.add_argument("--json", dest="json_output", action="store_true", help="Output in JSON format")
     parser.set_defaults(func=run)
@@ -45,7 +40,7 @@ def run(args: argparse.Namespace) -> int:
     """Execute resilience command."""
     repo_root = Path(args.root).resolve()
     artifacts = _check_resilience_artifacts(repo_root)
-    timestamp = datetime.now(UTC).isoformat()
+    timestamp = datetime.now(timezone.utc).isoformat()
 
     result: dict[str, object] = {
         "command": "resilience",

@@ -7,27 +7,23 @@ designed to run in CI or locally as a gate before promotion.
 Registry import path (orchestrator):
     12_tooling.cli.determinism_check
 """
-
 from __future__ import annotations
 
 import hashlib
 import json
 import re
 import sys
-from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional, Sequence
 
 # ---------------------------------------------------------------------------
 # Result types
 # ---------------------------------------------------------------------------
 
-
 @dataclass
 class CheckResult:
     """Result of a single determinism check."""
-
     check_name: str
     passed: bool
     details: str = ""
@@ -36,8 +32,7 @@ class CheckResult:
 @dataclass
 class DeterminismReport:
     """Aggregated report of all determinism checks."""
-
-    results: list[CheckResult] = field(default_factory=list)
+    results: List[CheckResult] = field(default_factory=list)
 
     @property
     def all_passed(self) -> bool:
@@ -53,7 +48,7 @@ class DeterminismReport:
             lines.append(f"  [{status}] {r.check_name}: {r.details}")
         return "\n".join(lines)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "all_passed": self.all_passed,
             "results": sorted(
@@ -76,25 +71,31 @@ class DeterminismReport:
 
 # Patterns that indicate non-deterministic timestamps embedded in files.
 # Matches ISO-8601 with sub-second precision that varies across runs.
-_VOLATILE_TIMESTAMP_RE = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?")
+_VOLATILE_TIMESTAMP_RE = re.compile(
+    r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?"
+)
 
 # Patterns indicating seed-free randomness usage.
-_RANDOM_IMPORT_RE = re.compile(r"(?:^|\s)(?:import\s+random|from\s+random\s+import)")
-_RANDOM_CALL_NO_SEED_RE = re.compile(r"random\.(random|randint|choice|sample|shuffle|uniform)\s*\(")
+_RANDOM_IMPORT_RE = re.compile(
+    r"(?:^|\s)(?:import\s+random|from\s+random\s+import)"
+)
+_RANDOM_CALL_NO_SEED_RE = re.compile(
+    r"random\.(random|randint|choice|sample|shuffle|uniform)\s*\("
+)
 _SEED_CALL_RE = re.compile(r"random\.seed\s*\(")
 
 
 def check_no_volatile_timestamps(
     paths: Sequence[Path],
     *,
-    allowed_files: Sequence[str] | None = None,
+    allowed_files: Optional[Sequence[str]] = None,
 ) -> CheckResult:
     """Check that generated files do not contain volatile sub-second timestamps.
 
     Files whose names match *allowed_files* patterns are skipped.
     """
     allowed = set(allowed_files or [])
-    violations: list[str] = []
+    violations: List[str] = []
 
     for path in sorted(paths):
         if path.name in allowed:
@@ -124,7 +125,7 @@ def check_no_volatile_timestamps(
 
 def check_json_sorted(paths: Sequence[Path]) -> CheckResult:
     """Check that JSON files have sorted keys."""
-    violations: list[str] = []
+    violations: List[str] = []
 
     for path in sorted(paths):
         if not path.is_file() or path.suffix.lower() != ".json":
@@ -134,6 +135,8 @@ def check_json_sorted(paths: Sequence[Path]) -> CheckResult:
             data = json.loads(text)
         except (OSError, json.JSONDecodeError):
             continue
+        canonical = json.dumps(data, sort_keys=True, indent=2, ensure_ascii=False)
+        reparsed = json.dumps(json.loads(text), sort_keys=False, indent=2, ensure_ascii=False)
         # Compare the key order: re-serialize with sort_keys and compare
         if json.dumps(data, sort_keys=True) != json.dumps(data, sort_keys=False):
             violations.append(str(path))
@@ -166,7 +169,7 @@ def check_yaml_sorted(paths: Sequence[Path]) -> CheckResult:
             details="PyYAML not available, skipped",
         )
 
-    violations: list[str] = []
+    violations: List[str] = []
     for path in sorted(paths):
         if not path.is_file():
             continue
@@ -201,7 +204,7 @@ def check_no_seedless_random(paths: Sequence[Path]) -> CheckResult:
     Any file that imports ``random`` and calls random functions
     must also contain a ``random.seed(...)`` call.
     """
-    violations: list[str] = []
+    violations: List[str] = []
 
     for path in sorted(paths):
         if not path.is_file() or path.suffix.lower() != ".py":
@@ -230,7 +233,7 @@ def check_no_seedless_random(paths: Sequence[Path]) -> CheckResult:
 
 def check_build_artifact_hash_stability(
     artifact_paths: Sequence[Path],
-    expected_hashes: dict[str, str] | None = None,
+    expected_hashes: Optional[Dict[str, str]] = None,
 ) -> CheckResult:
     """Check that build artefacts produce stable SHA-256 hashes.
 
@@ -239,8 +242,8 @@ def check_build_artifact_hash_stability(
     the check simply confirms all artefacts are hashable and records
     their hashes.
     """
-    computed: dict[str, str] = {}
-    errors: list[str] = []
+    computed: Dict[str, str] = {}
+    errors: List[str] = []
 
     for path in sorted(artifact_paths):
         if not path.is_file():
@@ -255,7 +258,10 @@ def check_build_artifact_hash_stability(
             if actual is None:
                 errors.append(f"{name}: missing artefact")
             elif actual != expected:
-                errors.append(f"{name}: hash mismatch (expected {expected[:12]}..., got {actual[:12]}...)")
+                errors.append(
+                    f"{name}: hash mismatch (expected {expected[:12]}..., "
+                    f"got {actual[:12]}...)"
+                )
 
     if errors:
         return CheckResult(
@@ -274,13 +280,12 @@ def check_build_artifact_hash_stability(
 # Aggregated runner
 # ---------------------------------------------------------------------------
 
-
 def run_all_checks(
     scan_root: Path,
     *,
-    artifact_paths: Sequence[Path] | None = None,
-    expected_hashes: dict[str, str] | None = None,
-    allowed_timestamp_files: Sequence[str] | None = None,
+    artifact_paths: Optional[Sequence[Path]] = None,
+    expected_hashes: Optional[Dict[str, str]] = None,
+    allowed_timestamp_files: Optional[Sequence[str]] = None,
 ) -> DeterminismReport:
     """Run all determinism checks under *scan_root*.
 
@@ -299,7 +304,11 @@ def run_all_checks(
     yaml_files = [f for f in all_files if f.suffix in (".yaml", ".yml")]
 
     report = DeterminismReport()
-    report.results.append(check_no_volatile_timestamps(all_files, allowed_files=allowed_timestamp_files))
+    report.results.append(
+        check_no_volatile_timestamps(
+            all_files, allowed_files=allowed_timestamp_files
+        )
+    )
     report.results.append(check_json_sorted(json_files))
     report.results.append(check_yaml_sorted(yaml_files))
     report.results.append(check_no_seedless_random(py_files))
@@ -316,8 +325,7 @@ def run_all_checks(
 # CLI entry point
 # ---------------------------------------------------------------------------
 
-
-def main(argv: list[str] | None = None) -> int:
+def main(argv: Optional[List[str]] = None) -> int:
     """CLI entry point for determinism checks.
 
     Usage:
