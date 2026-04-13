@@ -11,23 +11,58 @@ Contains the open-source subset: core validators, tooling, codex, compliance pol
 
 ## Open-Core Scope
 
-This repository exposes **5 root modules** from the canonical SSID architecture:
+### Exported Roots (Public API)
 
-| Root | Purpose |
-|------|---------|
-| `03_core` | SoT validator core, identity primitives |
-| `12_tooling` | CLI tools (gates, dispatcher, validator), guard scripts |
-| `16_codex` | Architecture Decision Records (ADRs), SoT contracts |
-| `23_compliance` | OPA policies, root-level exception allowlist |
-| `24_meta_orchestration` | Canonical dispatcher, SoT artifact registry |
+This repository exposes **5 exported root modules** that form the public API of SSID Open-Core:
 
-All other SSID roots are maintained in the private canonical repository and are not part of this open-core distribution.
+| Root | Purpose | Status |
+|------|---------|--------|
+| `03_core` | SoT validator core, identity primitives | ✓ Exported |
+| `12_tooling` | CLI tools (gates, dispatcher, validator), guard scripts | ✓ Exported |
+| `16_codex` | Architecture Decision Records (ADRs), SoT contracts | ✓ Exported |
+| `23_compliance` | OPA policies, root-level exception allowlist | ✓ Exported |
+| `24_meta_orchestration` | Canonical dispatcher, SoT artifact registry | ✓ Exported |
+
+### Scaffolded Roots (Not Exported)
+
+The repository structure includes 19 additional scaffolded root directories (01_ai_layer, 02_audit_logging, 04_deployment, etc.) that represent the full canonical SSID architecture. These are preserved for structural consistency but contain no public content and are not exported.
+
+### Repository Status
+
+- **Exported:** 5 root modules available for public use
+- **Scaffolded:** 19 root module directories (structure only, no public content)
+- **Total:** 24 roots (ROOT-24 architecture immutable)
+- **Distribution:** Open-core subset only; full implementation in private canonical repository
 
 ## Prerequisites
 
 - Python 3.11+
 - `pip install pyyaml`
 - OPA CLI (optional, for policy gate)
+
+## Public Export Validation
+
+The repository includes a deterministic public export pipeline that validates all exported roots for public safety:
+
+```bash
+# Build public export manifest and validate boundaries
+python 12_tooling/scripts/build_public_export.py
+
+# Validate public boundary (no private refs, secrets, local paths, false mainnet claims)
+python 12_tooling/scripts/validate_public_boundary.py
+
+# Generate export status report
+python 12_tooling/scripts/generate_export_status_report.py
+
+# Run comprehensive export pipeline tests (27 tests)
+python -m pytest 11_test_simulation/tests_export/test_export_pipeline.py -v
+```
+
+All exported roots pass public-safety boundary validation:
+- ✓ No private repository references
+- ✓ No absolute local paths
+- ✓ No secrets, keys, or credentials
+- ✓ No unbacked mainnet/production claims
 
 ## Quickstart
 
@@ -79,10 +114,18 @@ Details: [`16_codex/decisions/`](16_codex/decisions/) (ADRs) | [`CONTRIBUTING.md
 
 ## Security
 
-- No secrets, keys, or PII in the repository.
-- `.claude/` is a local-only dev config directory (gitignored, see [ADR-0005](16_codex/decisions/ADR_0005_claude_local_dev_root_exception.md)).
-- Hash-only evidence: no agent stdout/stderr or prompts persisted.
-- Report vulnerabilities via GitHub Security Advisories.
+- **Public Boundary:** Automated validation on every CI run ensures:
+  - No secrets, keys, credentials, or PII in exported roots
+  - No absolute local paths (C:\Users, /home/*, /mnt/*)
+  - No private repository references (SSID-private, local.ssid, etc.)
+  - No false mainnet/production claims without context
+  
+- **Repository Integrity:**
+  - Hash-only evidence chain (no agent stdout/stderr or prompts persisted)
+  - `.claude/` is a local-only dev config directory (gitignored, see [ADR-0005](16_codex/decisions/ADR_0005_claude_local_dev_root_exception.md))
+  - Structure guard enforces ROOT-24 immutability
+  
+- **Vulnerability Reporting:** Report security issues via [GitHub Security Advisories](https://github.com/EduBrainBoost/SSID-open-core/security/advisories)
 
 ## License
 
