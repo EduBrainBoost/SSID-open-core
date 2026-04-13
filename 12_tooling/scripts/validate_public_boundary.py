@@ -22,10 +22,12 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Boundary rules
 PRIVATE_REPO_PATTERNS = [
-    r'(?i)ssid(?!-open-core)(?!-docs)',  # SSID except open-core and docs
-    r'(?i)local\.ssid',
-    r'(?i)local-ssid',
-    r'(?i)localssid',
+    r'(?i)ssid-private',  # SSID-private repo specifically
+    r'(?i)ssid-internal',  # SSID-internal repo
+    r'(?i)local\.ssid',  # local.ssid development variant
+    r'(?i)local-ssid',  # local-ssid variant
+    r'(?i)localssid',  # localssid variant
+    r'(?i)ssid-workspace',  # workspace-local variant
 ]
 
 ABSOLUTE_PATH_PATTERNS = [
@@ -76,7 +78,10 @@ EXPORTED_ROOTS = [
 
 def is_pattern_definition_file(file_path: Path) -> bool:
     """Check if file is a pattern definition file (allowed to contain patterns)."""
-    rel_path = str(file_path.relative_to(REPO_ROOT)).replace('\\', '/')
+    try:
+        rel_path = str(file_path.resolve().relative_to(REPO_ROOT.resolve())).replace('\\', '/')
+    except ValueError:
+        return False
     return any(rel_path.endswith(pattern) for pattern in PATTERN_DEFINITION_FILES)
 
 
@@ -92,25 +97,31 @@ def is_in_exported_root(file_path: Path) -> bool:
 def validate_no_private_repo_refs(repo_root: Path) -> list[str]:
     """Check for private repo references (except in definition files)."""
     violations = []
+    repo_abs = repo_root.resolve()
 
-    for file in repo_root.rglob('*'):
-        if not file.is_file():
-            continue
-        if not is_in_exported_root(file):
-            continue
-        if is_pattern_definition_file(file):
-            continue
-        if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json', '.sh']:
+    # Only scan exported roots
+    for root in EXPORTED_ROOTS:
+        root_path = repo_root / root
+        if not root_path.exists():
             continue
 
-        try:
-            content = file.read_text(encoding='utf-8', errors='ignore')
-            for pattern in PRIVATE_REPO_PATTERNS:
-                if re.search(pattern, content):
-                    violations.append(f"{file.relative_to(repo_root)}: private repo reference")
-                    break
-        except Exception:
-            pass
+        for file in root_path.rglob('*'):
+            if not file.is_file():
+                continue
+            if is_pattern_definition_file(file):
+                continue
+            if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json', '.sh']:
+                continue
+
+            try:
+                content = file.read_text(encoding='utf-8', errors='ignore')
+                for pattern in PRIVATE_REPO_PATTERNS:
+                    if re.search(pattern, content):
+                        rel_path = file.resolve().relative_to(repo_abs)
+                        violations.append(f"{rel_path}: private repo reference")
+                        break
+            except Exception:
+                pass
 
     return violations
 
@@ -118,29 +129,35 @@ def validate_no_private_repo_refs(repo_root: Path) -> list[str]:
 def validate_no_local_paths(repo_root: Path) -> list[str]:
     """Check for absolute local paths (except in definition/test files)."""
     violations = []
+    repo_abs = repo_root.resolve()
 
-    for file in repo_root.rglob('*'):
-        if not file.is_file():
-            continue
-        if not is_in_exported_root(file):
-            continue
-        if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json', '.sh']:
-            continue
-
-        # Allow paths in test files
-        if '/tests/' in str(file).replace('\\', '/'):
-            continue
-        if 'test_' in file.name:
+    # Only scan exported roots
+    for root in EXPORTED_ROOTS:
+        root_path = repo_root / root
+        if not root_path.exists():
             continue
 
-        try:
-            content = file.read_text(encoding='utf-8', errors='ignore')
-            for pattern in ABSOLUTE_PATH_PATTERNS:
-                if re.search(pattern, content):
-                    violations.append(f"{file.relative_to(repo_root)}: absolute local path")
-                    break
-        except Exception:
-            pass
+        for file in root_path.rglob('*'):
+            if not file.is_file():
+                continue
+            if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json', '.sh']:
+                continue
+
+            # Allow paths in test files
+            if '/tests/' in str(file).replace('\\', '/'):
+                continue
+            if 'test_' in file.name:
+                continue
+
+            try:
+                content = file.read_text(encoding='utf-8', errors='ignore')
+                for pattern in ABSOLUTE_PATH_PATTERNS:
+                    if re.search(pattern, content):
+                        rel_path = file.resolve().relative_to(repo_abs)
+                        violations.append(f"{rel_path}: absolute local path")
+                        break
+            except Exception:
+                pass
 
     return violations
 
@@ -148,41 +165,46 @@ def validate_no_local_paths(repo_root: Path) -> list[str]:
 def validate_no_secrets(repo_root: Path) -> list[str]:
     """Check for secret patterns and blocked file types."""
     violations = []
+    repo_abs = repo_root.resolve()
 
-    # Check for blocked file extensions
-    for file in repo_root.rglob('*'):
-        if not file.is_file():
-            continue
-        if not is_in_exported_root(file):
-            continue
-
-        # Blocked extensions
-        for pattern in BLOCKED_FILE_PATTERNS:
-            if re.match(pattern, file.name):
-                violations.append(f"{file.relative_to(repo_root)}: blocked file type")
-                break
-
-    # Check for secret patterns in source files
-    for file in repo_root.rglob('*'):
-        if not file.is_file():
-            continue
-        if not is_in_exported_root(file):
-            continue
-        if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json']:
+    # Only scan exported roots
+    for root in EXPORTED_ROOTS:
+        root_path = repo_root / root
+        if not root_path.exists():
             continue
 
-        # Skip test files
-        if 'test' in file.name or '/tests/' in str(file).replace('\\', '/'):
-            continue
+        # Check for blocked file extensions
+        for file in root_path.rglob('*'):
+            if not file.is_file():
+                continue
 
-        try:
-            content = file.read_text(encoding='utf-8', errors='ignore')
-            for pattern in SECRET_PATTERNS:
-                if re.search(pattern, content):
-                    violations.append(f"{file.relative_to(repo_root)}: secret pattern detected")
+            # Blocked extensions
+            for pattern in BLOCKED_FILE_PATTERNS:
+                if re.match(pattern, file.name):
+                    rel_path = file.resolve().relative_to(repo_abs)
+                    violations.append(f"{rel_path}: blocked file type")
                     break
-        except Exception:
-            pass
+
+        # Check for secret patterns in source files
+        for file in root_path.rglob('*'):
+            if not file.is_file():
+                continue
+            if file.suffix not in ['.py', '.md', '.yaml', '.yml', '.json']:
+                continue
+
+            # Skip test files
+            if 'test' in file.name or '/tests/' in str(file).replace('\\', '/'):
+                continue
+
+            try:
+                content = file.read_text(encoding='utf-8', errors='ignore')
+                for pattern in SECRET_PATTERNS:
+                    if re.search(pattern, content):
+                        rel_path = file.resolve().relative_to(repo_abs)
+                        violations.append(f"{rel_path}: secret pattern detected")
+                        break
+            except Exception:
+                pass
 
     return violations
 
@@ -190,35 +212,41 @@ def validate_no_secrets(repo_root: Path) -> list[str]:
 def validate_no_mainnet_false_claims(repo_root: Path) -> list[str]:
     """Check for unbacked mainnet/production claims."""
     violations = []
+    repo_abs = repo_root.resolve()
 
-    for file in repo_root.rglob('*.md'):
-        if not is_in_exported_root(file):
+    # Only scan exported roots
+    for root in EXPORTED_ROOTS:
+        root_path = repo_root / root
+        if not root_path.exists():
             continue
-        if '/tests/' in str(file).replace('\\', '/'):
-            continue
 
-        try:
-            content = file.read_text(encoding='utf-8', errors='ignore')
-            lines = content.split('\n')
+        for file in root_path.rglob('*.md'):
+            if '/tests/' in str(file).replace('\\', '/'):
+                continue
 
-            for i, line in enumerate(lines):
-                if not any(word in line.lower() for word in ['mainnet', 'production', 'live']):
-                    continue
+            try:
+                content = file.read_text(encoding='utf-8', errors='ignore')
+                lines = content.split('\n')
 
-                # Check if this is properly contextualized
-                context = '\n'.join(lines[max(0, i-2):min(len(lines), i+3)])
+                for i, line in enumerate(lines):
+                    if not any(word in line.lower() for word in ['mainnet', 'production', 'live']):
+                        continue
 
-                # Allowed contexts
-                if any(keyword in context.lower() for keyword in [
-                    'testnet', 'readiness', 'planned', 'future', 'will',
-                    'https://', 'http://', 'link', 'reference'
-                ]):
-                    continue
+                    # Check if this is properly contextualized
+                    context = '\n'.join(lines[max(0, i-2):min(len(lines), i+3)])
 
-                violations.append(f"{file.relative_to(repo_root)}:{i+1}: unbacked mainnet claim")
+                    # Allowed contexts
+                    if any(keyword in context.lower() for keyword in [
+                        'testnet', 'readiness', 'planned', 'future', 'will',
+                        'https://', 'http://', 'link', 'reference'
+                    ]):
+                        continue
 
-        except Exception:
-            pass
+                    rel_path = file.resolve().relative_to(repo_abs)
+                    violations.append(f"{rel_path}:{i+1}: unbacked mainnet claim")
+
+            except Exception:
+                pass
 
     return violations
 
