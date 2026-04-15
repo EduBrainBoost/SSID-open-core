@@ -1,5 +1,12 @@
 # Contributing to SSID-open-core
 
+## WICHTIGE BOUNDARY REGELN (VOR DEM BEITRAG LESEN)
+
+✅ Dieses Repo ist eine kuratierte public-safe Export-Oberfläche. Es ist KEIN Dump des privaten SSID Repos.
+✅ Nur Inhalte aus der offiziellen Allowlist sind erlaubt.
+✅ Keine operativen Runtime Dateien, Registry, Report Bus, Evidence, Caches oder Backups.
+✅ Alle Änderungen werden automatisch auf Boundary Verstöße geprüft.
+
 ## Getting Started
 
 1. Fork the repository

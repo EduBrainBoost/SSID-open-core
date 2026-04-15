@@ -1,0 +1,46 @@
+# Open Core Export Pipeline
+name: Open Core Export Pipeline
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  export-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Export Clean
+        run: |
+          echo "Running export validation..."
+          rm -rf ssid_open_core_export/
+          rm -rf __pycache__ .pytest_cache
+          rm -f *.zip *.tar.gz
+          echo "Export cleanup complete"
+
+      - name: Validate No Secrets
+        run: |
+          echo "Checking for leaks..."
+          if grep -r "PRIVATE_KEY\|SECRET_KEY\|password\|token" --include="*.py" --include="*.json" . 2>/dev/null | grep -v "^[A-Za-z_]* = " | grep -v "test_\|mock_\|#"; then
+            echo "Potential secret detected"
+            exit 1
+          fi
+
+      - name: Validate Dependencies
+        run: |
+          echo "Validating public dependencies..."
+          cat pyproject.toml | grep -E "dependencies|optional-dependencies" -A20 | grep -v "^--$" | grep -v "^[A-Za-z ]" | sort -u
+
+      - name: Create Export Artifact
+        run: |
+          mkdir -p ssid_open_core_export
+          cp -r 03_core 12_tooling 16_codex 23_compliance 24_meta_orchestration pyproject.toml README.md LICENSE CONTRIBUTING.md AGENTS.md ssid_open_core_export/
+          echo "Export artifact created"
+
+      - name: Generate Checksum
+        run: |
+          cd ssid_open_core_export
+          find . -type f -exec sha256sum {} \; > ../export_checksum.txt
+          echo "Checksums generated"

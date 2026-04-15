@@ -1,0 +1,41 @@
+# Open Core CI Gate
+name: Open Core Boundary Gate
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  boundary-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check forbidden paths
+        run: |
+          echo "Checking for forbidden paths..."
+          FORBIDDEN="__pycache__ .pytest_cache shards registry report_bus tsar incident triggers version_management backup_*.tar.gz"
+          FOUND=0
+          for pattern in $FORBIDDEN; do
+            if find . -type f -name "$pattern" 2>/dev/null | grep -q .; then
+              echo "FOUND: $pattern"
+              FOUND=1
+            fi
+          done
+          if [ $FOUND -eq 1 ]; then
+            echo "Boundary violation detected!"
+            exit 1
+          fi
+
+      - name: Run boundary tests
+        run: pytest 12_tooling/tests/test_open_core_boundary.py -v
+
+      - name: Verify allowed roots exist
+        run: |
+          for path in 03_core/validators/sot 12_tooling/cli 16_codex/decisions 23_compliance/policies/sot 24_meta_orchestration/dispatcher; do
+            if [ ! -d "$path" ]; then
+              echo "Missing allowed root: $path"
+              exit 1
+            fi
+          done
