@@ -1,0 +1,10 @@
+{
+  "overall_score": 0.88,
+  "components": {
+    "video_clarity": 0.92,
+    "audio_quality": 0.85,
+    "shot_detection_confidence": 0.91,
+    "transcript_confidence": 0.89
+  },
+  "warnings": []
+}

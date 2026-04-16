@@ -1,0 +1,28 @@
+{
+  "transcript_id": "transcript_v1",
+  "language": "en",
+  "segments": [
+    {
+      "segment_id": 1,
+      "start_time": 0.0,
+      "end_time": 100.0,
+      "text": "[Synthetic test audio segment 1]",
+      "confidence": 0.89
+    },
+    {
+      "segment_id": 2,
+      "start_time": 100.0,
+      "end_time": 200.0,
+      "text": "[Synthetic test audio segment 2]",
+      "confidence": 0.91
+    },
+    {
+      "segment_id": 3,
+      "start_time": 200.0,
+      "end_time": 300.0,
+      "text": "[Synthetic test audio segment 3]",
+      "confidence": 0.88
+    }
+  ],
+  "full_text": "[Synthetic test audio segment 1] [Synthetic test audio segment 2] [Synthetic test audio segment 3]"
+}

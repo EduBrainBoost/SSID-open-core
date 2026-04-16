@@ -1,0 +1,24 @@
+{
+  "resolution": {
+    "width": 1920,
+    "height": 1080,
+    "aspect_ratio": "16:9"
+  },
+  "temporal": {
+    "duration_seconds": 300,
+    "frame_rate": 30,
+    "total_frames": 9000
+  },
+  "codec": {
+    "video_codec": "h264",
+    "video_profile": "high",
+    "audio_codec": "aac",
+    "audio_sample_rate": 44100,
+    "audio_channels": 2
+  },
+  "quality_metrics": {
+    "bitrate_video_kbps": 2500,
+    "bitrate_audio_kbps": 128,
+    "pix_fmt": "yuv420p"
+  }
+}

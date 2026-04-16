@@ -1,0 +1,50 @@
+{
+  "generated_timestamp": "2026-04-17T00:00:00Z",
+  "deterministic_seed": 42,
+  "outputs": {
+    "archive_metadata.json": {
+      "sha256": "52e409c69f622a7b79ef358a79793e72f9a39571176a444d8d61697f3bbb85dd",
+      "size_bytes": 218
+    },
+    "audio_map.json": {
+      "sha256": "edb5a4ebba36654dfd97b6b18538e27bf83600636a768eee0912ac4d46ae8f38",
+      "size_bytes": 189
+    },
+    "caption_layers.json": {
+      "sha256": "6b6817777bdf185ec653ddd699414dc5aa2fd7f718a0cfe9ffb1be4ceea513bf",
+      "size_bytes": 79
+    },
+    "hook_fingerprint.json": {
+      "sha256": "556a3a1086823af200d0080afb52f6588464627bfd2058de09e73a50ab70ffd4",
+      "size_bytes": 75
+    },
+    "media_technical.json": {
+      "sha256": "4c2e9c9c8d97770d77579a18c9c7f27380e438e4dc36fe2f7a12929b168d9187",
+      "size_bytes": 483
+    },
+    "processing_metadata.json": {
+      "sha256": "f4d2849ecf2602dfd52636d43293fb832356a27f5e1f03bd1c4948361ef88b9a",
+      "size_bytes": 318
+    },
+    "quality_assessment.json": {
+      "sha256": "5568f7b3d717169d5bfb810d75d2ef567a17c3978141ebf28c8e859a3daebba0",
+      "size_bytes": 204
+    },
+    "shot_timeline.json": {
+      "sha256": "b6b5901413229459926822c1f90d2c036f139353213799227ee66b4e2621196c",
+      "size_bytes": 629
+    },
+    "source_manifest.json": {
+      "sha256": "41649d1897f96249f3c9470da5c0af2af4fcbe01eb19a9de9a9e5ac77606e60d",
+      "size_bytes": 439
+    },
+    "transcript_master.json": {
+      "sha256": "892959d3cc3d85c6d480cb7097f05bdc1464541ed3273e131eb95ca53ef22320",
+      "size_bytes": 709
+    },
+    "validation_report.json": {
+      "sha256": "ab9cc790f90a2ae2801ff4dd38419dcd1be5d5e38e5dbd4bf97500031aa14f96",
+      "size_bytes": 463
+    }
+  }
+}

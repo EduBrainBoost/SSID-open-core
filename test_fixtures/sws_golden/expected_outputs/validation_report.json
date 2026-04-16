@@ -1,0 +1,19 @@
+{
+  "validation_timestamp": "2026-04-17T00:00:00Z",
+  "checks_passed": 11,
+  "checks_total": 11,
+  "status": "PASS",
+  "details": {
+    "file_exists": true,
+    "file_size_in_range": true,
+    "codec_valid": true,
+    "resolution_valid": true,
+    "duration_valid": true,
+    "metadata_complete": true,
+    "audio_present": true,
+    "transcript_valid": true,
+    "shots_detected": true,
+    "hashes_match": true,
+    "no_corruption": true
+  }
+}

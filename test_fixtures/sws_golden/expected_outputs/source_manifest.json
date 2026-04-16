@@ -1,0 +1,15 @@
+{
+  "source_id": "synthetic_short_video_v1.0",
+  "filename": "synthetic_short_video.mp4",
+  "duration_seconds": 300,
+  "width": 1920,
+  "height": 1080,
+  "frame_rate": 30,
+  "codec_video": "h264",
+  "codec_audio": "aac",
+  "sample_rate": 44100,
+  "channels": 2,
+  "file_size_bytes": 25000000,
+  "created_timestamp": "2026-04-17T00:00:00Z",
+  "source_hash": "7a2c55ebe181789878193f9ea150c573564a34d423bb86c3e97f8a0c8186040e"
+}

@@ -1,0 +1,6 @@
+{
+  "archive_id": "archive_sws_golden_v1",
+  "created_date": "2026-04-17",
+  "analyst_notes": "Golden fixture for SWS test suite. Deterministically generated synthetic video.",
+  "retention_policy": "indefinite"
+}

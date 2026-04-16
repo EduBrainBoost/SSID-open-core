@@ -1,0 +1,13 @@
+{
+  "analyzer_version": "sws_analyzer_v1.0",
+  "processing_timestamp": "2026-04-17T00:00:00Z",
+  "processing_duration_seconds": 15.3,
+  "stages_completed": [
+    "frame_extraction",
+    "shot_detection",
+    "transcript_extraction",
+    "audio_analysis",
+    "caption_detection",
+    "hook_detection"
+  ]
+}

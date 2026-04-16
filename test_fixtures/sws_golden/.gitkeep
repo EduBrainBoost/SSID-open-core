@@ -1,0 +1,9 @@
+# SWS Golden Fixtures Directory
+# This directory contains deterministically generated golden test fixtures
+# for the SWS analyzer test suite.
+#
+# Key files:
+#   - expected_outputs/          : 11 JSON reference outputs
+#   - reference_hashes.json      : SHA256 integrity verification
+#   - regenerate_fixtures.sh     : Deterministic regeneration script
+#   - README.md                  : Setup and usage guide

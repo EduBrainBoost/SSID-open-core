@@ -1,0 +1,11 @@
+{
+  "source_channels": 1,
+  "output_channels": 2,
+  "channel_map": {
+    "channel_0": {
+      "type": "mono_to_stereo",
+      "left_source": 0,
+      "right_source": 0
+    }
+  }
+}
