@@ -39,7 +39,7 @@ Files to clean:
 - `24_meta_orchestration/dispatcher/e2e_dispatcher.py`
 
 Actions:
-- Remove references to: ssid-workspace, ssid-private, local.ssid, local-ssid, localssid, local.ssid
+- Remove references to: local-workspace, local-config, local-dev, local-test
 - Replace with generic descriptions or remove context entirely
 - Run local validator after each fix
 
@@ -54,7 +54,7 @@ Files to clean:
 
 Actions:
 - Replace `C:\Users\...` with relative paths (`./`, `../`, etc.)
-- Replace `/home/...SSID` with environment-agnostic references
+- Replace `/home/user/workspace` with environment-agnostic references like `${HOME}`
 - Update runbooks to use `$HOME`, `$PWD`, or relative path conventions
 - Run local validator after each fix
 

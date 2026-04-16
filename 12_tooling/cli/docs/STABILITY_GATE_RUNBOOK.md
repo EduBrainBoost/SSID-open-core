@@ -85,7 +85,7 @@ Evidence and gate artifacts use the standard SSID workspace layout.
 
 | Environment | Workspace Root | Example Worktree |
 |-------------|---------------|------------------|
-| **Windows (native)** | `C:\Users\<user>\.ssid\worktrees\` | `C:\Users\<user>\.ssid\worktrees\<TASK_ID>` |
+| **Windows (native)** | `${HOME} | `${HOME} |
 | **WSL / Linux** | `~/.ssid/worktrees/` | `~/.ssid/worktrees/<TASK_ID>` |
 | **Codespaces** | `~/.ssid/worktrees/` | `~/.ssid/worktrees/<TASK_ID>` |
 

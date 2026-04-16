@@ -16,7 +16,7 @@ SSID-open-core v0.1.0 is designed for **testnet validation and development** on 
 | Unit Tests | PASS | All pytest fixtures verified locally |
 | Integration Tests | PASS | Core components tested on Polygon Amoy testnet |
 | Private Repo References | CLEAN | All external references removed or documented |
-| Absolute Local Paths | CLEAN | No C:\Users or /home paths in distribution |
+| Absolute Local Paths | CLEAN | No system-specific paths in distribution |
 | Unbacked Mainnet Claims | RESOLVED | All claims qualified as testnet-only |
 | API OpenAPI Spec | COMPLETE | Generated from 03_core/admin_api/ |
 | Security Audit | PENDING | Phase 2 remediation in progress |
@@ -87,7 +87,7 @@ pytest -v 11_test_simulation/
 
 # Check for violations
 grep -r "github.com/EduBrainBoost/SSID[^-]" --include="*.py" --include="*.md" .
-grep -r "C:\Users\bibel\|/c/users/bibel" --include="*.py" --include="*.md" .
+grep -r "${HOME}" --include="*.py" --include="*.md" .
 ```
 
 ## Classification

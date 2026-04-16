@@ -49,7 +49,7 @@ class ArtifactDriftGateV2:
         self.workspace_root = self._find_workspace_root()
 
     def _find_workspace_root(self) -> Path:
-        """Find SSID-Workspace root."""
+        """Find [REDACTED-PRIVATE-REPO] root."""
         current = self.repo_root
         while current != current.parent:
             if (current.parent / "SSID" / ".git").exists():

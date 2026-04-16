@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 _PATH_SERIALIZED_EXPORT_PATTERN = re.compile(
-    r"^[A-Za-z]--Users-.*SSID-Workspace-SSID-Arbeitsbereich-Github-(SSID|SSID-EMS)(-.+)?$",
+    r"^[A-Za-z]--Users-.*[REDACTED-PRIVATE-REPO]-SSID-Arbeitsbereich-Github-(SSID|SSID-EMS)(-.+)?$",
     re.IGNORECASE,
 )
 

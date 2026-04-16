@@ -1036,13 +1036,13 @@ def main():
 Examples:
   # Execute against real repositories
   python3 phase9_execute_option_a.py \\
-    --source-repo /c/Users/bibel/SSID-Workspace/SSID-Arbeitsbereich/Github/SSID \\
+    --source-repo /c/Users/bibel/[REDACTED-PRIVATE-REPO]/SSID-Arbeitsbereich/Github/SSID \\
     --target-repo EduBrainBoost/SSID-open-core \\
     --staging-dir /tmp/ssid-phase9-staging
 
   # Dry-run for validation
   python3 phase9_execute_option_a.py \\
-    --source-repo /c/Users/bibel/SSID-Workspace/SSID-Arbeitsbereich/Github/SSID \\
+    --source-repo /c/Users/bibel/[REDACTED-PRIVATE-REPO]/SSID-Arbeitsbereich/Github/SSID \\
     --target-repo EduBrainBoost/SSID-open-core \\
     --staging-dir /tmp/ssid-phase9-staging \\
     --dry-run

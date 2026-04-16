@@ -165,7 +165,7 @@ All agent workspaces, scratch files, and build artifacts use the
 
 | Environment | Workspace Root | Example Worktree |
 |-------------|---------------|------------------|
-| **Windows (native)** | `C:\Users\<user>\.ssid\worktrees\` | `C:\Users\<user>\.ssid\worktrees\PH2_LOOP_DOC_001` |
+| **Windows (native)** | `${HOME} | `${HOME} |
 | **WSL / Linux** | `~/.ssid/worktrees/` | `~/.ssid/worktrees/PH2_LOOP_DOC_001` |
 | **Codespaces** | `~/.ssid/worktrees/` | `~/.ssid/worktrees/PH2_LOOP_DOC_001` |
 
@@ -224,7 +224,7 @@ Issues specific to running the automation loop on Windows (native or Git Bash).
 | `python` not found but `python3` works (or vice versa) | Python launcher aliasing differs between Git Bash and cmd | In Git Bash, use `python` (the `py` launcher does not work). In PowerShell/cmd, use `python` or `py -3`. Verify with `python --version`. |
 | Line ending warnings from git | CRLF/LF mismatch | Set `git config core.autocrlf true` on Windows. The repo `.gitattributes` should handle most cases. If diffs show every line changed, run `git diff --ignore-cr-at-eol`. |
 | `UnicodeDecodeError` reading files | Non-UTF-8 locale or BOM issues | Ensure files are saved as UTF-8 without BOM. Set `PYTHONUTF8=1` environment variable: `set PYTHONUTF8=1` (cmd) or `$env:PYTHONUTF8=1` (PowerShell). |
-| Git Bash vs PowerShell path differences | Git Bash uses `/c/Users/...`, PowerShell uses `C:\Users\...` | Pick one shell and stay consistent. Git Bash is recommended for this project. If using PowerShell, translate paths: `C:\Users\<user>\SSID-Workspace\SSID-Arbeitsbereich\Github\SSID`. |
+| Git Bash vs PowerShell path differences | Git Bash uses `/c/Users/...`, PowerShell uses `${HOME} | Pick one shell and stay consistent. Git Bash is recommended for this project. If using PowerShell, translate paths: `${HOME} |
 | Stability gate fails with "Permission denied" | Windows file locking (antivirus, editor) | Close editors/IDEs that may lock files in `02_audit_logging/`. Retry after a few seconds. Exclude the repo from real-time antivirus scanning if safe to do so. |
 | `subprocess.CalledProcessError` on `--finalize` | A required check binary is not on PATH | Ensure `python` is on PATH in your current shell. For OPA checks, download the Windows binary and add its folder to PATH. |
 

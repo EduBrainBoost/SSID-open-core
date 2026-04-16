@@ -4,7 +4,7 @@ import json
 import os
 from pathlib import Path
 
-_SSID_ROOT = Path(os.environ.get("SSID_PATH", "C:/Users/bibel/SSID-Workspace/SSID-Arbeitsbereich/Github/SSID"))
+_SSID_ROOT = Path(os.environ.get("SSID_PATH", "${HOME}"))
 BUNDLE = _SSID_ROOT / "02_audit_logging" / "evidence" / "tasks" / "manual_backfill_20260213T090000Z"
 
 

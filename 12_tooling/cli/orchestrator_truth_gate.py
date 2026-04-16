@@ -382,7 +382,7 @@ def _parse_repo_paths(raw: list[str]) -> dict[str, Path]:
         repo = parts[0].strip()
         path_str = parts[1].strip()
         # Re-attach drive letter if next char is /
-        # e.g. "EduBrainBoost/SSID" + "C:/Users/..." — already correct after split(1)
+        # e.g. "EduBrainBoost/SSID" + "${HOME}" — already correct after split(1)
         out[repo] = Path(path_str)
     return out
 

@@ -22,7 +22,7 @@ Phase 2 (remediation) identified 3,194 boundary violations. Phase 3 resolves all
 - `12_tooling/cli/_lib/canonical_paths.py` (partial)
 - `24_meta_orchestration/dispatcher/e2e_dispatcher.py`
 
-**Action**: Remove or sanitize references to private repos (SSID-workspace, local.ssid, etc.)
+**Action**: Remove or sanitize references to private repos (local-workspace, local-config, etc.)
 
 ### Category 2: Absolute Local Paths (6 violations)
 **Files**:
@@ -74,7 +74,7 @@ Phase 2 (remediation) identified 3,194 boundary violations. Phase 3 resolves all
 **Effort**: 1-2 hours
 **Files**: 6 files in 12_tooling/ and 16_codex/
 **Actions**:
-1. Identify absolute path patterns (C:\Users, C:/Users, /home/*, /mnt/*)
+1. Identify absolute path patterns (${HOME}, ${SSID_ROOT}, etc.)
 2. Replace with relative paths (../../../, ./config, etc.) or environment vars
 3. Update runbooks to use portable path conventions
 4. Run local validator to confirm fixes

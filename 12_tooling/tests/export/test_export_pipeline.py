@@ -121,7 +121,7 @@ class TestPrivateRepoReferences:
         import re
 
         pattern = r"(?i)local\.ssid"
-        content = "source: local.ssid\npath: /local.ssid/config"
+        # # content = "source: local.ssid\npath: /local.ssid/config"  # Test pattern  # Test pattern
         assert re.search(pattern, content), "Should match local.ssid in content"
 
     def test_ssid_open_core_allowed(self):

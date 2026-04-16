@@ -38,7 +38,7 @@ from _lib.shards import parse_yaml as _parse_yaml_file
 
 # Sandbox outside repo to prevent self-inflation
 _STATE_DIR = Path(
-    os.environ.get("SSID_EMS_STATE_DIR", str(Path.home() / "SSID-Workspace" / "SSID-Arbeitsbereich" / "SSID_EMS_STATE"))
+    os.environ.get("SSID_EMS_STATE_DIR", str(Path.home() / "[REDACTED-PRIVATE-REPO]" / "SSID-Arbeitsbereich" / "SSID_EMS_STATE"))
 )
 SANDBOX_ROOT = _STATE_DIR / "sandboxes"
 RUN_LEDGER_ROOT = REPO_ROOT / "02_audit_logging" / "agent_runs"
