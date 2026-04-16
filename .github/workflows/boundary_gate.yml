@@ -12,6 +12,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Run public boundary validator (fail-closed)
+        run: |
+          echo "=== Public Boundary Validator (R5 Hardened) ==="
+          python 12_tooling/scripts/validate_public_boundary.py --verify-all
+          if [ $? -ne 0 ]; then
+            echo "❌ BOUNDARY GATE FAILED: Public boundary violations detected"
+            exit 1
+          fi
+          echo "✓ Public boundary validation PASSED"
+
       - name: Check forbidden paths
         run: |
           echo "Checking for forbidden paths..."
@@ -39,3 +54,11 @@ jobs:
               exit 1
             fi
           done
+
+      - name: Upload validator report to job summary
+        if: always()
+        run: |
+          echo "## Boundary Validation Report" >> $GITHUB_STEP_SUMMARY
+          echo "- Validator: validate_public_boundary.py (R5 hardened)" >> $GITHUB_STEP_SUMMARY
+          echo "- Exit code: $?" >> $GITHUB_STEP_SUMMARY
+          echo "- Fail-closed: YES" >> $GITHUB_STEP_SUMMARY

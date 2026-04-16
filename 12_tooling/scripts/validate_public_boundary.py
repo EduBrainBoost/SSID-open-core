@@ -287,34 +287,51 @@ def validate_no_mainnet_false_claims(repo_root: Path) -> list[str]:
 
 
 def validate_denied_roots_empty(repo_root: Path) -> list[str]:
-    """Check that denied roots contain no meaningful code files.
+    """Check that denied roots contain no meaningful implementation code (FAIL-CLOSED).
 
-    Allowed: README.md, module.yaml, empty directories, scaffolds
-    Not allowed: Implementation code (*.py with logic), test files, config
+    Allowed: README.md, module.yaml, docs/ARCHITECTURE.md, shards/*, __init__.py stubs
+    Not allowed: Implementation *.py code, production configurations
+
+    FAIL-CLOSED: Any implementation code in a denied root causes exit 1.
+    Phase 2 allows scaffold structure; Phase 3 will remove all content.
     """
-    warnings = []
+    violations = []
+    repo_abs = repo_root.resolve()
 
     for root in DENIED_ROOTS:
         root_path = repo_root / root
         if not root_path.exists():
             continue
 
-        # Count code/content files (excluding metadata and empty scaffolds)
-        code_files = []
-        for py_file in root_path.rglob("*.py"):
-            # Skip __pycache__ and test stubs
-            if "__pycache__" in str(py_file):
+        # Scan for implementation code violations
+        for file in root_path.rglob("*.py"):
+            if not file.is_file():
                 continue
-            if py_file.name in ["__init__.py", "stub.py"]:
+
+            rel_path = str(file.resolve().relative_to(repo_abs)).replace("\\", "/")
+            file_name = file.name
+
+            # ALLOWED: __init__.py stubs only (empty or tiny imports)
+            if file_name == "__init__.py":
+                try:
+                    content = file.read_text(encoding="utf-8", errors="ignore").strip()
+                    if len(content) < 100 and ("import" in content or content == ""):
+                        continue
+                except Exception:
+                    pass
+                # If __init__.py has code, it's a violation
+                violations.append(f"{rel_path}: implementation code in denied root")
                 continue
-            # Skip tiny files (likely scaffolds)
-            if py_file.stat().st_size > 100:
-                code_files.append(py_file)
 
-        if code_files:
-            warnings.append(f"{root}: contains {len(code_files)} code file(s) (denied root should be empty scaffold)")
+            # DISALLOWED: Any other *.py file with implementation code (>100 bytes)
+            try:
+                size = file.stat().st_size
+                if size > 100:
+                    violations.append(f"{rel_path}: implementation code in denied root")
+            except Exception:
+                pass
 
-    return warnings
+    return violations
 
 
 def validate_export_scope(repo_root: Path, manifest: dict = None) -> list[str]:
@@ -323,17 +340,57 @@ def validate_export_scope(repo_root: Path, manifest: dict = None) -> list[str]:
     return []
 
 
+def validate_exported_roots_complete(repo_root: Path) -> dict:
+    """Verify that exported roots have expected content structure.
+
+    Returns dict with 'status' (OK|PARTIAL|MISSING) and 'details'.
+    """
+    expected_subdirs = {
+        "03_core": ["validators", "sot"],
+        "12_tooling": ["cli", "scripts"],
+        "16_codex": ["decisions"],
+        "23_compliance": ["policies"],
+        "24_meta_orchestration": ["dispatcher"],
+    }
+
+    completeness = {}
+    for root, subdirs in expected_subdirs.items():
+        root_path = repo_root / root
+        if not root_path.exists():
+            completeness[root] = "MISSING"
+            continue
+
+        found_subdirs = [d for d in subdirs if (root_path / d).exists()]
+        if len(found_subdirs) == len(subdirs):
+            completeness[root] = "OK"
+        elif found_subdirs:
+            completeness[root] = "PARTIAL"
+        else:
+            completeness[root] = "MISSING"
+
+    overall = "OK" if all(v == "OK" for v in completeness.values()) else "PARTIAL"
+    return {"status": overall, "details": completeness}
+
+
 def main():
-    """Run boundary validation."""
+    """Run boundary validation with FAIL-CLOSED enforcement."""
+    import json
+
     print("=== SSID Open-Core Public Boundary Validator ===\n")
 
     violations = []
+    report = {
+        "status": "PASS",
+        "denied_root_violations": [],
+        "exported_root_completeness": {},
+        "total_violations": 0,
+    }
 
     print("[1] Checking for private repo references...")
     private_refs = validate_no_private_repo_refs(REPO_ROOT)
     violations.extend(private_refs)
     if private_refs:
-        print(f"    [WARN] Found {len(private_refs)} private repo reference(s)")
+        print(f"    [CRITICAL] Found {len(private_refs)} private repo reference(s)")
         for ref in private_refs[:5]:
             print(f"      - {ref}")
     else:
@@ -343,7 +400,7 @@ def main():
     local_paths = validate_no_local_paths(REPO_ROOT)
     violations.extend(local_paths)
     if local_paths:
-        print(f"    [WARN] Found {len(local_paths)} absolute path(s)")
+        print(f"    [CRITICAL] Found {len(local_paths)} absolute path(s)")
         for path in local_paths[:5]:
             print(f"      - {path}")
     else:
@@ -353,7 +410,7 @@ def main():
     secrets = validate_no_secrets(REPO_ROOT)
     violations.extend(secrets)
     if secrets:
-        print(f"    [WARN] Found {len(secrets)} secret pattern(s)")
+        print(f"    [CRITICAL] Found {len(secrets)} secret pattern(s)")
         for secret in secrets[:5]:
             print(f"      - {secret}")
     else:
@@ -363,40 +420,52 @@ def main():
     mainnet = validate_no_mainnet_false_claims(REPO_ROOT)
     violations.extend(mainnet)
     if mainnet:
-        print(f"    [WARN] Found {len(mainnet)} mainnet claim(s)")
+        print(f"    [CRITICAL] Found {len(mainnet)} mainnet claim(s)")
         for claim in mainnet[:5]:
             print(f"      - {claim}")
     else:
         print("    [OK] No unbacked mainnet claims")
 
-    print("[5] Checking that denied roots are empty...")
+    print("[5] Checking that denied roots are empty (FAIL-CLOSED)...")
     denied_issues = validate_denied_roots_empty(REPO_ROOT)
-    # Denied root warnings are informational; don't fail yet (Phase 3 action)
     if denied_issues:
-        print(f"    [INFO] {len(denied_issues)} denied root(s) have content (Phase 3: to be removed)")
-        for issue in denied_issues[:5]:
-            print(f"      - {issue}")
+        print(f"    [CRITICAL] Found {len(denied_issues)} denied root violation(s)")
+        violations.extend(denied_issues)
+        report["denied_root_violations"] = denied_issues[:10]
     else:
         print("    [OK] All denied roots are empty (proper scaffolds)")
+
+    print("[6] Checking exported roots for completeness...")
+    completeness = validate_exported_roots_complete(REPO_ROOT)
+    print(f"    [INFO] Exported root status: {completeness['status']}")
+    for root, status in completeness["details"].items():
+        print(f"      - {root}: {status}")
+    report["exported_root_completeness"] = completeness["details"]
 
     print("\n=== Boundary Validation Result ===")
     print(f"Total violations: {len(violations)}")
 
-    # Critical violations (must fail)
-    critical = [v for v in violations if "private repo reference" in v]
-    if critical:
-        print(f"\n[CRITICAL] Private repo references found: {len(critical)}")
+    # Build report
+    report["total_violations"] = len(violations)
+
+    if violations:
+        report["status"] = "FAIL"
+        print(f"\n[FAIL] {len(violations)} boundary violation(s) detected:")
+        for v in violations[:10]:
+            print(f"  - {v}")
+        if len(violations) > 10:
+            print(f"  ... and {len(violations) - 10} more")
+        print("\nBoundary validation: FAIL (hard-fail, exit 1)")
+        print(f"\nJSON report:\n{json.dumps(report, indent=2)}")
         return 1
 
-    # Warnings (report but don't fail if only test-related)
-    if violations and not critical:
-        print("\n[WARNING] Non-critical violations detected (see above)")
-        print("Boundary validation: PASS (warnings only)")
-        return 0
-
     print("\nBoundary validation: PASS")
+    print(f"\nJSON report:\n{json.dumps(report, indent=2)}")
     return 0
 
 
 if __name__ == "__main__":
+    # Support --verify-all flag (no-op, always full verification)
+    if "--verify-all" in sys.argv:
+        sys.argv.remove("--verify-all")
     sys.exit(main())
