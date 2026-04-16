@@ -85,3 +85,6 @@ coverage.xml
 24_meta_orchestration/state/state_history.jsonl
 24_meta_orchestration/state/__pycache__/
 24_meta_orchestration/control_loop/__pycache__/
+
+# Export artifacts (never commit)
+ssid_open_core_export/

@@ -1,9 +1,0 @@
-version: "1.0.0"
-generated_utc: "2026-02-11T10:06:31Z"
-root: "24_meta_orchestration"
-shard: "14_vertraege_vereinbarungen"
-implementation: "python"
-files: []
-dependencies: []
-entrypoints: []
-tests: []

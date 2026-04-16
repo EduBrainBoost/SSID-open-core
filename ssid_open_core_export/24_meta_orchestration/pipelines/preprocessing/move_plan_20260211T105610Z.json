@@ -1,9 +1,0 @@
-{
-  "conflicts": [],
-  "creates": [],
-  "exit_code_on_conflict": 24,
-  "generated_utc": "2026-02-11T10:56:10Z",
-  "hard_stop_on_conflicts": true,
-  "moves": [],
-  "root_violations": []
-}

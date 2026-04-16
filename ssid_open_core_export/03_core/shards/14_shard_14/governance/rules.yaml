@@ -1,8 +1,0 @@
-root_id: 03_core
-shard_id: 14_shard_14
-rule_refs:
-- ROOT-24-LOCK
-- SAFE-FIX
-- SOT_AGENT_021
-- SOT_AGENT_022
-- SOT_AGENT_023

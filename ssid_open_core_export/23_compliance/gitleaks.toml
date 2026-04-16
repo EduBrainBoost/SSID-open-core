@@ -1,9 +1,0 @@
-# Gitleaks configuration for SSID
-# Stored under 23_compliance/ to respect ROOT-24-LOCK (no root-level config files)
-
-[allowlist]
-  description = "Known test placeholders and false positives"
-
-  # test_export_opencore_filtered.py uses a dummy GitHub PAT for testing
-  # the secret-detection workflow itself. Not a real credential.
-  commits = ["1e82c76bf25538a0ecf1e4053f2da8e4d825b85f"]

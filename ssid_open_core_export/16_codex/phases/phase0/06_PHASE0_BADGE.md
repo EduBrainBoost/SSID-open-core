@@ -1,5 +1,0 @@
-# Phase 0 Badge
-
-`SSID-PHASE0-READY`  
-Status: **READY_FOR_EXECUTION**  
-Mode: **EMS-FIRST / LOCAL-FIRST / FAIL-CLOSED**

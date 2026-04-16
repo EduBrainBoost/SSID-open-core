@@ -1,6 +1,0 @@
-version: "0.0.0"
-root: "23_compliance"
-shard: "15_handel_transaktionen"
-impl_id: "_stub"
-status: "SKELETON"
-files: []

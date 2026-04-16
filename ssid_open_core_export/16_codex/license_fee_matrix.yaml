@@ -1,8 +1,0 @@
-# License Fee Matrix — Codex
-schema_version: "1.0"
-root: "16_codex"
-fee_type: developer_reward
-reward_nature: "non-custodial, autonomous, immutable"
-
-modules: []
-notes: "no_src_modules — codex is the SoT documentation root with no fee-generating code modules"

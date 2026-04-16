@@ -1,6 +1,0 @@
-version: "0.0.0"
-root: "03_core"
-shard: "06_bildung_qualifikationen"
-impl_id: "_stub"
-status: "SKELETON"
-files: []

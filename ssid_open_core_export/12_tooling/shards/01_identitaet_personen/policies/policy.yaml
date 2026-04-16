@@ -1,5 +1,0 @@
-policy_id: 12_tooling.01_identitaet_personen.baseline_policy
-root_id: 12_tooling
-shard_id: 01_identitaet_personen
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

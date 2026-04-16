@@ -1,1 +1,0 @@
-{"_schema": "ai_validator_bus", "_version": "1.0.0", "_description": "Interface specification for AI layer validation hints emitted to core validator bus. Each line is a JSON object representing one validation event.", "_module": "01_ai_layer", "_direction": "01_ai_layer -> 03_core"}

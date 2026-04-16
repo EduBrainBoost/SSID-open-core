@@ -1,6 +1,0 @@
-version: "0.0.0"
-root: "24_meta_orchestration"
-shard: "10_finanzen_banking"
-impl_id: "_stub"
-status: "SKELETON"
-files: []

@@ -1,5 +1,0 @@
-interface_id: 23_compliance.01_identitaet_personen.primary
-root_id: 23_compliance
-shard_id: 01_identitaet_personen
-kind: bootstrap_contract
-status: active

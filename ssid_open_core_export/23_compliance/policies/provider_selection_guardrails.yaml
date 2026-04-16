@@ -1,8 +1,0 @@
-policy_id: compliance.provider_selection_guardrails
-rules:
-  no_false_contract_free_claims: true
-  eidas_qtsp_separate_from_gdpr_iso: true
-  direct_user_payment_only_if_proven: true
-  pilot_must_have_free_tier_or_low_friction: true
-  regulated_scale_requires_eidas_high: true
-enforcement: fail_closed

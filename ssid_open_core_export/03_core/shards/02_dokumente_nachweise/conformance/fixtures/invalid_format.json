@@ -1,7 +1,0 @@
-{
-  "schema_version": 999,
-  "doc_hash": "not-a-hex-hash",
-  "hash_alg": "md5",
-  "doc_type": "invalid_type",
-  "issued_at_utc": "not-a-timestamp"
-}

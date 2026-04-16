@@ -1,8 +1,0 @@
-# TS030 Phase 5 E2E Pilot Task
-task_id: "PILOT_TASK_0001"
-created_at_utc: "2026-03-02T00:00:00Z"
-root_id: "03_core"
-shard_id: "01_identitaet_personen"
-action: "contract_validate"
-inputs_hash_ref: "24_meta_orchestration/queue/inputs/INPUT_DESC_PILOT_0001.json"
-policy_mode: "hash-only"

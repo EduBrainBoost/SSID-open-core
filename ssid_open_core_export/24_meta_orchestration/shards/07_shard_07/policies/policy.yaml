@@ -1,5 +1,0 @@
-policy_id: 24_meta_orchestration.07_shard_07.baseline_policy
-root_id: 24_meta_orchestration
-shard_id: 07_shard_07
-mode: advisory
-enforcement: fail_closed_on_missing_contracts

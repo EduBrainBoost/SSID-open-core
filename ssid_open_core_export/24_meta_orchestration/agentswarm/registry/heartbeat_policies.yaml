@@ -1,6 +1,0 @@
-policies:
-- policy_id: policy.heartbeat.default
-  interval_ms: 30000
-  timeout_ms: 90000
-  max_missed: 3
-  action_on_miss: trigger_stagnation_check
