@@ -1,0 +1,22 @@
+name: bias_test_suite
+description: Test suite for fairness metric validation
+total_samples: 1000
+demographics:
+  gender:
+    - male
+    - female
+    - other
+  age_group:
+    - under_18
+    - 18_35
+    - 35_55
+    - over_55
+  region:
+    - EU
+    - US
+    - APAC
+    - LATAM
+fairness_targets:
+  - equal_opportunity
+  - demographic_parity
+  - calibration_parity

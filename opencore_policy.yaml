@@ -1,0 +1,51 @@
+version: "1.0.0"
+schema: "opencore-export-policy-v1"
+
+# ROOT-24 restricted set for SSID open-core release
+allowed_roots:
+  - 03_core
+  - 12_tooling
+  - 16_codex
+  - 23_compliance
+  - 24_meta_orchestration
+
+# File types forbidden in open-core export
+blocked_extensions:
+  - .env
+  - .pem
+  - .key
+  - .secret
+  - .pkl
+  - .db
+  - .sqlite
+  - .lock
+
+# Non-custodial compliance
+sanitization_rules:
+  strip_pii: true
+  hash_algorithm: SHA3-256
+  remove_agent_prompts: true
+  max_inline_secrets_chars: 0
+
+# Export constraints
+export_constraints:
+  max_file_size_mb: 500
+  exclude_patterns:
+    - "**/.env*"
+    - "**/secrets/**"
+    - "**/*.pem"
+    - "**/*.key"
+    - "**/node_modules/**"
+    - "**/__pycache__/**"
+  include_paths:
+    - "03_core"
+    - "12_tooling"
+    - "16_codex"
+    - "23_compliance"
+    - "24_meta_orchestration"
+
+# Enforcement mode
+enforcement:
+  mode: strict
+  fail_on_violation: true
+  log_violations: true

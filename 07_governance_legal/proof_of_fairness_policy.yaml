@@ -1,0 +1,25 @@
+version: "1.0"
+description: "SSID Proof of Fairness (PoFI) policy"
+
+formula: "log(activity+1)/log(rewards+10)"
+
+reference_implementations:
+  - name: "python_implementation"
+    path: "01_ai_layer/scripts/pofi_calculator.py"
+  - name: "solidity_implementation"
+    path: "03_core/contracts/ProofOfFairness.sol"
+
+metrics:
+  - demographic_parity_diff_threshold: 0.10
+  - equal_opportunity_threshold: 0.15
+  - calibration_parity_threshold: 0.05
+
+quarterly_audit:
+  required: true
+  gatekeepers:
+    - compliance
+    - audit
+    - governance
+
+version_history:
+  "1.0": "Initial release"

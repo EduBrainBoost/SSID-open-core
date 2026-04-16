@@ -1,0 +1,17 @@
+version: "1.0"
+description: "SSID subscription revenue distribution (50/30/10/10)"
+
+distribution:
+  protocol_development: 50
+  community_rewards: 30
+  dao_governance: 10
+  operational_reserve: 10
+
+total_percent: 100
+
+model_name: "50-30-10-10"
+
+usage_criteria:
+  - applies_to_all_subscription_tiers
+  - annual_review_gate
+  - community_vote_required_for_changes
