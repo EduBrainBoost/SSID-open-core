@@ -73,7 +73,7 @@ SSID-open-core is licensed under the [Apache License 2.0](LICENSE).
 
 **Release:** 0.1.0
 **Export Date:** 2026-04-15
-**Verification:** PHASE 2 SANIERUNG
+**Verification:** REMEDIATION_IN_PROGRESS
 **Ready for:** Development / Testnet Vorbereitung
 **Mainnet:** NICHT BEREIT
 
