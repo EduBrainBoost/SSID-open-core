@@ -289,47 +289,62 @@ def validate_no_mainnet_false_claims(repo_root: Path) -> list[str]:
 def validate_denied_roots_empty(repo_root: Path) -> list[str]:
     """Check that denied roots contain no meaningful implementation code (FAIL-CLOSED).
 
-    Allowed: README.md, module.yaml, docs/ARCHITECTURE.md, shards/*, __init__.py stubs
-    Not allowed: Implementation *.py code, production configurations
+    Allowed in denied roots: README.md only
+    Not allowed: Any implementation code files (.py, .yaml, .yml, .json, .md except README, .txt, .sh)
 
-    FAIL-CLOSED: Any implementation code in a denied root causes exit 1.
-    Phase 2 allows scaffold structure; Phase 3 will remove all content.
+    Scans all file types in denied roots per R5 hardening.
+    Phase 2 allows scaffold structure (README.md); Phase 3 will remove all content.
     """
     violations = []
     repo_abs = repo_root.resolve()
+
+    # File types to scan in denied roots (R5 enhancement: all types, not just .py)
+    CHECKED_EXTENSIONS = {".py", ".yaml", ".yml", ".json", ".md", ".txt", ".sh"}
 
     for root in DENIED_ROOTS:
         root_path = repo_root / root
         if not root_path.exists():
             continue
 
-        # Scan for implementation code violations
-        for file in root_path.rglob("*.py"):
+        # Scan for implementation code violations across all file types
+        for file in root_path.rglob("*"):
             if not file.is_file():
+                continue
+
+            # Only check specified file types
+            if file.suffix not in CHECKED_EXTENSIONS:
                 continue
 
             rel_path = str(file.resolve().relative_to(repo_abs)).replace("\\", "/")
             file_name = file.name
 
-            # ALLOWED: __init__.py stubs only (empty or tiny imports)
+            # ALLOWED: README.md (scaffold indicator)
+            if file_name == "README.md":
+                continue
+
+            # ALLOWED: Empty __init__.py or stub files only
             if file_name == "__init__.py":
                 try:
                     content = file.read_text(encoding="utf-8", errors="ignore").strip()
-                    if len(content) < 100 and ("import" in content or content == ""):
+                    # Allow only empty or import-only __init__.py files (<100 bytes)
+                    if len(content) < 100 and (content == "" or ("import" in content and len(content.split("\n")) <= 3)):
                         continue
                 except Exception:
                     pass
-                # If __init__.py has code, it's a violation
-                violations.append(f"{rel_path}: implementation code in denied root")
+                # If __init__.py has substantial code, flag as violation
+                violations.append(f"{rel_path}: implementation code in denied root (__init__.py)")
                 continue
 
-            # DISALLOWED: Any other *.py file with implementation code (>100 bytes)
-            try:
-                size = file.stat().st_size
-                if size > 100:
-                    violations.append(f"{rel_path}: implementation code in denied root")
-            except Exception:
-                pass
+            # DISALLOWED: All other files
+            # Provide specific message based on file type
+            file_desc = "Python" if file.suffix == ".py" else \
+                       "YAML" if file.suffix in {".yaml", ".yml"} else \
+                       "JSON" if file.suffix == ".json" else \
+                       "shell" if file.suffix == ".sh" else \
+                       "text" if file.suffix == ".txt" else \
+                       "markdown"
+
+            violations.append(f"{rel_path}: {file_desc} file in denied root")
 
     return violations
 
