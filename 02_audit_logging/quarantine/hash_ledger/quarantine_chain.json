@@ -1,7 +1,0 @@
-{
-  "chain": [],
-  "genesis": true,
-  "version": 1,
-  "created_at": "2026-03-14T00:00:00Z",
-  "description": "Genesis state for quarantine hash chain. Append-only, integrity verified by quarantine_verify_chain.py."
-}

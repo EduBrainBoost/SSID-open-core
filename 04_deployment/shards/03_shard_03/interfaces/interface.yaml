@@ -1,5 +1,0 @@
-interface_id: 04_deployment.03_shard_03.primary
-root_id: 04_deployment
-shard_id: 03_shard_03
-kind: bootstrap_contract
-status: active

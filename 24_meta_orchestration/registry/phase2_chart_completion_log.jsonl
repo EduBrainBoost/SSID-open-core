@@ -1,5 +1,0 @@
-{"timestamp_utc":"2026-03-27T00:00:00Z","event":"phase2_inventory_start","detail":"Scanning all 24 roots x 16+ shards for chart.yaml status"}
-{"timestamp_utc":"2026-03-27T00:00:00Z","event":"phase2_classification_complete","detail":"386 chart.yaml scanned, 385 PARTIAL_SOT, 1 MISSING_CHART","method":"automated_key_detection"}
-{"timestamp_utc":"2026-03-27T00:00:00Z","event":"phase2_anomaly_detected","detail":"15_infra has 17 shards instead of canonical 16, 17_iot_geraete is extra"}
-{"timestamp_utc":"2026-03-27T00:00:00Z","event":"phase2_field_gap_analysis","detail":"All 385 charts missing: governance, evidence_strategy, observability, testing, implementation_handoff, release, promotion_rules, exclusions, sot_sources, last_reviewed_at"}
-{"timestamp_utc":"2026-03-27T00:00:00Z","event":"phase2_status","detail":"BLOCKED — chart-fill execution required to move any chart from PARTIAL_SOT to COMPLETE_SOT","phase3_ready":false}

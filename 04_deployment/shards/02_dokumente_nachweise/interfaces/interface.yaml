@@ -1,5 +1,0 @@
-interface_id: 04_deployment.02_dokumente_nachweise.primary
-root_id: 04_deployment
-shard_id: 02_dokumente_nachweise
-kind: bootstrap_contract
-status: active
