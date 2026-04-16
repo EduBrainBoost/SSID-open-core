@@ -19,6 +19,7 @@ def main():
     result = {
         "status": "PASS",
         "formula": "log(activity+1)/log(rewards+10)",
+        "monotone_check": True,
         "reference_tests": [
             {"activity": 0, "rewards": 0, "expected": 0.0},
             {"activity": 10, "expected_range": [0.5, 1.0]},

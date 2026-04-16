@@ -15,7 +15,7 @@ import json
 import logging
 import time
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import datetime, UTC
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
@@ -164,7 +164,7 @@ class BackupAutomationDaemon:
 
     def get_due_jobs(self) -> list[BackupJob]:
         """Get jobs that are due to run now."""
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         due = []
         for job in self.jobs.values():
             if job.status == JobStatus.SCHEDULED and self.scheduler.is_due(job.schedule, now):
@@ -208,7 +208,7 @@ class BackupAutomationDaemon:
                 backup_id=backup_id,
                 root=job.target_root,
                 strategy=job.strategy.value,
-                timestamp=datetime.utcnow().isoformat(),
+                timestamp=datetime.now(UTC).isoformat(),
                 size_bytes=job.size_bytes,
                 content_hash=job.evidence_hash,
                 duration_seconds=job.completed_at - job.started_at,
@@ -237,7 +237,7 @@ class BackupAutomationDaemon:
     def _log_evidence(self, job: BackupJob, manifest: BackupManifest) -> None:
         """Write evidence entry (SAFE-FIX compliant)."""
         evidence = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "agent_id": "backup_automation_daemon",
             "operation": "backup",
             "job_id": job.job_id,

@@ -2,6 +2,7 @@
 """Generate markdown documentation from chart/module YAML files."""
 
 import argparse
+import hashlib
 import json
 import yaml
 from pathlib import Path
@@ -70,16 +71,32 @@ def main():
             generated_files.append(str(out_file))
             charts.append(chart_data)
 
+            # Calculate source_sha256
+            source_content = charts_path.read_text()
+            source_sha = hashlib.sha256(source_content.encode()).hexdigest()
+
         except Exception as e:
             result = {"status": "FAIL", "reason": str(e), "total_charts": 0}
             manifest_path.write_text(json.dumps(result, indent=2))
             return 1
+
+    # Build generated array with sha256
+    generated_entries = []
+    for i, chart in enumerate(charts):
+        module_id = chart.get("module_id", f"chart_{i}")
+        source_content = charts_path.read_text() if charts_path.is_file() else ""
+        source_sha = hashlib.sha256(source_content.encode()).hexdigest()
+        generated_entries.append({
+            "module_id": module_id,
+            "source_sha256": source_sha,
+        })
 
     # Output manifest
     manifest = {
         "status": "PASS",
         "total_charts": len(charts),
         "generated_files": generated_files,
+        "generated": generated_entries,
     }
 
     manifest_path.write_text(json.dumps(manifest, indent=2))

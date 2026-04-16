@@ -16,6 +16,7 @@ metrics:
 
 quarterly_audit:
   required: true
+  guard_field: "quarter_key"
   gatekeepers:
     - compliance
     - audit

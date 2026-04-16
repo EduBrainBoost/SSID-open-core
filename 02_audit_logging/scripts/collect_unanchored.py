@@ -2,9 +2,10 @@
 """Collect unanchored evidence files for Merkle tree anchoring."""
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, UTC
 
 
 def main():
@@ -18,12 +19,12 @@ def main():
     agent_runs_dir = Path(args.agent_runs_dir)
     state_file = Path(args.since_last_anchor)
 
-    # Load last anchor timestamp
-    last_anchor_ts = None
+    # Load anchored hashes for deduplication
+    anchored_hashes = set()
     if state_file.exists():
         try:
             state = json.loads(state_file.read_text())
-            last_anchor_ts = state.get("last_anchor_ts")
+            anchored_hashes = set(state.get("anchored_hashes", []))
         except Exception:
             pass
 
@@ -34,12 +35,21 @@ def main():
         if not evidence_file.exists():
             continue
 
+        # Calculate file hash for deduplication
+        file_hash = hashlib.sha256(evidence_file.read_bytes()).hexdigest()
+
+        # Skip if already anchored
+        if file_hash in anchored_hashes:
+            continue
+
         for line in evidence_file.read_text().strip().split("\n"):
             if not line.strip():
                 continue
             try:
                 entry = json.loads(line)
-                # Simple timestamp-based filtering (stub implementation)
+                # Add run_id from directory name
+                run_id = run_dir.name
+                entry["run_id"] = run_id
                 entries.append(entry)
             except json.JSONDecodeError:
                 pass
@@ -47,7 +57,7 @@ def main():
     result = {
         "total_unanchored": len(entries),
         "entries": entries,
-        "collected_at": datetime.utcnow().isoformat() + "Z",
+        "collected_at": datetime.now(UTC).isoformat() + "Z",
     }
 
     output_file = Path(args.out)

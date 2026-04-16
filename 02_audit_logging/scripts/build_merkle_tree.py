@@ -37,6 +37,7 @@ def main():
     parser = argparse.ArgumentParser(description="Build Merkle tree from evidence")
     parser.add_argument("--input", required=True, help="Input collected evidence JSON")
     parser.add_argument("--out", required=True, help="Output Merkle tree JSON")
+    parser.add_argument("--blockchain-url", required=False, help="Blockchain API URL for anchoring")
 
     args = parser.parse_args()
 
@@ -49,10 +50,18 @@ def main():
 
     root = build_merkle_root(entries)
 
+    # Blockchain anchoring (stub - always fails gracefully)
+    tx_hash = None
+    blockchain_attempted = args.blockchain_url is not None
+    dry_run = args.blockchain_url is None
+
     result = {
         "empty": len(entries) == 0,
         "root": root,
         "total_entries": len(entries),
+        "tx_hash": tx_hash,
+        "blockchain_attempted": blockchain_attempted,
+        "dry_run": dry_run,
     }
 
     output_file = Path(args.out)

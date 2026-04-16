@@ -55,10 +55,12 @@ def main():
             missing.append(root)
 
     status = "PASS" if not missing else "FAIL_DORA"
+    compliant_count = len(roots_to_check) - len(missing)
 
     result = {
         "status": status,
         "total_roots": len(roots_to_check),
+        "compliant": compliant_count,
         "missing": missing,
         "checks": checks,
     }

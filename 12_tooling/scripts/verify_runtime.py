@@ -27,6 +27,7 @@ import json
 import os
 import socket
 import sys
+from datetime import UTC
 
 try:
     import requests as _requests
@@ -123,7 +124,7 @@ def run_verification(ports: dict, host: str = "localhost") -> dict:
         results.append(entry)
 
     report = {
-        "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.datetime.now(UTC).isoformat() + "Z",
         "host": host,
         "environment": "workspace" if 3100 in ports else "canonical",
         "total_services": len(ports),

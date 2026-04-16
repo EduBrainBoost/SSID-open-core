@@ -3,7 +3,7 @@
 
 import argparse
 import json
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 
 
@@ -33,7 +33,7 @@ def main():
     result = {
         "total_models": len(models),
         "models": models,
-        "scan_ts": datetime.utcnow().isoformat() + "Z",
+        "scan_ts": datetime.now(UTC).isoformat() + "Z",
     }
 
     output_file = Path(args.out)
