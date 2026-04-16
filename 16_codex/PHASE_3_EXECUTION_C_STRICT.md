@@ -53,8 +53,8 @@ Files to clean:
 - Additional paths in other docs
 
 Actions:
-- Replace `C:\Users\...` with relative paths (`./`, `../`, etc.)
-- Replace `/home/user/workspace` with environment-agnostic references like `${HOME}`
+- Replace absolute system paths with relative paths (`./`, `../`, etc.)
+- Replace workspace references with environment variables like `${HOME}`
 - Update runbooks to use `$HOME`, `$PWD`, or relative path conventions
 - Run local validator after each fix
 

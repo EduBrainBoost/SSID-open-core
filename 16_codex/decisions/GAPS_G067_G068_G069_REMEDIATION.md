@@ -42,7 +42,7 @@ SSID export policy (v2.0.0) defined in `16_codex/opencore_export_policy.yaml` bu
 - SAFE-FIX compatible (read-only scanning)
 - Commits manifest updates on policy changes
 
-**Location:** `C:\Users\bibel\Documents\Github\SSID\.github\workflows\opencore_sync.yml`
+**Location:** `${SSID_ROOT}\.github\workflows\opencore_sync.yml`
 
 ---
 
@@ -86,7 +86,7 @@ SSID maintains 60+ Architecture Decision Records (ADR-0001 through ADR-0083) but
 
 **Authority:** 16_codex governance lead + SSID architect
 
-**Location:** `C:\Users\bibel\Documents\Github\SSID\16_codex\decisions\ADR_PROCESS.md`
+**Location:** `${SSID_ROOT}\16_codex\decisions\ADR_PROCESS.md`
 
 ---
 
@@ -121,7 +121,7 @@ SSID maintains 60+ Architecture Decision Records (ADR-0001 through ADR-0083) but
 - `.github/workflows/compliance_reports.yml` (TBD) — scheduled CI execution
 - `24_meta_orchestration/cron_jobs/daily_compliance_report.py` (TBD) — orchestrator scheduling
 
-**Location:** `C:\Users\bibel\Documents\Github\SSID\23_compliance\reports\GENERATION_CONFIG.yaml`
+**Location:** `${SSID_ROOT}\23_compliance\reports\GENERATION_CONFIG.yaml`
 
 ---
 

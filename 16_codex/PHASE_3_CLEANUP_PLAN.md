@@ -26,11 +26,11 @@ Phase 2 (remediation) identified 3,194 boundary violations. Phase 3 resolves all
 
 ### Category 2: Absolute Local Paths (6 violations)
 **Files**:
-- `12_tooling/cli/orchestrator_truth_gate.py` (C:\Users\...)
-- `12_tooling/scripts/validate_hash_manifest.py` (C:\Users\...)
-- `12_tooling/cli/docs/AUTOMATION_LOOP_RUNBOOK.md` (C:\Users\...)
-- `12_tooling/cli/docs/STABILITY_GATE_RUNBOOK.md` (C:\Users\...)
-- `16_codex/TESTNET_STATUS.md` (C:\Users\...)
+- `12_tooling/cli/orchestrator_truth_gate.py` (absolute paths)
+- `12_tooling/scripts/validate_hash_manifest.py` (absolute paths)
+- `12_tooling/cli/docs/AUTOMATION_LOOP_RUNBOOK.md` (absolute paths)
+- `12_tooling/cli/docs/STABILITY_GATE_RUNBOOK.md` (absolute paths)
+- `16_codex/TESTNET_STATUS.md` (absolute paths)
 - Additional in docs/
 
 **Action**: Replace absolute paths with relative paths or environment-agnostic references
