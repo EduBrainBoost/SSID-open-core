@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ssid.dev/sws/schemas/hook_fingerprint.schema.json",
+  "title": "SWS Hook/CTA Fingerprint",
+  "description": "Detected engagement hooks and call-to-action markers with temporal positioning and classification.",
+  "type": "object",
+  "required": ["hooks"],
+  "properties": {
+    "hooks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["hook_id", "type", "start_time", "end_time", "confidence"],
+        "properties": {
+          "hook_id": {
+            "type": "string",
+            "description": "Unique hook identifier."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "opening_hook",
+              "pattern_interrupt",
+              "cta_verbal",
+              "cta_visual",
+              "curiosity_gap",
+              "social_proof",
+              "urgency_scarcity",
+              "emotional_trigger",
+              "unknown"
+            ],
+            "description": "Classified hook/CTA type."
+          },
+          "start_time": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Hook start time in seconds."
+          },
+          "end_time": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Hook end time in seconds."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Detection confidence [0..1]."
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of the detected hook."
+          },
+          "transcript_segment_ids": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "description": "Related transcript segment IDs."
+          },
+          "shot_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Related shot IDs."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Detected hooks/CTAs in temporal order."
+    },
+    "note": {
+      "type": "string",
+      "description": "Optional note when no hooks are detected."
+    }
+  },
+  "additionalProperties": false
+}
