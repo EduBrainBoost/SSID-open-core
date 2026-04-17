@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ssid.dev/sws/schemas/rebuild_timeline.schema.json",
+  "title": "SWS Rebuild Timeline",
+  "description": "Assembled timeline segments with render plan for deterministic video generation.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "job_id",
+    "attempt_id",
+    "created_at_utc",
+    "timeline_segments",
+    "render_plan",
+    "output_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Schema version identifier."
+    },
+    "job_id": {
+      "type": "string",
+      "description": "Parent job identifier."
+    },
+    "attempt_id": {
+      "type": "string",
+      "description": "Attempt identifier within the job."
+    },
+    "created_at_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp."
+    },
+    "timeline_segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["segment_id", "start_seconds", "end_seconds", "layer", "asset_ref"],
+        "properties": {
+          "segment_id": {
+            "type": "string",
+            "description": "Unique segment identifier."
+          },
+          "start_seconds": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Start time in seconds."
+          },
+          "end_seconds": {
+            "type": "number",
+            "minimum": 0,
+            "description": "End time in seconds."
+          },
+          "layer": {
+            "type": "string",
+            "enum": ["video", "audio", "text_overlay", "voiceover", "music", "effect"],
+            "description": "Timeline layer this segment occupies."
+          },
+          "asset_ref": {
+            "type": "string",
+            "description": "Reference to the asset or generated content for this segment."
+          },
+          "transition_in": {
+            "type": "string",
+            "enum": ["cut", "fade", "dissolve", "wipe", "none"],
+            "description": "Transition into this segment."
+          },
+          "transition_out": {
+            "type": "string",
+            "enum": ["cut", "fade", "dissolve", "wipe", "none"],
+            "description": "Transition out of this segment."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Ordered list of timeline segments across all layers."
+    },
+    "original_timeline_ref": {
+      "type": "string",
+      "description": "Reference to the original shot_timeline used as input."
+    },
+    "brand_interventions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["shot_num", "intervention_type", "timing", "asset_ref"],
+        "properties": {
+          "shot_num": {"type": "integer", "minimum": 1, "description": "1-based shot number."},
+          "intervention_type": {
+            "type": "string",
+            "enum": ["TEXT_OVERLAY", "AUDIO_SWAP", "VISUAL_EFFECT", "CTA_INSERTION"],
+            "description": "Type of brand intervention."
+          },
+          "timing": {
+            "type": "object",
+            "required": ["start_seconds", "end_seconds"],
+            "properties": {
+              "start_seconds": {"type": "number", "minimum": 0},
+              "end_seconds": {"type": "number", "minimum": 0}
+            },
+            "additionalProperties": false
+          },
+          "asset_ref": {"type": "string", "description": "Asset reference for this intervention."},
+          "applied_brand_rules": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Brand rule IDs applied to this intervention."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Brand interventions applied to the timeline."
+    },
+    "output_timeline": {
+      "type": "object",
+      "required": ["shot_updated"],
+      "properties": {
+        "shot_updated": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["shot_id", "modified"],
+            "properties": {
+              "shot_id": {"type": "string"},
+              "modified": {"type": "boolean"},
+              "interventions_applied": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Updated shot list — must match original shot count."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Output timeline with per-shot modification tracking."
+    },
+    "render_plan": {
+      "type": "object",
+      "required": ["resolution", "fps", "codec", "bitrate_kbps", "format"],
+      "properties": {
+        "resolution": {
+          "type": "object",
+          "required": ["width", "height"],
+          "properties": {
+            "width": {"type": "integer", "minimum": 1},
+            "height": {"type": "integer", "minimum": 1}
+          },
+          "additionalProperties": false
+        },
+        "fps": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Target frames per second."
+        },
+        "codec": {
+          "type": "string",
+          "description": "Target video codec (e.g. h264, h265, vp9)."
+        },
+        "bitrate_kbps": {
+          "type": "integer",
+          "minimum": 100,
+          "description": "Target video bitrate in kbps."
+        },
+        "format": {
+          "type": "string",
+          "enum": ["mp4", "webm", "mov"],
+          "description": "Output container format."
+        },
+        "audio_codec": {
+          "type": "string",
+          "description": "Target audio codec."
+        },
+        "audio_bitrate_kbps": {
+          "type": "integer",
+          "minimum": 32,
+          "description": "Target audio bitrate in kbps."
+        }
+      },
+      "additionalProperties": false
+    },
+    "output_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of the canonical content."
+    }
+  },
+  "additionalProperties": false
+}

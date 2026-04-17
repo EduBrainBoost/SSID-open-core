@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ssid.dev/sws/schemas/locale_variants.schema.json",
+  "title": "SWS Locale Variants",
+  "description": "Multi-language and region adaptation variants for rebuild content.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "job_id",
+    "attempt_id",
+    "created_at_utc",
+    "primary_locale",
+    "variants",
+    "output_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Schema version identifier."
+    },
+    "job_id": {
+      "type": "string",
+      "description": "Parent job identifier."
+    },
+    "attempt_id": {
+      "type": "string",
+      "description": "Attempt identifier within the job."
+    },
+    "created_at_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp."
+    },
+    "primary_locale": {
+      "type": "string",
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+      "description": "BCP-47 primary locale code (e.g. en, de-DE)."
+    },
+    "base_rebuild_ref": {
+      "type": "string",
+      "description": "Reference to the base rebuild_blueprint."
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["locale", "script_segments", "review_status"],
+        "properties": {
+          "locale": {
+            "type": "string",
+            "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+            "description": "BCP-47 locale code for this variant."
+          },
+          "script_segments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["segment_id", "text", "timing_offset_ms"],
+              "properties": {
+                "segment_id": {
+                  "type": "string",
+                  "description": "Matching segment identifier from script blueprint."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Localized text content."
+                },
+                "timing_offset_ms": {
+                  "type": "integer",
+                  "description": "Timing adjustment in ms relative to original."
+                },
+                "voice_profile_override": {
+                  "type": "string",
+                  "description": "Optional locale-specific voice profile."
+                }
+              },
+              "additionalProperties": false
+            },
+            "description": "Localized script segments."
+          },
+          "adaptations": {
+            "type": "object",
+            "properties": {
+              "text_changes": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Text adaptation descriptions."
+              },
+              "audio_swap_locale": {"type": "string", "description": "Audio swap locale code."},
+              "visual_preferences": {
+                "type": "object",
+                "description": "Visual preference overrides for this locale."
+              },
+              "compliance_rules_by_region": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Region-specific compliance rule identifiers."
+              }
+            },
+            "additionalProperties": false,
+            "description": "Locale-specific adaptations."
+          },
+          "review_status": {
+            "type": "string",
+            "enum": ["pending", "approved", "rejected", "auto_approved"],
+            "description": "Review state for this locale variant."
+          },
+          "reviewer_id": {
+            "type": "string",
+            "description": "Reviewer identifier if manually reviewed."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "List of locale-specific content variants."
+    },
+    "output_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of the canonical content."
+    }
+  },
+  "additionalProperties": false
+}

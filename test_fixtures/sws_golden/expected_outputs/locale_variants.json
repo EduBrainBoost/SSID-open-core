@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job_golden_001",
+  "attempt_id": "attempt_golden_001",
+  "created_at_utc": "2026-04-17T00:00:00Z",
+  "primary_locale": "en",
+  "variants": [
+    {
+      "locale": "en",
+      "script_segments": [
+        {"segment_id": "1", "text": "[Synthetic test audio segment 1]", "timing_offset_ms": 0},
+        {"segment_id": "2", "text": "[Synthetic test audio segment 2]", "timing_offset_ms": 0},
+        {"segment_id": "3", "text": "[Synthetic test audio segment 3]", "timing_offset_ms": 0}
+      ],
+      "review_status": "auto_approved"
+    },
+    {
+      "locale": "de",
+      "script_segments": [
+        {"segment_id": "1", "text": "[Synthetisches Test-Audiosegment 1]", "timing_offset_ms": 64},
+        {"segment_id": "2", "text": "[Synthetisches Test-Audiosegment 2]", "timing_offset_ms": 64},
+        {"segment_id": "3", "text": "[Synthetisches Test-Audiosegment 3]", "timing_offset_ms": 64}
+      ],
+      "review_status": "pending"
+    }
+  ],
+  "output_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+}
