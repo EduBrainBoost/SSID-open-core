@@ -8,6 +8,8 @@ Target: 30+ tests.
 """
 
 import json
+import os
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -25,18 +27,29 @@ if _core_path not in sys.path:
 
 from sws.core.brand_engine import (
     apply_brand_styling,
+    apply_to_timeline,
     create_brand_profile,
+    extract_brand_rules,
+    generate_replacements,
+    load_brand_profile,
     match_brand_to_blueprint,
+    match_source_script,
     validate_brand_profile,
 )
 from sws.core.script_reconstructor import (
+    build_editable_script,
     build_replacement_plan,
     build_script_blueprint,
+    extract_cue_points,
+    extract_speaker_map,
     validate_replacement_plan,
 )
 from sws.core.timeline_builder import (
     build_rebuild_timeline,
+    compose_timeline,
     compute_timeline_duration,
+    plan_shot_interventions,
+    sequence_brand_interventions,
     validate_rebuild_timeline,
 )
 from sws.core.locale_variants import (
@@ -503,3 +516,303 @@ class TestRebuildIntegration:
         assert "Resolution Tiers" in content
         assert "Codec Requirements" in content
         assert "Deterministic" in content
+
+
+# ============================================================
+# LANE C SPEC TESTS — brand_engine.load/match_source_script
+# ============================================================
+
+class TestBrandEngineLoad:
+    def test_load_valid_profile(self, golden_brand):
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
+        ) as f:
+            json.dump(golden_brand, f)
+            f.flush()
+            path = f.name
+        try:
+            loaded = load_brand_profile(path)
+            assert loaded["brand_id"] == "brand_test_golden"
+        finally:
+            os.unlink(path)
+
+    def test_load_invalid_profile_raises(self):
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
+        ) as f:
+            json.dump({"incomplete": True}, f)
+            f.flush()
+            path = f.name
+        try:
+            with pytest.raises(ValueError, match="Invalid brand profile"):
+                load_brand_profile(path)
+        finally:
+            os.unlink(path)
+
+
+class TestBrandEngineExtractRules:
+    def test_extracts_constraint_rules(self, golden_brand):
+        golden_brand["brand_rules"] = {
+            "brand_kit_constraints": ["no_competitor", "color_match", "tone_check"],
+            "compliance_thresholds": {"min_brand_match_score": 0.7, "max_deviation_percent": 15},
+            "approval_process": "DUAL",
+        }
+        rules = extract_brand_rules(golden_brand)
+        constraint_rules = [r for r in rules if r.get("constraint") != "color_palette_enforcement"]
+        assert len(constraint_rules) == 3
+        assert all(r["approval_process"] == "DUAL" for r in constraint_rules)
+
+    def test_includes_color_palette_rule(self, golden_brand):
+        golden_brand["brand_rules"] = {
+            "brand_kit_constraints": [],
+            "compliance_thresholds": {},
+            "approval_process": "AUTOMATED",
+        }
+        rules = extract_brand_rules(golden_brand)
+        palette_rules = [r for r in rules if r.get("constraint") == "color_palette_enforcement"]
+        assert len(palette_rules) == 1
+        assert len(palette_rules[0]["palette"]) == 5
+
+
+class TestBrandMatchSourceScript:
+    def test_match_finds_all_cue_points(self, golden_brand):
+        golden_brand["brand_rules"] = {
+            "brand_kit_constraints": ["rule_a"],
+            "compliance_thresholds": {"min_brand_match_score": 0.5},
+            "approval_process": "AUTOMATED",
+        }
+        rules = extract_brand_rules(golden_brand)
+        script = {
+            "cue_points": [
+                {"cue_id": "cue_1", "time_seconds": 0, "text": "Hello"},
+                {"cue_id": "cue_2", "time_seconds": 50, "text": "World"},
+            ],
+        }
+        matched = match_source_script(script, rules)
+        assert len(matched) == 2
+        assert all("matched_rules" in cp for cp in matched)
+
+    def test_match_empty_script(self, golden_brand):
+        golden_brand["brand_rules"] = {
+            "brand_kit_constraints": ["x"],
+            "compliance_thresholds": {},
+            "approval_process": "HUMAN_REVIEW",
+        }
+        rules = extract_brand_rules(golden_brand)
+        matched = match_source_script({"cue_points": []}, rules)
+        assert matched == []
+
+
+class TestBrandGenerateReplacements:
+    def test_generates_replacements(self, golden_brand):
+        golden_brand["brand_rules"] = {
+            "brand_kit_constraints": ["r1", "r2"],
+            "compliance_thresholds": {"min_brand_match_score": 0.6},
+            "approval_process": "DUAL",
+        }
+        rules = extract_brand_rules(golden_brand)
+        cue_points = [
+            {"cue_id": "c1", "text": "Test", "matched_rules": ["rule_000", "rule_001"]},
+        ]
+        result = generate_replacements(cue_points, rules)
+        assert result["total_replacements"] == 2
+
+
+# ============================================================
+# LANE C SPEC TESTS — script_reconstructor.extract_speaker_map
+# ============================================================
+
+class TestScriptReconstructorSpeakerMap:
+    def test_extract_from_blueprint(self, golden_blueprint):
+        transcript = golden_blueprint["artifacts"]["transcript_master"]
+        speaker_map = extract_speaker_map(transcript)
+        assert len(speaker_map) == 3
+
+    def test_deduplicates_speakers(self):
+        transcript = {
+            "segments": [
+                {"segment_id": 1, "speaker_id": "sp1", "speaker_name": "Alice"},
+                {"segment_id": 2, "speaker_id": "sp1", "speaker_name": "Alice"},
+                {"segment_id": 3, "speaker_id": "sp2", "speaker_name": "Bob"},
+            ]
+        }
+        speaker_map = extract_speaker_map(transcript)
+        assert len(speaker_map) == 2
+        assert speaker_map["sp1"] == "Alice"
+
+
+class TestScriptReconstructorCuePoints:
+    def test_extract_cue_points(self, golden_blueprint):
+        shot_timeline = golden_blueprint["artifacts"]["shot_timeline"]
+        transcript = golden_blueprint["artifacts"]["transcript_master"]
+        cue_points = extract_cue_points(shot_timeline, transcript)
+        assert len(cue_points) == 3
+        for cp in cue_points:
+            assert "cue_id" in cp
+            assert "scene_context" in cp
+
+    def test_cue_points_scene_context(self, golden_blueprint):
+        shot_timeline = golden_blueprint["artifacts"]["shot_timeline"]
+        transcript = golden_blueprint["artifacts"]["transcript_master"]
+        cue_points = extract_cue_points(shot_timeline, transcript)
+        assert cue_points[0]["scene_context"] == "opening_static"
+        assert cue_points[1]["scene_context"] == "transition_fade"
+        assert cue_points[2]["scene_context"] == "closing_static"
+
+
+class TestScriptReconstructorEditableScript:
+    def test_build_editable_script(self, golden_blueprint):
+        shot_timeline = golden_blueprint["artifacts"]["shot_timeline"]
+        transcript = golden_blueprint["artifacts"]["transcript_master"]
+        cue_points = extract_cue_points(shot_timeline, transcript)
+        script = build_editable_script(cue_points)
+        assert script["format"] == "editable_script"
+        assert script["total_lines"] == 3
+        assert script["lines"][0]["line_number"] == 1
+
+
+# ============================================================
+# LANE C SPEC TESTS — timeline_builder.plan_interventions
+# ============================================================
+
+class TestTimelinePlanInterventions:
+    def test_plan_from_replacement_plan(self, golden_blueprint, golden_brand):
+        shot_timeline = golden_blueprint["artifacts"]["shot_timeline"]
+        replacement_plan = build_replacement_plan(
+            golden_blueprint, golden_brand, "job_pi", "attempt_pi"
+        )
+        interventions = plan_shot_interventions(replacement_plan, shot_timeline)
+        assert len(interventions) > 0
+        for intv in interventions:
+            assert intv["timing"]["start_seconds"] < intv["timing"]["end_seconds"]
+
+    def test_no_timeline_conflicts(self, golden_blueprint, golden_brand):
+        shot_timeline = golden_blueprint["artifacts"]["shot_timeline"]
+        replacement_plan = build_replacement_plan(
+            golden_blueprint, golden_brand, "job_nc", "attempt_nc"
+        )
+        interventions = plan_shot_interventions(replacement_plan, shot_timeline)
+        sequenced = sequence_brand_interventions(interventions)
+        conflicts = [s for s in sequenced if s.get("has_conflict")]
+        assert len(conflicts) == 0
+
+
+class TestTimelineSequence:
+    def test_sorts_by_time(self):
+        interventions = [
+            {"shot_id": "shot_002", "shot_num": 2, "intervention_type": "VISUAL_EFFECT",
+             "timing": {"start_seconds": 100, "end_seconds": 200}, "asset_ref": "a2"},
+            {"shot_id": "shot_001", "shot_num": 1, "intervention_type": "VISUAL_EFFECT",
+             "timing": {"start_seconds": 0, "end_seconds": 100}, "asset_ref": "a1"},
+        ]
+        sequenced = sequence_brand_interventions(interventions)
+        assert sequenced[0]["timing"]["start_seconds"] == 0
+        assert sequenced[1]["timing"]["start_seconds"] == 100
+
+    def test_detects_overlap(self):
+        interventions = [
+            {"shot_id": "shot_001", "shot_num": 1, "intervention_type": "VISUAL_EFFECT",
+             "timing": {"start_seconds": 0, "end_seconds": 150}, "asset_ref": "a1"},
+            {"shot_id": "shot_002", "shot_num": 2, "intervention_type": "VISUAL_EFFECT",
+             "timing": {"start_seconds": 100, "end_seconds": 200}, "asset_ref": "a2"},
+        ]
+        sequenced = sequence_brand_interventions(interventions)
+        assert sequenced[1]["has_conflict"] is True
+
+
+class TestTimelineCompose:
+    def test_shot_count_matches(self, golden_blueprint):
+        shot_timeline = golden_blueprint["artifacts"]["shot_timeline"]
+        interventions = [
+            {"shot_id": "shot_001", "shot_num": 1, "intervention_type": "TEXT_OVERLAY",
+             "timing": {"start_seconds": 0, "end_seconds": 100}, "asset_ref": "overlay_1"},
+        ]
+        result = compose_timeline(shot_timeline, interventions)
+        assert len(result["output_timeline"]["shot_updated"]) == len(shot_timeline["shots"])
+
+    def test_marks_modified_shots(self, golden_blueprint):
+        shot_timeline = golden_blueprint["artifacts"]["shot_timeline"]
+        interventions = [
+            {"shot_id": "shot_002", "shot_num": 2, "intervention_type": "VISUAL_EFFECT",
+             "timing": {"start_seconds": 100, "end_seconds": 200}, "asset_ref": "vis_1"},
+        ]
+        result = compose_timeline(shot_timeline, interventions)
+        updated = result["output_timeline"]["shot_updated"]
+        assert updated[0]["modified"] is False
+        assert updated[1]["modified"] is True
+        assert updated[2]["modified"] is False
+
+
+# ============================================================
+# LANE C SPEC TESTS — Full E2E + Locale
+# ============================================================
+
+class TestE2EFullPipeline:
+    def test_blueprint_to_rebuilt_timeline(self, golden_blueprint, golden_brand):
+        """E2E: blueprint -> brand -> replacement -> rebuilt timeline (valid)."""
+        golden_brand["brand_rules"] = {
+            "brand_kit_constraints": ["no_competitor", "tone_check"],
+            "compliance_thresholds": {"min_brand_match_score": 0.6},
+            "approval_process": "AUTOMATED",
+        }
+        rules = extract_brand_rules(golden_brand)
+        assert len(rules) > 0
+
+        shot_timeline = golden_blueprint["artifacts"]["shot_timeline"]
+        transcript = golden_blueprint["artifacts"]["transcript_master"]
+        cue_points = extract_cue_points(shot_timeline, transcript)
+        assert len(cue_points) == 3
+
+        matched = match_source_script({"cue_points": cue_points}, rules)
+        assert len(matched) == 3
+
+        replacements = generate_replacements(matched, rules)
+        assert replacements["total_replacements"] > 0
+
+        replacement_plan = build_replacement_plan(
+            golden_blueprint, golden_brand, "job_e2e", "attempt_e2e"
+        )
+        interventions = plan_shot_interventions(replacement_plan, shot_timeline)
+        rebuilt = compose_timeline(shot_timeline, interventions)
+        assert len(rebuilt["output_timeline"]["shot_updated"]) == len(shot_timeline["shots"])
+        errors = validate_rebuild_timeline(rebuilt)
+        assert errors == []
+
+    def test_locale_variants_en_fr_gb(self, golden_blueprint, golden_brand):
+        """Locale: en-US vs fr-FR vs en-GB text/audio/visual differ."""
+        plan = build_replacement_plan(
+            golden_blueprint, golden_brand, "job_lv_e2e", "attempt_001"
+        )
+        script = build_script_blueprint(
+            golden_blueprint, plan, golden_brand, "job_lv_e2e", "attempt_001"
+        )
+        translation_map = {
+            "fr-FR": {str(s["segment_id"]): f"[FR]{s['text']}" for s in golden_blueprint["artifacts"]["transcript_master"]["segments"]},
+            "en-GB": {str(s["segment_id"]): f"[GB]{s['text']}" for s in golden_blueprint["artifacts"]["transcript_master"]["segments"]},
+        }
+        variants = build_locale_variants(
+            script, ["en-US", "fr-FR", "en-GB"], "en-US",
+            "job_lv_e2e", "attempt_001", translation_map=translation_map,
+        )
+        assert len(variants["variants"]) == 3
+        assert validate_locale_variants(variants) == []
+        en_text = variants["variants"][0]["script_segments"][0]["text"]
+        fr_text = variants["variants"][1]["script_segments"][0]["text"]
+        gb_text = variants["variants"][2]["script_segments"][0]["text"]
+        assert en_text != fr_text
+        assert fr_text != gb_text
+
+
+class TestBrandVariantExpansion:
+    def test_seasonal_regional_4_combinations(self, golden_brand):
+        """Verify seasonal + regional = 4 combinations."""
+        golden_brand["brand_variants"] = [
+            {"variant_type": "seasonal", "variant_key": "summer_2026", "overrides": {}},
+            {"variant_type": "seasonal", "variant_key": "winter_2026", "overrides": {}},
+            {"variant_type": "regional", "variant_key": "DACH", "overrides": {}},
+            {"variant_type": "regional", "variant_key": "APAC", "overrides": {}},
+        ]
+        seasonal = [v for v in golden_brand["brand_variants"] if v["variant_type"] == "seasonal"]
+        regional = [v for v in golden_brand["brand_variants"] if v["variant_type"] == "regional"]
+        combinations = [(s["variant_key"], r["variant_key"]) for s in seasonal for r in regional]
+        assert len(combinations) == 4
