@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ssid.dev/sws/schemas/source_manifest.schema.json",
+  "title": "SWS Source Manifest",
+  "description": "Describes the ingested media source with technical metadata, codec info, and integrity hash.",
+  "type": "object",
+  "required": [
+    "source_id",
+    "filename",
+    "duration_seconds",
+    "width",
+    "height",
+    "frame_rate",
+    "codec_video",
+    "codec_audio",
+    "sample_rate",
+    "channels",
+    "file_size_bytes",
+    "created_timestamp",
+    "source_hash"
+  ],
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "description": "Unique identifier for the ingested source."
+    },
+    "filename": {
+      "type": "string",
+      "description": "Original filename of the media asset."
+    },
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Total duration in seconds."
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Video width in pixels."
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Video height in pixels."
+    },
+    "frame_rate": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Frames per second."
+    },
+    "codec_video": {
+      "type": "string",
+      "description": "Video codec identifier (e.g. h264, h265, vp9)."
+    },
+    "codec_audio": {
+      "type": "string",
+      "description": "Audio codec identifier (e.g. aac, opus, mp3)."
+    },
+    "sample_rate": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Audio sample rate in Hz."
+    },
+    "channels": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of audio channels."
+    },
+    "file_size_bytes": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "File size in bytes."
+    },
+    "created_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of source creation/ingestion."
+    },
+    "source_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of the source content for integrity verification."
+    }
+  },
+  "additionalProperties": false
+}
