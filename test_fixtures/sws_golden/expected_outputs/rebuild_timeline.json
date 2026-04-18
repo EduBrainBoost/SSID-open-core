@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job_golden_001",
+  "attempt_id": "attempt_golden_001",
+  "created_at_utc": "2026-04-17T00:00:00Z",
+  "timeline_segments": [
+    {
+      "segment_id": "tl_video_shot_001",
+      "start_seconds": 0.0,
+      "end_seconds": 100.0,
+      "layer": "video",
+      "asset_ref": "brand_visual_brand_test_golden_shot_001",
+      "transition_in": "cut",
+      "transition_out": "cut"
+    },
+    {
+      "segment_id": "tl_video_shot_002",
+      "start_seconds": 100.0,
+      "end_seconds": 200.0,
+      "layer": "video",
+      "asset_ref": "brand_visual_brand_test_golden_shot_002",
+      "transition_in": "fade",
+      "transition_out": "cut"
+    },
+    {
+      "segment_id": "tl_video_shot_003",
+      "start_seconds": 200.0,
+      "end_seconds": 300.0,
+      "layer": "video",
+      "asset_ref": "brand_visual_brand_test_golden_shot_003",
+      "transition_in": "cut",
+      "transition_out": "cut"
+    },
+    {
+      "segment_id": "tl_vo_vo_1",
+      "start_seconds": 0.0,
+      "end_seconds": 100.0,
+      "layer": "voiceover",
+      "asset_ref": "brand_voice_brand_test_golden_1",
+      "transition_in": "none",
+      "transition_out": "none"
+    },
+    {
+      "segment_id": "tl_vo_vo_2",
+      "start_seconds": 100.0,
+      "end_seconds": 200.0,
+      "layer": "voiceover",
+      "asset_ref": "brand_voice_brand_test_golden_2",
+      "transition_in": "none",
+      "transition_out": "none"
+    },
+    {
+      "segment_id": "tl_vo_vo_3",
+      "start_seconds": 200.0,
+      "end_seconds": 300.0,
+      "layer": "voiceover",
+      "asset_ref": "brand_voice_brand_test_golden_3",
+      "transition_in": "none",
+      "transition_out": "none"
+    }
+  ],
+  "render_plan": {
+    "resolution": {"width": 1920, "height": 1080},
+    "fps": 30.0,
+    "codec": "h264",
+    "bitrate_kbps": 2500,
+    "format": "mp4",
+    "audio_codec": "aac",
+    "audio_bitrate_kbps": 128
+  },
+  "output_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+}

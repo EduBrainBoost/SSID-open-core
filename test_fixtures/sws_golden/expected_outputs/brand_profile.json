@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "brand_id": "brand_test_golden",
+  "brand_name": "Golden Test Brand",
+  "version": 1,
+  "created_at_utc": "2026-04-17T00:00:00Z",
+  "updated_at_utc": "2026-04-17T00:00:00Z",
+  "identity": {
+    "tone": "educational",
+    "audience": "tech-savvy professionals aged 25-45",
+    "niche_tags": ["technology", "tutorials", "productivity"],
+    "language_primary": "en"
+  },
+  "visual": {
+    "color_palette": ["#1A73E8", "#34A853", "#FBBC04", "#EA4335", "#FFFFFF"],
+    "font_family": "Inter",
+    "logo_asset_ref": "asset_logo_golden_001",
+    "overlay_style": "minimal"
+  },
+  "audio": {
+    "voice_profile": "voice_neutral_en_01",
+    "music_style": "ambient_tech",
+    "intro_jingle_ref": "asset_jingle_intro_001",
+    "outro_jingle_ref": "asset_jingle_outro_001"
+  },
+  "output_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+}

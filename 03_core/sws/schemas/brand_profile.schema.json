@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ssid.dev/sws/schemas/brand_profile.schema.json",
+  "title": "SWS Brand Profile",
+  "description": "Brand identity, visual style, and audio configuration for content rebuild.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "brand_id",
+    "brand_name",
+    "version",
+    "created_at_utc",
+    "updated_at_utc",
+    "identity",
+    "visual",
+    "audio",
+    "output_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Schema version identifier."
+    },
+    "brand_id": {
+      "type": "string",
+      "pattern": "^brand_[a-z0-9_]+$",
+      "description": "Unique brand identifier."
+    },
+    "brand_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable brand name."
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Brand profile version number."
+    },
+    "created_at_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp."
+    },
+    "updated_at_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 last-update timestamp."
+    },
+    "identity": {
+      "type": "object",
+      "required": ["tone", "audience", "niche_tags"],
+      "properties": {
+        "tone": {
+          "type": "string",
+          "enum": ["professional", "casual", "educational", "entertaining", "inspirational"],
+          "description": "Brand voice tone."
+        },
+        "audience": {
+          "type": "string",
+          "description": "Target audience descriptor."
+        },
+        "niche_tags": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Content niche classifications."
+        },
+        "language_primary": {
+          "type": "string",
+          "description": "Primary content language (BCP-47)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "visual": {
+      "type": "object",
+      "required": ["color_palette", "font_family", "logo_asset_ref"],
+      "properties": {
+        "color_palette": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "minItems": 1,
+          "description": "Brand color palette in hex."
+        },
+        "font_family": {
+          "type": "string",
+          "description": "Primary font family name."
+        },
+        "logo_asset_ref": {
+          "type": "string",
+          "description": "Asset registry reference for the brand logo."
+        },
+        "overlay_style": {
+          "type": "string",
+          "enum": ["minimal", "bold", "gradient", "none"],
+          "description": "Default text overlay visual style."
+        }
+      },
+      "additionalProperties": false
+    },
+    "audio": {
+      "type": "object",
+      "required": ["voice_profile", "music_style"],
+      "properties": {
+        "voice_profile": {
+          "type": "string",
+          "description": "Voice synthesis or selection profile identifier."
+        },
+        "music_style": {
+          "type": "string",
+          "description": "Background music style preference."
+        },
+        "intro_jingle_ref": {
+          "type": "string",
+          "description": "Asset registry reference for intro jingle."
+        },
+        "outro_jingle_ref": {
+          "type": "string",
+          "description": "Asset registry reference for outro jingle."
+        }
+      },
+      "additionalProperties": false
+    },
+    "brand_rules": {
+      "type": "object",
+      "required": ["brand_kit_constraints", "compliance_thresholds", "approval_process"],
+      "properties": {
+        "brand_kit_constraints": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of brand kit constraint identifiers."
+        },
+        "compliance_thresholds": {
+          "type": "object",
+          "properties": {
+            "min_brand_match_score": {"type": "number", "minimum": 0, "maximum": 1},
+            "max_deviation_percent": {"type": "number", "minimum": 0, "maximum": 100}
+          },
+          "additionalProperties": false,
+          "description": "Compliance threshold values."
+        },
+        "approval_process": {
+          "type": "string",
+          "enum": ["AUTOMATED", "HUMAN_REVIEW", "DUAL"],
+          "description": "Approval workflow type."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Brand enforcement rules."
+    },
+    "brand_variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["variant_type", "variant_key", "overrides"],
+        "properties": {
+          "variant_type": {
+            "type": "string",
+            "enum": ["seasonal", "regional", "format_specific"],
+            "description": "Type of brand variant."
+          },
+          "variant_key": {
+            "type": "string",
+            "description": "Variant identifier (e.g. summer_2026, DACH, short_form)."
+          },
+          "overrides": {
+            "type": "object",
+            "description": "Fields from visual/audio/identity to override for this variant."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Brand variant configurations (seasonal, regional, format-specific)."
+    },
+    "output_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of the canonical content."
+    }
+  },
+  "additionalProperties": false
+}

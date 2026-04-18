@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ssid.dev/sws/schemas/shot_timeline.schema.json",
+  "title": "SWS Shot Timeline",
+  "description": "Detected shot boundaries with scene classification and confidence scores.",
+  "type": "object",
+  "required": ["shots", "total_shots"],
+  "properties": {
+    "shots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["shot_id", "start_frame", "end_frame", "duration_seconds", "scene_type", "confidence"],
+        "properties": {
+          "shot_id": {
+            "type": "string",
+            "pattern": "^shot_[0-9]{3,}$",
+            "description": "Unique shot identifier (shot_001, shot_002, ...)."
+          },
+          "start_frame": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "First frame of this shot (0-indexed)."
+          },
+          "end_frame": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Last frame of this shot (exclusive)."
+          },
+          "duration_seconds": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Shot duration in seconds."
+          },
+          "scene_type": {
+            "type": "string",
+            "enum": [
+              "opening_static",
+              "closing_static",
+              "transition_fade",
+              "transition_cut",
+              "action_dynamic",
+              "dialogue",
+              "montage",
+              "unknown"
+            ],
+            "description": "Classified scene type."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Detection confidence [0..1]."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Ordered list of detected shots."
+    },
+    "total_shots": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of detected shots."
+    }
+  },
+  "additionalProperties": false
+}

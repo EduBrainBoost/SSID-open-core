@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job_golden_001",
+  "attempt_id": "attempt_golden_001",
+  "created_at_utc": "2026-04-17T00:00:00Z",
+  "blueprint_id": "synthetic_short_video_v1.0",
+  "brand_id": "brand_test_golden",
+  "slot_assignments": [
+    {
+      "slot_id": "vo_1",
+      "slot_type": "voiceover",
+      "source_ref": "transcript.segment_1",
+      "replacement_ref": "brand_voice_brand_test_golden_1",
+      "strategy": "generate",
+      "confidence": 0.85
+    },
+    {
+      "slot_id": "vo_2",
+      "slot_type": "voiceover",
+      "source_ref": "transcript.segment_2",
+      "replacement_ref": "brand_voice_brand_test_golden_2",
+      "strategy": "generate",
+      "confidence": 0.85
+    },
+    {
+      "slot_id": "vo_3",
+      "slot_type": "voiceover",
+      "source_ref": "transcript.segment_3",
+      "replacement_ref": "brand_voice_brand_test_golden_3",
+      "strategy": "generate",
+      "confidence": 0.85
+    },
+    {
+      "slot_id": "vis_shot_001",
+      "slot_type": "visual",
+      "source_ref": "shot_timeline.shot_001",
+      "replacement_ref": "brand_visual_brand_test_golden_shot_001",
+      "strategy": "style_transfer",
+      "confidence": 0.95
+    },
+    {
+      "slot_id": "vis_shot_002",
+      "slot_type": "visual",
+      "source_ref": "shot_timeline.shot_002",
+      "replacement_ref": "brand_visual_brand_test_golden_shot_002",
+      "strategy": "style_transfer",
+      "confidence": 0.87
+    },
+    {
+      "slot_id": "vis_shot_003",
+      "slot_type": "visual",
+      "source_ref": "shot_timeline.shot_003",
+      "replacement_ref": "brand_visual_brand_test_golden_shot_003",
+      "strategy": "style_transfer",
+      "confidence": 0.92
+    },
+    {
+      "slot_id": "cta_logo",
+      "slot_type": "logo",
+      "source_ref": "brand_profile.visual.logo_asset_ref",
+      "replacement_ref": "asset_logo_golden_001",
+      "strategy": "direct_replace",
+      "confidence": 1.0
+    }
+  ],
+  "asset_provenance_refs": [
+    {
+      "asset_id": "brand_voice_brand_test_golden_1",
+      "license_status": "generated",
+      "origin_type": "generated"
+    },
+    {
+      "asset_id": "brand_voice_brand_test_golden_2",
+      "license_status": "generated",
+      "origin_type": "generated"
+    },
+    {
+      "asset_id": "brand_voice_brand_test_golden_3",
+      "license_status": "generated",
+      "origin_type": "generated"
+    },
+    {
+      "asset_id": "brand_visual_brand_test_golden_shot_001",
+      "license_status": "generated",
+      "origin_type": "generated"
+    },
+    {
+      "asset_id": "brand_visual_brand_test_golden_shot_002",
+      "license_status": "generated",
+      "origin_type": "generated"
+    },
+    {
+      "asset_id": "brand_visual_brand_test_golden_shot_003",
+      "license_status": "generated",
+      "origin_type": "generated"
+    },
+    {
+      "asset_id": "asset_logo_golden_001",
+      "license_status": "owned",
+      "origin_type": "uploaded"
+    }
+  ],
+  "source_script": {
+    "original_text": "[Synthetic test audio segment 1] [Synthetic test audio segment 2] [Synthetic test audio segment 3]",
+    "speaker_map": {},
+    "cue_points": [
+      {"cue_id": "cue_1", "time_seconds": 0.0, "text": "[Synthetic test audio segment 1]"},
+      {"cue_id": "cue_2", "time_seconds": 100.0, "text": "[Synthetic test audio segment 2]"},
+      {"cue_id": "cue_3", "time_seconds": 200.0, "text": "[Synthetic test audio segment 3]"}
+    ]
+  },
+  "locale_info": {
+    "language": "en",
+    "region": "US"
+  },
+  "output_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+}

@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ssid.dev/sws/schemas/replacement_plan.schema.json",
+  "title": "SWS Replacement Plan",
+  "description": "Maps blueprint rebuild slots to brand-safe asset assignments with provenance tracking.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "job_id",
+    "attempt_id",
+    "created_at_utc",
+    "blueprint_id",
+    "brand_id",
+    "slot_assignments",
+    "asset_provenance_refs",
+    "output_hash",
+    "source_script",
+    "locale_info"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Schema version identifier."
+    },
+    "job_id": {
+      "type": "string",
+      "description": "Parent job identifier."
+    },
+    "attempt_id": {
+      "type": "string",
+      "description": "Attempt identifier within the job."
+    },
+    "created_at_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp."
+    },
+    "blueprint_id": {
+      "type": "string",
+      "description": "Source blueprint identifier."
+    },
+    "brand_id": {
+      "type": "string",
+      "description": "Target brand identifier."
+    },
+    "slot_assignments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["slot_id", "slot_type", "source_ref", "replacement_ref", "strategy"],
+        "properties": {
+          "slot_id": {
+            "type": "string",
+            "description": "Blueprint slot identifier."
+          },
+          "slot_type": {
+            "type": "string",
+            "enum": ["visual", "audio", "text", "voiceover", "music", "logo", "cta"],
+            "description": "Type of element being replaced."
+          },
+          "source_ref": {
+            "type": "string",
+            "description": "Reference to the original element in the blueprint."
+          },
+          "replacement_ref": {
+            "type": "string",
+            "description": "Reference to the replacement asset or generated content."
+          },
+          "strategy": {
+            "type": "string",
+            "enum": ["direct_replace", "style_transfer", "generate", "keep_original", "remove"],
+            "description": "Replacement strategy applied."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Confidence in the replacement quality."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Ordered list of slot-to-asset assignments."
+    },
+    "asset_provenance_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["asset_id", "license_status", "origin_type"],
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "description": "Asset registry identifier."
+          },
+          "license_status": {
+            "type": "string",
+            "enum": ["owned", "licensed", "creative_commons", "generated", "public_domain"],
+            "description": "License status of the asset."
+          },
+          "origin_type": {
+            "type": "string",
+            "enum": ["uploaded", "generated", "library", "third_party"],
+            "description": "How the asset was obtained."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Provenance records for all assets used in replacements."
+    },
+    "source_script": {
+      "type": "object",
+      "required": ["original_text", "speaker_map", "cue_points"],
+      "properties": {
+        "original_text": {
+          "type": "string",
+          "description": "Full original script text."
+        },
+        "speaker_map": {
+          "type": "object",
+          "additionalProperties": {"type": "string"},
+          "description": "Mapping of speaker_id to speaker_name."
+        },
+        "cue_points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["cue_id", "time_seconds", "text"],
+            "properties": {
+              "cue_id": {"type": "string"},
+              "time_seconds": {"type": "number", "minimum": 0},
+              "text": {"type": "string"},
+              "speaker_id": {"type": "string"}
+            },
+            "additionalProperties": false
+          },
+          "description": "Ordered cue points from the source script."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Source script with speaker map and cue points."
+    },
+    "locale_info": {
+      "type": "object",
+      "required": ["language", "region"],
+      "properties": {
+        "language": {"type": "string", "description": "BCP-47 language code."},
+        "region": {"type": "string", "description": "Region code."},
+        "cultural_variants": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Cultural variant identifiers."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Locale information for the replacement plan."
+    },
+    "output_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of the canonical content."
+    }
+  },
+  "additionalProperties": false
+}
