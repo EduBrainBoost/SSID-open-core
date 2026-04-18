@@ -1,0 +1,1215 @@
+{
+  "schema_version": "1.0.0",
+  "registry_id": "sws-shards-registry",
+  "subsystem": "SWS",
+  "status": "CANONICAL",
+  "effective_from_utc": "2026-04-16T00:00:00Z",
+  "depends_on": [
+    "SOCIAL_WORKFLOW_SYSTEM_FOUNDATION_SPEC_v1.0.md",
+    "SWS_V1_BUILD_SPEC_v1.0.md",
+    "SWS_Architektur_Ergaenzung_v1.0.md"
+  ],
+  "global_invariants": [
+    "ROOT-24-LOCK-compatible integration only; no uncontrolled root expansion in SSID-governed repositories.",
+    "Additive writes only; canonical artifacts are append-only or versioned, never destructively overwritten.",
+    "JOB-LOCK enforced; no cross-job path access except ID-based library references.",
+    "Rights-first; no rebuild, library write, or publish-prep without successful rights/compliance gate.",
+    "Artifact provenance required for every asset used in rebuild or publish-prep.",
+    "Every shard must provide chart.yaml, manifest.yaml, contract reference, tests, observability hooks, and evidence strategy.",
+    "Every shard must be attachable to SSID-orchestrator and visible through EMS where human review is required."
+  ],
+  "waves": [
+    {
+      "wave_id": "WAVE_001",
+      "name": "FOUNDATION_CONTRACTS_AND_DOCS",
+      "release_phase": "V1.0",
+      "scope": {
+        "repositories": [
+          "EduBrainBoost/SSID-docs",
+          "EduBrainBoost/SSID-open-core",
+          "EduBrainBoost/SSID"
+        ]
+      },
+      "goal": "Foundation specs, registry, contracts, base policy wiring, initial schemas."
+    },
+    {
+      "wave_id": "WAVE_002",
+      "name": "ANALYZER_CORE",
+      "release_phase": "V1.0",
+      "scope": {
+        "repositories": [
+          "EduBrainBoost/SSID-open-core",
+          "EduBrainBoost/SSID-orchestrator"
+        ]
+      },
+      "goal": "Ingest, normalization, shot/audio/transcript/OCR/hook analyzers, blueprint compiler."
+    },
+    {
+      "wave_id": "WAVE_003",
+      "name": "ORCHESTRATION_AND_OBSERVABILITY",
+      "release_phase": "V1.0",
+      "scope": {
+        "repositories": [
+          "EduBrainBoost/SSID-orchestrator",
+          "EduBrainBoost/SSID"
+        ]
+      },
+      "goal": "DAGs, event sourcing, retry, DLQ, audit hooks, telemetry."
+    },
+    {
+      "wave_id": "WAVE_004",
+      "name": "EMS_OPERATOR_UI",
+      "release_phase": "V1.0",
+      "scope": {
+        "repositories": [
+          "EduBrainBoost/SSID-EMS"
+        ]
+      },
+      "goal": "New Analysis Job, Job Queue, Blueprint Viewer, review surfaces."
+    },
+    {
+      "wave_id": "WAVE_005",
+      "name": "REBUILD_QA_AND_PUBLISH_BASELINE",
+      "release_phase": "V1.5",
+      "scope": {
+        "repositories": [
+          "EduBrainBoost/SSID-open-core",
+          "EduBrainBoost/SSID-orchestrator",
+          "EduBrainBoost/SSID-EMS"
+        ]
+      },
+      "goal": "Replacement engine, render, similarity QA, compliance signals, publish packager."
+    },
+    {
+      "wave_id": "WAVE_006",
+      "name": "DAILY_STUDIO_AND_ANALYTICS",
+      "release_phase": "V2.0",
+      "scope": {
+        "repositories": [
+          "EduBrainBoost/SSID-open-core",
+          "EduBrainBoost/SSID-orchestrator",
+          "EduBrainBoost/SSID-EMS"
+        ]
+      },
+      "goal": "Daily content studio, blueprint search, performance feedback loop, locale variants, batch operations."
+    }
+  ],
+  "release_policy": {
+    "V1.0": {
+      "must": [
+        "sws-intake",
+        "sws-media-analyzer",
+        "sws-fingerprint-compiler",
+        "sws-blueprint-compiler",
+        "sws-job-ledger",
+        "sws-policy-gate",
+        "sws-operator-ui"
+      ],
+      "should": [
+        "sws-blueprint-library"
+      ],
+      "not_in_scope": [
+        "sws-replacement-engine",
+        "sws-render-engine",
+        "sws-qa-engine",
+        "sws-publish-packager",
+        "sws-daily-studio"
+      ]
+    },
+    "V1.5": {
+      "must": [
+        "sws-replacement-engine",
+        "sws-render-engine",
+        "sws-qa-engine",
+        "sws-asset-registry",
+        "sws-publish-packager"
+      ]
+    },
+    "V2.0": {
+      "must": [
+        "sws-daily-studio",
+        "sws-performance-intelligence",
+        "sws-locale-service"
+      ]
+    }
+  },
+  "shards": [
+    {
+      "shard_id": "sws-blueprint-library",
+      "display_name": "SWS Blueprint Library",
+      "status": "PLANNED",
+      "layer": "L0",
+      "release_phase": "V1.0",
+      "priority": "SHOULD",
+      "wave_id": "WAVE_001",
+      "purpose": "Stores reusable blueprints with search metadata, compliance state, and reuse counters.",
+      "modes_supported": [
+        "ANALYZE",
+        "CREATE",
+        "QA"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/library/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-EMS",
+          "paths": [
+            "apps/sws/library/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "18_data_layer",
+        "24_meta_orchestration"
+      ],
+      "produces": [
+        "blueprint_library_entry",
+        "library_search_index"
+      ],
+      "consumes": [
+        "rebuild_blueprint",
+        "compliance_report"
+      ],
+      "depends_on": [
+        "sws-blueprint-compiler",
+        "sws-policy-gate"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": [
+        "Library write is blocked until compliance report is APPROVED."
+      ]
+    },
+    {
+      "shard_id": "sws-policy-gate",
+      "display_name": "SWS Policy Gate",
+      "status": "PLANNED",
+      "layer": "L5",
+      "release_phase": "V1.0",
+      "priority": "MUST",
+      "wave_id": "WAVE_001",
+      "purpose": "Central rights classes, platform policy, compliance entry rules, and audit decision contracts.",
+      "modes_supported": [
+        "ANALYZE",
+        "REBUILD",
+        "CREATE",
+        "QA",
+        "PUBLISH_PREP"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID",
+          "paths": [
+            "23_compliance/policies/sws/",
+            "16_codex/contracts/sws/",
+            "03_core/validators/sws/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-docs",
+          "paths": [
+            "sws/policies/",
+            "sws/governance/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "03_core",
+        "16_codex",
+        "23_compliance"
+      ],
+      "produces": [
+        "rights_manifest",
+        "platform_policy",
+        "audit_log_entry"
+      ],
+      "consumes": [
+        "job_manifest"
+      ],
+      "depends_on": [],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-blueprint-compiler",
+      "display_name": "SWS Blueprint Compiler",
+      "status": "PLANNED",
+      "layer": "L3",
+      "release_phase": "V1.0",
+      "priority": "MUST",
+      "wave_id": "WAVE_002",
+      "purpose": "Aggregates analysis outputs into the canonical rebuild blueprint contract.",
+      "modes_supported": [
+        "ANALYZE",
+        "CREATE"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/blueprint/",
+            "sws/contracts/blueprint/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-orchestrator",
+          "paths": [
+            "sws/dags/blueprint/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "03_core",
+        "16_codex",
+        "11_test_simulation"
+      ],
+      "produces": [
+        "rebuild_blueprint"
+      ],
+      "consumes": [
+        "source_manifest",
+        "rights_manifest",
+        "media_technical",
+        "shot_timeline",
+        "audio_map",
+        "beat_map",
+        "transcript_master",
+        "caption_layers",
+        "hook_fingerprint",
+        "narrative_map",
+        "visual_fingerprint",
+        "style_fingerprint",
+        "thumbnail_fingerprint"
+      ],
+      "depends_on": [
+        "sws-fingerprint-compiler"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-fingerprint-compiler",
+      "display_name": "SWS Fingerprint Compiler",
+      "status": "PLANNED",
+      "layer": "L3",
+      "release_phase": "V1.0",
+      "priority": "MUST",
+      "wave_id": "WAVE_002",
+      "purpose": "Compiles hook, CTA, narrative, visual, style, and thumbnail fingerprints from atomic analysis artifacts.",
+      "modes_supported": [
+        "ANALYZE"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/fingerprint/",
+            "sws/contracts/fingerprint/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-orchestrator",
+          "paths": [
+            "sws/dags/fingerprint/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "03_core",
+        "16_codex",
+        "11_test_simulation"
+      ],
+      "produces": [
+        "hook_fingerprint",
+        "narrative_map",
+        "visual_fingerprint",
+        "style_fingerprint",
+        "thumbnail_fingerprint"
+      ],
+      "consumes": [
+        "shot_timeline",
+        "audio_map",
+        "beat_map",
+        "transcript_master",
+        "caption_layers",
+        "text_overlay_map",
+        "media_technical"
+      ],
+      "depends_on": [
+        "sws-media-analyzer"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-intake",
+      "display_name": "SWS Intake",
+      "status": "PLANNED",
+      "layer": "L1",
+      "release_phase": "V1.0",
+      "priority": "MUST",
+      "wave_id": "WAVE_002",
+      "purpose": "URL/file acceptance, hash capture, technical normalization, and ingest receipts.",
+      "modes_supported": [
+        "ANALYZE"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/intake/",
+            "sws/contracts/intake/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-orchestrator",
+          "paths": [
+            "sws/dags/intake/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "19_adapters",
+        "03_core",
+        "12_tooling"
+      ],
+      "produces": [
+        "source_manifest",
+        "media_technical",
+        "ingest_receipt"
+      ],
+      "consumes": [
+        "job_manifest",
+        "attempt_manifest",
+        "rights_manifest"
+      ],
+      "depends_on": [
+        "sws-policy-gate",
+        "sws-job-ledger"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-media-analyzer",
+      "display_name": "SWS Media Analyzer",
+      "status": "PLANNED",
+      "layer": "L2",
+      "release_phase": "V1.0",
+      "priority": "MUST",
+      "wave_id": "WAVE_002",
+      "purpose": "Deterministic scene, audio, transcript, and OCR extraction from normalized source media.",
+      "modes_supported": [
+        "ANALYZE"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/analyzers/video/",
+            "sws/analyzers/audio/",
+            "sws/analyzers/transcript/",
+            "sws/analyzers/ocr/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-orchestrator",
+          "paths": [
+            "sws/dags/analyze/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "03_core",
+        "19_adapters",
+        "11_test_simulation"
+      ],
+      "produces": [
+        "shot_timeline",
+        "audio_map",
+        "beat_map",
+        "transcript_master",
+        "caption_layers",
+        "text_overlay_map"
+      ],
+      "consumes": [
+        "job_manifest",
+        "attempt_manifest",
+        "source_manifest",
+        "media_technical"
+      ],
+      "depends_on": [
+        "sws-intake"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-job-ledger",
+      "display_name": "SWS Job Ledger",
+      "status": "PLANNED",
+      "layer": "L4",
+      "release_phase": "V1.0",
+      "priority": "MUST",
+      "wave_id": "WAVE_003",
+      "purpose": "Event-sourced job tracking, attempt isolation, retry budgeting, DLQ, and materialized state views.",
+      "modes_supported": [
+        "ANALYZE",
+        "REBUILD",
+        "CREATE",
+        "QA",
+        "PUBLISH_PREP"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-orchestrator",
+          "paths": [
+            "sws/jobs/",
+            "sws/events/",
+            "sws/dlq/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/contracts/job/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "24_meta_orchestration",
+        "12_tooling"
+      ],
+      "produces": [
+        "job_manifest",
+        "job_events",
+        "attempt_manifest",
+        "dlq_entry"
+      ],
+      "consumes": [
+        "job_manifest"
+      ],
+      "depends_on": [
+        "sws-policy-gate"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-operator-ui",
+      "display_name": "SWS Operator UI",
+      "status": "PLANNED",
+      "layer": "L4",
+      "release_phase": "V1.0",
+      "priority": "MUST",
+      "wave_id": "WAVE_004",
+      "purpose": "Human-facing EMS surfaces for job creation, queue review, blueprint viewing, and gated QA/export flows.",
+      "modes_supported": [
+        "ANALYZE",
+        "QA",
+        "PUBLISH_PREP",
+        "REBUILD",
+        "CREATE"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-EMS",
+          "paths": [
+            "apps/sws/new-analysis/",
+            "apps/sws/job-queue/",
+            "apps/sws/blueprint-viewer/",
+            "apps/sws/qa-console/",
+            "apps/sws/export-center/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "13_ui_layer"
+      ],
+      "produces": [],
+      "consumes": [
+        "job_manifest",
+        "job_events",
+        "attempt_manifest",
+        "rebuild_blueprint",
+        "qa_similarity",
+        "compliance_report",
+        "publish_bundle"
+      ],
+      "depends_on": [
+        "sws-job-ledger",
+        "sws-blueprint-compiler"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "ui/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RBAC",
+        "G-REGISTRY"
+      ],
+      "notes": [
+        "UI is not a source of truth for runtime state; it renders canonical event/materialized state.",
+        "UI must expose stage-based state, attempts, and gate decisions."
+      ]
+    },
+    {
+      "shard_id": "sws-asset-registry",
+      "display_name": "SWS Asset Registry",
+      "status": "PLANNED",
+      "layer": "L0",
+      "release_phase": "V1.5",
+      "priority": "MUST",
+      "wave_id": "WAVE_005",
+      "purpose": "Tracks asset provenance, license status, brand profiles, and policy-compatible asset use.",
+      "modes_supported": [
+        "REBUILD",
+        "CREATE",
+        "PUBLISH_PREP"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/assets/",
+            "sws/contracts/assets/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-EMS",
+          "paths": [
+            "apps/sws/assets/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "18_data_layer",
+        "23_compliance"
+      ],
+      "produces": [
+        "brand_profile",
+        "asset_registry_entry",
+        "asset_provenance_record"
+      ],
+      "consumes": [
+        "platform_policy"
+      ],
+      "depends_on": [
+        "sws-policy-gate"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-publish-packager",
+      "display_name": "SWS Publish Packager",
+      "status": "PLANNED",
+      "layer": "L3",
+      "release_phase": "V1.5",
+      "priority": "MUST",
+      "wave_id": "WAVE_005",
+      "purpose": "Builds platform-ready export bundles, metadata, file naming, and scheduling payloads.",
+      "modes_supported": [
+        "PUBLISH_PREP"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/publish/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-orchestrator",
+          "paths": [
+            "sws/dags/publish/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-EMS",
+          "paths": [
+            "apps/sws/export/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "03_core",
+        "19_adapters",
+        "23_compliance"
+      ],
+      "produces": [
+        "publish_bundle"
+      ],
+      "consumes": [
+        "rebuild_timeline",
+        "compliance_report",
+        "platform_policy",
+        "brand_profile"
+      ],
+      "depends_on": [
+        "sws-qa-engine"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-qa-engine",
+      "display_name": "SWS QA Engine",
+      "status": "PLANNED",
+      "layer": "L5",
+      "release_phase": "V1.5",
+      "priority": "MUST",
+      "wave_id": "WAVE_005",
+      "purpose": "Applies similarity, compliance, and release-readiness checks before library write or publishing.",
+      "modes_supported": [
+        "QA",
+        "PUBLISH_PREP"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/qa/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-orchestrator",
+          "paths": [
+            "sws/dags/qa/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-EMS",
+          "paths": [
+            "apps/sws/qa/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "23_compliance",
+        "11_test_simulation",
+        "02_audit_logging"
+      ],
+      "produces": [
+        "qa_similarity",
+        "compliance_report",
+        "qa_decision_record",
+        "audit_log_entry"
+      ],
+      "consumes": [
+        "rebuild_blueprint",
+        "replacement_plan",
+        "rebuild_timeline",
+        "platform_policy",
+        "rights_manifest",
+        "render_output_manifest"
+      ],
+      "depends_on": [
+        "sws-render-engine",
+        "sws-policy-gate"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-render-engine",
+      "display_name": "SWS Render Engine",
+      "status": "PLANNED",
+      "layer": "L2",
+      "release_phase": "V1.5",
+      "priority": "MUST",
+      "wave_id": "WAVE_005",
+      "purpose": "Deterministic timeline generation and ffmpeg-based render execution.",
+      "modes_supported": [
+        "REBUILD",
+        "CREATE"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/render/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-orchestrator",
+          "paths": [
+            "sws/dags/render/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "03_core",
+        "12_tooling",
+        "11_test_simulation"
+      ],
+      "produces": [
+        "rebuild_timeline",
+        "render_output_manifest"
+      ],
+      "consumes": [
+        "replacement_plan",
+        "script_blueprint",
+        "brand_profile",
+        "platform_policy"
+      ],
+      "depends_on": [
+        "sws-replacement-engine"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-replacement-engine",
+      "display_name": "SWS Replacement Engine",
+      "status": "PLANNED",
+      "layer": "L3",
+      "release_phase": "V1.5",
+      "priority": "MUST",
+      "wave_id": "WAVE_005",
+      "purpose": "Maps blueprint slots to brand-safe script, asset, locale, and voice/image replacement plans.",
+      "modes_supported": [
+        "REBUILD",
+        "CREATE"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/rebuild/replacement/",
+            "sws/contracts/rebuild/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-orchestrator",
+          "paths": [
+            "sws/dags/rebuild/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "03_core",
+        "16_codex",
+        "19_adapters"
+      ],
+      "produces": [
+        "replacement_plan",
+        "script_blueprint",
+        "locale_variants"
+      ],
+      "consumes": [
+        "rebuild_blueprint",
+        "brand_profile",
+        "niche_registry",
+        "platform_policy"
+      ],
+      "depends_on": [
+        "sws-blueprint-compiler",
+        "sws-asset-registry"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-daily-studio",
+      "display_name": "SWS Daily Studio",
+      "status": "PLANNED",
+      "layer": "L3",
+      "release_phase": "V2.0",
+      "priority": "MUST",
+      "wave_id": "WAVE_006",
+      "purpose": "Blueprint-driven daily content production without requiring a foreign source video.",
+      "modes_supported": [
+        "CREATE"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-EMS",
+          "paths": [
+            "apps/sws/daily-studio/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-orchestrator",
+          "paths": [
+            "sws/dags/daily/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/daily/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "13_ui_layer",
+        "24_meta_orchestration",
+        "16_codex"
+      ],
+      "produces": [
+        "daily_job_request",
+        "daily_batch_manifest"
+      ],
+      "consumes": [
+        "rebuild_blueprint",
+        "brand_profile",
+        "niche_registry",
+        "performance_signal"
+      ],
+      "depends_on": [
+        "sws-blueprint-library",
+        "sws-performance-intelligence",
+        "sws-locale-service"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-locale-service",
+      "display_name": "SWS Locale Service",
+      "status": "PLANNED",
+      "layer": "L3",
+      "release_phase": "V2.0",
+      "priority": "MUST",
+      "wave_id": "WAVE_006",
+      "purpose": "Manages multilingual script, caption, and voice variants with review state.",
+      "modes_supported": [
+        "REBUILD",
+        "CREATE",
+        "PUBLISH_PREP"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/locale/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-EMS",
+          "paths": [
+            "apps/sws/locales/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "03_core",
+        "16_codex"
+      ],
+      "produces": [
+        "locale_variants"
+      ],
+      "consumes": [
+        "script_blueprint",
+        "brand_profile",
+        "platform_policy"
+      ],
+      "depends_on": [
+        "sws-replacement-engine"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    },
+    {
+      "shard_id": "sws-performance-intelligence",
+      "display_name": "SWS Performance Intelligence",
+      "status": "PLANNED",
+      "layer": "L5",
+      "release_phase": "V2.0",
+      "priority": "MUST",
+      "wave_id": "WAVE_006",
+      "purpose": "Feeds post-publication performance signals back into blueprint selection and prioritization.",
+      "modes_supported": [
+        "CREATE",
+        "QA",
+        "PUBLISH_PREP"
+      ],
+      "repository_targets": [
+        {
+          "repository": "EduBrainBoost/SSID-open-core",
+          "paths": [
+            "sws/performance/"
+          ]
+        },
+        {
+          "repository": "EduBrainBoost/SSID-EMS",
+          "paths": [
+            "apps/sws/performance/"
+          ]
+        }
+      ],
+      "ssid_root_scopes": [
+        "17_observability",
+        "18_data_layer",
+        "16_codex"
+      ],
+      "produces": [
+        "performance_signal",
+        "performance_summary_report",
+        "niche_registry"
+      ],
+      "consumes": [
+        "publish_bundle",
+        "niche_registry",
+        "rebuild_blueprint"
+      ],
+      "depends_on": [
+        "sws-publish-packager",
+        "sws-blueprint-library"
+      ],
+      "mandatory_files": [
+        "chart.yaml",
+        "manifest.yaml",
+        "README.md",
+        "contracts/",
+        "tests/",
+        "observability/",
+        "evidence/"
+      ],
+      "foundation_gates": [
+        "G-CONTRACT",
+        "G-TEST",
+        "G-OBSERVABILITY",
+        "G-RIGHTS-COMPLIANCE-ENTRY",
+        "G-EVIDENCE-STRATEGY",
+        "G-REGISTRY"
+      ],
+      "notes": []
+    }
+  ]
+}

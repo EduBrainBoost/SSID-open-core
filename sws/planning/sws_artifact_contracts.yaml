@@ -1,0 +1,1180 @@
+schema_version: 1.0.0
+contract_set_id: sws-artifact-contracts
+subsystem: SWS
+status: CANONICAL
+effective_from_utc: '2026-04-16T00:00:00Z'
+depends_on:
+- SOCIAL_WORKFLOW_SYSTEM_FOUNDATION_SPEC_v1.0.md
+- SWS_V1_BUILD_SPEC_v1.0.md
+- sws_shards_registry.json
+global_invariants:
+- Every canonical artifact is immutable after write; new state is expressed as a new
+  artifact version, a new attempt, or an append-only event.
+- Every artifact must validate against its schema_file before it can be consumed by
+  a downstream shard.
+- No downstream shard may infer missing required fields; missing required fields are
+  a hard contract failure.
+- All timestamps are UTC ISO8601.
+- Long-term storage must not retain cleartext third-party source URLs; only hashes
+  and derived metadata are allowed.
+- PII-bearing artifacts require pii_policy and retention_class annotations.
+common_envelope:
+  required_fields:
+  - schema_version
+  - created_at_utc
+  - producer_module
+  - status
+  - output_hash
+  job_scoped_required_fields:
+  - job_id
+  attempt_scoped_required_fields:
+  - attempt_id
+  library_scoped_required_fields:
+  - library_id
+  optional_fields:
+  - input_refs
+  - trace_id
+  - notes
+  - evidence_refs
+  - retention_class
+  - pii_flags
+path_templates:
+  job_root: /jobs/{job_id}/
+  attempt_root: /jobs/{job_id}/attempts/{attempt_id}/
+  artifacts_root: /jobs/{job_id}/attempts/{attempt_id}/artifacts/
+  rebuild_root: /jobs/{job_id}/attempts/{attempt_id}/rebuild/
+  qa_root: /jobs/{job_id}/attempts/{attempt_id}/qa/
+  publish_root: /jobs/{job_id}/attempts/{attempt_id}/publish/
+  policy_root: /library/policies/sws/
+  library_root: /library/sws/
+  registry_root: /registry/sws/
+retention_classes:
+  SRC_72H: Delete source media after 72 hours from job completion.
+  PII_30D: Delete or redact PII-bearing segments after 30 days.
+  ANALYSIS_12M: Retain non-PII analysis artifacts for 12 months.
+  JOB_24M: Retain job manifests and operational metadata for 24 months.
+  PUBLISH_24M: Retain publish bundles for 24 months.
+  PERF_36M: Retain performance signals for 36 months.
+  AUDIT_7Y: Retain audit logs for 7 years, append-only.
+  BRAND_UNTIL_DELETE: Retain until explicit deletion under governance rules.
+  POLICY_ACTIVE: Retain while active plus archival per governance.
+  LIBRARY_ACTIVE: Retain while blueprint/registry entry is active.
+artifacts:
+- artifact_id: job_manifest
+  file_name: job_manifest.json
+  format: json
+  schema_file: sws/contracts/job/job_manifest.schema.json
+  storage_zone: JOB
+  path_template: /jobs/{job_id}/job_manifest.json
+  release_phase: V1.0
+  phase: JOB_HEADER
+  mutability: IMMUTABLE
+  retention_class: JOB_24M
+  pii_policy: NONE
+  producer_shards:
+  - sws-job-ledger
+  consumer_shards:
+  - sws-policy-gate
+  - sws-intake
+  - sws-media-analyzer
+  - sws-fingerprint-compiler
+  - sws-blueprint-compiler
+  - sws-operator-ui
+  required_fields:
+  - schema_version
+  - job_id
+  - job_type
+  - created_at_utc
+  - source
+  - config
+  - status
+  - output_hash
+  notes:
+  - Immutable header. Runtime state changes are not written back here.
+- artifact_id: job_events
+  file_name: job_events.jsonl
+  format: jsonl
+  schema_file: sws/contracts/job/job_events.schema.json
+  storage_zone: JOB
+  path_template: /jobs/{job_id}/job_events.jsonl
+  release_phase: V1.0
+  phase: EVENT_STREAM
+  mutability: APPEND_ONLY
+  retention_class: AUDIT_7Y
+  pii_policy: NONE
+  producer_shards:
+  - sws-job-ledger
+  consumer_shards:
+  - sws-job-ledger
+  - sws-operator-ui
+  - sws-qa-engine
+  required_fields:
+  - schema_version
+  - job_id
+  - event_id
+  - event_type
+  - created_at_utc
+  - actor
+  - status
+  - output_hash
+  notes:
+  - Canonical status/event stream.
+- artifact_id: attempt_manifest
+  file_name: attempt_manifest.json
+  format: json
+  schema_file: sws/contracts/job/attempt_manifest.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/attempt_manifest.json
+  release_phase: V1.0
+  phase: ATTEMPT_HEADER
+  mutability: IMMUTABLE
+  retention_class: JOB_24M
+  pii_policy: NONE
+  producer_shards:
+  - sws-job-ledger
+  consumer_shards:
+  - sws-intake
+  - sws-media-analyzer
+  - sws-fingerprint-compiler
+  - sws-blueprint-compiler
+  - sws-qa-engine
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - attempt_number
+  - created_at_utc
+  - status
+  - output_hash
+  notes: []
+- artifact_id: source_manifest
+  file_name: source_manifest.json
+  format: json
+  schema_file: sws/contracts/intake/source_manifest.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/source_manifest.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-intake
+  consumer_shards:
+  - sws-policy-gate
+  - sws-media-analyzer
+  - sws-blueprint-compiler
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - source_type
+  - platform
+  - sha256_hash
+  - ingest_mode
+  - output_hash
+  notes: []
+- artifact_id: rights_manifest
+  file_name: rights_manifest.json
+  format: json
+  schema_file: sws/contracts/policy/rights_manifest.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/rights_manifest.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: AUDIT_7Y
+  pii_policy: NONE
+  producer_shards:
+  - sws-policy-gate
+  consumer_shards:
+  - sws-intake
+  - sws-blueprint-compiler
+  - sws-qa-engine
+  - sws-publish-packager
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - rights_class
+  - decision
+  - decision_basis
+  - risk_level
+  - allowed_modes
+  - output_hash
+  notes:
+  - Required before ingest is allowed to continue beyond minimal intake.
+- artifact_id: media_technical
+  file_name: media_technical.json
+  format: json
+  schema_file: sws/contracts/intake/media_technical.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/media_technical.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-intake
+  consumer_shards:
+  - sws-media-analyzer
+  - sws-fingerprint-compiler
+  - sws-blueprint-compiler
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - duration_seconds
+  - fps
+  - resolution
+  - audio_sample_rate
+  - codec_summary
+  - output_hash
+  notes: []
+- artifact_id: shot_timeline
+  file_name: shot_timeline.json
+  format: json
+  schema_file: sws/contracts/analyze/shot_timeline.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/shot_timeline.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-media-analyzer
+  consumer_shards:
+  - sws-fingerprint-compiler
+  - sws-blueprint-compiler
+  - sws-qa-engine
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - total_shots
+  - shots
+  - output_hash
+  notes: []
+- artifact_id: audio_map
+  file_name: audio_map.json
+  format: json
+  schema_file: sws/contracts/analyze/audio_map.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/audio_map.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-media-analyzer
+  consumer_shards:
+  - sws-fingerprint-compiler
+  - sws-blueprint-compiler
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - segments
+  - speech_ratio
+  - music_present
+  - output_hash
+  notes: []
+- artifact_id: beat_map
+  file_name: beat_map.json
+  format: json
+  schema_file: sws/contracts/analyze/beat_map.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/beat_map.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-media-analyzer
+  consumer_shards:
+  - sws-fingerprint-compiler
+  - sws-blueprint-compiler
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - bpm
+  - beat_grid
+  - output_hash
+  notes: []
+- artifact_id: transcript_master
+  file_name: transcript_master.json
+  format: json
+  schema_file: sws/contracts/analyze/transcript_master.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/transcript_master.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: PII_30D
+  pii_policy: POSSIBLE_TRANSIENT_PII
+  producer_shards:
+  - sws-media-analyzer
+  consumer_shards:
+  - sws-fingerprint-compiler
+  - sws-blueprint-compiler
+  - sws-locale-service
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - language
+  - segments
+  - normalization_policy
+  - output_hash
+  notes:
+  - PII segments must be flagged and purged/redacted after retention TTL.
+- artifact_id: caption_layers
+  file_name: caption_layers.json
+  format: json
+  schema_file: sws/contracts/analyze/caption_layers.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/caption_layers.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-media-analyzer
+  consumer_shards:
+  - sws-fingerprint-compiler
+  - sws-blueprint-compiler
+  - sws-replacement-engine
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - layers
+  - output_hash
+  notes: []
+- artifact_id: text_overlay_map
+  file_name: text_overlay_map.json
+  format: json
+  schema_file: sws/contracts/analyze/text_overlay_map.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/text_overlay_map.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-media-analyzer
+  consumer_shards:
+  - sws-fingerprint-compiler
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - overlays
+  - output_hash
+  notes: []
+- artifact_id: hook_fingerprint
+  file_name: hook_fingerprint.json
+  format: json
+  schema_file: sws/contracts/fingerprint/hook_fingerprint.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/hook_fingerprint.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-fingerprint-compiler
+  consumer_shards:
+  - sws-blueprint-compiler
+  - sws-qa-engine
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - hook_type
+  - window_start_seconds
+  - window_end_seconds
+  - retention_value
+  - output_hash
+  notes: []
+- artifact_id: narrative_map
+  file_name: narrative_map.json
+  format: json
+  schema_file: sws/contracts/fingerprint/narrative_map.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/narrative_map.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-fingerprint-compiler
+  consumer_shards:
+  - sws-blueprint-compiler
+  - sws-replacement-engine
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - segments
+  - retention_markers
+  - output_hash
+  notes: []
+- artifact_id: visual_fingerprint
+  file_name: visual_fingerprint.json
+  format: json
+  schema_file: sws/contracts/fingerprint/visual_fingerprint.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/visual_fingerprint.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-fingerprint-compiler
+  consumer_shards:
+  - sws-blueprint-compiler
+  - sws-replacement-engine
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - color_palette
+  - dominant_mood
+  - motion_cadence
+  - output_hash
+  notes: []
+- artifact_id: style_fingerprint
+  file_name: style_fingerprint.json
+  format: json
+  schema_file: sws/contracts/fingerprint/style_fingerprint.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/style_fingerprint.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-fingerprint-compiler
+  consumer_shards:
+  - sws-blueprint-compiler
+  - sws-replacement-engine
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - style_axes
+  - timing_profile
+  - output_hash
+  notes: []
+- artifact_id: thumbnail_fingerprint
+  file_name: thumbnail_fingerprint.json
+  format: json
+  schema_file: sws/contracts/fingerprint/thumbnail_fingerprint.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/thumbnail_fingerprint.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-fingerprint-compiler
+  consumer_shards:
+  - sws-blueprint-compiler
+  - sws-replacement-engine
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - layout_type
+  - contrast_level
+  - complexity
+  - output_hash
+  notes: []
+- artifact_id: rebuild_blueprint
+  file_name: rebuild_blueprint.json
+  format: json
+  schema_file: sws/contracts/blueprint/rebuild_blueprint.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/rebuild_blueprint.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-blueprint-compiler
+  consumer_shards:
+  - sws-blueprint-library
+  - sws-replacement-engine
+  - sws-qa-engine
+  - sws-daily-studio
+  required_fields:
+  - schema_version
+  - blueprint_id
+  - blueprint_version
+  - created_from_job_id
+  - created_at_utc
+  - source_ref
+  - technical
+  - structure
+  - hook
+  - cta
+  - rebuild_slots
+  - quality_signals
+  - output_hash
+  notes:
+  - Primary cross-shard rebuild contract.
+- artifact_id: brand_profile
+  file_name: brand_profile.json
+  format: json
+  schema_file: sws/contracts/assets/brand_profile.schema.json
+  storage_zone: LIBRARY
+  path_template: /library/sws/brands/{brand_id}/brand_profile.json
+  release_phase: V1.5
+  phase: REBUILD
+  mutability: IMMUTABLE
+  retention_class: BRAND_UNTIL_DELETE
+  pii_policy: NONE
+  producer_shards:
+  - sws-asset-registry
+  consumer_shards:
+  - sws-replacement-engine
+  - sws-render-engine
+  - sws-publish-packager
+  - sws-locale-service
+  required_fields:
+  - schema_version
+  - brand_id
+  - brand_name
+  - version
+  - created_at_utc
+  - updated_at_utc
+  - identity
+  - visual
+  - audio
+  - output_hash
+  notes: []
+- artifact_id: platform_policy
+  file_name: platform_policy.json
+  format: json
+  schema_file: sws/contracts/policy/platform_policy.schema.json
+  storage_zone: POLICY
+  path_template: /library/policies/sws/platform_policy.json
+  release_phase: V1.0
+  phase: POLICY
+  mutability: IMMUTABLE
+  retention_class: POLICY_ACTIVE
+  pii_policy: NONE
+  producer_shards:
+  - sws-policy-gate
+  consumer_shards:
+  - sws-replacement-engine
+  - sws-render-engine
+  - sws-qa-engine
+  - sws-publish-packager
+  - sws-locale-service
+  required_fields:
+  - schema_version
+  - policy_version
+  - updated_at_utc
+  - platforms
+  - output_hash
+  notes: []
+- artifact_id: niche_registry
+  file_name: niche_registry.json
+  format: json
+  schema_file: sws/contracts/registry/niche_registry.schema.json
+  storage_zone: REGISTRY
+  path_template: /registry/sws/niche_registry.json
+  release_phase: V2.0
+  phase: REGISTRY
+  mutability: IMMUTABLE
+  retention_class: LIBRARY_ACTIVE
+  pii_policy: NONE
+  producer_shards:
+  - sws-performance-intelligence
+  consumer_shards:
+  - sws-replacement-engine
+  - sws-daily-studio
+  - sws-performance-intelligence
+  required_fields:
+  - schema_version
+  - registry_version
+  - updated_at_utc
+  - niches
+  - output_hash
+  notes: []
+- artifact_id: replacement_plan
+  file_name: replacement_plan.json
+  format: json
+  schema_file: sws/contracts/rebuild/replacement_plan.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/rebuild/replacement_plan.json
+  release_phase: V1.5
+  phase: REBUILD
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-replacement-engine
+  consumer_shards:
+  - sws-render-engine
+  - sws-qa-engine
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - blueprint_id
+  - brand_id
+  - slot_assignments
+  - asset_provenance_refs
+  - output_hash
+  notes: []
+- artifact_id: script_blueprint
+  file_name: script_blueprint.json
+  format: json
+  schema_file: sws/contracts/rebuild/script_blueprint.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/rebuild/script_blueprint.json
+  release_phase: V1.5
+  phase: REBUILD
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-replacement-engine
+  consumer_shards:
+  - sws-render-engine
+  - sws-locale-service
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - blueprint_id
+  - segments
+  - seed
+  - output_hash
+  notes: []
+- artifact_id: locale_variants
+  file_name: locale_variants.json
+  format: json
+  schema_file: sws/contracts/rebuild/locale_variants.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/rebuild/locale_variants.json
+  release_phase: V2.0
+  phase: REBUILD
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-replacement-engine
+  - sws-locale-service
+  consumer_shards:
+  - sws-render-engine
+  - sws-publish-packager
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - primary_locale
+  - variants
+  - output_hash
+  notes: []
+- artifact_id: rebuild_timeline
+  file_name: rebuild_timeline.json
+  format: json
+  schema_file: sws/contracts/rebuild/rebuild_timeline.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/rebuild/rebuild_timeline.json
+  release_phase: V1.5
+  phase: REBUILD
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-render-engine
+  consumer_shards:
+  - sws-qa-engine
+  - sws-publish-packager
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - timeline_segments
+  - render_plan
+  - output_hash
+  notes: []
+- artifact_id: qa_similarity
+  file_name: qa_similarity.json
+  format: json
+  schema_file: sws/contracts/qa/qa_similarity.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/qa/qa_similarity.json
+  release_phase: V1.5
+  phase: QA
+  mutability: IMMUTABLE
+  retention_class: ANALYSIS_12M
+  pii_policy: NONE
+  producer_shards:
+  - sws-qa-engine
+  consumer_shards:
+  - sws-operator-ui
+  - sws-publish-packager
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - blueprint_id
+  - metrics
+  - decision
+  - output_hash
+  notes: []
+- artifact_id: compliance_report
+  file_name: compliance_report.json
+  format: json
+  schema_file: sws/contracts/qa/compliance_report.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/qa/compliance_report.json
+  release_phase: V1.5
+  phase: QA
+  mutability: IMMUTABLE
+  retention_class: AUDIT_7Y
+  pii_policy: NONE
+  producer_shards:
+  - sws-qa-engine
+  consumer_shards:
+  - sws-blueprint-library
+  - sws-publish-packager
+  - sws-operator-ui
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - decision
+  - risk_level
+  - flags
+  - platform_context
+  - output_hash
+  notes: []
+- artifact_id: publish_bundle
+  file_name: publish_bundle.json
+  format: json
+  schema_file: sws/contracts/publish/publish_bundle.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/publish/publish_bundle.json
+  release_phase: V1.5
+  phase: PUBLISH_PREP
+  mutability: IMMUTABLE
+  retention_class: PUBLISH_24M
+  pii_policy: NONE
+  producer_shards:
+  - sws-publish-packager
+  consumer_shards:
+  - sws-operator-ui
+  - sws-performance-intelligence
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - target_platforms
+  - files
+  - metadata
+  - output_hash
+  notes: []
+- artifact_id: performance_signal
+  file_name: performance_signal.json
+  format: json
+  schema_file: sws/contracts/performance/performance_signal.schema.json
+  storage_zone: LIBRARY
+  path_template: /library/sws/performance/{signal_id}.json
+  release_phase: V2.0
+  phase: ANALYTICS
+  mutability: IMMUTABLE
+  retention_class: PERF_36M
+  pii_policy: NONE
+  producer_shards:
+  - sws-performance-intelligence
+  consumer_shards:
+  - sws-daily-studio
+  - sws-blueprint-library
+  - sws-performance-intelligence
+  required_fields:
+  - schema_version
+  - signal_id
+  - blueprint_id
+  - job_id
+  - platform
+  - measured_at
+  - metrics
+  - performance_tier
+  - output_hash
+  notes: []
+- artifact_id: audit_log_entry
+  file_name: audit_log.jsonl
+  format: jsonl
+  schema_file: sws/contracts/audit/audit_log.schema.json
+  storage_zone: AUDIT
+  path_template: /audit/sws/audit_log.jsonl
+  release_phase: V1.0
+  phase: AUDIT
+  mutability: APPEND_ONLY
+  retention_class: AUDIT_7Y
+  pii_policy: NONE
+  producer_shards:
+  - sws-policy-gate
+  - sws-qa-engine
+  - sws-job-ledger
+  consumer_shards:
+  - sws-policy-gate
+  - sws-operator-ui
+  required_fields:
+  - schema_version
+  - audit_id
+  - timestamp
+  - actor_id
+  - actor_role
+  - action
+  - resource_type
+  - resource_id
+  - decision
+  - output_hash
+  notes: []
+- artifact_id: dlq_entry
+  file_name: dlq_entry.json
+  format: json
+  schema_file: sws/contracts/job/dlq_entry.schema.json
+  storage_zone: DLQ
+  path_template: /jobs/dlq/{dlq_entry_id}.json
+  release_phase: V1.0
+  phase: DLQ
+  mutability: IMMUTABLE
+  retention_class: JOB_24M
+  pii_policy: NONE
+  producer_shards:
+  - sws-job-ledger
+  consumer_shards:
+  - sws-operator-ui
+  - sws-policy-gate
+  required_fields:
+  - schema_version
+  - dlq_entry_id
+  - job_id
+  - failed_stage
+  - error_code
+  - attempt_count
+  - resolution_status
+  - output_hash
+  notes: []
+- artifact_id: audit_policy_binding
+  file_name: audit_policy_binding.json
+  format: json
+  schema_file: sws/contracts/policy/audit_policy_binding.schema.json
+  storage_zone: POLICY
+  path_template: /library/policies/sws/audit_policy_binding.json
+  release_phase: V1.0
+  phase: POLICY
+  mutability: IMMUTABLE
+  retention_class: POLICY_ACTIVE
+  pii_policy: NONE
+  producer_shards:
+  - sws-policy-gate
+  consumer_shards:
+  - sws-job-ledger
+  - sws-qa-engine
+  required_fields:
+  - schema_version
+  - created_at_utc
+  - policy_version
+  - actions
+  - output_hash
+  notes:
+  - Maps policy decision actions to audit log action classes.
+- artifact_id: ingest_receipt
+  file_name: ingest_receipt.json
+  format: json
+  schema_file: sws/contracts/intake/ingest_receipt.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/artifacts/ingest_receipt.json
+  release_phase: V1.0
+  phase: ANALYZE
+  mutability: IMMUTABLE
+  retention_class: JOB_24M
+  pii_policy: NONE
+  producer_shards:
+  - sws-intake
+  consumer_shards:
+  - sws-job-ledger
+  - sws-media-analyzer
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - source_hash
+  - normalization_status
+  - storage_ref
+  - output_hash
+  notes: []
+- artifact_id: blueprint_library_entry
+  file_name: blueprint_library_entry.json
+  format: json
+  schema_file: sws/contracts/library/blueprint_library_entry.schema.json
+  storage_zone: LIBRARY
+  path_template: /library/sws/blueprints/{blueprint_id}/blueprint_library_entry.json
+  release_phase: V1.0
+  phase: LIBRARY
+  mutability: IMMUTABLE
+  retention_class: LIBRARY_ACTIVE
+  pii_policy: NONE
+  producer_shards:
+  - sws-blueprint-library
+  consumer_shards:
+  - sws-daily-studio
+  - sws-performance-intelligence
+  - sws-operator-ui
+  required_fields:
+  - schema_version
+  - blueprint_id
+  - created_at_utc
+  - compliance_status
+  - library_tags
+  - reuse_count
+  - output_hash
+  notes:
+  - Written only after compliance report is APPROVED.
+- artifact_id: library_search_index
+  file_name: library_search_index.json
+  format: json
+  schema_file: sws/contracts/library/library_search_index.schema.json
+  storage_zone: LIBRARY
+  path_template: /library/sws/search/library_search_index.json
+  release_phase: V1.0
+  phase: LIBRARY
+  mutability: VERSIONED
+  retention_class: LIBRARY_ACTIVE
+  pii_policy: NONE
+  producer_shards:
+  - sws-blueprint-library
+  consumer_shards:
+  - sws-operator-ui
+  - sws-daily-studio
+  required_fields:
+  - schema_version
+  - created_at_utc
+  - index_version
+  - entries
+  - output_hash
+  notes:
+  - Fulltext baseline in V1.0; semantic/vector indexing deferred to V2.0.
+- artifact_id: asset_registry_entry
+  file_name: asset_registry_entry.json
+  format: json
+  schema_file: sws/contracts/assets/asset_registry_entry.schema.json
+  storage_zone: LIBRARY
+  path_template: /library/sws/assets/{asset_id}/asset_registry_entry.json
+  release_phase: V1.5
+  phase: REBUILD
+  mutability: IMMUTABLE
+  retention_class: BRAND_UNTIL_DELETE
+  pii_policy: NONE
+  producer_shards:
+  - sws-asset-registry
+  consumer_shards:
+  - sws-replacement-engine
+  - sws-publish-packager
+  required_fields:
+  - schema_version
+  - asset_id
+  - created_at_utc
+  - asset_type
+  - license_status
+  - provenance_ref
+  - output_hash
+  notes: []
+- artifact_id: asset_provenance_record
+  file_name: asset_provenance_record.json
+  format: json
+  schema_file: sws/contracts/assets/asset_provenance_record.schema.json
+  storage_zone: LIBRARY
+  path_template: /library/sws/assets/{asset_id}/asset_provenance_record.json
+  release_phase: V1.5
+  phase: REBUILD
+  mutability: IMMUTABLE
+  retention_class: BRAND_UNTIL_DELETE
+  pii_policy: NONE
+  producer_shards:
+  - sws-asset-registry
+  consumer_shards:
+  - sws-replacement-engine
+  - sws-qa-engine
+  required_fields:
+  - schema_version
+  - asset_id
+  - created_at_utc
+  - origin_type
+  - license_status
+  - approved_for_modes
+  - output_hash
+  notes:
+  - Mandatory for every asset referenced in replacement_plan.
+- artifact_id: render_output_manifest
+  file_name: render_output_manifest.json
+  format: json
+  schema_file: sws/contracts/render/render_output_manifest.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/rebuild/render_output_manifest.json
+  release_phase: V1.5
+  phase: REBUILD
+  mutability: IMMUTABLE
+  retention_class: PUBLISH_24M
+  pii_policy: NONE
+  producer_shards:
+  - sws-render-engine
+  consumer_shards:
+  - sws-qa-engine
+  - sws-publish-packager
+  - sws-operator-ui
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - render_targets
+  - file_refs
+  - ffmpeg_version
+  - output_hash
+  notes: []
+- artifact_id: qa_decision_record
+  file_name: qa_decision_record.json
+  format: json
+  schema_file: sws/contracts/qa/qa_decision_record.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/qa/qa_decision_record.json
+  release_phase: V1.5
+  phase: QA
+  mutability: IMMUTABLE
+  retention_class: AUDIT_7Y
+  pii_policy: NONE
+  producer_shards:
+  - sws-qa-engine
+  consumer_shards:
+  - sws-operator-ui
+  - sws-publish-packager
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - decision
+  - approved_by_role
+  - rationale
+  - output_hash
+  notes:
+  - Separate from append-only audit log; captures final QA release decision snapshot.
+- artifact_id: daily_job_request
+  file_name: daily_job_request.json
+  format: json
+  schema_file: sws/contracts/daily/daily_job_request.schema.json
+  storage_zone: ATTEMPT
+  path_template: /jobs/{job_id}/attempts/{attempt_id}/rebuild/daily_job_request.json
+  release_phase: V2.0
+  phase: CREATE
+  mutability: IMMUTABLE
+  retention_class: JOB_24M
+  pii_policy: NONE
+  producer_shards:
+  - sws-daily-studio
+  consumer_shards:
+  - sws-replacement-engine
+  - sws-render-engine
+  required_fields:
+  - schema_version
+  - job_id
+  - attempt_id
+  - created_at_utc
+  - brand_id
+  - niche_id
+  - target_platforms
+  - output_hash
+  notes: []
+- artifact_id: daily_batch_manifest
+  file_name: daily_batch_manifest.json
+  format: json
+  schema_file: sws/contracts/daily/daily_batch_manifest.schema.json
+  storage_zone: JOB
+  path_template: /jobs/{job_id}/daily_batch_manifest.json
+  release_phase: V2.0
+  phase: CREATE
+  mutability: IMMUTABLE
+  retention_class: JOB_24M
+  pii_policy: NONE
+  producer_shards:
+  - sws-daily-studio
+  consumer_shards:
+  - sws-operator-ui
+  - sws-performance-intelligence
+  required_fields:
+  - schema_version
+  - job_id
+  - created_at_utc
+  - batch_items
+  - output_hash
+  notes: []
+- artifact_id: performance_summary_report
+  file_name: performance_summary_report.json
+  format: json
+  schema_file: sws/contracts/performance/performance_summary_report.schema.json
+  storage_zone: LIBRARY
+  path_template: /library/sws/performance/summary/{niche_id}.json
+  release_phase: V2.0
+  phase: ANALYTICS
+  mutability: VERSIONED
+  retention_class: PERF_36M
+  pii_policy: NONE
+  producer_shards:
+  - sws-performance-intelligence
+  consumer_shards:
+  - sws-daily-studio
+  - sws-operator-ui
+  required_fields:
+  - schema_version
+  - created_at_utc
+  - niche_id
+  - window
+  - top_blueprints
+  - output_hash
+  notes: []
