@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.dev/schemas/sws/v1/caption_layers.schema.json",
+  "title": "SWS Caption Layers",
+  "description": "On-screen text and caption overlays extracted via OCR, with position, style, and timing.",
+  "type": "object",
+  "required": ["job_id", "source_sha256", "ocr_engine", "created_at", "layers"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {"type": "string"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "ocr_engine": {"type": "string"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "layers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["layer_id", "start_ms", "end_ms", "text", "bbox_norm"],
+        "properties": {
+          "layer_id": {"type": "string"},
+          "start_ms": {"type": "integer", "minimum": 0},
+          "end_ms": {"type": "integer", "minimum": 0},
+          "text": {"type": "string"},
+          "bbox_norm": {
+            "type": "object",
+            "required": ["x", "y", "w", "h"],
+            "properties": {
+              "x": {"type": "number", "minimum": 0, "maximum": 1},
+              "y": {"type": "number", "minimum": 0, "maximum": 1},
+              "w": {"type": "number", "minimum": 0, "maximum": 1},
+              "h": {"type": "number", "minimum": 0, "maximum": 1}
+            }
+          },
+          "style_hint": {
+            "type": "object",
+            "properties": {
+              "font_family_guess": {"type": "string"},
+              "font_size_px_guess": {"type": "number"},
+              "weight": {"type": "string", "enum": ["regular", "bold", "extrabold"]},
+              "color_hex": {"type": "string"},
+              "background_hex": {"type": "string"},
+              "stroke_hex": {"type": "string"},
+              "alignment": {"type": "string", "enum": ["left", "center", "right"]},
+              "animation": {"type": "string", "enum": ["static", "pop", "slide", "typewriter", "fade", "unknown"]}
+            }
+          },
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.dev/schemas/sws/v1/rights_manifest.schema.json",
+  "title": "SWS Rights Manifest",
+  "description": "Rights classification record. Produced by Rights Gate at ingest. Classes R0-R4 per Foundation Spec 4.2.",
+  "type": "object",
+  "required": ["job_id", "source_sha256", "rights_class", "decided_at", "decided_by", "evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {"type": "string"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "rights_class": {
+      "type": "string",
+      "enum": ["R0", "R1", "R2", "R3", "R4"],
+      "description": "R0 own/own-licensed, R1 platform-licensed with proof, R2 fair-use/transformative, R3 restricted analysis-only, R4 prohibited"
+    },
+    "allowed": {"type": "boolean", "description": "summary flag: true iff requested action is permitted"},
+    "reason": {"type": "string", "description": "denial reason if allowed=false"},
+    "allowed_actions": {
+      "type": "array",
+      "items": {"type": "string", "enum": ["ingest", "analyze", "rebuild", "publish", "distribute"]},
+      "uniqueItems": true
+    },
+    "decided_at": {"type": "string", "format": "date-time"},
+    "decided_by": {"type": "string", "description": "identity marker of the operator or automated policy"},
+    "policy_version": {"type": "string"},
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "reference"],
+        "properties": {
+          "kind": {"type": "string", "enum": ["license_proof", "own_upload_declaration", "fair_use_analysis", "platform_api_grant", "rejection_reason"]},
+          "reference": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

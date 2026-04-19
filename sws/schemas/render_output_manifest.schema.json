@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.dev/schemas/sws/v1.5/render_output_manifest.schema.json",
+  "title": "SWS Render Output Manifest",
+  "description": "Records the deterministic render result of a rebuild_timeline.",
+  "type": "object",
+  "required": ["render_id", "job_id", "timeline_id", "created_at", "status", "output_path", "output_sha256"],
+  "additionalProperties": false,
+  "properties": {
+    "render_id": {"type": "string", "pattern": "^rd_[A-Za-z0-9]{8,}$"},
+    "job_id": {"type": "string"},
+    "timeline_id": {"type": "string"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "status": {"type": "string", "enum": ["succeeded", "skipped_no_renderer", "failed"]},
+    "output_path": {"type": "string"},
+    "output_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "output_byte_size": {"type": "integer", "minimum": 0},
+    "engine": {"type": "string"},
+    "duration_ms": {"type": "integer", "minimum": 0},
+    "notes": {"type": "string"}
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.dev/schemas/sws/v1/source_manifest.schema.json",
+  "title": "SWS Source Manifest",
+  "description": "Describes a single ingested source (URL or uploaded file). Written by Ingest stage, immutable thereafter.",
+  "type": "object",
+  "required": ["job_id", "attempt_id", "source_kind", "source_ref", "sha256", "byte_size", "ingested_at", "retention_expires_at"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {"type": "string"},
+    "attempt_id": {"type": "string"},
+    "source_kind": {"type": "string", "enum": ["url", "file_upload"]},
+    "source_ref": {"type": "string", "minLength": 1},
+    "source_url_original": {"type": "string", "format": "uri"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "byte_size": {"type": "integer", "minimum": 0},
+    "mime_type": {"type": "string"},
+    "storage_path": {"type": "string"},
+    "ingested_at": {"type": "string", "format": "date-time"},
+    "retention_expires_at": {"type": "string", "format": "date-time"},
+    "retention_class": {"type": "string", "enum": ["72h_source", "7d_derivative", "30d_evidence", "audit_permanent"]}
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.dev/schemas/sws/v1/job_manifest.schema.json",
+  "title": "SWS Job Manifest",
+  "description": "Immutable manifest written at job creation. Never mutated. State transitions live in job_events.jsonl.",
+  "type": "object",
+  "required": ["job_id", "created_at", "mode", "input_kind", "input_ref", "requested_by", "rights_class_requested"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {"type": "string", "pattern": "^job_[A-Za-z0-9]{8,}$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "mode": {"type": "string", "enum": ["analyze_url", "analyze_file", "rebuild", "variant"]},
+    "input_kind": {"type": "string", "enum": ["url", "file_upload"]},
+    "input_ref": {"type": "string", "minLength": 1},
+    "requested_by": {"type": "string", "minLength": 1},
+    "rights_class_requested": {"type": "string", "enum": ["R0", "R1", "R2", "R3", "R4"]},
+    "notes": {"type": "string"}
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.dev/schemas/sws/v1/hook_fingerprint.schema.json",
+  "title": "SWS Hook / CTA Fingerprint",
+  "description": "Narrative hook, CTA position, pattern-interrupt and retention-structure fingerprint.",
+  "type": "object",
+  "required": ["job_id", "source_sha256", "created_at", "hook_window", "hook_type", "cta"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {"type": "string"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "hook_window": {
+      "type": "object",
+      "required": ["start_ms", "end_ms"],
+      "properties": {
+        "start_ms": {"type": "integer", "minimum": 0},
+        "end_ms": {"type": "integer", "minimum": 0}
+      }
+    },
+    "hook_type": {
+      "type": "string",
+      "enum": ["question", "bold_claim", "curiosity_gap", "pattern_interrupt", "direct_address", "stat_shock", "story_open", "visual_hook", "meta_reference", "listicle_open", "unknown"]
+    },
+    "hook_triggers": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "pattern_interrupts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["at_ms", "kind"],
+        "properties": {
+          "at_ms": {"type": "integer", "minimum": 0},
+          "kind": {"type": "string", "enum": ["cut", "zoom", "caption_pop", "sfx", "speaker_switch", "music_drop", "unknown"]}
+        }
+      }
+    },
+    "cta": {
+      "type": "object",
+      "properties": {
+        "present": {"type": "boolean"},
+        "at_ms": {"type": "integer", "minimum": 0},
+        "text": {"type": "string"},
+        "modality": {"type": "string", "enum": ["spoken", "caption", "end_card", "voice+caption", "none"]}
+      }
+    },
+    "retention_map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["start_ms", "end_ms", "retention_score"],
+        "properties": {
+          "start_ms": {"type": "integer", "minimum": 0},
+          "end_ms": {"type": "integer", "minimum": 0},
+          "retention_score": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    }
+  }
+}

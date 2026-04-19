@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.dev/schemas/sws/v1/media_technical.schema.json",
+  "title": "SWS Media Technical Metadata",
+  "description": "Probed by ffprobe after ingest. Container, streams, duration, fps, resolution, codec.",
+  "type": "object",
+  "required": ["job_id", "source_sha256", "probed_at", "container", "duration_seconds", "video", "audio"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {"type": "string"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "probed_at": {"type": "string", "format": "date-time"},
+    "container": {"type": "string"},
+    "duration_seconds": {"type": "number", "minimum": 0},
+    "byte_size": {"type": "integer", "minimum": 0},
+    "video": {
+      "type": "object",
+      "required": ["codec", "width", "height", "fps"],
+      "properties": {
+        "codec": {"type": "string"},
+        "width": {"type": "integer", "minimum": 0},
+        "height": {"type": "integer", "minimum": 0},
+        "fps": {"type": "number", "minimum": 0},
+        "bitrate_bps": {"type": "integer"},
+        "frame_count": {"type": "integer"},
+        "color_space": {"type": "string"},
+        "pixel_format": {"type": "string"}
+      }
+    },
+    "audio": {
+      "type": "object",
+      "properties": {
+        "codec": {"type": "string"},
+        "sample_rate_hz": {"type": "integer"},
+        "channels": {"type": "integer"},
+        "bitrate_bps": {"type": "integer"},
+        "language_hint": {"type": "string"}
+      }
+    }
+  }
+}
