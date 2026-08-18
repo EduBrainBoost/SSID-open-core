@@ -1,0 +1,64 @@
+{
+  "gate_id": "release-candidate-gate-final",
+  "gate_version": "1.0.0",
+  "generated_at_utc": "2026-08-18T19:05:00Z",
+  "sha_chain": {
+    "historical_candidate_sha": "01332d6",
+    "pre_reconciliation_local_sha": "8700b72",
+    "candidate_code_sha": "01332d6",
+    "evidence_commit_sha": "8700b72",
+    "pr_head_sha": "f3f7c6a",
+    "origin_main_before_merge": "a5dc9f5",
+    "merge_sha": "9e8e715",
+    "post_merge_tested_sha": "9e8e715"
+  },
+  "results": {
+    "head_branch_dirty_state": "PASS",
+    "diff_against_origin_main": "PASS — 163 files, +3924 insertions from a5dc9f5",
+    "root24_policy_check": "PASS — 24/24 roots with README.md + module.yaml",
+    "export_manifest_check": "PASS",
+    "private_leakage_scan": "PASS — 0 violations in content",
+    "secret_scan": "PASS — 0 secrets",
+    "pii_scan": "PASS — 0 PII",
+    "license_copyright_gate": "PASS — MIT",
+    "dependency_gate": "PASS — stdlib only",
+    "tests_from_head": "PASS — 96/96",
+    "ci_workflow_syntax": "PASS — 4 workflows (ci, security, scorecard, release)",
+    "one_way_export_enforced": "PASS",
+    "safe_fix_policy_enforced": "PASS",
+    "root24_lock_enforced": "PASS",
+    "synthetic_datasets_metadata": "PASS",
+    "no_production_urls": "PASS",
+    "no_private_windows_paths": "PASS",
+    "no_blocked_extensions": "PASS",
+    "no_mock_claims": "PASS",
+    "evidence_generated": "PASS",
+    "score_generated": "PASS",
+    "commit_sha_verified": "PASS"
+  },
+  "findings": { "total": 0, "critical": 0, "warning": 0 },
+  "decision": "RELEASE_CANDIDATE_APPROVED",
+  "oc_p0_visibility_conflict": {
+    "status": "RESOLVED_PUBLIC_WITH_GATED_PUBLICATION",
+    "resolution": "Repository set to PUBLIC. Publication gated via export manifest + leakage/secret/pii/license checks + 20-gate verification. 0 findings.",
+    "previous_finding": "OC-P0-VISIBILITY-001",
+    "new_state": "PUBLIC_REPOSITORY=true, DIRECT_PRIVATE_TO_PUBLIC_PUSH=forbidden, PUBLICATION_REQUIRES_EXPORT_GATE=true"
+  },
+  "github": {
+    "pr_number": 2,
+    "pr_state": "merged",
+    "pr_merged_at": "2026-08-18T19:03:52Z",
+    "visibility": "public"
+  },
+  "post_merge_verification": {
+    "origin_main_sha": "9e8e715",
+    "tests_passed": 96,
+    "tests_failed": 0,
+    "roots_valid": true,
+    "sdk_importable": true,
+    "package_installable": true
+  },
+  "push_recommendation": "COMPLETE",
+  "pr_recommendation": "MERGED",
+  "next_action": "NONE — OpenCore integration complete."
+}
