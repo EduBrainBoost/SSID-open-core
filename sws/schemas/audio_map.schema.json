@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.dev/schemas/sws/v1/audio_map.schema.json",
+  "title": "SWS Audio Map",
+  "description": "Speech/Music/SFX segmentation, loudness, peaks, and tempo information.",
+  "type": "object",
+  "required": ["job_id", "source_sha256", "created_at", "segments"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {"type": "string"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "sample_rate_hz": {"type": "integer"},
+    "integrated_loudness_lufs": {"type": "number"},
+    "true_peak_dbtp": {"type": "number"},
+    "tempo_bpm": {"type": "number"},
+    "beat_times_ms": {
+      "type": "array",
+      "items": {"type": "integer", "minimum": 0}
+    },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["start_ms", "end_ms", "class"],
+        "properties": {
+          "start_ms": {"type": "integer", "minimum": 0},
+          "end_ms": {"type": "integer", "minimum": 0},
+          "class": {"type": "string", "enum": ["speech", "music", "sfx", "silence", "mixed"]},
+          "rms_db": {"type": "number"},
+          "peak_db": {"type": "number"},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "drops": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["at_ms", "intensity"],
+        "properties": {
+          "at_ms": {"type": "integer", "minimum": 0},
+          "intensity": {"type": "number"}
+        }
+      }
+    }
+  }
+}

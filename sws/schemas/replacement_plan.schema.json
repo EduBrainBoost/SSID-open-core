@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.dev/schemas/sws/v1.5/replacement_plan.schema.json",
+  "title": "SWS Replacement Plan",
+  "description": "Declares which blueprint assets are to be replaced with own/licensed material. Produced by Rebuild Spine.",
+  "type": "object",
+  "required": ["plan_id", "job_id", "blueprint_id", "created_at", "brand_profile_ref", "asset_replacements"],
+  "additionalProperties": false,
+  "properties": {
+    "plan_id": {"type": "string", "pattern": "^plan_[A-Za-z0-9]{8,}$"},
+    "job_id": {"type": "string"},
+    "blueprint_id": {"type": "string"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "brand_profile_ref": {"type": "string"},
+    "script_override_ref": {"type": "string"},
+    "voice_profile_ref": {"type": "string"},
+    "music_bed_ref": {"type": "string"},
+    "asset_replacements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["segment_index", "asset_kind", "replacement_ref", "provenance"],
+        "properties": {
+          "segment_index": {"type": "integer", "minimum": 0},
+          "asset_kind": {"type": "string", "enum": ["voice_track", "music_bed", "sfx", "b_roll", "keyframe", "lower_third", "end_card", "caption_style", "thumbnail"]},
+          "replacement_ref": {"type": "string"},
+          "provenance": {"type": "string", "enum": ["own_upload", "own_licensed", "platform_licensed", "generated", "fallback_placeholder"]},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "policy_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

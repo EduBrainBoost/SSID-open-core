@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.dev/schemas/sws/v1/shot_timeline.schema.json",
+  "title": "SWS Shot Timeline",
+  "description": "Ordered list of shots and scene boundaries detected in a source.",
+  "type": "object",
+  "required": ["job_id", "source_sha256", "detector", "created_at", "shots"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {"type": "string"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "detector": {"type": "string", "description": "e.g. pyscenedetect-content, adaptive"},
+    "detector_params": {"type": "object"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "shots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["index", "start_ms", "end_ms", "duration_ms"],
+        "properties": {
+          "index": {"type": "integer", "minimum": 0},
+          "start_ms": {"type": "integer", "minimum": 0},
+          "end_ms": {"type": "integer", "minimum": 0},
+          "duration_ms": {"type": "integer", "minimum": 0},
+          "transition_in": {"type": "string", "enum": ["cut", "fade_in", "dissolve_in", "wipe_in", "unknown"]},
+          "transition_out": {"type": "string", "enum": ["cut", "fade_out", "dissolve_out", "wipe_out", "unknown"]},
+          "motion_score": {"type": "number", "minimum": 0},
+          "average_luma": {"type": "number"},
+          "scene_group": {"type": "integer"}
+        }
+      }
+    },
+    "scene_boundaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scene_index", "first_shot", "last_shot"],
+        "properties": {
+          "scene_index": {"type": "integer", "minimum": 0},
+          "first_shot": {"type": "integer", "minimum": 0},
+          "last_shot": {"type": "integer", "minimum": 0},
+          "label": {"type": "string"}
+        }
+      }
+    }
+  }
+}

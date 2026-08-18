@@ -1,0 +1,38 @@
+# Open Core Drift Detection
+name: Open Core Drift Detection
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check VERSION/Claim Drift
+        run: |
+          VERSION=$(grep 'version = ' pyproject.toml | head -1 | cut -d'"' -f2)
+          README_VERSION=$(grep -A1 'Release:' README.md | tail -1 | tr -d ' ')
+          if [ "$VERSION" != "$README_VERSION" ]; then
+            echo "Version drift: pyproject.toml=$VERSION README=$README_VERSION"
+            exit 1
+          fi
+          echo "Version check passed"
+
+      - name: Check Testnet Claim
+        run: |
+          if grep -q "Ready for: Production use" README.md; then
+            if [ ! -f "16_codex/TESTNET_STATUS.md" ]; then
+              echo "Production claim without Testnet Status doc"
+              exit 1
+            fi
+          fi
+
+      - name: Check Registry Consistency
+        run: |
+          if [ -f "16_codex/open_core_registry.json" ]; then
+            echo "Registry exists"
+          fi

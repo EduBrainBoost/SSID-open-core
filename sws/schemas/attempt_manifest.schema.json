@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.dev/schemas/sws/v1/attempt_manifest.schema.json",
+  "title": "SWS Attempt Manifest",
+  "description": "Immutable manifest per job attempt. Retries produce a new attempt_id; the old attempt is never rewritten.",
+  "type": "object",
+  "required": ["job_id", "attempt_id", "attempt_number", "started_at", "pipeline", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {"type": "string", "pattern": "^job_[A-Za-z0-9]{8,}$"},
+    "attempt_id": {"type": "string", "pattern": "^att_[A-Za-z0-9]{8,}$"},
+    "attempt_number": {"type": "integer", "minimum": 1},
+    "started_at": {"type": "string", "format": "date-time"},
+    "finished_at": {"type": "string", "format": "date-time"},
+    "pipeline": {"type": "string", "enum": ["analyze_url", "analyze_file", "rebuild", "variant"]},
+    "status": {"type": "string", "enum": ["running", "succeeded", "failed", "quarantined"]},
+    "error_code": {"type": "string"},
+    "error_message": {"type": "string"},
+    "dlq_ref": {"type": "string"},
+    "stage_trace": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["stage", "started_at", "status"],
+        "properties": {
+          "stage": {"type": "string"},
+          "started_at": {"type": "string", "format": "date-time"},
+          "finished_at": {"type": "string", "format": "date-time"},
+          "status": {"type": "string", "enum": ["running", "succeeded", "failed", "skipped"]},
+          "output_ref": {"type": "string"}
+        }
+      }
+    }
+  }
+}

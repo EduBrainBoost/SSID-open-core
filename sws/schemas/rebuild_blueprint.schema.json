@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ssid.dev/schemas/sws/v1/rebuild_blueprint.schema.json",
+  "title": "SWS Rebuild Blueprint",
+  "description": "Canonical reproducible template derived from all analysis artifacts. Consumed by Rebuild Spine.",
+  "type": "object",
+  "required": ["blueprint_id", "job_id", "source_sha256", "created_at", "total_duration_ms", "segments", "required_assets", "replacement_policy"],
+  "additionalProperties": false,
+  "properties": {
+    "blueprint_id": {"type": "string", "pattern": "^bp_[A-Za-z0-9]{8,}$"},
+    "job_id": {"type": "string"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "total_duration_ms": {"type": "integer", "minimum": 0},
+    "tempo_bpm": {"type": "number"},
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["index", "start_ms", "end_ms", "role"],
+        "properties": {
+          "index": {"type": "integer", "minimum": 0},
+          "start_ms": {"type": "integer", "minimum": 0},
+          "end_ms": {"type": "integer", "minimum": 0},
+          "role": {"type": "string", "enum": ["hook", "setup", "body", "payoff", "cta", "outro", "transition"]},
+          "visual_motion_profile": {"type": "string", "enum": ["static", "slow_pan", "fast_pan", "zoom_in", "zoom_out", "cut_heavy", "cinematic", "unknown"]},
+          "caption_density": {"type": "string", "enum": ["none", "sparse", "moderate", "dense"]},
+          "beat_sync_expected": {"type": "boolean"},
+          "narration_present": {"type": "boolean"},
+          "overlay_expected": {"type": "boolean"}
+        }
+      }
+    },
+    "required_assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["asset_kind", "count", "duration_hint_ms"],
+        "properties": {
+          "asset_kind": {"type": "string", "enum": ["voice_track", "music_bed", "sfx", "b_roll", "keyframe", "lower_third", "end_card", "caption_style", "thumbnail"]},
+          "count": {"type": "integer", "minimum": 0},
+          "duration_hint_ms": {"type": "integer", "minimum": 0},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "replacement_policy": {
+      "type": "object",
+      "required": ["allow_1to1_copy", "structure_equivalence_tolerances"],
+      "properties": {
+        "allow_1to1_copy": {"type": "boolean", "const": false, "description": "Hard constraint: asset identity must be new/original."},
+        "structure_equivalence_tolerances": {
+          "type": "object",
+          "properties": {
+            "total_duration_ms_tolerance": {"type": "integer", "default": 200},
+            "shot_count_tolerance": {"type": "integer", "default": 1},
+            "caption_entry_exit_tolerance_ms": {"type": "integer", "default": 120},
+            "cta_position_tolerance_ms": {"type": "integer", "default": 300}
+          }
+        }
+      }
+    },
+    "style_fingerprint_ref": {"type": "string", "description": "path or id of style_fingerprint.json"}
+  }
+}

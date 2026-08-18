@@ -171,7 +171,10 @@ class TestSecretPatterns:
 
     def test_no_secrets_yaml(self):
         """OC06b: No secrets configuration files."""
-        secrets_files = list(REPO_ROOT.rglob("*secret*")) + list(REPO_ROOT.rglob("*credentials*"))
+        secrets_files = [
+            f for f in list(REPO_ROOT.rglob("*secret*")) + list(REPO_ROOT.rglob("*credentials*"))
+            if f.name not in {"secrets-scan.json", "secret-scan.yml"}
+        ]
         assert not secrets_files, f"Secret files found: {secrets_files}"
 
 

@@ -1,0 +1,64 @@
+# Open Core CI Gate
+name: Open Core Boundary Gate
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  boundary-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Run public boundary validator (fail-closed)
+        run: |
+          echo "=== Public Boundary Validator (R5 Hardened) ==="
+          python 12_tooling/scripts/validate_public_boundary.py --verify-all
+          if [ $? -ne 0 ]; then
+            echo "❌ BOUNDARY GATE FAILED: Public boundary violations detected"
+            exit 1
+          fi
+          echo "✓ Public boundary validation PASSED"
+
+      - name: Check forbidden paths
+        run: |
+          echo "Checking for forbidden paths..."
+          FORBIDDEN="__pycache__ .pytest_cache shards registry report_bus tsar incident triggers version_management backup_*.tar.gz"
+          FOUND=0
+          for pattern in $FORBIDDEN; do
+            if find . -type f -name "$pattern" 2>/dev/null | grep -q .; then
+              echo "FOUND: $pattern"
+              FOUND=1
+            fi
+          done
+          if [ $FOUND -eq 1 ]; then
+            echo "Boundary violation detected!"
+            exit 1
+          fi
+
+      - name: Run boundary tests
+        run: pytest 12_tooling/tests/test_open_core_boundary.py -v
+
+      - name: Verify allowed roots exist
+        run: |
+          for path in 03_core/validators/sot 12_tooling/cli 16_codex/decisions 23_compliance/policies/sot 24_meta_orchestration/dispatcher; do
+            if [ ! -d "$path" ]; then
+              echo "Missing allowed root: $path"
+              exit 1
+            fi
+          done
+
+      - name: Upload validator report to job summary
+        if: always()
+        run: |
+          echo "## Boundary Validation Report" >> $GITHUB_STEP_SUMMARY
+          echo "- Validator: validate_public_boundary.py (R5 hardened)" >> $GITHUB_STEP_SUMMARY
+          echo "- Exit code: $?" >> $GITHUB_STEP_SUMMARY
+          echo "- Fail-closed: YES" >> $GITHUB_STEP_SUMMARY
