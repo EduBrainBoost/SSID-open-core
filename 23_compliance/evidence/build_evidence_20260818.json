@@ -1,12 +1,15 @@
 {
   "evidence_version": "1.0.0",
-  "created_at_utc": "2026-08-18T17:40:00Z",
+  "created_at_utc": "2026-08-18T17:45:00Z",
   "build_id": "opencore-20260818-final",
   "task_id": "SSID-OPEN-CORE-REPOSITORY_INTEGRATION_COUNCIL",
   "session_id": "hermes-27e8cadd",
   "branch": "hermes/p2-opencore-full-build",
-  "commit_sha": "01332d6",
-  "tested_against_head": "01332d6",
+  "commit_sha": "8700b72",
+  "tested_against_head": "8700b72",
+  "candidate_code_sha": "01332d6",
+  "evidence_commit_sha": "8700b72",
+  "evidence_only_delta": true,
   "status": "RELEASE_CANDIDATE_APPROVED",
   "tests": { "total": 96, "passed": 96, "failed": 0 },
   "security_scans": { "secret_scan": "PASS", "pii_scan": "PASS", "license_scan": "PASS", "private_leak_scan": "PASS" },
@@ -19,5 +22,6 @@
   "findings": { "total": 0, "critical": 0, "warning": 0 },
   "oc_p0_visibility_conflict": "RESOLVED_PUBLIC_WITH_GATED_PUBLICATION",
   "push_recommendation": "APPROVED_FOR_PUSH",
-  "next_action": "Push hermes/p2-opencore-full-build → origin, open PR against main"
+  "pr_recommendation": "APPROVED_FOR_PR",
+  "next_action": "Push hermes/p2-opencore-full-build → origin, create PR against main, merge, set visibility PUBLIC"
 }
