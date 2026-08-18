@@ -1,14 +1,32 @@
 {
   "score_version": "1.0.0",
   "generated_at_utc": "2026-08-18T19:50:00Z",
-  "commit": "feafd9a",
+  "commit": "bc41986",
   "modules": {
-    "structure": {"score": 100, "grade": "A"},
-    "policy": {"score": 100, "grade": "A"},
-    "tests": {"score": 100, "grade": "A"},
-    "security": {"score": 100, "grade": "A"},
-    "ci": {"score": 100, "grade": "A"},
-    "documentation": {"score": 100, "grade": "A"}
+    "structure": {
+      "score": 100,
+      "grade": "A"
+    },
+    "policy": {
+      "score": 100,
+      "grade": "A"
+    },
+    "tests": {
+      "score": 100,
+      "grade": "A"
+    },
+    "security": {
+      "score": 100,
+      "grade": "A"
+    },
+    "ci": {
+      "score": 100,
+      "grade": "A"
+    },
+    "documentation": {
+      "score": 100,
+      "grade": "A"
+    }
   },
   "composite_score": 100,
   "grade": "A",
