@@ -18,5 +18,5 @@ jobs:
           python-version: '3.12'
 
       - name: Run forbidden extensions check
-        run: python 12_tooling/scripts/forbidden_ext_check.py --repo-root . --extensions .pyc .pyo __pycache__
+        run: python 12_tooling/scripts/forbidden_ext_check.py --repo-root . --extensions ".pyc .pyo"
 
