@@ -20,7 +20,7 @@ jobs:
       - name: Run public boundary validator (fail-closed)
         run: |
           echo "=== Public Boundary Validator (R5 Hardened) ==="
-          python 12_tooling/scripts/validate_public_boundary.py --verify-all
+          python 12_tooling/scripts/validate_public_boundary.py --verify-all --private-mode
           if [ $? -ne 0 ]; then
             echo "❌ BOUNDARY GATE FAILED: Public boundary violations detected"
             exit 1

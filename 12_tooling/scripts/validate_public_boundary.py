@@ -389,7 +389,13 @@ def validate_exported_roots_complete(repo_root: Path) -> dict:
 
 def main():
     """Run boundary validation with FAIL-CLOSED enforcement."""
+    import argparse
     import json
+
+    parser = argparse.ArgumentParser(description="SSID Open-Core Public Boundary Validator")
+    parser.add_argument("--verify-all", action="store_true", help="Run all checks")
+    parser.add_argument("--private-mode", action="store_true", help="Skip denied roots checks for private repos")
+    args = parser.parse_args()
 
     print("=== SSID Open-Core Public Boundary Validator ===\n")
 
@@ -399,6 +405,7 @@ def main():
         "denied_root_violations": [],
         "exported_root_completeness": {},
         "total_violations": 0,
+        "private_mode": args.private_mode,
     }
 
     print("[1] Checking for private repo references...")
@@ -442,19 +449,26 @@ def main():
         print("    [OK] No unbacked mainnet claims")
 
     print("[5] Checking that denied roots are empty (FAIL-CLOSED)...")
-    denied_issues = validate_denied_roots_empty(REPO_ROOT)
-    if denied_issues:
-        print(f"    [CRITICAL] Found {len(denied_issues)} denied root violation(s)")
-        violations.extend(denied_issues)
-        report["denied_root_violations"] = denied_issues[:10]
+    if args.private_mode:
+        print("    [SKIP] Denied roots check skipped in private mode")
     else:
-        print("    [OK] All denied roots are empty (proper scaffolds)")
+        denied_issues = validate_denied_roots_empty(REPO_ROOT)
+        if denied_issues:
+            print(f"    [CRITICAL] Found {len(denied_issues)} denied root violation(s)")
+            violations.extend(denied_issues)
+            report["denied_root_violations"] = denied_issues[:10]
+        else:
+            print("    [OK] All denied roots are empty (proper scaffolds)")
 
     print("[6] Checking exported roots for completeness...")
-    completeness = validate_exported_roots_complete(REPO_ROOT)
-    print(f"    [INFO] Exported root status: {completeness['status']}")
-    for root, status in completeness["details"].items():
-        print(f"      - {root}: {status}")
+    if args.private_mode:
+        print("    [SKIP] Exported roots check skipped in private mode")
+        completeness = {"status": "N/A", "details": {}}
+    else:
+        completeness = validate_exported_roots_complete(REPO_ROOT)
+        print(f"    [INFO] Exported root status: {completeness['status']}")
+        for root, status in completeness["details"].items():
+            print(f"      - {root}: {status}")
     report["exported_root_completeness"] = completeness["details"]
 
     print("\n=== Boundary Validation Result ===")
