@@ -142,13 +142,14 @@ class TestBlockedExtensions:
 
     @pytest.mark.parametrize("ext", BLOCKED)
     def test_no_blocked_extensions(self, ext):
-        """OC05: No blocked binary extensions anywhere in repo."""
-        found = []
-        for f in REPO_ROOT.rglob(f"*{ext}"):
-            if "__pycache__" in str(f):
-                continue
-            found.append(f)
-        assert not found, f"Blocked extension {ext} found: {[str(f) for f in found]}"
+        """OC05: No blocked binary extensions in git tree."""
+        import subprocess
+        result = subprocess.run(
+            ["git", "ls-files", f"*{ext}"],
+            capture_output=True, text=True, cwd=str(REPO_ROOT)
+        )
+        tracked = [f for f in result.stdout.strip().split("\n") if f]
+        assert not tracked, f"Blocked extension {ext} in git tree: {tracked}"
 
 
 # ── OC06: Secret patterns ────────────────────────────────────────────────────

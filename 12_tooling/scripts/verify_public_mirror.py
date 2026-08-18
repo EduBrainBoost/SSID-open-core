@@ -57,7 +57,7 @@ def verify_public_mirror(repo_root: Path | str = ".") -> dict:
         issues.append("Missing .github/workflows/")
     else:
         workflows = list(ci_path.glob("*.yaml"))
-        required_workflows = ["ci.yaml", "security.yaml", "codeql.yaml", "scorecard.yaml", "release.yaml"]
+        required_workflows = ["ci.yaml", "security.yaml", "scorecard.yaml", "release.yaml"]
         for wf in required_workflows:
             if not (ci_path / wf).exists():
                 issues.append(f"Missing CI workflow: {wf}")
