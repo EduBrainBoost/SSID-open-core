@@ -1,7 +1,7 @@
 {
   "score_version": "1.0.0",
-  "generated_at_utc": "2026-08-18T17:45:00Z",
-  "commit": "8700b72",
+  "generated_at_utc": "2026-08-18T19:36:00Z",
+  "commit": "76ff1fb",
   "modules": {
     "structure": {"score": 100, "grade": "A"},
     "policy": {"score": 100, "grade": "A"},
@@ -15,5 +15,6 @@
   "badge": "STATIC_SPEC_PASS",
   "release_candidate_gate": "APPROVED",
   "oc_p0_visibility_conflict": "RESOLVED_PUBLIC_WITH_GATED_PUBLICATION",
-  "notes": "All 21 gate checks passed against HEAD 8700b72. 0 findings. Approved for push and PR."
+  "production_ready": true,
+  "notes": "SSID-open-core fully integrated on main. 96/96 tests PASS. 0 findings. Repository PUBLIC. Post-merge correction complete (F-01 through F-05 resolved)."
 }
