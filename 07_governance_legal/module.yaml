@@ -1,0 +1,8 @@
+name: 07_governance_legal
+version: "1.0.0"
+scope: public
+description: "Public LICENSE/SECURITY/contribution/governance/risk notices."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

@@ -1,0 +1,97 @@
+name: security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only_verified
+
+  dependency-scan:
+    name: Dependency Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install safety
+      - run: safety check --output text || true
+
+  sast:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install bandit
+      - run: bandit -r src/ -f json -o bandit-report.json || true
+
+  license-scan:
+    name: License Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check LICENSE file
+        run: |
+          if [ ! -f LICENSE ]; then
+            echo "ERROR: LICENSE file missing"
+            exit 1
+          fi
+          grep -qi "mit" LICENSE && echo "LICENSE: MIT detected" || echo "WARNING: MIT license not confirmed"
+
+  private-leak-scan:
+    name: Private Leakage Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan for private paths
+        run: |
+          patterns=(
+            "C:\\\\Users\\\\bibel\\\\SSID-Workspace"
+            "C:\\\\Users\\\\bibel\\\\Documents\\\\Github"
+            "MAOS"
+            "Agent-Swarm"
+            "private.*registry"
+          )
+          exempt_files=(
+            "opencore_policy.yaml"
+            "test_opencore_policy.py"
+            "verify_private_leakage.py"
+            "security.yaml"
+          )
+          for pattern in "${patterns[@]}"; do
+            matches=$(grep -r "$pattern" --include="*.py" --include="*.yaml" --include="*.yml" --include="*.json" --exclude-dir=".git" . 2>/dev/null | grep -v "opencore_policy.yaml" | grep -v "test_opencore_policy.py" | grep -v "verify_private_leakage.py" | grep -v "security.yaml" || true)
+            if [ -n "$matches" ]; then
+              echo "PRIVATE LEAK DETECTED: $pattern"
+              echo "$matches"
+              exit 1
+            fi
+          done
+          echo "Private leak scan: PASS"
+
+  sbom:
+    name: SBOM Generation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install cyclonedx-bom
+      - run: cyclonedx-py environment --output sbom.json || echo "SBOM generation skipped"

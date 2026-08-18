@@ -1,0 +1,8 @@
+name: 12_tooling
+version: "1.0.0"
+scope: public
+description: "Public validators, generators, release helpers, lint/config tools."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

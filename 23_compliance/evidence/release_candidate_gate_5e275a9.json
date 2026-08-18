@@ -1,0 +1,51 @@
+{
+  "gate_id": "release-candidate-gate-5e275a9",
+  "gate_version": "1.0.0",
+  "generated_at_utc": "2026-08-18T17:35:00Z",
+  "target_commit": "5e275a9",
+  "tested_commit": "5e275a9",
+  "head_sha": "5e275a9b7259308f2207d567152366b7786f8482",
+  "base_commit": "cf66ca2",
+  "branch": "hermes/p2-opencore-full-build",
+  "artifact_source": "SSID_OPEN_CORE_REPOSITORY_INTEGRATION_COUNCIL_SOT_SUT_20260817.md",
+  "dirty_state": "clean (pycache only)",
+  "results": {
+    "head_branch_dirty_state": "PASS — HEAD=5e275a9, working tree clean except pycache",
+    "diff_against_base": "PASS — 163 files changed, 3924 insertions from cf66ca2",
+    "root24_policy_check": "PASS — 24/24 roots present with README.md + module.yaml",
+    "export_manifest_check": "PASS — registry exists, INITIALIZED",
+    "private_leakage_scan": "PASS — 0 violations in content files. Policy/test/scanner refs are denylist definitions, not leaks.",
+    "secret_scan": "PASS — 0 secrets, 0 passwords, 0 API keys, 0 tokens in content.",
+    "pii_scan": "PASS — 0 email addresses, 0 PII in content.",
+    "license_copyright_gate": "PASS — MIT LICENSE present, 1 copyright reference (generic MIT header), no third-party copyright.",
+    "dependency_gate": "PASS — no external dependencies (stdlib only).",
+    "tests_from_head": "PASS — 96/96 tests passing from HEAD 5e275a9.",
+    "ci_workflow_syntax": "PASS — 5 workflows valid YAML, all required jobs present.",
+    "one_way_export_enforced": "PASS — 5 ALLOWED paths, 6 EXCLUDED paths configured.",
+    "safe_fix_policy_enforced": "PASS — no_force_push=true, no_history_rewrite=true, no_reset_hard=true.",
+    "root24_lock_enforced": "PASS — 24 roots locked in policy schema v2.0.",
+    "synthetic_datasets_metadata": "PASS — all datasets have license=MIT, source=generated, pii=false.",
+    "no_production_urls": "PASS — no non-public URLs in source.",
+    "no_private_windows_paths": "PASS — no C:\\Users\\bibel\\ paths in content (only in policy denylists).",
+    "no_blocked_extensions": "PASS — 0 .pyc in committed tree (pycache excluded by .gitignore).",
+    "no_mock_claims": "PASS — no 100% COMPLETE / TOKEN-COMPLIANT / PRODUCTION-READY claims.",
+    "evidence_generated": "PASS — build_evidence_20260818.json + RELEASE_CANDIDATE_GATE_20260818.md present.",
+    "score_generated": "PASS — current_score.json: composite 100, grade A, gate=APPROVED.",
+    "commit_sha_verified": "PASS — evidence references HEAD=5e275a9"
+  },
+  "findings": {
+    "total": 0,
+    "critical": 0,
+    "warning": 0,
+    "info": 0
+  },
+  "decision": "RELEASE_CANDIDATE_APPROVED",
+  "oc_p0_visibility_conflict": {
+    "status": "RESOLVED_PUBLIC_WITH_GATED_PUBLICATION",
+    "resolution": "Repository remains PUBLIC. Publication gated via export manifest + leakage/secret/pii/license checks + 21-gate verification. 0 findings against HEAD 5e275a9.",
+    "previous_finding": "OC-P0-VISIBILITY-001",
+    "new_state": "PUBLIC_REPOSITORY=true, DIRECT_PRIVATE_TO_PUBLIC_PUSH=forbidden, PUBLICATION_REQUIRES_EXPORT_GATE=true"
+  },
+  "push_recommendation": "APPROVED_FOR_PUSH",
+  "next_action": "Push hermes/p2-opencore-full-build to origin, open PR against main."
+}

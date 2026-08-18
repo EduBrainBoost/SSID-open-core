@@ -1,0 +1,8 @@
+name: 05_documentation
+version: "1.0.0"
+scope: public
+description: "OpenCore architecture, public SDK/API docs, ADRs, runbooks safe for publication."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

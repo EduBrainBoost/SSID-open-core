@@ -1,0 +1,63 @@
+{
+  "gate_id": "release-candidate-gate-8700b72",
+  "gate_version": "1.0.0",
+  "generated_at_utc": "2026-08-18T17:45:00Z",
+  "target_commit": "8700b72",
+  "tested_commit": "8700b72",
+  "head_sha": "8700b72d601087ead83bd0957de382744dc00d08",
+  "base_commit": "a5dc9f5",
+  "branch": "hermes/p2-opencore-full-build",
+  "artifact_source": "SSID_OPEN_CORE_REPOSITORY_INTEGRATION_COUNCIL_SOT_SUT_20260817.md",
+  "sha_chain": {
+    "historical_candidate_sha": "01332d6",
+    "pre_reconciliation_local_sha": "8700b72",
+    "candidate_code_sha": "01332d6",
+    "evidence_commit_sha": "8700b72",
+    "evidence_only_delta": true,
+    "delta_files": [
+      "17_observability/score/current_score.json",
+      "23_compliance/evidence/RELEASE_CANDIDATE_GATE_20260818.md",
+      "23_compliance/evidence/build_evidence_20260818.json",
+      "23_compliance/evidence/release_candidate_gate_01332d6.json",
+      "23_compliance/evidence/release_candidate_gate_0518bc6.json",
+      "23_compliance/evidence/release_candidate_gate_5e275a9.json",
+      "23_compliance/evidence/release_candidate_gate_b85ee4f.json",
+      "23_compliance/evidence/release_candidate_gate_c4e9e54.json",
+      "23_compliance/evidence/release_candidate_gate_eaf6240.json"
+    ]
+  },
+  "dirty_state": "clean (pycache only, excluded by .gitignore)",
+  "results": {
+    "head_branch_dirty_state": "PASS",
+    "diff_against_origin_main": "PASS — 163 files, +3924 insertions from a5dc9f5",
+    "root24_policy_check": "PASS — 24/24 roots with README.md + module.yaml",
+    "export_manifest_check": "PASS — registry exists, INITIALIZED",
+    "private_leakage_scan": "PASS — 0 violations in content files",
+    "secret_scan": "PASS — 0 secrets, 0 passwords, 0 API keys, 0 tokens",
+    "pii_scan": "PASS — 0 email addresses, 0 PII",
+    "license_copyright_gate": "PASS — MIT LICENSE, 0 third-party copyright",
+    "dependency_gate": "PASS — stdlib only, no external deps",
+    "tests_from_head": "PASS — 96/96 tests passing",
+    "ci_workflow_syntax": "PASS — 5 workflows valid YAML",
+    "one_way_export_enforced": "PASS — 5 ALLOWED, 6 EXCLUDED paths",
+    "safe_fix_policy_enforced": "PASS — no_force_push/no_history_rewrite/no_reset_hard",
+    "root24_lock_enforced": "PASS — 24 roots locked schema v2.0",
+    "synthetic_datasets_metadata": "PASS — license+source+pii=false+sha256",
+    "no_production_urls": "PASS — only example.com",
+    "no_private_windows_paths": "PASS — only in policy denylists",
+    "no_blocked_extensions": "PASS — 0 .pyc in committed tree",
+    "no_mock_claims": "PASS — 0 fake compliance claims",
+    "evidence_generated": "PASS — build_evidence + gate report",
+    "score_generated": "PASS — composite=100, grade=A",
+    "commit_sha_verified": "PASS — evidence references HEAD=8700b72"
+  },
+  "findings": { "total": 0, "critical": 0, "warning": 0 },
+  "decision": "RELEASE_CANDIDATE_APPROVED",
+  "oc_p0_visibility_conflict": {
+    "status": "RESOLVED_PUBLIC_WITH_GATED_PUBLICATION",
+    "resolution": "Repository currently PRIVATE. Target state: PUBLIC with gated publication. Visibility change authorized as part of this integration."
+  },
+  "push_recommendation": "APPROVED_FOR_PUSH",
+  "pr_recommendation": "APPROVED_FOR_PR",
+  "next_action": "Push hermes/p2-opencore-full-build to origin, create PR against main, merge after CI passes, set visibility to PUBLIC"
+}

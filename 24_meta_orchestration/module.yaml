@@ -1,0 +1,8 @@
+name: 24_meta_orchestration
+version: "1.0.0"
+scope: public
+description: "Public registries, export/release manifests and public pipeline descriptions."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

@@ -1,0 +1,8 @@
+name: 01_ai_layer
+version: "1.0.0"
+scope: public
+description: "Public AI interfaces, evaluation examples, provider-neutral stubs, safety examples."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

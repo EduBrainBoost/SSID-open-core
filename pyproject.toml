@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ssid-opencore"
+version = "1.0.0"
+description = "SSID OpenCore — Public sanitized mirror of SSID product core"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "EduBrainBoost"},
+]
+keywords = ["ssid", "opencore", "public", "sdk", "schemas"]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0", "pytest-cov>=4.0", "pyyaml>=6.0"]
+dev = ["ssid-opencore[test]", "bandit>=1.7", "safety>=2.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "11_test_simulation"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["src/opencore"]
+omit = ["*/__pycache__/*", "*/tests/*"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

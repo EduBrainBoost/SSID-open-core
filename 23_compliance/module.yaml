@@ -1,0 +1,8 @@
+name: 23_compliance
+version: "1.0.0"
+scope: public
+description: "Public policies, release evidence, exception schema, reviews, governance and public mappings."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

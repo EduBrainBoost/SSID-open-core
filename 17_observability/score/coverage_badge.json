@@ -1,0 +1,9 @@
+{
+  "badge": "coverage",
+  "value": "42 tests",
+  "updated_at_utc": "2026-08-18T17:16:59.858349+00:00",
+  "test_files": [
+    "tests\\test_opencore.py",
+    "11_test_simulation\\unit\\test_opencore_policy.py"
+  ]
+}

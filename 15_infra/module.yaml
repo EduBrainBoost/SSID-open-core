@@ -1,0 +1,8 @@
+name: 15_infra
+version: "1.0.0"
+scope: public
+description: "Sanitized local/developer examples and public infrastructure blueprints."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

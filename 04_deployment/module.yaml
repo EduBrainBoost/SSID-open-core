@@ -1,0 +1,8 @@
+name: 04_deployment
+version: "1.0.0"
+scope: public
+description: "Infrastructure-agnostic examples, sanitized containers/manifests and developer templates."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

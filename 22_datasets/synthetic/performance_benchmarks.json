@@ -1,0 +1,14 @@
+{
+  "name": "performance_synthetic_benchmarks",
+  "license": "MIT",
+  "source": "generated",
+  "created_at": "2026-08-18T00:00:00Z",
+  "pii": false,
+  "commercial_restrictions": "none",
+  "sha256": "synthetic-perf-dataset",
+  "records": [
+    {"metric": "latency_ms", "value": 12.5, "p99": 45.2},
+    {"metric": "throughput_ops", "value": 1500.0, "p99": 2200.0},
+    {"metric": "error_rate", "value": 0.001, "p99": 0.005}
+  ]
+}

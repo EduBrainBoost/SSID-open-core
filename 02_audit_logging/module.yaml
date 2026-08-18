@@ -1,0 +1,8 @@
+name: 02_audit_logging
+version: "1.0.0"
+scope: public
+description: "Public evidence schemas/writer examples, verification formats, retention concepts."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

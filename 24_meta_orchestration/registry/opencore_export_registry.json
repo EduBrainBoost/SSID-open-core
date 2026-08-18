@@ -1,0 +1,10 @@
+{
+  "registry_version": "1.0.0",
+  "created_at_utc": "2026-08-18T00:00:00Z",
+  "source_repo": "SSID",
+  "target_repo": "SSID-open-core",
+  "export_direction": "ONE_WAY",
+  "manifests": [],
+  "status": "INITIALIZED",
+  "notes": "Registry initialized. Export manifests will be appended upon each one-way export event."
+}
