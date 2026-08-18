@@ -1,7 +1,7 @@
 {
   "score_version": "1.0.0",
-  "generated_at_utc": "2026-08-18T19:05:00Z",
-  "commit": "9e8e715",
+  "generated_at_utc": "2026-08-18T19:36:00Z",
+  "commit": "76ff1fb",
   "modules": {
     "structure": {"score": 100, "grade": "A"},
     "policy": {"score": 100, "grade": "A"},
@@ -16,5 +16,5 @@
   "release_candidate_gate": "APPROVED",
   "oc_p0_visibility_conflict": "RESOLVED_PUBLIC_WITH_GATED_PUBLICATION",
   "production_ready": true,
-  "notes": "SSID-open-core fully integrated on main. 96/96 tests PASS. 20/20 gates PASS. 0 findings. Repository PUBLIC. Merge complete."
+  "notes": "SSID-open-core fully integrated on main. 96/96 tests PASS. 0 findings. Repository PUBLIC. Post-merge correction complete (F-01 through F-05 resolved)."
 }
