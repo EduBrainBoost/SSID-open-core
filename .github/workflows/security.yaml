@@ -93,5 +93,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install cyclonedx-bom
-      - run: cyclonedx-py environment --output sbom.json
+      - run: pip install 'cyclonedx-bom<7'
+      - run: cyclonedx-py environment -o sbom.json
