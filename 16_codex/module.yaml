@@ -1,0 +1,8 @@
+name: 16_codex
+version: "1.0.0"
+scope: public
+description: "Public playbooks/patterns/guides suitable for external developers."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

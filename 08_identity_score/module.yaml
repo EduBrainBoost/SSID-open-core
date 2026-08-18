@@ -1,0 +1,8 @@
+name: 08_identity_score
+version: "1.0.0"
+scope: public
+description: "Public scoring interfaces and synthetic fixtures."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

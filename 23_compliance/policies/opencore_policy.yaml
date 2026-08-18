@@ -1,0 +1,115 @@
+schema_version: "2.0"
+artifact_id: "SSID-OPEN-CORE-POLICY"
+generated_at_utc: "2026-08-18T00:00:00Z"
+
+required_root_files:
+  - "README.md"
+  - "LICENSE"
+  - "SECURITY.md"
+  - "CODEOWNERS"
+
+allowed_extensions:
+  - ".md"
+  - ".yaml"
+  - ".yml"
+  - ".json"
+  - ".py"
+  - ".sh"
+  - ".svg"
+  - ".csv"
+  - ".txt"
+  - ".toml"
+  - ".cfg"
+  - ".ini"
+
+blocked_extensions:
+  - ".exe"
+  - ".dll"
+  - ".so"
+  - ".pyc"
+  - ".secret"
+  - ".key"
+  - ".p12"
+  - ".pfx"
+  - ".pem"
+  - ".cer"
+
+private_content_block:
+  - "private SSID Tier-0 source copies"
+  - "private Level-3 implementation detail"
+  - "MAOS internals"
+  - "Agent-System private registry"
+  - "Hermes secrets/runtime state"
+  - "Jarvis personal runtime"
+  - "OmniRoute credentials/state"
+  - "customer/user PII"
+  - "private endpoints"
+  - "workstation paths"
+  - "C:\\Users\\bibel\\SSID-Workspace"
+  - "C:\\Users\\bibel\\Documents\\Github"
+  - "API keys"
+  - "OAuth tokens"
+  - "private keys"
+  - "seed phrases"
+  - "passwords"
+  - "session cookies"
+
+root_24_lock:
+  count: 24
+  names:
+    - "01_ai_layer"
+    - "02_audit_logging"
+    - "03_core"
+    - "04_deployment"
+    - "05_documentation"
+    - "06_data_pipeline"
+    - "07_governance_legal"
+    - "08_identity_score"
+    - "09_meta_identity"
+    - "10_interoperability"
+    - "11_test_simulation"
+    - "12_tooling"
+    - "13_ui_layer"
+    - "14_zero_time_auth"
+    - "15_infra"
+    - "16_codex"
+    - "17_observability"
+    - "18_data_layer"
+    - "19_adapters"
+    - "20_foundation"
+    - "21_post_quantum_crypto"
+    - "22_datasets"
+    - "23_compliance"
+    - "24_meta_orchestration"
+  extra_roots_forbidden: true
+
+safe_fix:
+  default: "NON_DESTRUCTIVE"
+  no_force_push: true
+  no_history_rewrite: true
+  no_git_clean: true
+  no_reset_hard: true
+  no_blind_delete: true
+  no_mass_move: true
+
+export:
+  source_repo: "SSID"
+  direction: "ONE_WAY"
+  manifest_required: true
+  explicit_allowlist_required: true
+  explicit_denylist_required: true
+  provenance_required: true
+
+release:
+  secret_scan: true
+  pii_scan: true
+  license_scan: true
+  private_leak_scan: true
+  tests: true
+  independent_verifier: true
+  evidence: true
+  public_gate: true
+
+visibility:
+  conflict_resolution_required: true
+  no_private_push_while_public: true

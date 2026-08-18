@@ -13,6 +13,53 @@ from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
 
 
+__version__ = "1.0.0"
+
+ROOT_24 = [
+    "01_ai_layer",
+    "02_audit_logging",
+    "03_core",
+    "04_deployment",
+    "05_documentation",
+    "06_data_pipeline",
+    "07_governance_legal",
+    "08_identity_score",
+    "09_meta_identity",
+    "10_interoperability",
+    "11_test_simulation",
+    "12_tooling",
+    "13_ui_layer",
+    "14_zero_time_auth",
+    "15_infra",
+    "16_codex",
+    "17_observability",
+    "18_data_layer",
+    "19_adapters",
+    "20_foundation",
+    "21_post_quantum_crypto",
+    "22_datasets",
+    "23_compliance",
+    "24_meta_orchestration",
+]
+
+ALLOWED_EXPORT_PATHS = {
+    "schemas",
+    "public",
+    "docs/public",
+    "licenses",
+    "README.md",
+}
+
+EXCLUDED_PATHS = {
+    "src/private",
+    "config/secrets",
+    ".env",
+    "secrets",
+    "private",
+    "internal",
+}
+
+
 @dataclass
 class ExportManifest:
     """Manifest for exported public content."""
@@ -27,7 +74,6 @@ class ExportManifest:
 class OpenCoreCore:
     """OpenCore core — public mirror management."""
 
-    # Paths allowed for export
     ALLOWED_EXPORT_PATHS = {
         "schemas",
         "public",
@@ -36,7 +82,6 @@ class OpenCoreCore:
         "README.md",
     }
 
-    # Paths to exclude
     EXCLUDED_PATHS = {
         "src/private",
         "config/secrets",
@@ -66,7 +111,6 @@ class OpenCoreCore:
 
     def export_content(self, source_path: str, dest_path: str) -> Optional[ExportManifest]:
         """Export content from core to OpenCore."""
-        # Validate path
         if not self._is_allowed_path(source_path):
             return None
 
@@ -74,12 +118,10 @@ class OpenCoreCore:
         if not source.exists():
             return None
 
-        # Read and sanitize
         content = self._read_and_sanitize(source)
         if content is None:
             return None
 
-        # Create export manifest
         content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
         manifest_id = f"{source_path.replace('/', '-')}_{content_hash}"
 
@@ -102,72 +144,66 @@ class OpenCoreCore:
         return manifest
 
     def verify_export(self, manifest_id: str) -> Dict[str, Any]:
-        """Verify an export manifest."""
+        """Verify an export by manifest ID."""
         manifest = self._exports.get(manifest_id)
-        if not manifest:
-            return {"verified": False, "error": "Manifest not found"}
-
-        return {
-            "verified": True,
-            "manifest_id": manifest.manifest_id,
-            "source_repo": manifest.source_repo,
-            "export_path": manifest.export_path,
-            "content_hash": manifest.content_hash,
-            "exported_at": manifest.exported_at,
-            "status": manifest.status,
-        }
-
-    def list_exports(self, status: Optional[str] = None) -> List[Dict[str, Any]]:
-        """List all exports."""
-        results = []
-        for m in self._manifests:
-            if status and m["status"] != status:
-                continue
-            results.append(m)
-        return results
+        if manifest is None:
+            return {"verified": False, "status": "NOT_FOUND"}
+        return {"verified": True, "status": manifest.status}
 
     def revoke_export(self, manifest_id: str) -> bool:
         """Revoke an export."""
         manifest = self._exports.get(manifest_id)
-        if not manifest:
+        if manifest is None:
             return False
         manifest.status = "REVOKED"
         for m in self._manifests:
             if m["manifest_id"] == manifest_id:
                 m["status"] = "REVOKED"
-                break
         return True
+
+    def list_exports(self, status: Optional[str] = None) -> List[Dict[str, Any]]:
+        """List all exports, optionally filtered by status."""
+        if status is None:
+            return list(self._manifests)
+        return [m for m in self._manifests if m["status"] == status]
 
     def _is_allowed_path(self, path: str) -> bool:
-        """Check if path is allowed for export."""
+        """Check if a path is allowed for export."""
         for excluded in self.EXCLUDED_PATHS:
-            if excluded in path:
+            if path.startswith(excluded):
                 return False
-        return True
+        for allowed in self.ALLOWED_EXPORT_PATHS:
+            if path.startswith(allowed):
+                return True
+        return False
 
     def _read_and_sanitize(self, path: Path) -> Optional[str]:
-        """Read file content and sanitize for public export."""
-        if path.is_dir():
-            return None  # Only export files
+        """Read a file and sanitize private content."""
         try:
             content = path.read_text(encoding="utf-8")
-            # Basic sanitization
-            content = content.replace("PRIVATE", "PUBLIC")
-            content = content.replace("SECRET", "公开")
-            return content
-        except (UnicodeDecodeError, PermissionError):
-            return None
+        except UnicodeDecodeError:
+            try:
+                content = path.read_bytes().decode("utf-8", errors="replace")
+            except Exception:
+                return None
+        # Sanitize: remove absolute Windows paths
+        import re
+        sanitized = re.sub(r'C:\\Users\\[^\\]+\\SSID-Workspace\\[^\\]+', '[REDACTED_WORKSPACE]', content)
+        sanitized = re.sub(r'C:\\Users\\[^\\]+\\Documents\\Github\\[^\\]+', '[REDACTED_DOCS]', sanitized)
+        return sanitized
 
-    def get_schema(self, schema_name: str) -> Optional[Dict[str, Any]]:
-        """Get a public schema definition."""
-        schema_path = self._core_root / "schemas" / f"{schema_name}.json"
-        if not schema_path.exists():
-            return None
-        try:
-            return json.loads(schema_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, PermissionError):
-            return None
-
-
-__version__ = "1.0.0"
-__all__ = ["OpenCoreCore", "ExportManifest"]
+    def validate_root_24(self) -> Dict[str, Any]:
+        """Validate that all 24 roots exist with required files."""
+        root_dir = self._core_root
+        results = {"valid": True, "roots": {}, "errors": []}
+        for root in ROOT_24:
+            root_path = root_dir / root
+            exists = root_path.exists()
+            has_readme = (root_path / "README.md").exists() if exists else False
+            has_module = (root_path / "module.yaml").exists() if exists else False
+            status = "VALID" if (exists and has_readme and has_module) else ("MISSING" if not exists else "INCOMPLETE")
+            results["roots"][root] = {"exists": exists, "has_readme": has_readme, "has_module": has_module, "status": status}
+            if status != "VALID":
+                results["valid"] = False
+                results["errors"].append(f"{root}: {status}")
+        return results

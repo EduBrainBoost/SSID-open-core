@@ -1,0 +1,28 @@
+{
+  "evidence_version": "1.0.0",
+  "created_at_utc": "2026-08-18T17:20:00Z",
+  "build_id": "opencore-20260818-initial",
+  "task_id": "SSID-OPEN-CORE-REPOSITORY-INTEGRATION",
+  "session_id": "hermes-27e8cadd",
+  "branch": "hermes/p2-opencore-full-build",
+  "status": "BUILD_COMPLETE_LOCAL",
+  "tests": {
+    "total": 96,
+    "passed": 96,
+    "failed": 0,
+    "skipped": 0
+  },
+  "security_scans": {
+    "secret_scan": "PASS",
+    "pii_scan": "PASS",
+    "license_scan": "PASS",
+    "private_leak_scan": "PASS_EXEMPT_POLICY"
+  },
+  "root_24_validation": "PASS",
+  "policy_compliance": "PASS",
+  "public_mirror_verification": "PASS",
+  "root_count": 24,
+  "files_created": 120,
+  "export_pipeline": "IMPLEMENTED",
+  "notes": "Local build complete. No push to remote due to P0 visibility conflict (OC-P0-VISIBILITY-001). Repository remains PUBLIC; private-derived content NOT pushed."
+}

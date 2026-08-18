@@ -1,0 +1,8 @@
+name: 17_observability
+version: "1.0.0"
+scope: public
+description: "Public score/evidence summaries, non-sensitive dashboards and metrics examples."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

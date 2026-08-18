@@ -1,0 +1,8 @@
+name: 14_zero_time_auth
+version: "1.0.0"
+scope: public
+description: "Concept docs, mocks, protocol examples and public auth interfaces."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding

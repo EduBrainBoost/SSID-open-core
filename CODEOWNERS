@@ -1,0 +1,25 @@
+# Code Owners
+
+# Critical policy and security files require dual review
+23_compliance/policies/*.yaml @ssid-core-reviewers
+23_compliance/evidence/ @ssid-security-team
+.github/workflows/*.yaml @ssid-ci-reviewers
+src/opencore/__init__.py @ssid-core-reviewers
+
+# Release infrastructure
+24_meta_orchestration/registry/*.json @ssid-release-team
+12_tooling/scripts/*.py @ssid-tooling-reviewers
+
+# Public SDKs and schemas
+03_core/**/*.py @ssid-core-reviewers
+08_identity_score/**/*.py @ssid-identity-reviewers
+09_meta_identity/**/*.py @ssid-identity-reviewers
+10_interoperability/**/*.py @ssid-interop-reviewers
+19_adapters/**/*.py @ssid-adapters-reviewers
+21_post_quantum_crypto/**/*.py @ssid-crypto-reviewers
+
+# Test infrastructure
+11_test_simulation/**/*.py @ssid-test-reviewers
+
+# Documentation
+05_documentation/**/*.md @ssid-docs-reviewers

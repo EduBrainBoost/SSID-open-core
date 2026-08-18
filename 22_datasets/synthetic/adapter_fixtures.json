@@ -1,0 +1,23 @@
+{
+  "name": "adapter_test_fixtures",
+  "license": "MIT",
+  "source": "generated",
+  "created_at": "2026-08-18T00:00:00Z",
+  "pii": false,
+  "commercial_restrictions": "none",
+  "sha256": "synthetic-adapter-fixtures",
+  "records": [
+    {
+      "adapter": "identity",
+      "test_case": "verify_did",
+      "input": {"did": "did:example:test001"},
+      "expected": {"valid": true}
+    },
+    {
+      "adapter": "messaging",
+      "test_case": "send_message",
+      "input": {"recipient": "did:example:receiver", "body": "Hello"},
+      "expected": {"status": "sent"}
+    }
+  ]
+}

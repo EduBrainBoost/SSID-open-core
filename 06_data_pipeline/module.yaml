@@ -1,0 +1,8 @@
+name: 06_data_pipeline
+version: "1.0.0"
+scope: public
+description: "Synthetic/open-data pipeline examples and public schemas."
+license: MIT
+export_direction: one_way
+source_repo: SSID
+status: scaffolding
