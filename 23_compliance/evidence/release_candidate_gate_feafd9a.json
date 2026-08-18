@@ -1,0 +1,62 @@
+{
+  "gate_id": "release-candidate-gate-feafd9a",
+  "gate_version": "1.0.0",
+  "generated_at_utc": "2026-08-18T19:50:00Z",
+  "target_commit": "feafd9a",
+  "tested_commit": "feafd9a",
+  "head_sha": "feafd9a5a2119e6d104725d70ee28a8b61bd29c3",
+  "base_commit": "a5dc9f5",
+  "branch": "main",
+  "sha_chain": {
+    "historical_candidate_sha": "01332d6",
+    "candidate_code_sha": "01332d6",
+    "evidence_commit_sha": "8700b72",
+    "pr_head_sha": "f3f7c6a",
+    "origin_main_before_merge": "a5dc9f5",
+    "first_merge_sha": "9e8e715",
+    "correction_merge_sha": "76ff1fb",
+    "pyc_removal_merge_sha": "feafd9a"
+  },
+  "results": {
+    "head_branch_dirty_state": "PASS",
+    "diff_against_base": "PASS",
+    "root24_policy_check": "PASS — 24/24 roots",
+    "export_manifest_check": "PASS",
+    "private_leakage_scan": "PASS",
+    "secret_scan": "PASS",
+    "pii_scan": "PASS",
+    "license_copyright_gate": "PASS — MIT",
+    "dependency_gate": "PASS",
+    "tests_from_head": "PASS — 96/96",
+    "ci_workflow_syntax": "PASS — 4 workflows",
+    "one_way_export_enforced": "PASS",
+    "safe_fix_policy_enforced": "PASS",
+    "root24_lock_enforced": "PASS",
+    "synthetic_datasets_metadata": "PASS",
+    "no_production_urls": "PASS",
+    "no_private_windows_paths": "PASS",
+    "no_blocked_extensions": "PASS — 0 .pyc in tree",
+    "no_mock_claims": "PASS",
+    "evidence_generated": "PASS",
+    "score_generated": "PASS"
+  },
+  "findings": { "total": 0, "critical": 0, "warning": 0 },
+  "decision": "RELEASE_CANDIDATE_APPROVED",
+  "oc_p0_visibility_conflict": {
+    "status": "RESOLVED_PUBLIC_WITH_GATED_PUBLICATION",
+    "resolution": "Repository PUBLIC. Publication gated. 0 findings."
+  },
+  "post_merge_correction": {
+    "f01_pyc_removed": true,
+    "f02_oc05_test_fixed": true,
+    "f05_security_fail_closed": true,
+    "sbom_cli_fixed": true
+  },
+  "github": {
+    "prs": [2, 3, 4],
+    "pr_states": ["merged", "merged", "merged"],
+    "visibility": "public"
+  },
+  "push_recommendation": "COMPLETE",
+  "next_action": "NONE"
+}
