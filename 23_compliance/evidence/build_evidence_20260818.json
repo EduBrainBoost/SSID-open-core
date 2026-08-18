@@ -1,12 +1,12 @@
 {
   "evidence_version": "1.0.0",
-  "created_at_utc": "2026-08-18T19:50:00Z",
+  "created_at_utc": "2026-08-18T22:05:00Z",
   "build_id": "opencore-20260818-final",
   "task_id": "SSID-OPEN-CORE-REPOSITORY_INTEGRATION_COUNCIL",
   "session_id": "hermes-27e8cadd",
   "branch": "main",
-  "commit_sha": "bc41986",
-  "tested_against_head": "bc41986",
+  "commit_sha": "d906920",
+  "tested_against_head": "d906920",
   "sha_chain": {
     "historical_candidate_sha": "01332d6",
     "candidate_code_sha": "01332d6",
@@ -16,44 +16,27 @@
     "first_merge_sha": "9e8e715",
     "correction_merge_sha": "76ff1fb",
     "pyc_removal_merge_sha": "feafd9a",
-    "final_evidence_normalization_sha": "bc41986"
+    "evidence_normalization_sha": "7381b8a",
+    "legacy_recovery_integration_sha": "d906920"
   },
   "status": "PRODUCTION_READY",
-  "tests": {
-    "total": 96,
-    "passed": 96,
-    "failed": 0
-  },
-  "security_scans": {
-    "secret_scan": "PASS",
-    "pii_scan": "PASS",
-    "license_scan": "PASS",
-    "private_leak_scan": "PASS"
-  },
+  "tests": { "total": 96, "passed": 96, "failed": 0 },
+  "security_scans": { "secret_scan": "PASS", "pii_scan": "PASS", "license_scan": "PASS", "private_leak_scan": "PASS" },
   "root_24_validation": "PASS",
   "policy_compliance": "PASS",
   "public_mirror_verification": "PASS",
   "ci_workflow_syntax": "PASS",
   "one_way_export_enforced": "PASS",
   "safe_fix_policy_enforced": "PASS",
-  "findings": {
-    "total": 0,
-    "critical": 0,
-    "warning": 0
+  "findings": { "total": 0, "critical": 0, "warning": 0 },
+  "oc_p0_visibility_conflict": {
+    "status": "RESOLVED_PRIVATE_REVERTED",
+    "resolution": "Reverted from PUBLIC to PRIVATE per SoT requirement. Visibility: PRIVATE."
   },
-  "oc_p0_visibility_conflict": "RESOLVED_PUBLIC_WITH_GATED_PUBLICATION",
   "github": {
-    "prs": [
-      2,
-      3,
-      4
-    ],
-    "pr_states": [
-      "merged",
-      "merged",
-      "merged"
-    ],
-    "visibility": "public"
+    "prs": [2, 3, 4],
+    "pr_states": ["merged", "merged", "merged"],
+    "visibility": "private"
   },
   "post_merge_correction": {
     "f01_pyc_removed": true,

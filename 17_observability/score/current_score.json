@@ -1,38 +1,20 @@
 {
   "score_version": "1.0.0",
-  "generated_at_utc": "2026-08-18T19:50:00Z",
-  "commit": "bc41986",
+  "generated_at_utc": "2026-08-18T22:05:00Z",
+  "commit": "d906920",
   "modules": {
-    "structure": {
-      "score": 100,
-      "grade": "A"
-    },
-    "policy": {
-      "score": 100,
-      "grade": "A"
-    },
-    "tests": {
-      "score": 100,
-      "grade": "A"
-    },
-    "security": {
-      "score": 100,
-      "grade": "A"
-    },
-    "ci": {
-      "score": 100,
-      "grade": "A"
-    },
-    "documentation": {
-      "score": 100,
-      "grade": "A"
-    }
+    "structure": {"score": 100, "grade": "A"},
+    "policy": {"score": 100, "grade": "A"},
+    "tests": {"score": 100, "grade": "A"},
+    "security": {"score": 100, "grade": "A"},
+    "ci": {"score": 100, "grade": "A"},
+    "documentation": {"score": 100, "grade": "A"}
   },
   "composite_score": 100,
   "grade": "A",
   "badge": "STATIC_SPEC_PASS",
   "release_candidate_gate": "APPROVED",
-  "oc_p0_visibility_conflict": "RESOLVED_PUBLIC_WITH_GATED_PUBLICATION",
+  "oc_p0_visibility_conflict": "RESOLVED_PRIVATE_REVERTED",
   "production_ready": true,
-  "notes": "SSID-open-core fully integrated on main. 96/96 tests PASS. 0 findings. Repository PUBLIC. All post-merge corrections complete (F-01 through F-05 resolved, PR#4 merged)."
+  "notes": "SSID-open-core fully integrated on main. 96/96 tests PASS. 0 findings. Repository PRIVATE (reverted from PUBLIC). Legacy recovery artifacts integrated (d906920). All post-merge corrections complete."
 }
