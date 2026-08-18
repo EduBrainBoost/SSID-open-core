@@ -29,7 +29,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install safety
-      - run: safety check --output text || true
+      - run: safety check --output text
 
   sast:
     name: Static Analysis
@@ -40,7 +40,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install bandit
-      - run: bandit -r src/ -f json -o bandit-report.json || true
+      - run: bandit -r src/ -f json -o bandit-report.json
 
   license-scan:
     name: License Scan
@@ -94,4 +94,4 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install cyclonedx-bom
-      - run: cyclonedx-py environment --output sbom.json || echo "SBOM generation skipped"
+      - run: cyclonedx-py environment --output sbom.json
