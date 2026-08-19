@@ -1,0 +1,27 @@
+{
+  "total_packages": 105,
+  "vulnerabilities_found": 0,
+  "vulnerabilities": [],
+  "packages_sampled": [
+    "# editable install with no version control (ssid-orchestrator",
+    "annotated-doc",
+    "annotated-types",
+    "anyio",
+    "attrs",
+    "av",
+    "bandit",
+    "brotli",
+    "certifi",
+    "cffi",
+    "chardet",
+    "charset-normalizer",
+    "click",
+    "colorama",
+    "coverage",
+    "cryptography",
+    "ctranslate2",
+    "decorator",
+    "fastapi",
+    "faster-whisper"
+  ]
+}
